@@ -1,0 +1,302 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+enum UserRole {
+  USER
+  IT
+  QMS
+  MR
+}
+
+enum DisplayType {
+  LIST
+  SCROLLING
+}
+
+enum DarStatus {
+  DRAFT
+  PENDING_REVIEW
+  PENDING_APPROVE
+  QMS_PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum ApprovalAction {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalStep {
+  PREPARER
+  REVIEWER
+  APPROVER_MR
+}
+
+// [NEW] Enum สำหรับประเภทการเซ็น
+enum SignatureType {
+  DRAW   // ลากเส้นด้วยเมาส์/นิ้ว
+  TYPE   // พิมพ์ข้อความ
+  IMAGE  // อัปโหลดรูปภาพ
+}
+
+// ==========================================
+// 1. NextAuth.js Standard Models (สำหรับ M365 Login)
+// ==========================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
+// 2. Organization & Users Models (ผู้ใช้งานและแผนก)
+// ==========================================
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique // เช่น 'HR', 'IT', 'QMS', 'QC'
+  msGroupId String?  @unique // [M365] Object ID ของ Group สำหรับดึงรายชื่อ/ส่งเมล
+  isActive  Boolean  @default(true)
+
+  // Relations
+  users               User[]
+  darRequests         DarMaster[]        @relation("DarDepartment")
+  darDistributions    DarDistribution[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id                String    @id @default(cuid())
+  employeeId        String?   @unique // [Company Center] รหัสพนักงาน ใช้ Login หน้าแรก
+  msUserId          String?   @unique // [M365] Object ID ของ User ใน Entra ID
+  name              String?
+  email             String    @unique
+  emailVerified     DateTime?
+  image             String?
+  role              UserRole  @default(USER)
+
+  // --- [NEW] ระบบบันทึกลายเซ็นเพื่อใช้ครั้งหน้า ---
+  savedSignatureUrl String?   @db.Text       // เก็บ URL รูปลายเซ็น (Base64 หรือ Cloud URL)
+  signatureType     SignatureType?           // ประเภทลายเซ็นที่เซฟไว้
+  // ---------------------------------------------
+
+  // Relations
+  departmentId      String?
+  department        Department? @relation(fields: [departmentId], references: [id])
+  
+  accounts          Account[]
+  sessions          Session[]
+
+  // QMS Relations
+  createdAnnouncements Announcement[]
+  darRequests          DarMaster[]     @relation("DarRequester")
+  darApprovals         DarApproval[]   @relation("AssignedApprover")
+  qmsProcessings       QmsProcessing[] @relation("QmsOfficer")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SystemConfig {
+  configKey   String @id // เช่น 'CURRENT_MR_USER_ID'
+  configValue String
+  description String?
+  
+  updatedAt   DateTime @updatedAt
+}
+
+// ==========================================
+// 3. Announcement Module (ระบบประกาศ)
+// ==========================================
+
+model Announcement {
+  id                  String      @id @default(cuid())
+  sourceSystem        String      // 'QMS', 'HR', 'GA'
+  title               String
+  content             String      @db.Text
+  displayType         DisplayType @default(LIST)
+  pushToCompanyCenter Boolean     @default(false)
+  expiryDate          DateTime?   // +7 วัน สำหรับ Scrolling
+
+  // Relations
+  createdById         String
+  createdBy           User        @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// 4. DAR Module (ระบบจัดการเอกสาร)
+// ==========================================
+
+model DarMaster {
+  id             String    @id @default(cuid())
+  darNo          String?   @unique // สร้างเมื่อ Submit เช่น DAR-2026-001
+  requestDate    DateTime  @default(now())
+  
+  objective      String    // Prepare new, Revise, Cancel etc.
+  docType        String    // Manual, Format, Procedure etc.
+  docTypeOther   String?   // กรณีระบุอื่นๆ
+  reason         String    @db.Text
+  
+  // --- [SharePoint Integration] สำหรับเอกสารแบบร่าง ---
+  spFolderId     String?   
+  spFolderPath   String?   // เช่น "Drafts/DAR-2026-001"
+  spDriveId      String?   
+  spItemId       String?   
+  spWebUrl       String?   // ลิงก์สำหรับพรีวิวบนเบราว์เซอร์
+  // ---------------------------------------------------
+
+  status         DarStatus @default(DRAFT)
+
+  // Relations
+  requesterId    String
+  requester      User      @relation("DarRequester", fields: [requesterId], references: [id])
+  
+  departmentId   String
+  department     Department @relation("DarDepartment", fields: [departmentId], references: [id])
+
+  items          DarItem[]
+  distributions  DarDistribution[]
+  approvals      DarApproval[]
+  qmsProcessing  QmsProcessing?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model DarItem {
+  id          String   @id @default(cuid())
+  itemNo      Int
+  docNumber   String
+  docName     String
+  revision    String
+
+  // Relations
+  darMasterId String
+  darMaster   DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+}
+
+model DarDistribution {
+  id           String   @id @default(cuid())
+  
+  // Relations
+  darMasterId  String
+  darMaster    DarMaster  @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+}
+
+// ==========================================
+// 5. Workflow & E-Signature Module (ระบบเซ็นอนุมัติ)
+// ==========================================
+
+model DarApproval {
+  id                String         @id @default(cuid())
+  stepRole          ApprovalStep   // PREPARER, REVIEWER, APPROVER_MR
+  action            ApprovalAction @default(PENDING)
+  actionDate        DateTime?      // ประทับเวลาอัตโนมัติ
+
+  // --- [NEW] ลายเซ็นเฉพาะสำหรับใบ DAR นี้ (ป้องกันอดีตเปลี่ยนเมื่อ User เปลี่ยนลายเซ็นใหม่) ---
+  signatureUsedUrl  String?        @db.Text // รูปลายเซ็นที่ถูกใช้จริงในวินาทีที่กด Approve
+  signatureTypeUsed SignatureType?          // ประเภทการเซ็นที่ใช้ (DRAW, TYPE, IMAGE)
+  // --------------------------------------------------------------------------------
+
+  // Relations
+  darMasterId       String
+  darMaster         DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  
+  assignedUserId    String
+  assignedUser      User      @relation("AssignedApprover", fields: [assignedUserId], references: [id])
+}
+
+// ==========================================
+// 6. QMS Processing & Document Control (ส่วนเจ้าหน้าที่)
+// ==========================================
+
+model QmsProcessing {
+  id                    String    @id @default(cuid())
+  
+  // Checklist Options (Boolean)
+  chkHasAttachment      Boolean   @default(false)
+  chkPrintAndValidate   Boolean   @default(false)
+  chkRenumber           Boolean   @default(false)
+  chkImpactInvestigated Boolean   @default(false)
+  chkSubmitVerification Boolean   @default(false)
+  chkGetBackProcess     Boolean   @default(false)
+  chkCopyDistribute     Boolean   @default(false)
+  
+  comments              String?   @db.Text
+  processDate           DateTime? 
+
+  // Relations
+  darMasterId           String    @unique
+  darMaster             DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  
+  qmsUserId             String
+  qmsUser               User      @relation("QmsOfficer", fields: [qmsUserId], references: [id])
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model PublicDocument {
+  id             String    @id @default(cuid())
+  darMasterId    String?   
+  docNumber      String
+  docName        String
+  revision       String
+  
+  // --- [SharePoint Integration] สำหรับเอกสารฉบับจริง (เซ็นครบแล้ว) ---
+  spDriveId      String    
+  spItemId       String    // ใช้ทำปุ่ม Download
+  spFolderPath   String?   // พาร์ท เช่น "IT/SOP"
+  spWebUrl       String    
+  // -----------------------------------------------------------
+
+  publishedDate  DateTime  @default(now())
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
