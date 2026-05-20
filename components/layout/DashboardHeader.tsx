@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import type { UserRole } from "@/app/generated/prisma/edge";
+import type { UserRole } from "@/app/generated/prisma";
 import SignOutButton from "./SignOutButton";
 
 type Props = {

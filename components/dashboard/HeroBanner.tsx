@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, useEffect, useState } from "react";
-import { Announcement } from "@/app/generated/prisma/edge";
+import { Announcement } from "@/app/generated/prisma";
 import { LocaleContext } from "@/lib/locale-context";
 
 interface HeroBannerProps {

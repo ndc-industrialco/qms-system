@@ -1,9 +1,9 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { DisplayType } from "@/app/generated/prisma/edge";
+import { DisplayType } from "@/app/generated/prisma";
 
 export async function POST(req: Request) {
   try {

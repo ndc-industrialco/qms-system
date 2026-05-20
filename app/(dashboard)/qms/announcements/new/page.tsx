@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { requireAuth } from "@/lib/auth";
 import Link from "next/link";

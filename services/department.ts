@@ -84,7 +84,7 @@ export type DepartmentMember = {
   name: string | null;
   email: string;
   employeeId: string | null;
-  role: import("@/app/generated/prisma/edge").UserRole;
+  role: import("@/app/generated/prisma").UserRole;
   msUserId: string | null;
   createdAt: string;
 };
