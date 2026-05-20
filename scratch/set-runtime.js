@@ -47,8 +47,7 @@ const prismaFile = path.join(__dirname, '..', 'lib', 'prisma.ts');
 
 if (target === 'edge') {
   console.log(`Writing edge-specific code (Neon Driver Adapter) to ${dbFile}...`);
-  const edgeDbContent = `import { neon } from "@neondatabase/serverless";
-import { PrismaNeon } from "@prisma/adapter-neon";
+  const edgeDbContent = `import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "../app/generated/prisma/edge";
 
 function createPrismaClient() {
@@ -56,8 +55,7 @@ function createPrismaClient() {
   if (!url) {
     throw new Error("DATABASE_URL is not set");
   }
-  const sql = neon(url);
-  const adapter = new PrismaNeon(sql);
+  const adapter = new PrismaNeon({ connectionString: url });
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
@@ -73,8 +71,7 @@ if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
   fs.writeFileSync(dbFile, edgeDbContent, 'utf8');
 
   console.log(`Writing edge-specific code (Neon Driver Adapter) to ${prismaFile}...`);
-  const edgePrismaContent = `import { neon } from "@neondatabase/serverless";
-import { PrismaNeon } from "@prisma/adapter-neon";
+  const edgePrismaContent = `import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "../app/generated/prisma/edge";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
@@ -84,8 +81,7 @@ function getPrismaInstance() {
   if (!url) {
     throw new Error("DATABASE_URL is not set");
   }
-  const sql = neon(url);
-  const adapter = new PrismaNeon(sql);
+  const adapter = new PrismaNeon({ connectionString: url });
   return new PrismaClient({ adapter });
 }
 

@@ -1,21 +1,12 @@
-import { PrismaClient } from "../app/generated/prisma";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaClient } from "../app/generated/prisma/edge";
 
 function createPrismaClient() {
   const url = process.env.DATABASE_URL;
   if (!url) {
     throw new Error("DATABASE_URL is not set");
   }
-
-  // Local dev: use pg adapter (Node.js only)
-  const pgName = "pg";
-  const pgAdapterName = "@prisma/adapter-pg";
-  const pg = typeof require !== "undefined" ? require(pgName) : null;
-  const { PrismaPg } = typeof require !== "undefined" ? require(pgAdapterName) : { PrismaPg: null };
-  if (!pg || !PrismaPg) {
-    throw new Error("Local pg adapter is required in development environment");
-  }
-  const pool = new pg.Pool({ connectionString: url });
-  const adapter = new PrismaPg(pool);
+  const adapter = new PrismaNeon({ connectionString: url });
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
