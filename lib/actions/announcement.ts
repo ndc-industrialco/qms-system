@@ -2,10 +2,11 @@
 
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
+import { announcements } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { ForbiddenError, ValidationError } from "@/lib/errors";
-import type { DisplayType } from "@/app/generated/prisma/edge";
+import type { DisplayType } from "@/db/schema";
 
 const ANNOUNCEMENT_EXPIRY_DAYS = 7;
 
@@ -43,16 +44,14 @@ export async function createAnnouncement(formData: FormData) {
   const expiryDate = new Date();
   expiryDate.setDate(expiryDate.getDate() + ANNOUNCEMENT_EXPIRY_DAYS);
 
-  await prisma.announcement.create({
-    data: {
-      title,
-      content,
-      sourceSystem,
-      displayType: displayType as DisplayType,
-      pushToCompanyCenter,
-      expiryDate,
-      createdById: session.user.id,
-    },
+  await db.insert(announcements).values({
+    title,
+    content,
+    sourceSystem,
+    displayType: displayType as DisplayType,
+    pushToCompanyCenter,
+    expiryDate,
+    createdById: session.user.id,
   });
 
   revalidatePath("/");

@@ -1,38 +1,45 @@
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { users, departments } from "@/db/schema";
 import { authConfig } from "@/lib/auth.config";
-import type { UserRole } from "@/app/generated/prisma/edge";
+import type { UserRole } from "@/db/schema";
 
-// Sync the user's department from M365 profile.department on every sign-in.
-// If the department name changed in Entra ID, the DB is updated automatically.
 async function syncDepartment(userId: string, deptName: string | null | undefined): Promise<string | null> {
   if (!deptName?.trim()) {
-    await prisma.user.update({ where: { id: userId }, data: { departmentId: null } });
+    await db.update(users).set({ departmentId: null }).where(eq(users.id, userId));
     return null;
   }
 
-  const dept = await prisma.department.upsert({
-    where: { name: deptName },
-    update: {},
-    create: { name: deptName },
-    select: { id: true },
-  });
+  const existing = await db
+    .select({ id: departments.id })
+    .from(departments)
+    .where(eq(departments.name, deptName))
+    .limit(1);
 
-  await prisma.user.update({ where: { id: userId }, data: { departmentId: dept.id } });
-  return dept.id;
+  let deptId: string;
+  if (existing.length > 0) {
+    deptId = existing[0].id;
+  } else {
+    const inserted = await db
+      .insert(departments)
+      .values({ name: deptName })
+      .returning({ id: departments.id });
+    deptId = inserted[0].id;
+  }
+
+  await db.update(users).set({ departmentId: deptId }).where(eq(users.id, userId));
+  return deptId;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user, account, profile }) {
       if (account?.provider === "microsoft-entra-id" && user?.email) {
-        // Entra ID v2.0: object ID is in `oid`; `sub` is a pairwise app-scoped ID
         const msUserId = (profile?.oid ?? profile?.sub) as string | undefined;
-        // Fetch department from MS Graph — not included in ID token claims
+
         let msDepartment: string | null = null;
         let msEmployeeId: string | null = null;
         if (account.access_token) {
@@ -42,29 +49,49 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               { headers: { Authorization: `Bearer ${account.access_token}` } },
             );
             if (res.ok) {
-              const data = await res.json() as { department?: string | null; jobTitle?: string | null; displayName?: string | null; employeeId?: string | null };
+              const data = await res.json() as { department?: string | null; employeeId?: string | null };
               msDepartment = data.department ?? null;
               msEmployeeId = data.employeeId ?? null;
             }
           } catch {
-            // Graph unavailable — department stays null, synced on next login
+            // Graph unavailable — synced on next login
           }
         }
 
-        const dbUser = await prisma.user.upsert({
-          where: { email: user.email },
-          update: { msUserId, name: user.name, image: user.image, ...(msEmployeeId && { employeeId: msEmployeeId }) },
-          create: {
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            msUserId,
-            role: "USER",
-          },
-          select: { id: true, role: true, msUserId: true, employeeId: true, departmentId: true },
-        });
+        const existing = await db
+          .select({ id: users.id, role: users.role, msUserId: users.msUserId, employeeId: users.employeeId, departmentId: users.departmentId })
+          .from(users)
+          .where(eq(users.email, user.email))
+          .limit(1);
 
-        // Always sync department — picks up changes made in M365 since last login
+        let dbUser: { id: string; role: UserRole; msUserId: string | null; employeeId: string | null; departmentId: string | null };
+
+        if (existing.length > 0) {
+          const updated = await db
+            .update(users)
+            .set({
+              msUserId,
+              name: user.name,
+              image: user.image,
+              ...(msEmployeeId ? { employeeId: msEmployeeId } : {}),
+            })
+            .where(eq(users.email, user.email))
+            .returning({ id: users.id, role: users.role, msUserId: users.msUserId, employeeId: users.employeeId, departmentId: users.departmentId });
+          dbUser = updated[0];
+        } else {
+          const inserted = await db
+            .insert(users)
+            .values({
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              msUserId,
+              role: "USER",
+            })
+            .returning({ id: users.id, role: users.role, msUserId: users.msUserId, employeeId: users.employeeId, departmentId: users.departmentId });
+          dbUser = inserted[0];
+        }
+
         const departmentId = await syncDepartment(dbUser.id, msDepartment);
 
         token.id = dbUser.id;

@@ -1,7 +1,9 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
+import { and, desc, eq, gte, isNull, lte, or, count } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
+import { announcements, publicDocuments, departments, darAttachments, darMasters, kpiMonthlyResults, kpiMasters } from "@/db/schema";
 import DashboardClientView from "@/components/dashboard/DashboardClientView";
 
 export default async function CompanyCenterDashboard() {
@@ -10,91 +12,66 @@ export default async function CompanyCenterDashboard() {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
-  // Fetch data
-  const [announcements, tickerAnnouncements, recentPublicDocs, departments, recentAttachments, kpiStatusGroups, kpiTotal] = await Promise.all([
-    prisma.announcement.findMany({
-      where: {
-        pushToCompanyCenter: true,
-        displayType: "LIST",
-        AND: [
-          {
-            OR: [
-              { startDate: null },
-              { startDate: { lte: now } }
-            ]
-          },
-          {
-            OR: [
-              { endDate: null },
-              { endDate: { gte: now } }
-            ]
-          }
-        ]
-      },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.announcement.findMany({
-      where: {
-        pushToCompanyCenter: true,
-        displayType: "SCROLLING",
-        AND: [
-          {
-            OR: [
-              { startDate: null },
-              { startDate: { lte: now } }
-            ]
-          },
-          {
-            OR: [
-              { endDate: null },
-              { endDate: { gte: now } }
-            ]
-          }
-        ]
-      },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.publicDocument.findMany({
-      orderBy: { publishedDate: "desc" },
-      take: 5,
-    }),
-    prisma.department.findMany({
-      where: { isActive: true },
-      select: { name: true },
-    }),
-    prisma.darAttachment.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 4,
-      include: { darMaster: { include: { department: true } } },
-    }),
-    prisma.kpiMonthlyResult.groupBy({
-      by: ["status"],
-      where: { month: currentMonth, kpiMaster: { year: currentYear } },
-      _count: { status: true },
-    }),
-    prisma.kpiMaster.count({ where: { year: currentYear } }),
+  const activeFilter = and(
+    eq(announcements.pushToCompanyCenter, true),
+    or(isNull(announcements.startDate), lte(announcements.startDate, now)),
+    or(isNull(announcements.endDate), gte(announcements.endDate, now)),
+  );
+
+  const [
+    announcementsList,
+    tickerAnnouncements,
+    recentPublicDocs,
+    departmentList,
+    recentAttachments,
+    kpiOkCount,
+    kpiNgCount,
+    kpiPendingCount,
+    kpiTotal,
+  ] = await Promise.all([
+    db.select().from(announcements)
+      .where(and(activeFilter, eq(announcements.displayType, "LIST")))
+      .orderBy(desc(announcements.createdAt)).limit(5),
+
+    db.select().from(announcements)
+      .where(and(activeFilter, eq(announcements.displayType, "SCROLLING")))
+      .orderBy(desc(announcements.createdAt)).limit(5),
+
+    db.select().from(publicDocuments).orderBy(desc(publicDocuments.publishedDate)).limit(5),
+
+    db.select({ name: departments.name }).from(departments).where(eq(departments.isActive, true)),
+
+    db.select().from(darAttachments).orderBy(desc(darAttachments.createdAt)).limit(4),
+
+    db.select({ cnt: count() }).from(kpiMonthlyResults)
+      .innerJoin(kpiMasters, eq(kpiMonthlyResults.kpiMasterId, kpiMasters.id))
+      .where(and(eq(kpiMonthlyResults.month, currentMonth), eq(kpiMonthlyResults.status, "OK"), eq(kpiMasters.year, currentYear))),
+
+    db.select({ cnt: count() }).from(kpiMonthlyResults)
+      .innerJoin(kpiMasters, eq(kpiMonthlyResults.kpiMasterId, kpiMasters.id))
+      .where(and(eq(kpiMonthlyResults.month, currentMonth), eq(kpiMonthlyResults.status, "NG"), eq(kpiMasters.year, currentYear))),
+
+    db.select({ cnt: count() }).from(kpiMonthlyResults)
+      .innerJoin(kpiMasters, eq(kpiMonthlyResults.kpiMasterId, kpiMasters.id))
+      .where(and(eq(kpiMonthlyResults.month, currentMonth), eq(kpiMonthlyResults.status, "PENDING"), eq(kpiMasters.year, currentYear))),
+
+    db.select({ cnt: count() }).from(kpiMasters).where(eq(kpiMasters.year, currentYear)),
   ]);
 
   const canManage = ["QMS", "IT", "MR"].includes(session.user.role);
 
-  const kpiOk = kpiStatusGroups.find(g => g.status === "OK")?._count.status ?? 0;
-  const kpiNg = kpiStatusGroups.find(g => g.status === "NG")?._count.status ?? 0;
-  const kpiPending = kpiStatusGroups.find(g => g.status === "PENDING")?._count.status ?? 0;
-
   return (
     <DashboardClientView
       canManage={canManage}
-      announcements={announcements}
+      announcements={announcementsList}
       tickerAnnouncements={tickerAnnouncements}
       recentPublicDocs={recentPublicDocs}
-      departments={departments}
+      departments={departmentList}
       recentAttachments={recentAttachments}
-      kpiOk={kpiOk}
-      kpiNg={kpiNg}
-      kpiPending={kpiPending}
-      kpiTotal={kpiTotal}
+      kpiOk={Number(kpiOkCount[0]?.cnt ?? 0)}
+      kpiNg={Number(kpiNgCount[0]?.cnt ?? 0)}
+      kpiPending={Number(kpiPendingCount[0]?.cnt ?? 0)}
+      kpiTotal={Number(kpiTotal[0]?.cnt ?? 0)}
     />
   );
 }

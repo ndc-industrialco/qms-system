@@ -1,9 +1,11 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from "next/server";
+import { eq, and } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth";
 import { AppError, ForbiddenError, NotFoundError } from "@/lib/errors";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
+import { darAttachments, darMasters } from "@/db/schema";
 import { deleteSpItem } from "@/services/sharepoint";
 import type { ApiResponse } from "@/types/api";
 
@@ -14,35 +16,42 @@ export async function DELETE(_req: NextRequest, { params }: Params): Promise<Nex
     const session = await requireAuth();
     const { id: darId, attachmentId } = await params;
 
-    const attachment = await prisma.darAttachment.findUnique({
-      where: { id: attachmentId },
-      select: {
-        id: true,
-        spItemId: true,
-        uploadedById: true,
-        darMaster: { select: { id: true, requesterId: true, status: true } },
-      },
-    });
+    const [attachment] = await db
+      .select({
+        id: darAttachments.id,
+        spItemId: darAttachments.spItemId,
+        uploadedById: darAttachments.uploadedById,
+        darMasterId: darAttachments.darMasterId,
+      })
+      .from(darAttachments)
+      .where(eq(darAttachments.id, attachmentId))
+      .limit(1);
 
-    if (!attachment || attachment.darMaster.id !== darId) throw new NotFoundError("ไฟล์แนบ");
+    if (!attachment || attachment.darMasterId !== darId) throw new NotFoundError("ไฟล์แนบ");
 
-    // Only uploader, requester, QMS, or MR may delete
+    const [dar] = await db
+      .select({ requesterId: darMasters.requesterId, status: darMasters.status })
+      .from(darMasters)
+      .where(eq(darMasters.id, darId))
+      .limit(1);
+
+    if (!dar) throw new NotFoundError("DAR");
+
     const isPrivileged = session.user.role === "QMS" || session.user.role === "MR";
-    const isOwner = attachment.uploadedById === session.user.id || attachment.darMaster.requesterId === session.user.id;
+    const isOwner = attachment.uploadedById === session.user.id || dar.requesterId === session.user.id;
     if (!isPrivileged && !isOwner) throw new ForbiddenError();
 
-    if (attachment.darMaster.status === "COMPLETED" || attachment.darMaster.status === "CANCELLED") {
+    if (dar.status === "COMPLETED" || dar.status === "CANCELLED") {
       return NextResponse.json({ data: null, error: "ไม่สามารถลบไฟล์ในคำขอที่เสร็จสิ้นหรือยกเลิกแล้ว" }, { status: 400 });
     }
 
-    // Delete from SharePoint then DB (SP failure is non-fatal — log and continue)
     try {
       await deleteSpItem(attachment.spItemId);
     } catch (spErr) {
       console.error("[DELETE attachment] SharePoint delete failed (continuing):", spErr);
     }
 
-    await prisma.darAttachment.delete({ where: { id: attachmentId } });
+    await db.delete(darAttachments).where(eq(darAttachments.id, attachmentId));
 
     return NextResponse.json({ data: null, error: null });
   } catch (err) {

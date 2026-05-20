@@ -1,7 +1,9 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
+import { desc, eq } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
+import { announcements, users } from "@/db/schema";
 import Link from "next/link";
 
 export default async function ManageAnnouncementsPage() {
@@ -11,13 +13,24 @@ export default async function ManageAnnouncementsPage() {
     return <div className="p-8 text-error font-bold text-center">Unauthorized</div>;
   }
 
-  const announcements = await prisma.announcement.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { createdBy: { select: { name: true } } },
-  });
+  const rows = await db
+    .select({
+      id: announcements.id,
+      title: announcements.title,
+      sourceSystem: announcements.sourceSystem,
+      displayType: announcements.displayType,
+      startDate: announcements.startDate,
+      endDate: announcements.endDate,
+      fileName: announcements.fileName,
+      spWebUrl: announcements.spWebUrl,
+      createdByName: users.name,
+    })
+    .from(announcements)
+    .leftJoin(users, eq(announcements.createdById, users.id))
+    .orderBy(desc(announcements.createdAt));
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex flex-col gap-4">
+    <div className="max-w-350 mx-auto px-4 md:px-8 flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-primary">Manage Announcements</h1>
@@ -49,11 +62,11 @@ export default async function ManageAnnouncementsPage() {
               </tr>
             </thead>
             <tbody>
-              {announcements.length === 0 ? (
+              {rows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-8 text-[11px] md:text-xs text-gray-500">No announcements found.</td>
                 </tr>
-              ) : announcements.map((a) => {
+              ) : rows.map((a) => {
                 const isActive = (!a.startDate || new Date() >= a.startDate) && (!a.endDate || new Date() <= a.endDate);
                 return (
                   <tr key={a.id} className="border-b border-base-200 hover:bg-base-200 transition-colors">
@@ -79,7 +92,7 @@ export default async function ManageAnnouncementsPage() {
                         <span className="text-gray-500/50 text-[11px]">—</span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-[11px] md:text-xs text-gray-500">{a.createdBy.name}</td>
+                    <td className="py-3.5 px-4 text-[11px] md:text-xs text-gray-500">{a.createdByName}</td>
                     <td className="py-3.5 px-4">
                       {isActive ? (
                         <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-emerald-100 text-emerald-600">Active</span>

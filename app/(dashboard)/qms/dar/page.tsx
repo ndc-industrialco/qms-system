@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { requireRole } from "@/lib/auth";
 import { getAllDars } from "@/services/dar";
@@ -7,7 +7,7 @@ import DarCardList from "@/components/dar/DarCardList";
 import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
 import DarStatusBadge from "@/components/dar/DarStatusBadge";
 import QmsDarPageHeader from "@/components/qms/QmsDarPageHeader";
-import type { DarStatus } from "@/app/generated/prisma/edge";
+import type { DarStatus } from "@/db/schema";
 
 const ORDERED_STATUSES: DarStatus[] = [
   "PENDING_REVIEW",
@@ -28,7 +28,7 @@ export default async function QmsDarPage() {
   }, {});
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-8">
+    <div className="max-w-350 mx-auto px-4 md:px-8">
       <QmsDarPageHeader />
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">

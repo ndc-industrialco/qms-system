@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { Suspense } from "react";
 import { requireAuth } from "@/lib/auth";

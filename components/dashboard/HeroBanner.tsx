@@ -1,7 +1,9 @@
 "use client";
 
 import { useContext, useEffect, useState } from "react";
-import { Announcement } from "@/app/generated/prisma/edge";
+import type { announcements } from "@/db/schema";
+
+type Announcement = typeof announcements.$inferSelect;
 import { LocaleContext } from "@/lib/locale-context";
 
 interface HeroBannerProps {

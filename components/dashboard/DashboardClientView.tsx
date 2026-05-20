@@ -4,11 +4,11 @@ import { useContext } from "react";
 import Link from "next/link";
 import { LocaleContext } from "@/lib/locale-context";
 import HeroBanner from "@/components/dashboard/HeroBanner";
-import type { Announcement, PublicDocument, Prisma } from "@/app/generated/prisma/edge";
+import type { announcements, publicDocuments, darAttachments } from "@/db/schema";
 
-type RecentAttachment = Prisma.DarAttachmentGetPayload<{
-  include: { darMaster: { include: { department: true } } };
-}>;
+type Announcement = typeof announcements.$inferSelect;
+type PublicDocument = typeof publicDocuments.$inferSelect;
+type RecentAttachment = typeof darAttachments.$inferSelect;
 
 interface Props {
   canManage: boolean;
@@ -58,7 +58,7 @@ export default function DashboardClientView({
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto w-full flex flex-col gap-4 animate-in fade-in duration-500 pb-10">
+    <div className="max-w-350 mx-auto w-full flex flex-col gap-4 animate-in fade-in duration-500 pb-10">
 
       {/* ── 1. Ticker ── */}
       {tickerAnnouncements.length > 0 && (
@@ -286,7 +286,7 @@ export default function DashboardClientView({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-neutral group-hover:text-primary transition-colors leading-snug line-clamp-2">{doc.fileName}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{new Date(doc.createdAt).toLocaleDateString(isTh ? "th-TH" : "en-US")} • {doc.darMaster?.department?.name || 'QMS'}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{new Date(doc.createdAt).toLocaleDateString(isTh ? "th-TH" : "en-US")} • {'QMS'}</p>
                   </div>
                 </a>
               )) : (

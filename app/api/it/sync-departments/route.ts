@@ -1,10 +1,12 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { requireRole } from "@/lib/auth";
 import { AppError } from "@/lib/errors";
 import { fetchAllEntraGroups } from "@/services/ms-graph";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
+import { departments } from "@/db/schema";
 import type { ApiResponse } from "@/types/api";
 
 export interface SyncDeptResult {
@@ -14,12 +16,6 @@ export interface SyncDeptResult {
   skipped: number;
 }
 
-/**
- * POST /api/it/sync-departments
- *
- * Pulls all mail-enabled M365 groups from Entra ID and upserts them as
- * departments (name + emailGroup). Restricted to IT role.
- */
 export async function POST(): Promise<NextResponse<ApiResponse<SyncDeptResult>>> {
   try {
     await requireRole("IT");
@@ -36,17 +32,13 @@ export async function POST(): Promise<NextResponse<ApiResponse<SyncDeptResult>>>
       const name = group.displayName.trim();
       const emailGroup = group.mail?.toLowerCase().trim() ?? null;
 
-      const existing = await prisma.department.findUnique({ where: { name }, select: { id: true } });
+      const existing = await db.select({ id: departments.id }).from(departments).where(eq(departments.name, name)).limit(1);
 
-      await prisma.department.upsert({
-        where: { name },
-        create: { name, emailGroup, isActive: true },
-        update: { emailGroup },
-      });
-
-      if (existing) {
+      if (existing.length > 0) {
+        await db.update(departments).set({ emailGroup }).where(eq(departments.name, name));
         result.updated++;
       } else {
+        await db.insert(departments).values({ name, emailGroup, isActive: true });
         result.created++;
       }
     }

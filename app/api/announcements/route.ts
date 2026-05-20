@@ -1,11 +1,12 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
+import { announcements } from "@/db/schema";
 import { NextResponse } from "next/server";
 import { AppError, ForbiddenError } from "@/lib/errors";
-import type { DisplayType } from "@/app/generated/prisma/edge";
+import type { DisplayType } from "@/db/schema";
 import type { ApiResponse } from "@/types/api";
 
 const SCROLLING_EXPIRY_DAYS = 7;
@@ -64,34 +65,24 @@ export async function POST(req: Request): Promise<NextResponse<ApiResponse<{ id:
     const parsedStartDate = startDate ? new Date(startDate) : null;
     const parsedEndDate = endDate ? new Date(endDate) : null;
 
-    // For scrolling announcements, set default expiry to +7 days if no endDate provided
     let expiryDate: Date | null = parsedEndDate;
     if (displayType === "SCROLLING" && !expiryDate) {
       expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + SCROLLING_EXPIRY_DAYS);
     }
 
-    const announcement = await prisma.announcement.create({
-      data: {
-        title,
-        content,
-        sourceSystem,
-        displayType: displayType as DisplayType,
-        pushToCompanyCenter,
-        startDate: parsedStartDate,
-        endDate: parsedEndDate,
-        expiryDate,
-        spItemId,
-        spWebUrl,
-        spDownloadUrl,
-        fileName,
-        mimeType,
-        createdById: session.user.id,
-      },
-      select: { id: true },
-    });
+    const [row] = await db.insert(announcements).values({
+      title, content, sourceSystem,
+      displayType: displayType as DisplayType,
+      pushToCompanyCenter,
+      startDate: parsedStartDate,
+      endDate: parsedEndDate,
+      expiryDate,
+      spItemId, spWebUrl, spDownloadUrl, fileName, mimeType,
+      createdById: session.user.id,
+    }).returning({ id: announcements.id });
 
-    return NextResponse.json({ data: { id: announcement.id }, error: null }, { status: 201 });
+    return NextResponse.json({ data: { id: row.id }, error: null }, { status: 201 });
   } catch (error) {
     if (error instanceof AppError) {
       return NextResponse.json({ data: null, error: error.message }, { status: error.statusCode });

@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
