@@ -1,4 +1,14 @@
-import { Client } from "@microsoft/microsoft-graph-client";
+/**
+ * Microsoft Graph API — SharePoint helpers (Edge-Runtime compatible)
+ *
+ * Uses raw fetch — no Node.js built-ins, no SDK dependencies.
+ * Required Azure AD app permissions:
+ *   - Sites.ReadWrite.All
+ *
+ * Environment variables:
+ *   AZURE_AD_CLIENT_ID, AZURE_AD_CLIENT_SECRET, AZURE_AD_TENANT_ID
+ *   SHAREPOINT_SITE_ID
+ */
 
 async function getAccessToken(): Promise<string> {
   const tenantId = process.env.AZURE_AD_TENANT_ID!;
@@ -15,9 +25,7 @@ async function getAccessToken(): Promise<string> {
 
   const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
   });
 
@@ -30,14 +38,7 @@ async function getAccessToken(): Promise<string> {
   return data.access_token;
 }
 
-export async function getGraphClient(): Promise<Client> {
-  const token = await getAccessToken();
-  return Client.init({
-    authProvider: (done) => done(null, token),
-  });
-}
-
-const SITE_ID = process.env.SHAREPOINT_SITE_ID!;
+const SITE_ID = () => process.env.SHAREPOINT_SITE_ID!;
 
 export type SpFile = {
   id: string;
@@ -51,42 +52,76 @@ export type SpFile = {
 };
 
 export async function createFolder(folderName: string, parentPath = "root"): Promise<SpFile> {
-  const client = await getGraphClient();
-  const endpoint =
-    parentPath === "root"
-      ? `/sites/${SITE_ID}/drive/root/children`
-      : `/sites/${SITE_ID}/drive/root:/${parentPath}:/children`;
+  const token = await getAccessToken();
+  const siteId = SITE_ID();
 
-  return client.api(endpoint).post({
-    name: folderName,
-    folder: {},
-    "@microsoft.graph.conflictBehavior": "rename",
+  const endpoint = parentPath === "root"
+    ? `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root/children`
+    : `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${encodeURIComponent(parentPath)}:/children`;
+
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: folderName,
+      folder: {},
+      "@microsoft.graph.conflictBehavior": "rename",
+    }),
   });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Graph createFolder ${res.status}: ${text}`);
+  }
+
+  return res.json() as Promise<SpFile>;
 }
 
 export async function uploadFile(
   fileName: string,
-  fileBuffer: Buffer,
+  fileBuffer: Uint8Array,
   folderPath = "root"
 ): Promise<SpFile> {
-  const client = await getGraphClient();
-  const endpoint =
-    folderPath === "root"
-      ? `/sites/${SITE_ID}/drive/root:/${fileName}:/content`
-      : `/sites/${SITE_ID}/drive/root:/${folderPath}/${fileName}:/content`;
+  const token = await getAccessToken();
+  const siteId = SITE_ID();
 
-  return client.api(endpoint).put(fileBuffer);
+  const endpoint = folderPath === "root"
+    ? `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${encodeURIComponent(fileName)}:/content`
+    : `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${encodeURIComponent(folderPath)}/${encodeURIComponent(fileName)}:/content`;
+
+  const res = await fetch(endpoint, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/octet-stream" },
+    body: fileBuffer,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Graph uploadFile ${res.status}: ${text}`);
+  }
+
+  return res.json() as Promise<SpFile>;
 }
 
 export async function listFiles(folderPath = "root"): Promise<SpFile[]> {
-  const client = await getGraphClient();
-  const endpoint =
-    folderPath === "root"
-      ? `/sites/${SITE_ID}/drive/root/children`
-      : `/sites/${SITE_ID}/drive/root:/${folderPath}:/children`;
+  const token = await getAccessToken();
+  const siteId = SITE_ID();
 
-  const result = await client.api(endpoint).get();
-  return result.value ?? [];
+  const endpoint = folderPath === "root"
+    ? `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root/children`
+    : `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${encodeURIComponent(folderPath)}:/children`;
+
+  const res = await fetch(endpoint, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Graph listFiles ${res.status}: ${text}`);
+  }
+
+  const data = await res.json() as { value: SpFile[] };
+  return data.value ?? [];
 }
 
 export type FileInfo = {
@@ -100,16 +135,25 @@ export type FileInfo = {
 // $select is present (even if listed). Fetch without $select to get all fields.
 export async function getFileInfo(itemId: string): Promise<FileInfo> {
   const token = await getAccessToken();
-  const url = `https://graph.microsoft.com/v1.0/sites/${SITE_ID}/drive/items/${itemId}`;
+  const siteId = SITE_ID();
+  const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/items/${itemId}`;
 
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Graph API error ${res.status}: ${text}`);
   }
-  const item = await res.json();
+
+  const item = await res.json() as {
+    "@microsoft.graph.downloadUrl"?: string;
+    webUrl: string;
+    name: string;
+    file?: { mimeType: string };
+  };
+
   return {
     downloadUrl: item["@microsoft.graph.downloadUrl"] ?? "",
     webUrl: item.webUrl,
@@ -125,23 +169,46 @@ export async function getFileStream(
   if (!info.downloadUrl) throw new Error("No download URL returned from Graph API");
   const res = await fetch(info.downloadUrl);
   if (!res.ok) throw new Error(`Failed to fetch file: ${res.status}`);
+  if (!res.body) throw new Error("Response body is null");
   return {
-    stream: res.body!,
+    stream: res.body,
     contentType: res.headers.get("content-type") ?? info.mimeType,
     name: info.name,
   };
 }
 
 export async function deleteItem(itemId: string): Promise<void> {
-  const client = await getGraphClient();
-  await client.api(`/sites/${SITE_ID}/drive/items/${itemId}`).delete();
+  const token = await getAccessToken();
+  const siteId = SITE_ID();
+  const res = await fetch(
+    `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/items/${itemId}`,
+    { method: "DELETE", headers: { Authorization: `Bearer ${token}` } },
+  );
+  // 204 = success, 404 = already gone — both are acceptable
+  if (!res.ok && res.status !== 404) {
+    const text = await res.text();
+    throw new Error(`Graph deleteItem ${res.status}: ${text}`);
+  }
 }
 
 // Returns a short-lived embed URL for Office files via the Graph /preview endpoint.
 export async function getOfficePreviewUrl(itemId: string): Promise<string> {
-  const client = await getGraphClient();
-  const result = await client
-    .api(`/sites/${SITE_ID}/drive/items/${itemId}/preview`)
-    .post({});
-  return result.getUrl as string;
+  const token = await getAccessToken();
+  const siteId = SITE_ID();
+  const res = await fetch(
+    `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/items/${itemId}/preview`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    },
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Graph preview ${res.status}: ${text}`);
+  }
+
+  const data = await res.json() as { getUrl: string };
+  return data.getUrl;
 }

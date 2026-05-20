@@ -1,6 +1,8 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
+import { requireAuth } from "@/lib/auth";
 import { getFileInfo, getOfficePreviewUrl } from "@/lib/sharepoint";
+import { AppError } from "@/lib/errors";
 import { z } from "zod";
 
 const OFFICE_MIMES = new Set([
@@ -18,6 +20,7 @@ const Schema = z.object({
 
 export async function GET(req: Request) {
   try {
+    await requireAuth();
     const { searchParams } = new URL(req.url);
     const parsed = Schema.safeParse({ itemId: searchParams.get("itemId") });
 
@@ -37,6 +40,9 @@ export async function GET(req: Request) {
       error: null,
     });
   } catch (err) {
+    if (err instanceof AppError) {
+      return Response.json({ data: null, error: err.message }, { status: err.statusCode });
+    }
     const message = err instanceof Error ? err.message : "Internal server error";
     return Response.json({ data: null, error: message }, { status: 500 });
   }

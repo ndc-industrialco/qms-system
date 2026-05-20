@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
@@ -44,7 +44,7 @@ export async function DELETE(_req: NextRequest, { params }: Params): Promise<Nex
     const session = await requireAuth();
     const { id } = await params;
     await deleteDar(id, session.user.id);
-    revalidateTag("dar-list", "max");
+    revalidateTag("dar-list");
     return NextResponse.json({ data: null, error: null });
   } catch (err) {
     if (err instanceof AppError) {
@@ -69,8 +69,8 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
 
     const dar = await updateDarDraft(id, session.user.id, parsed.data);
 
-    revalidateTag(`dar-${id}`, "max");
-    revalidateTag("dar-list", "max");
+    revalidateTag(`dar-${id}`);
+    revalidateTag("dar-list");
 
     return NextResponse.json({ data: dar, error: null });
   } catch (err) {

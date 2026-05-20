@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { requireRole } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { ForbiddenError } from "@/lib/errors";

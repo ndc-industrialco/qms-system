@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from "next/server";
 import { revalidateTag } from "next/cache";
@@ -17,8 +17,8 @@ export async function POST(_req: NextRequest, { params }: Params): Promise<NextR
 
     const dar = await submitDar(id, session.user.id);
 
-    revalidateTag(`dar-${id}`, "max");
-    revalidateTag("dar-list", "max");
+    revalidateTag(`dar-${id}`);
+    revalidateTag("dar-list");
 
     return NextResponse.json({ data: dar, error: null });
   } catch (err) {

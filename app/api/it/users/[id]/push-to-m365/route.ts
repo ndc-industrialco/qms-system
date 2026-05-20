@@ -1,10 +1,10 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { AppError } from "@/lib/errors";
 import { prisma } from "@/lib/db";
-import { Prisma } from "@/app/generated/prisma/edge";
+import { Prisma } from "@/app/generated/prisma";
 import { pushUserToEntra } from "@/services/ms-graph";
 import type { ApiResponse } from "@/types/api";
 

@@ -109,17 +109,22 @@ export type TranslationKey = keyof typeof legacyKeyMap | (string & {});
 export function t(key: TranslationKey, locale: Locale): string {
   const mappedKey = (legacyKeyMap as Record<string, string>)[key] || key;
   const segments = mappedKey.split(".");
-  let current: any = messages[locale];
+  let current: Record<string, unknown> = messages[locale] as Record<string, unknown>;
   
   for (const segment of segments) {
     if (current && typeof current === "object" && segment in current) {
-      current = current[segment];
+      const next = current[segment];
+      if (next !== null && typeof next === "object") {
+        current = next as Record<string, unknown>;
+      } else {
+        return typeof next === "string" ? next : key;
+      }
     } else {
       return key;
     }
   }
-  
-  return typeof current === "string" ? current : key;
+
+  return key;
 }
 
 /** React hook — use inside client components */

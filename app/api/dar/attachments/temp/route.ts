@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<T
       return NextResponse.json({ data: null, error: "ประเภทไฟล์ไม่รองรับ" }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer = new Uint8Array(await file.arrayBuffer());
     const sp = await uploadFileToTemp({ fileBuffer: buffer, fileName: file.name, mimeType: file.type, tempId });
 
     return NextResponse.json({

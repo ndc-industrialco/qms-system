@@ -172,7 +172,7 @@ export interface SpUploadResult {
 }
 
 export async function uploadFileToDar(opts: {
-  fileBuffer: Buffer;
+  fileBuffer: Uint8Array;
   fileName: string;
   mimeType: string;
   darNo: string;
@@ -205,7 +205,7 @@ interface UploadOpts {
   driveId: string;
   folderId: string;
   uploadName: string;
-  fileBuffer: Buffer;
+  fileBuffer: Uint8Array;
   mimeType: string;
   folderPath: string;
 }
@@ -304,7 +304,7 @@ export interface TempUploadResult {
 }
 
 export async function uploadFileToTemp(opts: {
-  fileBuffer: Buffer;
+  fileBuffer: Uint8Array;
   fileName: string;
   mimeType: string;
   tempId: string; // uuid generated client-side per form session

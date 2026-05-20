@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { requireAuth } from "@/lib/auth";
 import DashboardShell from "@/components/layout/DashboardShell";
 

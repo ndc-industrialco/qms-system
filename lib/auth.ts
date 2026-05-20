@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth-node";
 import { ForbiddenError, UnauthorizedError } from "@/lib/errors";
-import type { UserRole } from "@/app/generated/prisma/edge";
+import type { UserRole } from "@/app/generated/prisma";
 
 export async function getSession() {
   return auth();

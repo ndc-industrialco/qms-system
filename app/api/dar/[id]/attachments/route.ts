@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest, { params }: Params): Promise<NextRe
     }
 
     const darNo = dar.darNo ?? darId;
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer = new Uint8Array(await file.arrayBuffer());
 
     const sp = await uploadFileToDar({
       fileBuffer: buffer,
