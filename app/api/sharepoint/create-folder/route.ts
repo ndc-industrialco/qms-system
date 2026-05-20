@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { requireRole } from "@/lib/auth";
 import { createFolder } from "@/lib/sharepoint";

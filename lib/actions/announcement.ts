@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { ForbiddenError, ValidationError } from "@/lib/errors";
-import type { DisplayType } from "@/app/generated/prisma";
+import type { DisplayType } from "@/app/generated/prisma/edge";
 
 const ANNOUNCEMENT_EXPIRY_DAYS = 7;
 

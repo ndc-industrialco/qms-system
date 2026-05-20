@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";

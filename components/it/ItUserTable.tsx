@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef } from "react";
 import type { UserWithDept } from "@/types/user";
-import type { UserRole } from "@/app/generated/prisma";
+import type { UserRole } from "@/app/generated/prisma/edge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/lib/locale-context";
 import Toast from "@/components/common/Toast";

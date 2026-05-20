@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/lib/auth.config";
-import type { UserRole } from "@/app/generated/prisma";
+import type { UserRole } from "@/app/generated/prisma/edge";
 
 // Sync the user's department from M365 profile.department on every sign-in.
 // If the department name changed in Entra ID, the DB is updated automatically.

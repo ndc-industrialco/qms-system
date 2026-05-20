@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { Suspense } from "react";
 import { requireAuth } from "@/lib/auth";
@@ -42,7 +42,7 @@ export default async function DarPage() {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-8">
+    <div className="max-w-350 mx-auto px-4 md:px-8">
       <Suspense fallback={<DarTableSkeleton />}>
         <DarList requesterId={session.user.id} requesterInfo={requesterInfo} />
       </Suspense>

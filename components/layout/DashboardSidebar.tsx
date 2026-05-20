@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { UserRole } from "@/app/generated/prisma";
+import type { UserRole } from "@/app/generated/prisma/edge";
 
 type NavItem = { labelTh: string; labelEn: string; href: string; icon: React.ReactNode };
 type Props = {

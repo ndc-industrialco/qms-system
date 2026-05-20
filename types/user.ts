@@ -1,4 +1,4 @@
-import type { UserRole } from "@/app/generated/prisma";
+import type { UserRole } from "@/app/generated/prisma/edge";
 
 export type UserWithDept = {
   id: string;

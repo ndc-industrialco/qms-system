@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { NotFoundError, ValidationError, ForbiddenError, AppError } from "@/lib/errors";
 import type { DarDetail, DarSummary, CreateDarInput, DarApprovalRow, ReviewerCandidate, DarAttachmentRow, TempAttachmentInput } from "@/types/dar";
-import type { PrismaClient, DarStatus, SignatureType } from "@/app/generated/prisma";
+import type { PrismaClient, DarStatus, SignatureType } from "@/app/generated/prisma/edge";
 
 type Tx = Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
 

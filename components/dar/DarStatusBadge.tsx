@@ -1,4 +1,4 @@
-import type { DarStatus } from "@/app/generated/prisma";
+import type { DarStatus } from "@/app/generated/prisma/edge";
 import { DAR_STATUS_LABELS } from "@/types/dar";
 
 const STATUS_CLASS: Record<DarStatus, string> = {

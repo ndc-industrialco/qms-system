@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { UserRole } from "@/app/generated/prisma";
+import type { UserRole } from "@/app/generated/prisma/edge";
 import { LocaleContext } from "@/lib/locale-context";
 import DashboardNavbar from "./DashboardNavbar";
 import DashboardSidebar from "./DashboardSidebar";

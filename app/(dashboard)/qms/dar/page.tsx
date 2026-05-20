@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { requireRole } from "@/lib/auth";
 import { getAllDars } from "@/services/dar";
@@ -7,7 +7,7 @@ import DarCardList from "@/components/dar/DarCardList";
 import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
 import DarStatusBadge from "@/components/dar/DarStatusBadge";
 import QmsDarPageHeader from "@/components/qms/QmsDarPageHeader";
-import type { DarStatus } from "@/app/generated/prisma";
+import type { DarStatus } from "@/app/generated/prisma/edge";
 
 const ORDERED_STATUSES: DarStatus[] = [
   "PENDING_REVIEW",

@@ -4,7 +4,7 @@ import { useContext } from "react";
 import Link from "next/link";
 import { LocaleContext } from "@/lib/locale-context";
 import HeroBanner from "@/components/dashboard/HeroBanner";
-import type { Announcement, PublicDocument, Prisma } from "@/app/generated/prisma";
+import type { Announcement, PublicDocument, Prisma } from "@/app/generated/prisma/edge";
 
 type RecentAttachment = Prisma.DarAttachmentGetPayload<{
   include: { darMaster: { include: { department: true } } };

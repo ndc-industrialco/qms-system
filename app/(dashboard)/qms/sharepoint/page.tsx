@@ -1,7 +1,7 @@
 "use client";
 
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SpFile } from "@/lib/sharepoint";
 import { useT } from "@/lib/i18n";

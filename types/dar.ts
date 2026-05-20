@@ -1,4 +1,4 @@
-import type { DarStatus, ApprovalStep, ApprovalAction, SignatureType } from "@/app/generated/prisma";
+import type { DarStatus, ApprovalStep, ApprovalAction, SignatureType } from "@/app/generated/prisma/edge";
 export type { ApprovalStep, ApprovalAction, SignatureType };
 
 export type DarObjective =

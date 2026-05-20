@@ -1,11 +1,11 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { AppError, ForbiddenError } from "@/lib/errors";
-import type { DisplayType } from "@/app/generated/prisma";
+import type { DisplayType } from "@/app/generated/prisma/edge";
 import type { ApiResponse } from "@/types/api";
 
 const SCROLLING_EXPIRY_DAYS = 7;
