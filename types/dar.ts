@@ -58,6 +58,7 @@ export type DarAttachmentRow = {
   fileName: string;
   fileSize: number;
   mimeType: string;
+  spItemId: string;
   spWebUrl: string;
   spDownloadUrl: string;
   folderPath: string;

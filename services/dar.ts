@@ -72,6 +72,7 @@ function mapToDarDetail(raw: {
     fileName: string;
     fileSize: number;
     mimeType: string;
+    spItemId: string;
     spWebUrl: string;
     spDownloadUrl: string;
     folderPath: string;
@@ -97,6 +98,7 @@ function mapToDarDetail(raw: {
       fileName: a.fileName,
       fileSize: a.fileSize,
       mimeType: a.mimeType,
+      spItemId: a.spItemId,
       spWebUrl: a.spWebUrl,
       spDownloadUrl: a.spDownloadUrl,
       folderPath: a.folderPath,
@@ -127,6 +129,7 @@ const darDetailInclude = {
       fileName: true,
       fileSize: true,
       mimeType: true,
+      spItemId: true,
       spWebUrl: true,
       spDownloadUrl: true,
       folderPath: true,

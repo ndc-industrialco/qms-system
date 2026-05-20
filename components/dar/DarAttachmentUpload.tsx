@@ -24,38 +24,80 @@ function FileIcon({ mimeType }: { mimeType: string }) {
   return <span className="text-neutral font-bold text-[11px] bg-base-200 rounded px-1 py-0.5">FILE</span>;
 }
 
-// ── Preview modal ─────────────────────────────────────────────────────────────
-// Images → <img>
-// PDFs   → <iframe src=downloadUrl>
-// Office → Microsoft Office Online viewer (needs a public-accessible URL — use spWebUrl embed)
+// ── Preview rules ─────────────────────────────────────────────────────────────
+// 2.1 Image  → <img src="/api/sharepoint/preview-proxy?itemId=...">
+// 2.2 PDF    → fetch blob → URL.createObjectURL → <object type="application/pdf">
+// 2.3 Office → POST Graph /preview → getUrl → <iframe>
+// 2.4 Other  → Download link + Open in SharePoint link
 
-function previewEmbedUrl(mimeType: string, spWebUrl: string, spDownloadUrl: string): string | null {
-  if (mimeType.startsWith("image/")) return spDownloadUrl; // handled separately
-  if (mimeType === "application/pdf") return spDownloadUrl;
-  // Word / Excel: use Office Online viewer
-  if (
+function isOfficeMime(mimeType: string): boolean {
+  return (
     mimeType.includes("word") ||
     mimeType.includes("excel") ||
     mimeType.includes("spreadsheet") ||
     mimeType.includes("powerpoint") ||
     mimeType.includes("presentation")
-  ) {
-    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(spWebUrl)}`;
-  }
-  return null; // unsupported — fall back to open in SharePoint
+  );
 }
 
 type PreviewTarget = {
   fileName: string;
   mimeType: string;
+  spItemId: string;
   spWebUrl: string;
   spDownloadUrl: string;
 };
 
 function PreviewModal({ target, onClose }: { target: PreviewTarget; onClose: () => void }) {
-  const isImage = target.mimeType.startsWith("image/");
-  const isPdf = target.mimeType === "application/pdf";
-  const embedUrl = previewEmbedUrl(target.mimeType, target.spWebUrl, target.spDownloadUrl);
+  const isImage  = target.mimeType.startsWith("image/");
+  const isPdf    = target.mimeType === "application/pdf";
+  const isOffice = isOfficeMime(target.mimeType);
+
+  // RULE 2.2 — PDF blob URL
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const pdfBlobRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isPdf) return;
+    let cancelled = false;
+    setPdfLoading(true);
+    fetch(`/api/sharepoint/preview-proxy?itemId=${target.spItemId}`)
+      .then((res) => res.arrayBuffer())
+      .then((buf) => {
+        if (cancelled) return;
+        const blob = new Blob([buf], { type: "application/pdf" });
+        const url  = URL.createObjectURL(blob);
+        pdfBlobRef.current = url;
+        setPdfBlobUrl(url);
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setPdfLoading(false); });
+    return () => {
+      cancelled = true;
+      if (pdfBlobRef.current) { URL.revokeObjectURL(pdfBlobRef.current); pdfBlobRef.current = null; }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target.spItemId]);
+
+  // RULE 2.3 — Office embed URL from Graph /preview
+  const [officeEmbedUrl, setOfficeEmbedUrl] = useState<string | null>(null);
+  const [officeLoading, setOfficeLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOffice) return;
+    let cancelled = false;
+    setOfficeLoading(true);
+    fetch(`/api/sharepoint/office-embed?itemId=${target.spItemId}`)
+      .then((res) => res.json())
+      .then((json: { data: string | null }) => { if (!cancelled && json.data) setOfficeEmbedUrl(json.data); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setOfficeLoading(false); });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target.spItemId]);
+
+  const proxyUrl = `/api/sharepoint/preview-proxy?itemId=${target.spItemId}`;
 
   return (
     <div
@@ -75,9 +117,8 @@ function PreviewModal({ target, onClose }: { target: PreviewTarget; onClose: () 
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <a
-              href={target.spDownloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={proxyUrl}
+              download={target.fileName}
               className="btn btn-ghost btn-xs gap-1 text-neutral"
               title="ดาวน์โหลด"
             >
@@ -108,35 +149,51 @@ function PreviewModal({ target, onClose }: { target: PreviewTarget; onClose: () 
 
         {/* Preview body */}
         <div className="flex-1 overflow-auto bg-base-200 flex items-center justify-center" style={{ minHeight: 400 }}>
-          {isImage ? (
+
+          {/* RULE 2.1 — Image: direct proxy */}
+          {isImage && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={target.spDownloadUrl}
-              alt={target.fileName}
-              className="max-w-full max-h-full object-contain"
-            />
-          ) : embedUrl ? (
-            <iframe
-              src={embedUrl}
-              className="w-full h-full border-0"
-              style={{ minHeight: 500 }}
-              title={target.fileName}
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-            />
-          ) : (
-            <div className="flex flex-col items-center gap-3 p-8 text-center">
+            <img src={proxyUrl} alt={target.fileName} className="max-w-full max-h-full object-contain" />
+          )}
+
+          {/* RULE 2.2 — PDF: client-side blob via <object> */}
+          {isPdf && (
+            pdfLoading || !pdfBlobUrl
+              ? <span className="loading loading-spinner loading-md text-primary" />
+              : <object data={pdfBlobUrl} type="application/pdf" className="w-full border-0" style={{ height: "70vh" }}>
+                  <p className="text-[14px] text-neutral p-4">เบราว์เซอร์ไม่รองรับ PDF viewer</p>
+                </object>
+          )}
+
+          {/* RULE 2.3 — Office: Graph /preview embed URL in <iframe> */}
+          {isOffice && (
+            officeLoading || !officeEmbedUrl
+              ? <span className="loading loading-spinner loading-md text-primary" />
+              : <iframe
+                  src={officeEmbedUrl}
+                  className="w-full border-0"
+                  style={{ height: "70vh" }}
+                  title={target.fileName}
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                />
+          )}
+
+          {/* RULE 2.4 — Fallback: download + open in SharePoint */}
+          {!isImage && !isPdf && !isOffice && (
+            <div className="flex flex-col items-center gap-4 p-8 text-center">
               <FileIcon mimeType={target.mimeType} />
               <p className="text-[14px] text-neutral">ไม่รองรับการแสดงผลในเบราว์เซอร์</p>
-              <a
-                href={target.spWebUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary btn-sm"
-              >
-                เปิดใน SharePoint
-              </a>
+              <div className="flex gap-3">
+                <a href={proxyUrl} download={target.fileName} className="btn btn-outline btn-sm">
+                  ดาวน์โหลดไฟล์
+                </a>
+                <a href={target.spWebUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm">
+                  เปิดใน SharePoint
+                </a>
+              </div>
             </div>
           )}
+
         </div>
       </div>
     </div>
@@ -202,6 +259,7 @@ function FileRow({
   fileName: string; fileSize: number; mimeType: string;
   spWebUrl: string; spDownloadUrl: string; folderPath: string;
   label?: string; onPreview: () => void; onDelete?: () => void; deleting?: boolean;
+  spItemId?: string;
 }) {
   return (
     <li className="flex items-center gap-3 bg-base-200 rounded-lg px-3 py-2">
@@ -346,7 +404,7 @@ export default function DarAttachmentUpload(props: Props) {
                   <FileRow key={a.id}
                     fileName={a.fileName} fileSize={a.fileSize} mimeType={a.mimeType}
                     spWebUrl={a.spWebUrl} spDownloadUrl={a.spDownloadUrl} folderPath={a.folderPath}
-                    onPreview={() => setPreview({ fileName: a.fileName, mimeType: a.mimeType, spWebUrl: a.spWebUrl, spDownloadUrl: a.spDownloadUrl })}
+                    onPreview={() => setPreview({ fileName: a.fileName, mimeType: a.mimeType, spItemId: a.spItemId, spWebUrl: a.spWebUrl, spDownloadUrl: a.spDownloadUrl })}
                     onDelete={props.mode === "saved" && props.canEdit ? () => handleDeleteSaved(a.id) : undefined}
                     deleting={deletingId === a.id}
                   />
@@ -358,7 +416,7 @@ export default function DarAttachmentUpload(props: Props) {
                     fileName={t.fileName} fileSize={t.fileSize} mimeType={t.mimeType}
                     spWebUrl={t.spWebUrl} spDownloadUrl={t.spDownloadUrl} folderPath={t.folderPath}
                     label="รอบันทึก"
-                    onPreview={() => setPreview({ fileName: t.fileName, mimeType: t.mimeType, spWebUrl: t.spWebUrl, spDownloadUrl: t.spDownloadUrl })}
+                    onPreview={() => setPreview({ fileName: t.fileName, mimeType: t.mimeType, spItemId: t.spItemId, spWebUrl: t.spWebUrl, spDownloadUrl: t.spDownloadUrl })}
                     onDelete={() => handleDeleteTemp(t._localId)}
                   />
                 );
