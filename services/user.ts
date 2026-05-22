@@ -1,25 +1,21 @@
-import { eq, desc } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { users, departments } from "@/db/schema";
 import type { UserWithDept } from "@/types/user";
 import type { GraphUser } from "@/services/ms-graph";
 
 export async function getAllUsers(): Promise<UserWithDept[]> {
-  const rows = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      employeeId: users.employeeId,
-      role: users.role,
-      msUserId: users.msUserId,
-      departmentId: users.departmentId,
-      deptName: departments.name,
-      createdAt: users.createdAt,
-    })
-    .from(users)
-    .leftJoin(departments, eq(users.departmentId, departments.id))
-    .orderBy(desc(users.createdAt));
+  const rows = await db.user.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      employeeId: true,
+      role: true,
+      msUserId: true,
+      createdAt: true,
+      department: { select: { id: true, name: true } },
+    },
+  });
 
   return rows.map((u) => ({
     id: u.id,
@@ -28,7 +24,7 @@ export async function getAllUsers(): Promise<UserWithDept[]> {
     employeeId: u.employeeId,
     role: u.role,
     msUserId: u.msUserId,
-    department: u.departmentId && u.deptName ? { id: u.departmentId, name: u.deptName } : null,
+    department: u.department ?? null,
     createdAt: u.createdAt.toISOString(),
   }));
 }
@@ -50,15 +46,13 @@ export async function syncEntraUsers(entraUsers: GraphUser[]): Promise<SyncResul
   if (deptNames.length > 0) {
     await Promise.all(
       deptNames.map(async (name) => {
-        const existing = await db.select({ id: departments.id }).from(departments).where(eq(departments.name, name)).limit(1);
-        let id: string;
-        if (existing.length > 0) {
-          id = existing[0].id;
-        } else {
-          const inserted = await db.insert(departments).values({ name }).returning({ id: departments.id });
-          id = inserted[0].id;
-        }
-        deptMap.set(name, id);
+        const dept = await db.department.upsert({
+          where: { name },
+          update: {},
+          create: { name },
+          select: { id: true },
+        });
+        deptMap.set(name, dept.id);
       }),
     );
   }
@@ -75,24 +69,17 @@ export async function syncEntraUsers(entraUsers: GraphUser[]): Promise<SyncResul
     const departmentId = entraUser.department?.trim() ? (deptMap.get(entraUser.department.trim()) ?? null) : null;
 
     try {
-      const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
+      const existing = await db.user.findUnique({ where: { email }, select: { id: true } });
 
-      if (existing.length > 0) {
-        await db.update(users).set({
-          name: entraUser.displayName,
-          msUserId: entraUser.id,
-          employeeId: entraUser.employeeId ?? null,
-          departmentId,
-        }).where(eq(users.email, email));
+      if (existing) {
+        await db.user.update({
+          where: { email },
+          data: { name: entraUser.displayName, msUserId: entraUser.id, employeeId: entraUser.employeeId ?? null, departmentId },
+        });
         result.updated++;
       } else {
-        await db.insert(users).values({
-          email,
-          name: entraUser.displayName,
-          msUserId: entraUser.id,
-          employeeId: entraUser.employeeId ?? null,
-          role: "USER",
-          departmentId,
+        await db.user.create({
+          data: { email, name: entraUser.displayName, msUserId: entraUser.id, employeeId: entraUser.employeeId ?? null, role: "USER", departmentId },
         });
         result.created++;
       }

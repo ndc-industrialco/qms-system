@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo, useRef } from "react";
 import type { UserWithDept } from "@/types/user";
-import type { UserRole } from "@/db/schema";
+import type { UserRole } from "@/generated/prisma/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/lib/locale-context";
 import Toast from "@/components/common/Toast";
@@ -587,3 +587,4 @@ export default function ItUserTable({ users, departments }: Props) {
     </>
   );
 }
+

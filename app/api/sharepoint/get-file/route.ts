@@ -1,5 +1,6 @@
 export const runtime = 'nodejs';
 
+import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getFileInfo, getOfficePreviewUrl } from "@/lib/sharepoint";
 import { AppError } from "@/lib/errors";
@@ -18,14 +19,13 @@ const Schema = z.object({
   itemId: z.string().min(1),
 });
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     await requireAuth();
-    const { searchParams } = new URL(req.url);
-    const parsed = Schema.safeParse({ itemId: searchParams.get("itemId") });
+    const parsed = Schema.safeParse({ itemId: req.nextUrl.searchParams.get("itemId") });
 
     if (!parsed.success) {
-      return Response.json({ data: null, error: "itemId is required" }, { status: 400 });
+      return NextResponse.json({ data: null, error: "itemId is required" }, { status: 400 });
     }
 
     const info = await getFileInfo(parsed.data.itemId);
@@ -35,15 +35,15 @@ export async function GET(req: Request) {
       officeEmbedUrl = await getOfficePreviewUrl(parsed.data.itemId);
     }
 
-    return Response.json({
+    return NextResponse.json({
       data: { ...info, officeEmbedUrl },
       error: null,
     });
   } catch (err) {
     if (err instanceof AppError) {
-      return Response.json({ data: null, error: err.message }, { status: err.statusCode });
+      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
     }
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return Response.json({ data: null, error: message }, { status: 500 });
+    console.error("[GET /api/sharepoint/get-file]", err);
+    return NextResponse.json({ data: null, error: "Internal server error" }, { status: 500 });
   }
 }

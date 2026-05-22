@@ -25,6 +25,7 @@ export async function POST(_req: NextRequest, { params }: Params): Promise<NextR
     if (err instanceof AppError) {
       return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
     }
+    console.error("[POST /api/dar/[id]/submit]", err);
     return NextResponse.json({ data: null, error: "Internal server error" }, { status: 500 });
   }
 }

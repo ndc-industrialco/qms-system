@@ -1,12 +1,10 @@
 export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from "next/server";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { AppError } from "@/lib/errors";
 import { db } from "@/lib/db";
-import { users } from "@/db/schema";
 import type { ApiResponse } from "@/types/api";
 
 const bodySchema = z.object({
@@ -33,17 +31,20 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
       return NextResponse.json({ data: null, error: "Nothing to update" }, { status: 400 });
     }
 
-    const updateData: Partial<typeof users.$inferInsert> = {};
-    if (role !== undefined) updateData.role = role;
-    if (departmentId !== undefined) updateData.departmentId = departmentId;
-    if (employeeId !== undefined) updateData.employeeId = employeeId || null;
-
-    const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.id, id)).limit(1);
+    const existing = await db.user.findUnique({ where: { id }, select: { id: true } });
     if (!existing) {
       return NextResponse.json({ data: null, error: "ไม่พบผู้ใช้" }, { status: 404 });
     }
 
-    const [updated] = await db.update(users).set(updateData).where(eq(users.id, id)).returning({ id: users.id, role: users.role });
+    const updated = await db.user.update({
+      where: { id },
+      data: {
+        ...(role !== undefined ? { role } : {}),
+        ...(departmentId !== undefined ? { departmentId } : {}),
+        ...(employeeId !== undefined ? { employeeId: employeeId || null } : {}),
+      },
+      select: { id: true, role: true },
+    });
 
     return NextResponse.json({ data: { id: updated.id, role: updated.role }, error: null });
   } catch (err) {

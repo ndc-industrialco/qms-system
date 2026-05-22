@@ -1,4 +1,4 @@
-import type { DarStatus } from "@/db/schema";
+﻿import type { DarStatus } from "@/generated/prisma/client";
 import { DAR_STATUS_LABELS } from "@/types/dar";
 
 const STATUS_CLASS: Record<DarStatus, string> = {
@@ -17,3 +17,4 @@ export default function DarStatusBadge({ status }: { status: DarStatus }) {
     </span>
   );
 }
+

@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { UserRole } from "@/db/schema";
+import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 
 type NavItem = { labelTh: string; labelEn: string; href: string; icon: React.ReactNode };
@@ -74,6 +74,14 @@ function MegaphoneIcon() {
   );
 }
 
+function UserStarIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
 function getSections(role: UserRole, locale: "th" | "en"): { label: string; items: NavItem[] }[] {
   const userItems: NavItem[] = [
     { labelTh: "หน้าหลัก", labelEn: "Dashboard", href: "/", icon: <HomeIcon /> },
@@ -93,10 +101,14 @@ function getSections(role: UserRole, locale: "th" | "en"): { label: string; item
     { label: locale === "th" ? "งานของฉัน" : "My Work", items: userItems },
   ];
 
-  if (role === "QMS" || role === "MR" || role === "IT") {
+  const setMrItem: NavItem = { labelTh: "กำหนด MR", labelEn: "Set MR", href: "/qms/mr", icon: <UserStarIcon /> };
+
+  if (role === "QMS") {
+    sections.push({ label: "QMS", items: [...qmsItems, setMrItem] });
+  } else if (role === "MR") {
     sections.push({ label: "QMS", items: qmsItems });
-  }
-  if (role === "IT") {
+  } else if (role === "IT") {
+    sections.push({ label: "QMS", items: [...qmsItems, setMrItem] });
     sections.push({ label: locale === "th" ? "ระบบ IT" : "IT Admin", items: itItems });
   }
 
@@ -127,7 +139,7 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
       >
         {/* ── Brand ── */}
         <div
-          className="flex items-center justify-between h-16 px-4 shrink-0"
+          className="flex items-center justify-between h-16 px-5 shrink-0"
           style={{ borderBottom: "1px solid var(--sidebar-border)" }}
         >
           <Link href="/" className="hover:opacity-80 transition-opacity">
@@ -135,7 +147,7 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
             <img
               src="/logo/logo.webp"
               alt="NDC Industrial"
-              className="h-8 w-auto brightness-0 invert object-contain"
+              className="h-10 w-auto brightness-0 invert object-contain"
             />
           </Link>
 
@@ -146,18 +158,18 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
             style={{ color: "var(--sidebar-text-muted)" }}
             aria-label={locale === "en" ? "Close sidebar" : "ปิดเมนู"}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* ── Navigation ── */}
-        <nav className="flex-1 overflow-y-auto px-2 py-3 flex flex-col gap-4">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-4">
           {sections.map((section) => (
-            <div key={section.label} className="flex flex-col gap-0.5">
+            <div key={section.label} className="flex flex-col gap-1">
               <p
-                className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] mt-3 flex items-center gap-2"
+                className="px-4 mb-2 text-[10px] font-bold uppercase tracking-[0.15em] mt-3 flex items-center gap-2"
                 style={{ color: "var(--sidebar-text-muted)" }}
               >
                 {section.label}
@@ -172,11 +184,11 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
                     <Link
                       href={item.href}
                       onClick={onClose}
-                      className={`flex items-center gap-3 px-3 py-2.5 text-[14px] font-medium ${
+                      className={`flex items-center gap-3.5 px-4 py-3 text-[13px] font-medium ${
                         isActive ? "sidebar-item-active" : "sidebar-item"
                       }`}
                     >
-                      <span style={{ color: isActive ? "var(--sidebar-icon-active)" : "var(--sidebar-text-muted)" }}>
+                      <span className="scale-110" style={{ color: isActive ? "var(--sidebar-icon-active)" : "var(--sidebar-text-muted)" }}>
                         {item.icon}
                       </span>
                       <span
@@ -187,7 +199,7 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
                       </span>
                       {isActive && (
                         <span
-                          className="ml-auto w-1 h-5 rounded-full shrink-0"
+                          className="ml-auto w-1.5 h-6 rounded-full shrink-0"
                           style={{ background: "var(--sidebar-icon-active)" }}
                         />
                       )}
@@ -201,20 +213,20 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
 
         {/* ── Footer: user info + sign out ── */}
         <div
-          className="px-3 py-4 mt-auto shrink-0"
+          className="px-4 py-5 mt-auto shrink-0"
           style={{ borderTop: "1px solid var(--sidebar-border)" }}
         >
-          <div className="flex items-center gap-3 px-1 min-w-0 mb-3">
+          <div className="flex items-center gap-3.5 px-1 min-w-0 mb-4">
             {image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={image}
                 alt={name}
-                className="w-8 h-8 rounded-full object-cover shrink-0 ring-2 ring-white/20"
+                className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white/20"
               />
             ) : (
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0 ring-2 ring-white/10"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0 ring-2 ring-white/10"
                 style={{
                   background: "linear-gradient(135deg, oklch(36% 0.16 264), oklch(28% 0.13 264))",
                   color: "var(--sidebar-text-active)",
@@ -224,10 +236,10 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-medium truncate leading-tight" style={{ color: "var(--sidebar-text-active)" }}>
+              <p className="text-[13px] font-semibold truncate leading-tight" style={{ color: "var(--sidebar-text-active)" }}>
                 {name}
               </p>
-              <p className="text-[11px] truncate leading-tight mt-0.5" style={{ color: "var(--sidebar-text-muted)" }}>
+              <p className="text-[11px] truncate leading-tight mt-1" style={{ color: "var(--sidebar-text-muted)" }}>
                 {email}
               </p>
             </div>
@@ -238,3 +250,4 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
     </>
   );
 }
+

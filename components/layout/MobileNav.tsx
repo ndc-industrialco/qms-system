@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { UserRole } from "@/db/schema";
+import type { UserRole } from "@/generated/prisma/client";
 
 type NavItem = { labelTh: string; labelEn: string; href: string; icon: React.ReactNode };
 type Props = { role: UserRole; locale: "th" | "en" };
@@ -194,3 +194,4 @@ export default function MobileNav({ role, locale }: Props) {
     </>
   );
 }
+

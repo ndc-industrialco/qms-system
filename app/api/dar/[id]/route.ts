@@ -19,7 +19,7 @@ const updateSchema = z.object({
     docName: z.string().min(1).max(255),
     revision: z.string().min(1).max(50),
   })).min(1).optional(),
-  distributionDepartmentIds: z.array(z.string().cuid()).optional(),
+  distributionDepartmentIds: z.array(z.string().uuid()).optional(),
 });
 
 type Params = { params: Promise<{ id: string }> };

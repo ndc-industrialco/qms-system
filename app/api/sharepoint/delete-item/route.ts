@@ -1,28 +1,32 @@
 export const runtime = 'nodejs';
 
+import { NextResponse, type NextRequest } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { deleteItem } from "@/lib/sharepoint";
+import { AppError } from "@/lib/errors";
 import { z } from "zod";
 
 const Schema = z.object({
   itemId: z.string().min(1),
 });
 
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
   try {
     await requireRole("QMS", "MR", "IT");
-    const { searchParams } = new URL(req.url);
-    const parsed = Schema.safeParse({ itemId: searchParams.get("itemId") });
+    const parsed = Schema.safeParse({ itemId: req.nextUrl.searchParams.get("itemId") });
 
     if (!parsed.success) {
-      return Response.json({ data: null, error: "itemId is required" }, { status: 400 });
+      return NextResponse.json({ data: null, error: "itemId is required" }, { status: 400 });
     }
 
     await deleteItem(parsed.data.itemId);
 
-    return Response.json({ data: { deleted: true }, error: null });
+    return NextResponse.json({ data: { deleted: true }, error: null });
   } catch (err) {
+    if (err instanceof AppError) {
+      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
+    }
     console.error("[DELETE /api/sharepoint/delete-item]", err);
-    return Response.json({ data: null, error: "Failed to delete item" }, { status: 500 });
+    return NextResponse.json({ data: null, error: "Failed to delete item" }, { status: 500 });
   }
 }

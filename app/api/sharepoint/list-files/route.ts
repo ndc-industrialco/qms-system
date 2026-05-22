@@ -1,23 +1,23 @@
 export const runtime = 'nodejs';
 
+import { NextResponse, type NextRequest } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { listFiles } from "@/lib/sharepoint";
 import { AppError } from "@/lib/errors";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     await requireRole("QMS", "MR", "IT");
-    const { searchParams } = new URL(req.url);
-    const folderPath = searchParams.get("folderPath") ?? "root";
+    const folderPath = req.nextUrl.searchParams.get("folderPath") ?? "root";
 
     const files = await listFiles(folderPath);
 
-    return Response.json({ data: files, error: null, meta: { total: files.length } });
+    return NextResponse.json({ data: files, error: null, meta: { total: files.length } });
   } catch (err) {
     if (err instanceof AppError) {
-      return Response.json({ data: null, error: err.message }, { status: err.statusCode });
+      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
     }
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return Response.json({ data: null, error: message }, { status: 500 });
+    console.error("[GET /api/sharepoint/list-files]", err);
+    return NextResponse.json({ data: null, error: "Internal server error" }, { status: 500 });
   }
 }

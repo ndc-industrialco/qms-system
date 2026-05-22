@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import type { UserRole } from "@/db/schema";
+import type { UserRole } from "@/generated/prisma/client";
 import { LocaleContext } from "@/lib/locale-context";
 import DashboardHeader from "./DashboardHeader";
 import DashboardSidebar from "./DashboardSidebar";
@@ -53,3 +53,4 @@ export default function DashboardShell({ role, name, email, image, children }: P
     </LocaleContext.Provider>
   );
 }
+

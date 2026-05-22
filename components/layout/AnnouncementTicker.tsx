@@ -24,35 +24,25 @@ export default function AnnouncementTicker({ locale }: Props) {
 
   if (!loaded || items.length === 0) return null;
 
-  const tickerText = items.map((item) => item.title).join("   ·   ");
+  const tickerText = items.map((item) => `[${item.sourceSystem}]  ${item.title}`).join("     ·     ");
 
   return (
-    <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
+    <div className="w-full h-8 flex items-center overflow-hidden border-t border-primary/15 bg-primary/5">
       {/* Label badge */}
-      <span className="shrink-0 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md bg-white/15 border border-white/20" style={{ color: "var(--sidebar-text-active)" }}>
+      <div className="shrink-0 h-full flex items-center gap-1.5 px-3 bg-primary text-white text-[10px] font-bold uppercase tracking-widest select-none">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
         </svg>
-        {locale === "th" ? "ข่าวสาร" : "News"}
-      </span>
+        {locale === "th" ? "ประกาศ" : "NEWS"}
+      </div>
 
-      {/* Divider */}
-      <span className="shrink-0 w-px h-4 bg-white/20" />
-
-      {/* Scrolling text */}
-      <div className="overflow-hidden flex-1 relative">
-        {/* Fade edges */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-6 z-10" style={{ background: "linear-gradient(to right, var(--sidebar-bg-from), transparent)" }} />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-6 z-10" style={{ background: "linear-gradient(to left, oklch(19% 0.115 264), transparent)" }} />
-
-        {/* Ticker content — duplicated for seamless loop */}
+      {/* Scrolling area — full remaining width */}
+      <div className="flex-1 overflow-hidden relative">
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-8 z-10"
+          style={{ background: "linear-gradient(to left, oklch(var(--b2) / 0.6), transparent)" }} />
         <div className="flex whitespace-nowrap animate-ticker">
-          <span className="text-[13px] pr-16" style={{ color: "var(--sidebar-text)" }}>
-            {tickerText}
-          </span>
-          <span className="text-[13px] pr-16" style={{ color: "var(--sidebar-text)" }}>
-            {tickerText}
-          </span>
+          <span className="text-[12px] font-medium text-primary/80 px-4">{tickerText}</span>
+          <span className="text-[12px] font-medium text-primary/80 px-4">{tickerText}</span>
         </div>
       </div>
     </div>

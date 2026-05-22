@@ -1,14 +1,14 @@
 export const runtime = 'nodejs';
 
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getOfficePreviewUrl } from "@/lib/sharepoint";
+import { AppError } from "@/lib/errors";
 
-export async function GET(req: Request): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     await requireAuth();
-    const { searchParams } = new URL(req.url);
-    const itemId = searchParams.get("itemId");
+    const itemId = req.nextUrl.searchParams.get("itemId");
 
     if (!itemId) {
       return NextResponse.json({ data: null, error: "itemId is required" }, { status: 400 });
@@ -17,6 +17,9 @@ export async function GET(req: Request): Promise<NextResponse> {
     const embedUrl = await getOfficePreviewUrl(itemId);
     return NextResponse.json({ data: embedUrl, error: null });
   } catch (err) {
+    if (err instanceof AppError) {
+      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
+    }
     console.error("[GET /api/sharepoint/office-embed]", err);
     return NextResponse.json({ data: null, error: "Failed to get Office embed URL" }, { status: 500 });
   }

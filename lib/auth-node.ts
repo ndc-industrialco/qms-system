@@ -1,35 +1,22 @@
-import NextAuth from "next-auth";
-import { eq } from "drizzle-orm";
+﻿import NextAuth from "next-auth";
 import { db } from "@/lib/db";
-import { users, departments } from "@/db/schema";
 import { authConfig } from "@/lib/auth.config";
-import type { UserRole } from "@/db/schema";
 
 async function syncDepartment(userId: string, deptName: string | null | undefined): Promise<string | null> {
   if (!deptName?.trim()) {
-    await db.update(users).set({ departmentId: null }).where(eq(users.id, userId));
+    await db.user.update({ where: { id: userId }, data: { departmentId: null } });
     return null;
   }
 
-  const existing = await db
-    .select({ id: departments.id })
-    .from(departments)
-    .where(eq(departments.name, deptName))
-    .limit(1);
+  const dept = await db.department.upsert({
+    where: { name: deptName },
+    update: {},
+    create: { name: deptName },
+    select: { id: true },
+  });
 
-  let deptId: string;
-  if (existing.length > 0) {
-    deptId = existing[0].id;
-  } else {
-    const inserted = await db
-      .insert(departments)
-      .values({ name: deptName })
-      .returning({ id: departments.id });
-    deptId = inserted[0].id;
-  }
-
-  await db.update(users).set({ departmentId: deptId }).where(eq(users.id, userId));
-  return deptId;
+  await db.user.update({ where: { id: userId }, data: { departmentId: dept.id } });
+  return dept.id;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -58,39 +45,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         }
 
-        const existing = await db
-          .select({ id: users.id, role: users.role, msUserId: users.msUserId, employeeId: users.employeeId, departmentId: users.departmentId })
-          .from(users)
-          .where(eq(users.email, user.email))
-          .limit(1);
-
-        let dbUser: { id: string; role: UserRole; msUserId: string | null; employeeId: string | null; departmentId: string | null };
-
-        if (existing.length > 0) {
-          const updated = await db
-            .update(users)
-            .set({
-              msUserId,
-              name: user.name,
-              image: user.image,
-              ...(msEmployeeId ? { employeeId: msEmployeeId } : {}),
-            })
-            .where(eq(users.email, user.email))
-            .returning({ id: users.id, role: users.role, msUserId: users.msUserId, employeeId: users.employeeId, departmentId: users.departmentId });
-          dbUser = updated[0];
-        } else {
-          const inserted = await db
-            .insert(users)
-            .values({
-              email: user.email,
-              name: user.name,
-              image: user.image,
-              msUserId,
-              role: "USER",
-            })
-            .returning({ id: users.id, role: users.role, msUserId: users.msUserId, employeeId: users.employeeId, departmentId: users.departmentId });
-          dbUser = inserted[0];
-        }
+        const dbUser = await db.user.upsert({
+          where: { email: user.email },
+          update: {
+            msUserId,
+            name: user.name,
+            image: user.image,
+            ...(msEmployeeId ? { employeeId: msEmployeeId } : {}),
+          },
+          create: {
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            msUserId,
+            role: "USER",
+          },
+          select: { id: true, role: true, msUserId: true, employeeId: true, departmentId: true },
+        });
 
         const departmentId = await syncDepartment(dbUser.id, msDepartment);
 
@@ -106,34 +77,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return token;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as UserRole;
-        session.user.msUserId = token.msUserId as string | undefined;
-        session.user.m365Verified = token.m365Verified as boolean | undefined;
-        session.user.employeeId = token.employeeId as string | undefined;
-        session.user.departmentId = token.departmentId as string | undefined;
-        session.user.accessToken = token.accessToken as string | undefined;
-      }
-      return session;
-    },
   },
 });
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      role: UserRole;
-      msUserId?: string;
-      m365Verified?: boolean;
-      employeeId?: string;
-      departmentId?: string;
-      accessToken?: string;
-    };
-  }
-}

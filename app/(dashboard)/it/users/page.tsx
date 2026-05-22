@@ -13,7 +13,7 @@ export default async function ItUsersPage() {
   const [users, departments] = await Promise.all([getAllUsers(), getActiveDepartments()]);
 
   return (
-    <div className="max-w-350 mx-auto px-4 md:px-8 animate-slide-up">
+    <div className="max-w-350 mx-auto px-4 md:px-8">
       <div className="card-premium border border-base-300 rounded-xl shadow-sm px-5 py-4 mb-6 flex items-center justify-between gap-4">
         <ItUsersPageHeader userCount={users.length} />
         <SyncActions />

@@ -10,7 +10,7 @@ import type { ApiResponse } from "@/types/api";
 import type { DarDetail } from "@/types/dar";
 
 const schema = z.object({
-  reviewerUserId: z.string().cuid(),
+  reviewerUserId: z.string().uuid(),
 });
 
 type Params = { params: Promise<{ id: string }> };

@@ -1,11 +1,9 @@
 export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from "next/server";
-import { eq } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth";
 import { AppError, ForbiddenError, NotFoundError } from "@/lib/errors";
 import { db } from "@/lib/db";
-import { darAttachments, darMasters } from "@/db/schema";
 import { deleteSpItem } from "@/services/sharepoint";
 import type { ApiResponse } from "@/types/api";
 
@@ -16,24 +14,17 @@ export async function DELETE(_req: NextRequest, { params }: Params): Promise<Nex
     const session = await requireAuth();
     const { id: darId, attachmentId } = await params;
 
-    const [attachment] = await db
-      .select({
-        id: darAttachments.id,
-        spItemId: darAttachments.spItemId,
-        uploadedById: darAttachments.uploadedById,
-        darMasterId: darAttachments.darMasterId,
-      })
-      .from(darAttachments)
-      .where(eq(darAttachments.id, attachmentId))
-      .limit(1);
+    const attachment = await db.darAttachment.findUnique({
+      where: { id: attachmentId },
+      select: { id: true, spItemId: true, uploadedById: true, darMasterId: true },
+    });
 
     if (!attachment || attachment.darMasterId !== darId) throw new NotFoundError("ไฟล์แนบ");
 
-    const [dar] = await db
-      .select({ requesterId: darMasters.requesterId, status: darMasters.status })
-      .from(darMasters)
-      .where(eq(darMasters.id, darId))
-      .limit(1);
+    const dar = await db.darMaster.findUnique({
+      where: { id: darId },
+      select: { requesterId: true, status: true },
+    });
 
     if (!dar) throw new NotFoundError("DAR");
 
@@ -51,7 +42,7 @@ export async function DELETE(_req: NextRequest, { params }: Params): Promise<Nex
       console.error("[DELETE attachment] SharePoint delete failed (continuing):", spErr);
     }
 
-    await db.delete(darAttachments).where(eq(darAttachments.id, attachmentId));
+    await db.darAttachment.delete({ where: { id: attachmentId } });
 
     return NextResponse.json({ data: null, error: null });
   } catch (err) {

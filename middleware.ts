@@ -31,11 +31,6 @@ function tooManyRequests(resetAt: number): NextResponse {
   );
 }
 
-function roleRedirect(role: UserRole | undefined, req: NextRequest): NextResponse {
-  if (role === "IT") return NextResponse.redirect(new URL("/it/users", req.url));
-  if (role === "QMS" || role === "MR") return NextResponse.redirect(new URL("/qms/dar", req.url));
-  return NextResponse.redirect(new URL("/dar", req.url));
-}
 
 export default auth(async (req) => {
   const { nextUrl } = req;

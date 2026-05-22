@@ -1,10 +1,9 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 import { db } from "@/lib/db";
-import { announcements } from "@/db/schema";
-import { eq, and, or, isNull, lte, gte } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
+import { AppError } from "@/lib/errors";
 import type { ApiResponse } from "@/types/api";
 
 type TickerItem = { id: string; title: string; sourceSystem: string };
@@ -15,25 +14,25 @@ export async function GET(): Promise<NextResponse<ApiResponse<TickerItem[]>>> {
 
     const now = new Date();
 
-    const rows = await db
-      .select({
-        id: announcements.id,
-        title: announcements.title,
-        sourceSystem: announcements.sourceSystem,
-      })
-      .from(announcements)
-      .where(
-        and(
-          eq(announcements.displayType, "SCROLLING"),
-          or(isNull(announcements.startDate), lte(announcements.startDate, now)),
-          or(isNull(announcements.expiryDate), gte(announcements.expiryDate, now)),
-        )
-      )
-      .limit(20);
+    const rows = await db.announcement.findMany({
+      where: {
+        displayType: "SCROLLING",
+        OR: [{ startDate: null }, { startDate: { lte: now } }],
+        AND: [
+          { OR: [{ endDate: null }, { endDate: { gte: now } }] },
+          { OR: [{ expiryDate: null }, { expiryDate: { gte: now } }] },
+        ],
+      },
+      select: { id: true, title: true, sourceSystem: true },
+      take: 20,
+    });
 
     return NextResponse.json({ data: rows, error: null });
-  } catch {
-    // ticker is non-critical — silently return empty
+  } catch (err) {
+    if (err instanceof AppError) {
+      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
+    }
+    console.error("[GET /api/announcements/ticker]", err);
     return NextResponse.json({ data: [], error: null });
   }
 }

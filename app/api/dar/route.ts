@@ -24,7 +24,7 @@ const createSchema = z.object({
     docName: z.string().min(1, "à¸à¸£à¸¸à¸“à¸²à¸£à¸°à¸šà¸¸à¸Šà¸·à¹ˆà¸­à¹€à¸­à¸à¸ªà¸²à¸£").max(255),
     revision: z.string().min(1, "à¸à¸£à¸¸à¸“à¸²à¸£à¸°à¸šà¸¸ Revision").max(50),
   })).min(1, "à¸•à¹‰à¸­à¸‡à¸¡à¸µà¹€à¸­à¸à¸ªà¸²à¸£à¸­à¸¢à¹ˆà¸²à¸‡à¸™à¹‰à¸­à¸¢ 1 à¸£à¸²à¸¢à¸à¸²à¸£"),
-  distributionDepartmentIds: z.array(z.string().cuid()).default([]),
+  distributionDepartmentIds: z.array(z.string().uuid()).default([]),
   action: z.enum(["DRAFT", "SUBMIT"]).default("DRAFT"),
   tempAttachments: z.array(z.object({
     spItemId: z.string().min(1),
@@ -60,6 +60,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResponse<Da
     if (err instanceof AppError) {
       return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
     }
+    console.error("[GET /api/dar]", err);
     return NextResponse.json({ data: null, error: "Internal server error" }, { status: 500 });
   }
 }

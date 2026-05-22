@@ -1,0 +1,61 @@
+services:
+
+  # ── Location 1 (Primary) ──────────────────────────────────────────────────────
+  qms-primary:
+    image: qms-system:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qms-primary
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.primary
+    environment:
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - qms-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── Location 2 (Secondary / DR) ───────────────────────────────────────────────
+  qms-secondary:
+    image: qms-system:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qms-secondary
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env.secondary
+    environment:
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - qms-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  qms-net:
+    driver: bridge

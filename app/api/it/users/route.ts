@@ -23,6 +23,7 @@ export async function GET(): Promise<NextResponse<ApiResponse<UserWithDept[]>>> 
     if (err instanceof AppError) {
       return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
     }
+    console.error("[GET /api/it/users]", err);
     return NextResponse.json({ data: null, error: "Internal server error" }, { status: 500 });
   }
 }

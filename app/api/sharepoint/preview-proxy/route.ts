@@ -1,17 +1,15 @@
 export const runtime = 'nodejs';
 
-import { NextResponse } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
+import { AppError } from "@/lib/errors";
 import { db } from "@/lib/db";
-import { darAttachments, darMasters, darApprovals } from "@/db/schema";
 import { getFileInfo } from "@/lib/sharepoint";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const session = await requireAuth();
-    const { searchParams } = new URL(req.url);
-    const itemId = searchParams.get("itemId");
+    const itemId = req.nextUrl.searchParams.get("itemId");
 
     if (!itemId) {
       return NextResponse.json({ data: null, error: "itemId is required" }, { status: 400 });
@@ -20,32 +18,26 @@ export async function GET(req: Request) {
     const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
 
     if (!isPrivileged) {
-      const [attachment] = await db
-        .select({ darMasterId: darAttachments.darMasterId })
-        .from(darAttachments)
-        .where(eq(darAttachments.spItemId, itemId))
-        .limit(1);
+      const attachment = await db.darAttachment.findFirst({
+        where: { spItemId: itemId },
+        select: { darMasterId: true },
+      });
 
       if (!attachment) {
         return NextResponse.json({ data: null, error: "File not found" }, { status: 404 });
       }
 
-      const [darRow] = await db
-        .select({ requesterId: darMasters.requesterId })
-        .from(darMasters)
-        .where(eq(darMasters.id, attachment.darMasterId))
-        .limit(1);
+      const darRow = await db.darMaster.findUnique({
+        where: { id: attachment.darMasterId },
+        select: { requesterId: true },
+      });
 
       const isRequester = darRow?.requesterId === session.user.id;
       if (!isRequester) {
-        const [assigned] = await db
-          .select({ id: darApprovals.id })
-          .from(darApprovals)
-          .where(and(
-            eq(darApprovals.darMasterId, attachment.darMasterId),
-            eq(darApprovals.assignedUserId, session.user.id),
-          ))
-          .limit(1);
+        const assigned = await db.darApproval.findFirst({
+          where: { darMasterId: attachment.darMasterId, assignedUserId: session.user.id },
+          select: { id: true },
+        });
 
         if (!assigned) {
           return NextResponse.json({ data: null, error: "Forbidden" }, { status: 403 });
@@ -78,6 +70,9 @@ export async function GET(req: Request) {
       },
     });
   } catch (err) {
+    if (err instanceof AppError) {
+      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
+    }
     console.error("[preview-proxy]", err);
     return NextResponse.json({ data: null, error: "Failed to retrieve file" }, { status: 500 });
   }

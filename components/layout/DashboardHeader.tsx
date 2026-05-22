@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { usePathname } from "next/navigation";
-import type { UserRole } from "@/db/schema";
+import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 import AnnouncementTicker from "./AnnouncementTicker";
 
@@ -16,12 +16,15 @@ type Props = {
 };
 
 const ROUTE_LABELS: Record<string, { th: string; en: string }> = {
-  "/dar":              { th: "คำขอเอกสาร",   en: "Document Requests" },
-  "/dar/new":          { th: "สร้างคำขอใหม่",  en: "New Request" },
-  "/qms/dar":          { th: "จัดการ DAR",    en: "Manage DAR" },
-  "/qms/sharepoint":   { th: "SharePoint Files", en: "SharePoint Files" },
-  "/it/users":         { th: "จัดการผู้ใช้",   en: "Manage Users" },
-  "/it/departments":   { th: "จัดการแผนก",    en: "Manage Departments" },
+  "/dar":                    { th: "คำขอเอกสาร",     en: "Document Requests" },
+  "/dar/new":                { th: "สร้างคำขอใหม่",   en: "New Request" },
+  "/qms/dar":                { th: "จัดการ DAR",      en: "Manage DAR" },
+  "/qms/announcements":      { th: "จัดการประกาศ",    en: "Manage Announcements" },
+  "/qms/announcements/new":  { th: "ประกาศใหม่",      en: "New Announcement" },
+  "/qms/sharepoint":         { th: "SharePoint Files", en: "SharePoint Files" },
+  "/qms/mr":                 { th: "กำหนด MR",         en: "Set MR" },
+  "/it/users":               { th: "จัดการผู้ใช้",    en: "Manage Users" },
+  "/it/departments":         { th: "จัดการแผนก",      en: "Manage Departments" },
 };
 
 function getBreadcrumbs(pathname: string, locale: "th" | "en") {
@@ -58,44 +61,56 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
   const notifLabel = locale === "th" ? "การแจ้งเตือน" : "Notifications";
 
   return (
-    <header className="h-14 px-4 md:px-6 flex items-center justify-between topbar-surface shrink-0 gap-3 z-30 sticky top-0">
-      {/* Left: hamburger (mobile) + page title / breadcrumb */}
-      <div className="flex items-center gap-2 min-w-0 flex-1">
-        {/* Hamburger — mobile only */}
-        {onToggleSidebar && (
-          <button
-            onClick={onToggleSidebar}
-            className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors shrink-0"
-            style={{ color: "var(--sidebar-text-active)" }}
-            aria-label="Toggle menu"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        )}
+    <header className="flex flex-col bg-base-100/80 backdrop-blur-md border-b border-base-300 shrink-0 z-30 sticky top-0">
+      {/* Main row */}
+      <div className="h-14 px-4 md:px-6 flex items-center justify-between gap-3">
+        {/* Left: hamburger (mobile) + page title / breadcrumb */}
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+          {/* Hamburger — mobile only */}
+          {onToggleSidebar && (
+            <button
+              onClick={onToggleSidebar}
+              className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-200 transition-colors shrink-0 text-base-content"
+              aria-label="Toggle menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
 
-        {/* Mobile: page title */}
-        <p className="md:hidden text-[15px] font-semibold truncate min-w-0 flex-1" style={{ color: "var(--sidebar-text-active)" }}>{pageTitle}</p>
+          {/* Mobile: page title */}
+          <p className="md:hidden text-[15px] font-semibold truncate min-w-0 flex-1 text-base-content">{pageTitle}</p>
 
-        {/* Desktop: announcement ticker */}
-        <div className="hidden md:flex flex-1 min-w-0 overflow-hidden">
-          <AnnouncementTicker locale={locale} />
+          {/* Desktop: Breadcrumbs */}
+          <div className="hidden md:flex items-center text-xs font-medium text-neutral">
+            {crumbs.map((crumb, idx) => (
+              <div key={idx} className="flex items-center">
+                {idx > 0 && (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mx-1.5 opacity-50 text-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+                <span className={idx === crumbs.length - 1 ? "text-base-content font-bold tracking-wide" : "hover:text-base-content transition-colors cursor-default"}>
+                  {crumb}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
       {/* Right: actions */}
       <div className="flex items-center gap-1 shrink-0">
         {/* TH / EN switcher */}
-        <div className="flex items-center rounded-lg overflow-hidden border border-white/20 bg-white/10 p-0.5 gap-0.5">
+        <div className="flex items-center rounded-lg overflow-hidden border border-base-300 bg-base-100/50 p-0.5 gap-0.5">
           {(["th", "en"] as const).map((l) => (
             <button
               key={l}
               onClick={() => onLocaleChange(l)}
               className={`text-[11px] font-semibold px-2 py-0.5 rounded-md transition-colors duration-150 ${
                 locale === l
-                  ? "bg-white text-primary font-bold tracking-wide"
-                  : "text-white/70 hover:text-white"
+                  ? "bg-primary text-primary-content font-bold tracking-wide"
+                  : "text-neutral hover:text-base-content"
               }`}
             >
               {l.toUpperCase()}
@@ -105,9 +120,8 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
 
         {/* Notification bell */}
         <button
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-200 transition-colors text-neutral"
           aria-label={notifLabel}
-          style={{ color: "var(--sidebar-text-muted)" }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -118,18 +132,18 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
         <div className="dropdown dropdown-end">
           <button
             tabIndex={0}
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-white/10 transition-colors duration-150"
+            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-base-200 transition-colors duration-150"
           >
             {image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={image} alt={name} className="w-7 h-7 rounded-full object-cover ring-2 ring-white/30" />
+              <img src={image} alt={name} className="w-7 h-7 rounded-full object-cover ring-2 ring-base-300" />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px] font-bold ring-2 ring-white/30" style={{ color: "var(--sidebar-text-active)" }}>
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[11px] font-bold ring-2 ring-base-300 text-primary">
                 {name.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-[13px] font-medium hidden md:block max-w-28 truncate" style={{ color: "var(--sidebar-text-active)" }}>{name}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 hidden md:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--sidebar-text-muted)" }}>
+            <span className="text-[13px] font-medium hidden md:block max-w-28 truncate text-base-content">{name}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 hidden md:block text-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
@@ -159,6 +173,11 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
           </div>
         </div>
       </div>
+      </div>{/* end main row */}
+
+      {/* Full-width ticker strip */}
+      <AnnouncementTicker locale={locale} />
     </header>
   );
 }
+

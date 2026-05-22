@@ -43,22 +43,24 @@ export default function DarForm({ mode, initialData, departments, requesterInfo,
 
   return (
     <div className="flex flex-col gap-4">
-      <DarRequesterSection
-        name={requesterInfo.name}
-        employeeId={requesterInfo.employeeId}
-        department={requesterInfo.department}
-        requestDate={requesterInfo.requestDate}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <DarRequesterSection
+          name={requesterInfo.name}
+          employeeId={requesterInfo.employeeId}
+          department={requesterInfo.department}
+          requestDate={requesterInfo.requestDate}
+        />
 
-      <DarObjectiveSection
-        objective={state.objective}
-        docType={state.docType}
-        docTypeOther={state.docTypeOther}
-        onObjectiveChange={(v: DarObjective) => setField("objective", v)}
-        onDocTypeChange={(v: DarDocType) => setField("docType", v)}
-        onDocTypeOtherChange={(v) => setField("docTypeOther", v)}
-        errors={{ objective: errors.objective, docType: errors.docType, docTypeOther: errors.docTypeOther }}
-      />
+        <DarObjectiveSection
+          objective={state.objective}
+          docType={state.docType}
+          docTypeOther={state.docTypeOther}
+          onObjectiveChange={(v: DarObjective) => setField("objective", v)}
+          onDocTypeChange={(v: DarDocType) => setField("docType", v)}
+          onDocTypeOtherChange={(v) => setField("docTypeOther", v)}
+          errors={{ objective: errors.objective, docType: errors.docType, docTypeOther: errors.docTypeOther }}
+        />
+      </div>
 
       <div className="card-premium p-5">
         <h2 className="text-sm md:text-base font-bold text-primary mb-3">

@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { UserRole } from "@/db/schema";
+import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 
 type Props = {
@@ -243,3 +243,4 @@ export default function DashboardNavbar({ role, name, email, image, locale, onLo
     </header>
   );
 }
+

@@ -8,36 +8,36 @@
   default: true;
 
   /* --- Primary: Corporate Navy #0F1059 --- */
-  --color-primary:          oklch(22.5% 0.13 264);
-  --color-primary-content:  oklch(100% 0 0);
+  --color-primary:          #0F1059;
+  --color-primary-content:  #FFFFFF;
 
   /* --- Secondary: Corporate Teal #1D6A8A --- */
-  --color-secondary:        oklch(43% 0.10 222);
-  --color-secondary-content: oklch(100% 0 0);
+  --color-secondary:        #1D6A8A;
+  --color-secondary-content: #FFFFFF;
 
   /* --- Accent: electric indigo --- */
-  --color-accent:           oklch(60% 0.22 264);
-  --color-accent-content:   oklch(100% 0 0);
+  --color-accent:           #3B82F6;
+  --color-accent-content:   #FFFFFF;
 
   /* --- Base surfaces #F5F6FA / #FFFFFF / #E2E4EF --- */
-  --color-base-100:         oklch(100% 0 0);
-  --color-base-200:         oklch(97.5% 0.008 264);
-  --color-base-300:         oklch(90.5% 0.015 264);
-  --color-base-content:     oklch(16% 0.05 264);
+  --color-base-100:         #FFFFFF;
+  --color-base-200:         #F5F6FA;
+  --color-base-300:         #E2E4EF;
+  --color-base-content:     #1F2937;
 
   /* --- Neutral: muted text #6B7280 --- */
-  --color-neutral:          oklch(50% 0.02 264);
-  --color-neutral-content:  oklch(100% 0 0);
+  --color-neutral:          #4B5563;
+  --color-neutral-content:  #FFFFFF;
 
   /* --- Semantic --- */
-  --color-success:          oklch(60% 0.15 150);
-  --color-success-content:  oklch(100% 0 0);
-  --color-warning:          oklch(75% 0.18 65);
-  --color-warning-content:  oklch(16% 0.04 264);
-  --color-error:            oklch(55% 0.22 25);
-  --color-error-content:    oklch(100% 0 0);
-  --color-info:             oklch(60% 0.18 240);
-  --color-info-content:     oklch(100% 0 0);
+  --color-success:          #10B981;
+  --color-success-content:  #FFFFFF;
+  --color-warning:          #F59E0B;
+  --color-warning-content:  #FFFFFF;
+  --color-error:            #EF4444;
+  --color-error-content:    #FFFFFF;
+  --color-info:             #3B82F6;
+  --color-info-content:     #FFFFFF;
 
   /* --- Radius: rounded-md(6px) / rounded-lg(8px) / rounded-xl(12px) --- */
   --radius-selector: 0.375rem;
@@ -61,7 +61,7 @@
     100% { transform: translateX(-100%); }
   }
 
-  --animate-ticker: ticker 28s linear infinite;
+  --animate-ticker: ticker 40s linear infinite;
   @keyframes ticker {
     from { transform: translateX(0); }
     to   { transform: translateX(-50%); }
@@ -69,7 +69,7 @@
 }
 
 html {
-  font-size: 14px;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -78,19 +78,22 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-base-200);
   color: var(--color-base-content);
+  /* Add subtle dotted pattern to body to reduce emptiness */
+  background-image: radial-gradient(var(--color-base-300) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* ── Dark sidebar surface tokens ─────────────────────────── */
 :root {
-  --sidebar-bg-from:      oklch(22.5% 0.13 264);   /* #0F1059 */
-  --sidebar-bg-to:        oklch(18% 0.10 264);      /* Darker navy */
-  --sidebar-hover:        oklch(28% 0.14 264 / 0.4);
-  --sidebar-active:       oklch(40% 0.18 264 / 0.3);
-  --sidebar-border:       oklch(100% 0 0 / 0.1);
-  --sidebar-text:         oklch(80% 0.04 264);
-  --sidebar-text-muted:   oklch(60% 0.06 264);
-  --sidebar-text-active:  oklch(100% 0 0);
-  --sidebar-icon-active:  oklch(75% 0.15 190);     /* Teal glow */
+  --sidebar-bg-from:      #0F1059;   /* #0F1059 */
+  --sidebar-bg-to:        #0A0B3E;   /* Darker navy */
+  --sidebar-hover:        rgba(255, 255, 255, 0.05);
+  --sidebar-active:       rgba(255, 255, 255, 0.1);
+  --sidebar-border:       rgba(255, 255, 255, 0.1);
+  --sidebar-text:         #9CA3AF;
+  --sidebar-text-muted:   #6B7280;
+  --sidebar-text-active:  #FFFFFF;
+  --sidebar-icon-active:  #38BDF8;   /* Teal/Sky glow */
 }
 
 /* ── Card surface ─────────────────────────────────────────── */
@@ -98,12 +101,13 @@ body {
   background: var(--color-base-100);
   border-radius: 0.75rem;
   border: 1px solid var(--color-base-300);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(15, 16, 89, 0.05), 0 2px 4px -1px rgba(15, 16, 89, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-premium:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 15px -3px rgba(15, 16, 89, 0.08), 0 4px 6px -2px rgba(15, 16, 89, 0.04);
+  border-color: rgba(15, 16, 89, 0.1);
 }
 
 /* ── Glassmorphism and Utilities ──────────────────────────── */
@@ -177,10 +181,12 @@ body {
 .topbar-surface {
   background:
     radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(135deg, var(--sidebar-bg-from) 0%, oklch(19% 0.115 264) 100%);
+    linear-gradient(135deg, rgba(15, 16, 89, 0.85) 0%, rgba(10, 11, 62, 0.85) 100%);
   background-size: 24px 24px, 100% 100%;
   border-bottom: 1px solid var(--sidebar-border);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* ── Scrollbar ───────────────────────────────────────────── */
@@ -192,14 +198,6 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background: oklch(70% 0.012 264); }
 
-/* ── Slide-up page entry ────────────────────────────────── */
-@theme {
-  --animate-slide-up: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-}
 
 /* ── Card section header with left accent bar ──────────── */
 .card-section-title {

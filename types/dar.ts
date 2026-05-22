@@ -1,5 +1,5 @@
-import type { DarStatus, ApprovalStep, ApprovalAction, SignatureType } from "@/db/schema";
-export type { ApprovalStep, ApprovalAction, SignatureType };
+﻿import type { DarStatus, ApprovalStep, ApprovalAction, SignatureType } from "@/generated/prisma/client";
+export type { ApprovalStep, ApprovalAction, SignatureType, DarStatus };
 
 export type DarObjective =
   | "PREPARE_NEW"
@@ -147,3 +147,4 @@ export type CreateDarInput = {
   distributionDepartmentIds: string[];
   tempAttachments?: TempAttachmentInput[];
 };
+

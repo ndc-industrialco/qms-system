@@ -78,7 +78,7 @@ export default function DarTable({ dars }: { dars: DarSummary[] }) {
           {dars.map((dar) => (
             <tr
               key={dar.id}
-              className="border-b border-base-200 hover:bg-base-200/60 transition-colors duration-100"
+              className="border-b border-base-200 hover:bg-primary/5 transition-colors duration-200"
             >
               {/* DAR No. */}
               <td className="py-3.5 px-4">

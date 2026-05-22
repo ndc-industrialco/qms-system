@@ -1,0 +1,382 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  IT
+  QMS
+  MR
+}
+
+enum DisplayType {
+  LIST
+  SCROLLING
+  BANNER
+}
+
+enum DarStatus {
+  DRAFT
+  PENDING_REVIEW
+  PENDING_APPROVE
+  QMS_PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum ApprovalAction {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalStep {
+  PREPARER
+  REVIEWER
+  APPROVER_MR
+}
+
+enum SignatureType {
+  DRAW
+  TYPE
+  IMAGE
+}
+
+enum KpiPeriodType {
+  YEARLY
+  QUARTERLY
+}
+
+enum KpiMonthlyStatus {
+  OK
+  NG
+  PENDING
+}
+
+enum KpiApprovalStatus {
+  DRAFT
+  SUBMITTED
+  REVIEWED
+  VERIFIED
+  REJECTED
+}
+
+enum KpiApprovalStep {
+  PREPARER
+  REVIEWER
+  QMS_VERIFIER
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model Department {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  emailGroup String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  users            User[]
+  darMasters       DarMaster[]
+  darDistributions DarDistribution[]
+  kpiMasters       KpiMaster[]
+
+  @@map("Department")
+}
+
+model User {
+  id                 String        @id @default(uuid())
+  employeeId         String?       @unique
+  msUserId           String?       @unique
+  name               String?
+  email              String        @unique
+  emailVerified      DateTime?
+  image              String?
+  role               UserRole      @default(USER)
+  savedSignatureUrl  String?
+  signatureType      SignatureType?
+  departmentId       String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  department       Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  announcements    Announcement[]
+  darMasters       DarMaster[]
+  darAttachments   DarAttachment[]
+  darApprovals     DarApproval[]
+  qmsProcessings   QmsProcessing[]
+  kpiApprovalLogs  KpiApprovalLog[]
+
+  @@index([role])
+  @@index([departmentId])
+  @@map("User")
+}
+
+model SystemConfig {
+  configKey   String   @id
+  configValue String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("SystemConfig")
+}
+
+model Announcement {
+  id                  String      @id @default(uuid())
+  sourceSystem        String
+  title               String
+  content             String
+  displayType         DisplayType @default(LIST)
+  pushToCompanyCenter Boolean     @default(false)
+  expiryDate          DateTime?
+  startDate           DateTime?
+  endDate             DateTime?
+  spItemId            String?
+  spWebUrl            String?
+  spDownloadUrl       String?
+  fileName            String?
+  mimeType            String?
+  bgColor             String?
+  bgImageUrl          String?
+  bgImageSpId         String?
+  textColor           String?
+  status              String      @default("ACTIVE")
+  createdById         String
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  createdBy User @relation(fields: [createdById], references: [id])
+
+  @@map("Announcement")
+}
+
+model DarMaster {
+  id            String    @id @default(uuid())
+  darNo         String?   @unique
+  requestDate   DateTime  @default(now())
+  objective     String
+  docType       String
+  docTypeOther  String?
+  reason        String
+  spFolderId    String?
+  spFolderPath  String?
+  spDriveId     String?
+  spItemId      String?
+  spWebUrl      String?
+  status        DarStatus @default(DRAFT)
+  requesterId   String
+  departmentId  String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  requester        User              @relation(fields: [requesterId], references: [id])
+  department       Department        @relation(fields: [departmentId], references: [id])
+  items            DarItem[]
+  distributions    DarDistribution[]
+  attachments      DarAttachment[]
+  approvals        DarApproval[]
+  qmsProcessing    QmsProcessing?
+
+  @@index([status])
+  @@index([requesterId])
+  @@index([departmentId])
+  @@map("DarMaster")
+}
+
+model DarItem {
+  id          String @id @default(uuid())
+  itemNo      Int
+  docNumber   String
+  docName     String
+  revision    String
+  darMasterId String
+
+  darMaster DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+
+  @@map("DarItem")
+}
+
+model DarDistribution {
+  id           String @id @default(uuid())
+  darMasterId  String
+  departmentId String
+
+  darMaster  DarMaster  @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@map("DarDistribution")
+}
+
+model DarAttachment {
+  id            String   @id @default(uuid())
+  fileName      String
+  fileSize      Int
+  mimeType      String
+  spItemId      String
+  spWebUrl      String
+  spDownloadUrl String
+  folderPath    String
+  darMasterId   String
+  uploadedById  String
+  createdAt     DateTime @default(now())
+
+  darMaster   DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  uploadedBy  User      @relation(fields: [uploadedById], references: [id])
+
+  @@index([darMasterId])
+  @@index([spItemId])
+  @@map("DarAttachment")
+}
+
+model DarApproval {
+  id                 String         @id @default(uuid())
+  stepRole           ApprovalStep
+  action             ApprovalAction @default(PENDING)
+  actionDate         DateTime?
+  signatureUsedUrl   String?
+  signatureTypeUsed  SignatureType?
+  darMasterId        String
+  assignedUserId     String
+
+  darMaster    DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  assignedUser User      @relation(fields: [assignedUserId], references: [id])
+
+  @@index([darMasterId])
+  @@index([assignedUserId])
+  @@map("DarApproval")
+}
+
+model QmsProcessing {
+  id                    String    @id @default(uuid())
+  chkHasAttachment      Boolean   @default(false)
+  chkPrintAndValidate   Boolean   @default(false)
+  chkRenumber           Boolean   @default(false)
+  chkImpactInvestigated Boolean   @default(false)
+  chkSubmitVerification Boolean   @default(false)
+  chkGetBackProcess     Boolean   @default(false)
+  chkCopyDistribute     Boolean   @default(false)
+  comments              String?
+  processDate           DateTime?
+  darMasterId           String    @unique
+  qmsUserId             String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  darMaster DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  qmsUser   User      @relation(fields: [qmsUserId], references: [id])
+
+  @@map("QmsProcessing")
+}
+
+model PublicDocument {
+  id            String   @id @default(uuid())
+  darMasterId   String?
+  docNumber     String
+  docName       String
+  revision      String
+  spDriveId     String
+  spItemId      String
+  spFolderPath  String?
+  spWebUrl      String
+  publishedDate DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("PublicDocument")
+}
+
+model KpiSchedule {
+  id        String   @id @default(uuid())
+  year      Int
+  month     Int
+  dueDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([year, month])
+  @@map("KpiSchedule")
+}
+
+model KpiMaster {
+  id                   String        @id @default(uuid())
+  year                 Int
+  periodType           KpiPeriodType @default(YEARLY)
+  objectiveDetails     String
+  measurementFrequency String        @default("Every Month")
+  calculationFormula   String?
+  guidelines           String?
+  trackingRecords      String?
+  targetValue          Decimal       @db.Decimal(5, 2)
+  departmentId         String
+  createdById          String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  department      Department         @relation(fields: [departmentId], references: [id])
+  monthlyResults  KpiMonthlyResult[]
+  approvalLogs    KpiApprovalLog[]
+
+  @@map("KpiMaster")
+}
+
+model KpiMonthlyResult {
+  id             String            @id @default(uuid())
+  month          Int
+  actualValue    Decimal?          @db.Decimal(5, 2)
+  isNa           Boolean           @default(false)
+  status         KpiMonthlyStatus  @default(PENDING)
+  approvalStatus KpiApprovalStatus @default(DRAFT)
+  spItemId       String?
+  spWebUrl       String?
+  spDownloadUrl  String?
+  fileName       String?
+  kpiMasterId    String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  kpiMaster         KpiMaster              @relation(fields: [kpiMasterId], references: [id], onDelete: Cascade)
+  correctiveActions KpiCorrectiveAction[]
+
+  @@unique([kpiMasterId, month])
+  @@map("KpiMonthlyResult")
+}
+
+model KpiCorrectiveAction {
+  id                       String   @id @default(uuid())
+  sequenceNo               Int
+  rootCauseAnalysis        String
+  improvementGuidelines    String
+  responsiblePersonM365    String
+  dueDate                  DateTime @db.Date
+  kpiMonthlyResultId       String
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  kpiMonthlyResult KpiMonthlyResult @relation(fields: [kpiMonthlyResultId], references: [id], onDelete: Cascade)
+
+  @@map("KpiCorrectiveAction")
+}
+
+model KpiApprovalLog {
+  id                 String          @id @default(uuid())
+  month              Int
+  stepRole           KpiApprovalStep
+  actionDate         DateTime        @default(now())
+  signatureUsedUrl   String?
+  signatureTypeUsed  SignatureType?
+  kpiMasterId        String
+  assignedUserId     String
+
+  kpiMaster    KpiMaster @relation(fields: [kpiMasterId], references: [id], onDelete: Cascade)
+  assignedUser User      @relation(fields: [assignedUserId], references: [id])
+
+  @@map("KpiApprovalLog")
+}

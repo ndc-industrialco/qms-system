@@ -1,6 +1,13 @@
-import { auth } from "@/lib/auth-node";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 import { ForbiddenError, UnauthorizedError } from "@/lib/errors";
-import type { UserRole } from "@/db/schema";
+import type { UserRole } from "@/generated/prisma/client";
+
+// Edge-safe NextAuth instance — decodes JWT without any DB access.
+// DB callbacks (upsert, syncDepartment) live only in lib/auth-node.ts.
+const { auth } = NextAuth(authConfig);
+
+export { auth };
 
 export async function getSession() {
   return auth();

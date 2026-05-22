@@ -1,12 +1,10 @@
 export const runtime = 'nodejs';
 
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
 import { requireRole } from "@/lib/auth";
 import { AppError } from "@/lib/errors";
 import { fetchAllEntraGroups } from "@/services/ms-graph";
 import { db } from "@/lib/db";
-import { departments } from "@/db/schema";
 import type { ApiResponse } from "@/types/api";
 
 export interface SyncDeptResult {
@@ -21,29 +19,35 @@ export async function POST(): Promise<NextResponse<ApiResponse<SyncDeptResult>>>
     await requireRole("IT");
 
     const groups = await fetchAllEntraGroups();
-    const result: SyncDeptResult = { total: groups.length, created: 0, updated: 0, skipped: 0 };
 
-    for (const group of groups) {
-      if (!group.displayName?.trim()) {
-        result.skipped++;
-        continue;
-      }
+    const valid = groups.filter((g) => g.displayName?.trim());
+    const skipped = groups.length - valid.length;
 
-      const name = group.displayName.trim();
-      const emailGroup = group.mail?.toLowerCase().trim() ?? null;
-
-      const existing = await db.select({ id: departments.id }).from(departments).where(eq(departments.name, name)).limit(1);
-
-      if (existing.length > 0) {
-        await db.update(departments).set({ emailGroup }).where(eq(departments.name, name));
-        result.updated++;
-      } else {
-        await db.insert(departments).values({ name, emailGroup, isActive: true });
-        result.created++;
-      }
+    if (valid.length === 0) {
+      return NextResponse.json({ data: { total: groups.length, created: 0, updated: 0, skipped }, error: null });
     }
 
-    return NextResponse.json({ data: result, error: null });
+    let created = 0;
+    let updated = 0;
+
+    await Promise.all(
+      valid.map(async (g) => {
+        const name = g.displayName!.trim();
+        const emailGroup = g.mail?.toLowerCase().trim() ?? null;
+
+        const existing = await db.department.findUnique({ where: { name }, select: { id: true } });
+
+        if (existing) {
+          await db.department.update({ where: { name }, data: { emailGroup } });
+          updated++;
+        } else {
+          await db.department.create({ data: { name, emailGroup, isActive: true } });
+          created++;
+        }
+      }),
+    );
+
+    return NextResponse.json({ data: { total: groups.length, created, updated, skipped }, error: null });
   } catch (err) {
     if (err instanceof AppError) {
       return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });

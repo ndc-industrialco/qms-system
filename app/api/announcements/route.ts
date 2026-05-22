@@ -1,12 +1,10 @@
 export const runtime = 'nodejs';
 
 import { z } from "zod";
-import { requireAuth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { announcements } from "@/db/schema";
-import { NextResponse } from "next/server";
-import { AppError, ForbiddenError } from "@/lib/errors";
-import type { DisplayType } from "@/db/schema";
+import { NextResponse, type NextRequest } from "next/server";
+import { AppError } from "@/lib/errors";
 import type { ApiResponse } from "@/types/api";
 
 const SCROLLING_EXPIRY_DAYS = 7;
@@ -15,7 +13,7 @@ const createAnnouncementSchema = z.object({
   title: z.string().min(1, "กรุณาระบุหัวข้อ").max(255),
   content: z.string().min(1, "กรุณาระบุเนื้อหา").max(5000),
   sourceSystem: z.string().max(100).optional().default("QMS"),
-  displayType: z.enum(["LIST", "SCROLLING", "BANNER"]).default("LIST"),
+  displayType: z.enum(["LIST", "SCROLLING"]).default("LIST"),
   pushToCompanyCenter: z.boolean().default(false),
   startDate: z.string().datetime({ offset: true }).optional().nullable(),
   endDate: z.string().datetime({ offset: true }).optional().nullable(),
@@ -24,15 +22,15 @@ const createAnnouncementSchema = z.object({
   spDownloadUrl: z.string().url().optional().nullable(),
   fileName: z.string().max(255).optional().nullable(),
   mimeType: z.string().max(100).optional().nullable(),
+  bgColor: z.string().max(20).optional().nullable(),
+  bgImageUrl: z.string().url().optional().nullable(),
+  bgImageSpId: z.string().optional().nullable(),
+  textColor: z.string().max(20).optional().nullable(),
 });
 
-export async function POST(req: Request): Promise<NextResponse<ApiResponse<{ id: string }>>> {
+export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{ id: string }>>> {
   try {
-    const session = await requireAuth();
-
-    if (!["QMS", "IT", "MR"].includes(session.user.role)) {
-      throw new ForbiddenError("Insufficient permissions to post announcements");
-    }
+    const session = await requireRole("QMS", "IT", "MR");
 
     const formData = await req.formData();
 
@@ -49,6 +47,10 @@ export async function POST(req: Request): Promise<NextResponse<ApiResponse<{ id:
       spDownloadUrl: formData.get("spDownloadUrl") || null,
       fileName: formData.get("fileName") || null,
       mimeType: formData.get("mimeType") || null,
+      bgColor: formData.get("bgColor") || null,
+      bgImageUrl: formData.get("bgImageUrl") || null,
+      bgImageSpId: formData.get("bgImageSpId") || null,
+      textColor: formData.get("textColor") || null,
     };
 
     const parsed = createAnnouncementSchema.safeParse(rawData);
@@ -60,6 +62,7 @@ export async function POST(req: Request): Promise<NextResponse<ApiResponse<{ id:
     const {
       title, content, sourceSystem, displayType, pushToCompanyCenter,
       startDate, endDate, spItemId, spWebUrl, spDownloadUrl, fileName, mimeType,
+      bgColor, bgImageUrl, bgImageSpId, textColor,
     } = parsed.data;
 
     const parsedStartDate = startDate ? new Date(startDate) : null;
@@ -71,16 +74,16 @@ export async function POST(req: Request): Promise<NextResponse<ApiResponse<{ id:
       expiryDate.setDate(expiryDate.getDate() + SCROLLING_EXPIRY_DAYS);
     }
 
-    const [row] = await db.insert(announcements).values({
-      title, content, sourceSystem,
-      displayType: displayType as DisplayType,
-      pushToCompanyCenter,
-      startDate: parsedStartDate,
-      endDate: parsedEndDate,
-      expiryDate,
-      spItemId, spWebUrl, spDownloadUrl, fileName, mimeType,
-      createdById: session.user.id,
-    }).returning({ id: announcements.id });
+    const row = await db.announcement.create({
+      data: {
+        title, content, sourceSystem, displayType, pushToCompanyCenter,
+        startDate: parsedStartDate, endDate: parsedEndDate, expiryDate,
+        spItemId, spWebUrl, spDownloadUrl, fileName, mimeType,
+        bgColor, bgImageUrl, bgImageSpId, textColor,
+        createdById: session.user.id,
+      },
+      select: { id: true },
+    });
 
     return NextResponse.json({ data: { id: row.id }, error: null }, { status: 201 });
   } catch (error) {

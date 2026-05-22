@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+﻿export const runtime = 'nodejs';
 
 import { requireRole } from "@/lib/auth";
 import { getAllDars } from "@/services/dar";
@@ -7,7 +7,7 @@ import DarCardList from "@/components/dar/DarCardList";
 import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
 import DarStatusBadge from "@/components/dar/DarStatusBadge";
 import QmsDarPageHeader from "@/components/qms/QmsDarPageHeader";
-import type { DarStatus } from "@/db/schema";
+import type { DarStatus } from "@/generated/prisma/client";
 
 const ORDERED_STATUSES: DarStatus[] = [
   "PENDING_REVIEW",
@@ -28,7 +28,7 @@ export default async function QmsDarPage() {
   }, {});
 
   return (
-    <div className="max-w-350 mx-auto px-4 md:px-8 animate-slide-up">
+    <div className="max-w-350 mx-auto px-4 md:px-8">
       <QmsDarPageHeader />
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
@@ -51,3 +51,4 @@ export default async function QmsDarPage() {
     </div>
   );
 }
+

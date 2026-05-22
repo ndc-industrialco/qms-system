@@ -316,7 +316,7 @@ export default function SharePointBrowserPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { loadFolder(listPath); }, [listPath, loadFolder]);
 
@@ -405,7 +405,7 @@ export default function SharePointBrowserPage() {
   const hasPreview = preview.kind !== "none";
 
   return (
-    <div className="max-w-350 mx-auto px-4 md:px-8 flex flex-col gap-4 animate-slide-up">
+    <div className="max-w-350 mx-auto px-4 md:px-8 flex flex-col gap-4">
       {/* Page header */}
       <div className="card-premium border border-base-300 rounded-xl shadow-sm px-5 py-4 mb-6 flex items-center justify-between gap-4">
         <h1 className="text-xl md:text-2xl font-bold text-primary">{t("spTitle")}</h1>
