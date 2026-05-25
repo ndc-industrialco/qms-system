@@ -1,31 +1,21 @@
-# ── Stage 1: Install dependencies ─────────────────────────────────────────────
-FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-COPY prisma ./prisma
-RUN npm ci --omit=dev
-
-# ── Stage 2: Build ─────────────────────────────────────────────────────────────
+# ── Stage 1: Build ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY prisma ./prisma
-RUN npm ci
+# Install all deps — skip postinstall (prisma generate) until schema is available
+RUN npm ci --ignore-scripts
 
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client now that schema.prisma is present
 RUN npx prisma generate
 
-# Build with nodejs runtime (not edge — this is the Docker/server build)
-RUN node scratch/set-runtime.js nodejs && \
-    NEXT_TELEMETRY_DISABLED=1 npm run build -- --no-lint
+# Build Next.js (npm run build already calls set-runtime.js internally)
+RUN NEXT_TELEMETRY_DISABLED=1 npm run build -- --no-lint
 
-# ── Stage 3: Production runner ─────────────────────────────────────────────────
+# ── Stage 2: Production runner ─────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
 
