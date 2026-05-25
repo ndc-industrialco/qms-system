@@ -89,7 +89,7 @@ export default async function UnauthorizedPage({
               </Link>
             )}
             <a
-              href="mailto:it@company.com"
+              href="mailto:it@ndcindustrial.co.th"
               className="btn btn-ghost btn-sm text-neutral text-[12.5px]"
             >
               ติดต่อฝ่าย IT
