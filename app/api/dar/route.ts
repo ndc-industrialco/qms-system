@@ -1,5 +1,4 @@
-﻿export const runtime = 'nodejs';
-
+﻿
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { revalidateTag } from "next/cache";

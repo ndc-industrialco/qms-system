@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scratch/set-runtime.js nodejs && next dev",
-    "build": "node scratch/set-runtime.js nodejs && next build",
-    "build:cloudflare": "node scratch/set-runtime.js edge && npx @opennextjs/cloudflare build",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
@@ -28,7 +27,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.19.11",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -37,8 +35,7 @@
     "eslint-config-next": "^15.3.2",
     "tailwindcss": "^4.3.0",
     "tsx": "^4.21.0",
-    "typescript": "^5",
-    "wrangler": "^4.93.0"
+    "typescript": "^5"
   },
   "overrides": {
     "next-auth": {

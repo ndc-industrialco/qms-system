@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";

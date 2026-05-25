@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 import { handlers } from "@/lib/auth-node";
 

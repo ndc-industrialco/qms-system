@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 import { requireAuth } from "@/lib/auth";
 import { getActiveDepartments } from "@/services/department";

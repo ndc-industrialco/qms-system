@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 import { requireRole } from "@/lib/auth";
 import { getAllUsers } from "@/services/user";

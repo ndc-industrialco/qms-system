@@ -1,5 +1,4 @@
-﻿export const runtime = 'nodejs';
-
+﻿
 import { requireRole } from "@/lib/auth";
 import { getAllDars } from "@/services/dar";
 import DarTable from "@/components/dar/DarTable";

@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 import Link from "next/link";
 

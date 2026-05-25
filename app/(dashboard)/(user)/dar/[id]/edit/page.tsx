@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 import { notFound, redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";

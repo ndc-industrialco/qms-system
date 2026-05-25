@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 
 import type { Metadata } from "next";
 import { Inter, Sarabun } from "next/font/google";
