@@ -3,7 +3,7 @@ FROM node:22-alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json .npmrc* ./
 # Install all deps — skip postinstall (prisma generate) until schema is available
 RUN npm ci --ignore-scripts --loglevel=verbose
 
