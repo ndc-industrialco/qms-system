@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 # Install all deps — skip postinstall (prisma generate) until schema is available
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts --loglevel=verbose
 
 COPY . .
 
