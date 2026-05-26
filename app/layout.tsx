@@ -15,8 +15,8 @@ const sarabun = Sarabun({
 });
 
 export const metadata: Metadata = {
-  title: "QMS System - Company Center",
-  description: "Quality Management System with Digital Approval Workflow",
+  title: "QMS System",
+  description: "Quality Management System",
 };
 
 export default function RootLayout({
