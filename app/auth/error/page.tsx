@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type SearchParams = Promise<{ error?: string }>;
 
@@ -29,7 +30,7 @@ export default async function AuthErrorPage({
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center">
-      <div className="card card-premium p-5 w-full max-w-md">
+      <div className="card-premium p-5 w-full max-w-md">
         <div className="flex flex-col items-center gap-6 text-center">
           <div className="text-error">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,9 +42,9 @@ export default async function AuthErrorPage({
             <p className="text-xs md:text-sm text-gray-500 mt-2">{msg.th}</p>
             <p className="text-[11px] md:text-xs text-gray-500 mt-1">{msg.en}</p>
           </div>
-          <Link href="/auth/login" className="btn btn-primary w-full">
-            ลองอีกครั้ง
-          </Link>
+          <Button asChild className="w-full">
+            <Link href="/auth/login">ลองอีกครั้ง</Link>
+          </Button>
         </div>
       </div>
     </div>

@@ -19,9 +19,11 @@ export default async function DarEditPage({ params }: Props) {
     notFound();
   }
 
-  if (dar.status !== "DRAFT") redirect(`/dar/${id}`);
+  // Non-QMS users can only edit DRAFT
+  if (!isPrivileged && dar.status !== "DRAFT") redirect(`/dar/${id}`);
 
   const departments = await getActiveDepartments();
+  const isDraft = dar.status === "DRAFT";
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-8">
@@ -40,6 +42,7 @@ export default async function DarEditPage({ params }: Props) {
         tempId={"temp_" + Math.random().toString(36).substring(2, 15) + "_" + Date.now()}
         initialData={dar}
         departments={departments}
+        hideSubmit={!isDraft}
         requesterInfo={{
           name: dar.requester.name,
           employeeId: dar.requester.employeeId,

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import DarForm from "./DarForm";
 import { useLocale } from "@/lib/locale-context";
 import type { DarDetail } from "@/types/dar";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import ConfirmModal from "@/components/common/ConfirmModal";
 
 type Department = { id: string; name: string };
 
@@ -20,7 +23,6 @@ export default function DarEditDrawer({ darId, onClose }: Props) {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [visible, setVisible] = useState(false);
   const [tempId] = useState(() => crypto.randomUUID());
 
   // Delete confirm modal state
@@ -78,15 +80,6 @@ export default function DarEditDrawer({ darId, onClose }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [darId]);
 
-  // Entrance animation
-  useEffect(() => {
-    if (isOpen) {
-      const raf = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(raf);
-    } else {
-      setVisible(false);
-    }
-  }, [isOpen]);
 
   // Body scroll lock
   useEffect(() => {
@@ -111,80 +104,62 @@ export default function DarEditDrawer({ darId, onClose }: Props) {
 
   return (
     <>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={isTh ? "แก้ไขคำขอเอกสาร" : "Edit Document Request"}
-        className="fixed inset-0 z-50 flex items-end lg:items-stretch lg:justify-end"
-      >
-        {/* Backdrop */}
-        <div
-          onClick={onClose}
-          aria-hidden="true"
-          className={`absolute inset-0 bg-black/30 transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0"}`}
-        />
-
-        {/* Panel */}
-        <div
-          className={[
-            "relative z-10 flex flex-col bg-white shadow-2xl",
-            "transition-transform duration-300 ease-out",
-            "w-full max-h-[92vh] rounded-t-2xl",
-            "lg:inset-y-0 lg:right-0 lg:h-full lg:max-h-full lg:w-1/2 lg:rounded-none lg:rounded-l-2xl",
-            visible
-              ? "translate-y-0 lg:translate-x-0"
-              : "translate-y-full lg:translate-x-full lg:translate-y-0",
-          ].join(" ")}
-        >
+      <Sheet open={isOpen} onOpenChange={(val) => {
+        if (!val) {
+          if (showDeleteConfirm) setShowDeleteConfirm(false);
+          else onClose();
+        }
+      }}>
+        <SheetContent side="right" className="flex flex-col p-0 w-full lg:max-w-2xl h-full" hideClose>
           {/* Mobile drag handle */}
           <div className="lg:hidden flex justify-center pt-3 pb-1 shrink-0" aria-hidden="true">
             <div className="w-10 h-1 rounded-full bg-slate-200" />
           </div>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+          <SheetHeader className="px-6 py-4 border-b border-slate-100 shrink-0 text-left relative flex flex-row items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-800 leading-snug">
+              <SheetTitle className="text-lg font-semibold text-slate-800 leading-snug pr-8">
                 {isTh ? "แก้ไขคำขอเอกสาร (DAR)" : "Edit Document Request"}
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              </SheetTitle>
+              <SheetDescription className="text-xs text-slate-500 mt-0.5">
                 {dar?.darNo
                   ? (isTh ? `เลขที่ ${dar.darNo}` : `DAR No. ${dar.darNo}`)
                   : (isTh ? "ฉบับร่าง" : "Draft")}
-              </p>
+              </SheetDescription>
             </div>
 
             <div className="flex items-center gap-2">
               {/* Delete button — only shown for DRAFT */}
               {dar?.status === "DRAFT" && (
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setShowDeleteConfirm(true)}
                   aria-label={isTh ? "ลบคำขอ" : "Delete request"}
-                  className="h-9 px-3 flex items-center gap-1.5 rounded-xl text-rose-600 border border-rose-200
-                             hover:bg-rose-50 transition-colors text-sm font-medium
-                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
+                  className="text-rose-600 border-rose-200 hover:bg-rose-50"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                   <span className="hidden sm:inline">{isTh ? "ลบ" : "Delete"}</span>
-                </button>
+                </Button>
               )}
 
               {/* Close button */}
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onClose}
                 aria-label={isTh ? "ปิด" : "Close"}
-                className="h-9 w-9 flex items-center justify-center rounded-xl text-slate-400
-                           hover:text-slate-600 hover:bg-slate-100 transition-colors
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F1059] focus-visible:ring-offset-2"
+                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
+              </Button>
             </div>
-          </div>
+          </SheetHeader>
 
           {/* Scrollable body */}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
@@ -206,12 +181,12 @@ export default function DarEditDrawer({ darId, onClose }: Props) {
                   {isTh ? "โหลดข้อมูลไม่สำเร็จ" : "Something went wrong"}
                 </p>
                 <p className="text-slate-400 text-sm mb-4">{error}</p>
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => darId && load(darId)}
-                  className="bg-white text-slate-700 border border-slate-200 rounded-xl px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors"
                 >
                   {isTh ? "ลองใหม่" : "Try Again"}
-                </button>
+                </Button>
               </div>
             )}
 
@@ -230,62 +205,25 @@ export default function DarEditDrawer({ darId, onClose }: Props) {
               />
             )}
           </div>
-        </div>
-      </div>
+        </SheetContent>
+      </Sheet>
 
-      {/* Delete confirm modal — §11 Confirm/Destructive Action Modal */}
+      {/* Delete confirm modal */}
       {showDeleteConfirm && (
-        <dialog className="modal modal-open" aria-modal="true">
-          <div className="modal-box rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] max-w-md w-full">
-            {/* Icon */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-slate-800">
-                  {isTh ? "ยืนยันการลบ" : "Delete Draft?"}
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {dar?.darNo ?? (isTh ? "ฉบับร่าง" : "Draft")}
-                </p>
-              </div>
-            </div>
-
-            <p className="text-sm text-slate-600 mb-4">
-              {isTh
-                ? "คำขอนี้จะถูกลบถาวร ไม่สามารถกู้คืนได้"
-                : "This draft will be permanently deleted and cannot be recovered."}
-            </p>
-
-            {deleteError && (
-              <p className="text-sm text-rose-600 bg-rose-50 rounded-xl px-3 py-2 mb-4">{deleteError}</p>
-            )}
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
-                disabled={deleting}
-                className="bg-white text-slate-700 border border-slate-200 rounded-xl px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
-              >
-                {isTh ? "ยกเลิก" : "Cancel"}
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="bg-rose-600 text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-rose-700 transition-colors disabled:opacity-50 inline-flex items-center gap-2"
-              >
-                {deleting && (
-                  <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                )}
-                {isTh ? "ลบถาวร" : "Delete"}
-              </button>
-            </div>
-          </div>
-          <div className="modal-backdrop" onClick={() => !deleting && setShowDeleteConfirm(false)} />
-        </dialog>
+        <ConfirmModal
+          title={isTh ? "ยืนยันการลบ" : "Delete Draft?"}
+          message={
+            (dar?.darNo ?? (isTh ? "ฉบับร่าง" : "Draft")) + "\n" +
+            (isTh ? "คำขอนี้จะถูกลบถาวร ไม่สามารถกู้คืนได้" : "This draft will be permanently deleted and cannot be recovered.") +
+            (deleteError ? `\n\nError: ${deleteError}` : "")
+          }
+          confirmLabel={isTh ? "ลบถาวร" : "Delete"}
+          cancelLabel={isTh ? "ยกเลิก" : "Cancel"}
+          onConfirm={handleDelete}
+          onCancel={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
+          loading={deleting}
+          danger={true}
+        />
       )}
     </>
   );

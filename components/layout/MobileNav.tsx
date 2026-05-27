@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@/generated/prisma/client";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 type NavItem = { labelTh: string; labelEn: string; href: string; icon: React.ReactNode };
 type Props = { role: UserRole; locale: "th" | "en" };
@@ -99,12 +100,11 @@ export default function MobileNav({ role, locale }: Props) {
 
   const moreLabel = locale === "th" ? "เพิ่มเติม" : "More";
   const menuLabel = locale === "th" ? "เมนูเพิ่มเติม" : "More options";
-  const closeLabel = locale === "th" ? "ปิด" : "Close";
 
   return (
     <>
       {/* ── Fixed bottom bar ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-base-100 border-t border-base-300 flex items-stretch h-16 safe-area-inset-bottom">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 flex items-stretch h-16 safe-area-inset-bottom">
         {visibleItems.map((item) => {
           const isActive = activeMap[item.href] ?? false;
           const label = locale === "en" ? item.labelEn : item.labelTh;
@@ -113,13 +113,13 @@ export default function MobileNav({ role, locale }: Props) {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors duration-150 px-1 ${
-                isActive ? "text-primary" : "text-neutral"
+                isActive ? "text-[#0F1059]" : "text-slate-500"
               }`}
             >
               <div className="relative">
                 {item.icon}
                 {isActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#0F1059]" />
                 )}
               </div>
               <span className="truncate max-w-full leading-none">{label}</span>
@@ -131,13 +131,13 @@ export default function MobileNav({ role, locale }: Props) {
           <button
             onClick={() => setDrawerOpen(true)}
             className={`flex flex-col items-center justify-center flex-1 gap-0.5 text-[10px] font-medium transition-colors duration-150 px-1 ${
-              overflowActive ? "text-primary" : "text-neutral"
+              overflowActive ? "text-[#0F1059]" : "text-slate-500"
             }`}
           >
             <div className="relative">
               <GridIcon />
               {overflowActive && (
-                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-primary" />
+                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#0F1059]" />
               )}
             </div>
             <span className="leading-none">{moreLabel}</span>
@@ -146,27 +146,12 @@ export default function MobileNav({ role, locale }: Props) {
       </nav>
 
       {/* ── Overflow bottom sheet ── */}
-      {hasOverflow && drawerOpen && (
-        <>
-          <div
-            className="md:hidden fixed inset-0 z-40 bg-base-content/30 backdrop-blur-sm"
-            onClick={() => setDrawerOpen(false)}
-          />
-          <div className="md:hidden fixed bottom-16 left-0 right-0 z-50 bg-base-100 rounded-t-2xl border-t border-base-300 shadow-xl px-4 pt-4 pb-6">
-            <div className="w-10 h-1 rounded-full bg-base-300 mx-auto mb-4" />
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[14px] font-semibold text-base-content">{menuLabel}</p>
-              <button
-                onClick={() => setDrawerOpen(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral hover:bg-base-200 transition-colors"
-                aria-label={closeLabel}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
+      {hasOverflow && (
+        <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+          <SheetContent side="bottom" className="md:hidden px-4 pt-0 pb-6 mb-16 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+            <SheetHeader className="mb-4 mt-2">
+              <SheetTitle className="text-[14px]">{menuLabel}</SheetTitle>
+            </SheetHeader>
             <div className="grid grid-cols-3 gap-3">
               {overflowItems.map((item) => {
                 const isActive = activeMap[item.href] ?? false;
@@ -178,8 +163,8 @@ export default function MobileNav({ role, locale }: Props) {
                     onClick={() => setDrawerOpen(false)}
                     className={`flex flex-col items-center justify-center gap-2 p-3.5 rounded-xl text-[12px] font-medium transition-colors ${
                       isActive
-                        ? "bg-primary text-primary-content"
-                        : "bg-base-200 text-base-content hover:bg-base-300"
+                        ? "bg-[#0F1059] text-white"
+                        : "bg-slate-100 text-slate-800 hover:bg-slate-200"
                     }`}
                   >
                     {item.icon}
@@ -188,8 +173,8 @@ export default function MobileNav({ role, locale }: Props) {
                 );
               })}
             </div>
-          </div>
-        </>
+          </SheetContent>
+        </Sheet>
       )}
     </>
   );

@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type SearchParams = Promise<{ reason?: string; from?: string }>;
 
@@ -80,20 +81,17 @@ export default async function UnauthorizedPage({
           {/* Actions */}
           <div className="flex flex-col gap-2 w-full pt-1">
             {isInsufficientRole ? (
-              <Link href="/" className="btn btn-primary w-full h-10 text-[13.5px]">
-                กลับหน้าหลัก
-              </Link>
+              <Button asChild className="w-full h-10 text-[13.5px]">
+                <Link href="/">กลับหน้าหลัก</Link>
+              </Button>
             ) : (
-              <Link href="/auth/login" className="btn btn-primary w-full h-10 text-[13.5px]">
-                เข้าสู่ระบบด้วย Microsoft 365
-              </Link>
+              <Button asChild className="w-full h-10 text-[13.5px]">
+                <Link href="/auth/login">เข้าสู่ระบบด้วย Microsoft 365</Link>
+              </Button>
             )}
-            <a
-              href="mailto:it@ndcindustrial.co.th"
-              className="btn btn-ghost btn-sm text-neutral text-[12.5px]"
-            >
-              ติดต่อฝ่าย IT
-            </a>
+            <Button variant="ghost" size="sm" asChild className="text-neutral text-[12.5px]">
+              <a href="mailto:it@ndcindustrial.co.th">ติดต่อฝ่าย IT</a>
+            </Button>
           </div>
         </div>
       </div>

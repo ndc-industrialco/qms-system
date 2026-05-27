@@ -3,6 +3,13 @@
 import { useT } from "@/lib/i18n";
 import type { AnnouncementRow } from "@/services/announcement";
 import AnnouncementTableRow from "@/components/announcements/AnnouncementTableRow";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type Props = {
   rows: AnnouncementRow[];
@@ -31,31 +38,33 @@ export default function AnnouncementsTable({ rows, onView, onEdit, onDelete, onT
   }
 
   return (
-    <table className="w-full">
-      <thead className="sticky top-0 z-10 bg-slate-50 border-b border-slate-100">
-        <tr>
-          <th className="text-slate-800 text-sm font-semibold px-4 py-3 text-left">{t("announcement.colTitle")}</th>
-          <th className="text-slate-800 text-sm font-semibold px-4 py-3 text-left">{t("announcement.colSystem")}</th>
-          <th className="text-slate-800 text-sm font-semibold px-4 py-3 text-left">{t("announcement.colType")}</th>
-          <th className="text-slate-800 text-sm font-semibold px-4 py-3 text-center">{t("announcement.colDateRange")}</th>
-          <th className="text-slate-800 text-sm font-semibold px-4 py-3 text-left">{t("announcement.colAttachment")}</th>
-          <th className="text-slate-800 text-sm font-semibold px-4 py-3 text-left">{t("announcement.colCreatedBy")}</th>
-          <th className="text-slate-800 text-sm font-semibold px-4 py-3 text-left">{t("announcement.colStatus")}</th>
-          <th className="text-slate-800 text-sm font-semibold px-4 py-3 text-right">{t("announcement.colActions")}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <AnnouncementTableRow
-            key={row.id}
-            row={row}
-            onView={onView}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggle={onToggle}
-          />
-        ))}
-      </tbody>
-    </table>
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("announcement.colTitle")}</TableHead>
+            <TableHead>{t("announcement.colSystem")}</TableHead>
+            <TableHead>{t("announcement.colType")}</TableHead>
+            <TableHead className="text-center">{t("announcement.colDateRange")}</TableHead>
+            <TableHead>{t("announcement.colAttachment")}</TableHead>
+            <TableHead>{t("announcement.colCreatedBy")}</TableHead>
+            <TableHead>{t("announcement.colStatus")}</TableHead>
+            <TableHead className="text-right">{t("announcement.colActions")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <AnnouncementTableRow
+              key={row.id}
+              row={row}
+              onView={onView}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onToggle={onToggle}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

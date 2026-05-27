@@ -2,6 +2,9 @@
 
 import type { UserWithDept } from "@/types/user";
 import type { UserRole } from "@/generated/prisma/client";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   user: UserWithDept;
@@ -10,11 +13,11 @@ type Props = {
   isTh: boolean;
 };
 
-const ROLE_BADGE: Record<string, string> = {
-  USER: "px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral",
-  MR:   "px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-warning/15 text-warning",
-  QMS:  "px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-info/15 text-info",
-  IT:   "px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-success/15 text-success",
+const ROLE_BADGE: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  USER: "secondary",
+  MR:   "default",
+  QMS:  "outline",
+  IT:   "default",
 };
 
 const ROLE_LABEL_TH: Record<UserRole, string> = { USER: "ผู้ใช้งาน", QMS: "QMS", MR: "ผู้แทนฝ่ายบริหาร", IT: "IT" };
@@ -26,34 +29,38 @@ export default function MrUserRow({ user, onToggle, loading, isTh }: Props) {
   const roleLabel = isTh ? ROLE_LABEL_TH[user.role] : ROLE_LABEL_EN[user.role];
 
   return (
-    <tr className="border-b border-base-200 hover:bg-base-100 transition-colors">
-      <td className="py-3 px-4 text-[13px] font-semibold text-neutral">
+    <TableRow>
+      <TableCell className="font-semibold text-neutral">
         {user.name ?? "—"}
         {isMr && (
-          <span className="ml-2 px-1.5 py-0.5 text-[9px] font-bold rounded bg-warning/20 text-warning uppercase tracking-wide">MR</span>
+          <Badge variant="default" className="ml-2 px-1.5 py-0.5 text-[9px] uppercase tracking-wide bg-amber-500 hover:bg-amber-600">
+            MR
+          </Badge>
         )}
-      </td>
-      <td className="py-3 px-4 text-[11px] text-gray-500 hidden md:table-cell">{user.email}</td>
-      <td className="py-3 px-4 text-[11px] text-gray-500 hidden md:table-cell">{user.department?.name ?? "—"}</td>
-      <td className="py-3 px-4">
-        <span className={ROLE_BADGE[user.role] ?? ROLE_BADGE.USER}>{roleLabel}</span>
-      </td>
-      <td className="py-3 px-4">
+      </TableCell>
+      <TableCell className="text-gray-500 hidden md:table-cell">{user.email}</TableCell>
+      <TableCell className="text-gray-500 hidden md:table-cell">{user.department?.name ?? "—"}</TableCell>
+      <TableCell>
+        <Badge variant={ROLE_BADGE[user.role] ?? "secondary"}>{roleLabel}</Badge>
+      </TableCell>
+      <TableCell className="text-right">
         {canToggle ? (
-          <button
-            className={`btn btn-xs rounded-md gap-1 ${isMr ? "btn-warning btn-outline" : "btn-primary"}`}
+          <Button
+            size="sm"
+            variant={isMr ? "outline" : "default"}
             disabled={loading}
             onClick={() => onToggle(user.id, isMr ? "USER" : "MR")}
+            className={isMr ? "text-amber-600 border-amber-200 hover:bg-amber-50" : ""}
           >
-            {loading ? <span className="loading loading-spinner loading-xs" /> : null}
+            {loading ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" /> : null}
             {isMr
               ? (isTh ? "ยกเลิก MR" : "Remove MR")
               : (isTh ? "ตั้งเป็น MR" : "Set as MR")}
-          </button>
+          </Button>
         ) : (
           <span className="text-[11px] text-gray-400 italic">{isTh ? "ไม่สามารถเปลี่ยนได้" : "Protected"}</span>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

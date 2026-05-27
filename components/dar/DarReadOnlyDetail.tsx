@@ -10,12 +10,14 @@ import DarItemsTable from "./DarItemsTable";
 import DarApprovalPanelWrapper from "./DarApprovalPanelWrapper";
 import DarAttachmentUpload from "./DarAttachmentUpload";
 import DarDraftActions from "./DarDraftActions";
+import QmsDarActions from "./QmsDarActions";
 
 interface Props {
   dar: DarDetail;
   currentUserId?: string;
   savedSignatureUrl?: string | null;
   savedSignatureType?: SignatureType | null;
+  isQms?: boolean;
 }
 
 const card = "bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden";
@@ -24,7 +26,7 @@ const cardBody = "p-6";
 const sectionLabel = "text-xs text-slate-400 mb-1";
 const sectionValue = "text-sm font-medium text-slate-800";
 
-export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUrl, savedSignatureType }: Props) {
+export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUrl, savedSignatureType, isQms = false }: Props) {
   const t = useT();
   const locale = useLocale();
   const isDraft = dar.status === "DRAFT";
@@ -51,7 +53,10 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <DarStatusBadge status={dar.status} />
-            {isDraft && <DarDraftActions darId={dar.id} />}
+            {isQms
+              ? <QmsDarActions darId={dar.id} darNo={dar.darNo} />
+              : isDraft && <DarDraftActions darId={dar.id} />
+            }
           </div>
         </div>
       </div>

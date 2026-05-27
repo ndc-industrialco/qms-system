@@ -4,6 +4,7 @@ import { getActiveDepartments } from "@/services/department";
 import DarForm from "@/components/dar/DarForm";
 import DarNewHeader from "@/components/dar/DarNewHeader";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function DarNewPage() {
   const session = await requireAuth();
@@ -40,7 +41,9 @@ function DarNoDepartment() {
     <div className="max-w-lg mx-auto mt-12 card-premium px-5 py-4 border border-base-300 rounded-xl shadow-sm text-center">
       <p className="text-sm md:text-base font-bold text-primary">ไม่สามารถสร้างคำขอได้</p>
       <p className="text-xs md:text-sm text-gray-500 mt-2">บัญชีของคุณยังไม่ได้ผูกกับแผนก กรุณาติดต่อ IT</p>
-      <Link href="/dar" className="btn btn-ghost btn-sm mt-4">ย้อนกลับ</Link>
+      <Button variant="ghost" size="sm" asChild className="mt-4">
+        <Link href="/dar">ย้อนกลับ</Link>
+      </Button>
     </div>
   );
 }

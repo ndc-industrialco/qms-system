@@ -163,6 +163,39 @@ export async function fetchAllEntraGroups(): Promise<GraphGroup[]> {
   return groups;
 }
 
+/**
+ * Search Entra ID users by displayName or mail (uses $search).
+ * Returns up to 25 results sorted by displayName.
+ */
+export async function searchEntraUsers(query: string): Promise<GraphUser[]> {
+  if (!query.trim()) return [];
+
+  const token = await getAppAccessToken();
+
+  const params = new URLSearchParams({
+    $select: SELECT_FIELDS,
+    $top: "25",
+    $search: `"displayName:${query}" OR "mail:${query}"`,
+    $filter: "accountEnabled eq true and userType eq 'Member'",
+    $orderby: "displayName asc",
+  });
+
+  const res = await fetch(`https://graph.microsoft.com/v1.0/users?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ConsistencyLevel: "eventual",
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Graph API ${res.status}: ${body}`);
+  }
+
+  const json = (await res.json()) as { value: GraphUser[] };
+  return json.value;
+}
+
 export interface PushUserPayload {
   displayName?: string;
   department?: string | null;

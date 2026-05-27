@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@/generated/prisma/client";
@@ -143,10 +144,11 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
           style={{ borderBottom: "1px solid var(--sidebar-border)" }}
         >
           <Link href="/" className="hover:opacity-80 transition-opacity">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src="/logo/logo.webp"
               alt="NDC Industrial"
+              width={150}
+              height={40}
               className="h-10 w-auto brightness-0 invert object-contain"
             />
           </Link>
@@ -218,10 +220,11 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
         >
           <div className="flex items-center gap-3.5 px-1 min-w-0 mb-4">
             {image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={image}
                 alt={name}
+                width={40}
+                height={40}
                 className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white/20"
               />
             ) : (

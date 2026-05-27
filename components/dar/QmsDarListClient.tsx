@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import type { DarSummary } from "@/types/dar";
 import { OBJECTIVE_LABELS, DOC_TYPE_LABELS, DAR_STATUS_LABELS } from "@/types/dar";
 import type { DarStatus, DarObjective } from "@/types/dar";
 import DarTable from "@/components/dar/DarTable";
 import DarCardList from "@/components/dar/DarCardList";
+import FilterBar from "@/components/common/FilterBar";
+import EmptyState from "@/components/common/EmptyState";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useLocale } from "@/lib/locale-context";
+import { useUrlFilters } from "@/hooks/use-url-filters";
 
 const OBJECTIVE_LABELS_EN: Record<DarObjective, string> = {
   PREPARE_NEW: "Prepare New Doc",
@@ -19,9 +25,9 @@ const OBJECTIVE_LABELS_EN: Record<DarObjective, string> = {
 type StatusMeta = {
   label: string;
   labelTh: string;
-  dot: string;    // color dot
-  count: string;  // count text color
-  active: string; // active card classes
+  dot: string;
+  count: string;
+  active: string;
 };
 
 const STATUS_META: Record<DarStatus, StatusMeta> = {
@@ -45,27 +51,55 @@ const ORDERED_STATUSES: DarStatus[] = [
 type SortKey = "requestDate" | "darNo" | "status";
 type SortDir = "asc" | "desc";
 
-export default function QmsDarListClient({ dars }: { dars: DarSummary[] }) {
+export default function QmsDarListClient({ dars: initialDars }: { dars: DarSummary[] }) {
   const locale = useLocale();
   const isTh = locale === "th";
+  const router = useRouter();
 
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<DarStatus | "">("");
-  const [filterObjective, setFilterObjective] = useState<DarObjective | "">("");
+  const [dars, setDars] = useState(initialDars);
   const [sortKey, setSortKey] = useState<SortKey>("requestDate");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // Delete state
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; darNo: string | null } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/dar/${pendingDelete.id}`, { method: "DELETE" });
+      const json = await res.json() as { error: string | null };
+      if (!res.ok || json.error) {
+        setDeleteError(json.error ?? "เกิดข้อผิดพลาด");
+        return;
+      }
+      setDars((prev) => prev.filter((d) => d.id !== pendingDelete.id));
+      setPendingDelete(null);
+      router.refresh();
+    } catch {
+      setDeleteError("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  // ── URL-bound filters ──────────────────────────────────────────────────────
+  const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
+    keys: ["search", "status", "objective"] as const,
+    searchKey: "search",
+    debounceMs: 300,
+  });
 
   function objectiveLabel(key: DarObjective) {
     return isTh ? OBJECTIVE_LABELS[key] : OBJECTIVE_LABELS_EN[key];
   }
 
   function toggleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("desc");
-    }
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(key); setSortDir("desc"); }
   }
 
   const counts = useMemo(
@@ -74,73 +108,64 @@ export default function QmsDarListClient({ dars }: { dars: DarSummary[] }) {
         acc[d.status] = (acc[d.status] ?? 0) + 1;
         return acc;
       }, {}),
-    [dars]
+    [dars],
   );
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = params.search.trim().toLowerCase();
     return dars
       .filter((d) => {
-        if (filterStatus && d.status !== filterStatus) return false;
-        if (filterObjective && d.objective !== filterObjective) return false;
+        if (params.status && d.status !== (params.status as DarStatus)) return false;
+        if (params.objective && d.objective !== (params.objective as DarObjective)) return false;
         if (q) {
           const haystack = [
             d.darNo ?? "",
             objectiveLabel(d.objective),
             (DOC_TYPE_LABELS as Record<string, string>)[d.docType] ?? d.docType,
             DAR_STATUS_LABELS[d.status],
-          ]
-            .join(" ")
-            .toLowerCase();
+          ].join(" ").toLowerCase();
           if (!haystack.includes(q)) return false;
         }
         return true;
       })
       .sort((a, b) => {
         let cmp = 0;
-        if (sortKey === "requestDate") {
-          cmp = new Date(a.requestDate).getTime() - new Date(b.requestDate).getTime();
-        } else if (sortKey === "darNo") {
-          cmp = (a.darNo ?? "").localeCompare(b.darNo ?? "");
-        } else if (sortKey === "status") {
-          cmp = a.status.localeCompare(b.status);
-        }
+        if (sortKey === "requestDate") cmp = new Date(a.requestDate).getTime() - new Date(b.requestDate).getTime();
+        else if (sortKey === "darNo") cmp = (a.darNo ?? "").localeCompare(b.darNo ?? "");
+        else if (sortKey === "status") cmp = a.status.localeCompare(b.status);
         return sortDir === "asc" ? cmp : -cmp;
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dars, search, filterStatus, filterObjective, sortKey, sortDir, isTh]);
+  }, [dars, params.search, params.status, params.objective, sortKey, sortDir, isTh]);
 
-  const hasActiveFilter = search || filterStatus || filterObjective;
   const isFilteredEmpty = dars.length > 0 && filtered.length === 0;
 
-  const statusOptions: { value: DarStatus; label: string }[] = [
-    { value: "DRAFT",            label: isTh ? "ฉบับร่าง"      : "Draft" },
-    { value: "PENDING_REVIEW",   label: isTh ? "รอตรวจสอบ"     : "Pending Review" },
-    { value: "PENDING_APPROVE",  label: isTh ? "รออนุมัติ"      : "Pending Approve" },
-    { value: "QMS_PROCESSING",   label: isTh ? "QMS ดำเนินการ"  : "QMS Processing" },
-    { value: "COMPLETED",        label: isTh ? "เสร็จสิ้น"      : "Completed" },
-    { value: "CANCELLED",        label: isTh ? "ยกเลิก"         : "Cancelled" },
+  const statusOptions = [
+    { value: "DRAFT",           label: isTh ? "ฉบับร่าง"     : "Draft" },
+    { value: "PENDING_REVIEW",  label: isTh ? "รอตรวจสอบ"    : "Pending Review" },
+    { value: "PENDING_APPROVE", label: isTh ? "รออนุมัติ"     : "Pending Approve" },
+    { value: "QMS_PROCESSING",  label: isTh ? "QMS ดำเนินการ" : "QMS Processing" },
+    { value: "COMPLETED",       label: isTh ? "เสร็จสิ้น"     : "Completed" },
+    { value: "CANCELLED",       label: isTh ? "ยกเลิก"        : "Cancelled" },
   ];
 
-  const objectiveOptions: { value: DarObjective; label: string }[] = (
-    Object.keys(OBJECTIVE_LABELS) as DarObjective[]
-  ).map((k) => ({ value: k, label: objectiveLabel(k) }));
-
-  const selectCls =
-    "bg-slate-50/50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-sm focus:outline-none focus:border-[#0F1059] focus:bg-white transition-colors";
+  const objectiveOptions = (Object.keys(OBJECTIVE_LABELS) as DarObjective[]).map((k) => ({
+    value: k,
+    label: objectiveLabel(k),
+  }));
 
   return (
     <>
-      {/* Status count cards — clickable to filter */}
+      {/* Status count cards — clickable, synced to URL */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6">
         {ORDERED_STATUSES.map((s) => {
           const meta = STATUS_META[s];
-          const active = filterStatus === s;
+          const active = params.status === s;
           const count = counts[s] ?? 0;
           return (
             <button
               key={s}
-              onClick={() => setFilterStatus(active ? "" : s)}
+              onClick={() => setParam("status", active ? "" : s)}
               className={[
                 "rounded-xl px-3 py-3 text-left border transition-all duration-150",
                 active
@@ -160,59 +185,42 @@ export default function QmsDarListClient({ dars }: { dars: DarSummary[] }) {
         })}
       </div>
 
-      {/* Search / filter / sort bar */}
+      {/* Filter bar */}
       {dars.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 mb-4 flex flex-wrap items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 min-w-45">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={isTh ? "ค้นหา DAR No., ประเภท, สถานะ..." : "Search DAR No., type, status..."}
-              className="w-full bg-slate-50/50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-slate-700 text-sm focus:outline-none focus:border-[#0F1059] focus:bg-white transition-colors"
-            />
-          </div>
-
-          {/* Status filter */}
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as DarStatus | "")}
-            className={selectCls}
-          >
-            <option value="">{isTh ? "ทุกสถานะ" : "All Statuses"}</option>
-            {statusOptions.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-
-          {/* Objective filter */}
-          <select
-            value={filterObjective}
-            onChange={(e) => setFilterObjective(e.target.value as DarObjective | "")}
-            className={selectCls}
-          >
-            <option value="">{isTh ? "ทุกวัตถุประสงค์" : "All Objectives"}</option>
-            {objectiveOptions.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-
-          {/* Sort */}
-          <div className="flex items-center gap-1.5">
+        <FilterBar
+          searchValue={rawValues.search}
+          onSearchChange={(v) => setParam("search", v)}
+          searchPlaceholder={isTh ? "ค้นหา DAR No., ประเภท, สถานะ..." : "Search DAR No., type, status..."}
+          filters={[
+            {
+              key: "status",
+              label: isTh ? "สถานะ" : "Status",
+              options: statusOptions,
+              allLabel: isTh ? "ทุกสถานะ" : "All Statuses",
+            },
+            {
+              key: "objective",
+              label: isTh ? "วัตถุประสงค์" : "Objective",
+              options: objectiveOptions,
+              allLabel: isTh ? "ทุกวัตถุประสงค์" : "All Objectives",
+              minWidth: "12rem",
+            },
+          ]}
+          filterValues={{ status: params.status, objective: params.objective }}
+          onFilterChange={setParam}
+          hasActiveFilters={hasFilters}
+          onClearAll={clearAll}
+          clearLabel={isTh ? "ล้างตัวกรอง" : "Clear"}
+          resultCount={filtered.length}
+          totalCount={dars.length}
+          countLabel={isTh ? "รายการ" : "items"}
+        >
+          {/* Sort controls */}
+          <div className="flex items-center gap-1.5 self-end">
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
-              className={selectCls}
+              className="h-8 px-2 py-1 text-[13px] rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-[#0F1059] transition-colors"
             >
               <option value="requestDate">{isTh ? "วันที่ขอ" : "Date"}</option>
               <option value="darNo">{isTh ? "เลขที่ DAR" : "DAR No."}</option>
@@ -220,8 +228,8 @@ export default function QmsDarListClient({ dars }: { dars: DarSummary[] }) {
             </select>
             <button
               onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-[#0F1059] transition-colors"
               title={sortDir === "asc" ? (isTh ? "น้อย → มาก" : "Ascending") : (isTh ? "มาก → น้อย" : "Descending")}
-              className="h-11 min-w-[44px] flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-[#0F1059] transition-colors"
             >
               {sortDir === "asc" ? (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -234,68 +242,89 @@ export default function QmsDarListClient({ dars }: { dars: DarSummary[] }) {
               )}
             </button>
           </div>
-
-          {/* Clear */}
-          {hasActiveFilter && (
-            <button
-              onClick={() => { setSearch(""); setFilterStatus(""); setFilterObjective(""); }}
-              className="text-xs text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              {isTh ? "ล้างตัวกรอง" : "Clear"}
-            </button>
-          )}
-
-          {/* Result count */}
-          <span className="text-xs text-slate-400 ml-auto shrink-0">
-            {filtered.length} / {dars.length} {isTh ? "รายการ" : "items"}
-          </span>
-        </div>
+        </FilterBar>
       )}
 
-      {/* Table / cards / empty states */}
+      {/* Empty / filtered-empty / table */}
       {dars.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <p className="text-slate-800 font-semibold text-base mb-1">
-            {isTh ? "ยังไม่มีคำขอเอกสาร" : "No document requests yet"}
-          </p>
-          <p className="text-slate-400 text-sm">
-            {isTh ? "คำขอที่ผู้ใช้ส่งมาจะแสดงที่นี่" : "Requests submitted by users will appear here"}
-          </p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <EmptyState
+            title={isTh ? "ยังไม่มีคำขอเอกสาร" : "No document requests yet"}
+            description={isTh ? "คำขอที่ผู้ใช้ส่งมาจะแสดงที่นี่" : "Requests submitted by users will appear here"}
+          />
         </div>
       ) : isFilteredEmpty ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] pb-8">
+          <EmptyState
+            title={isTh ? "ไม่พบผลลัพธ์" : "No results found"}
+            description={isTh ? "ลองปรับตัวกรองหรือคำค้นหา" : "Try adjusting your filters or search term"}
+          />
+          <div className="flex justify-center">
+            <Button variant="outline" size="sm" onClick={clearAll}>
+              {isTh ? "ล้างตัวกรอง" : "Clear Filters"}
+            </Button>
           </div>
-          <p className="text-slate-800 font-semibold text-base mb-1">
-            {isTh ? "ไม่พบผลลัพธ์" : "No results found"}
-          </p>
-          <p className="text-slate-400 text-sm mb-4">
-            {isTh ? "ลองปรับตัวกรองหรือคำค้นหา" : "Try adjusting your filters or search term"}
-          </p>
-          <button
-            onClick={() => { setSearch(""); setFilterStatus(""); setFilterObjective(""); }}
-            className="h-11 min-w-[44px] bg-white text-slate-700 border border-slate-200 rounded-xl px-4 py-2 text-sm hover:bg-slate-50 transition-colors"
-          >
-            {isTh ? "ล้างตัวกรอง" : "Clear Filters"}
-          </button>
         </div>
       ) : (
         <>
-          <DarTable dars={filtered} onSort={toggleSort} sortKey={sortKey} sortDir={sortDir} />
+          <DarTable
+            dars={filtered}
+            onSort={toggleSort}
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onDelete={(id, darNo) => { setPendingDelete({ id, darNo }); setDeleteError(null); }}
+          />
           <DarCardList dars={filtered} />
         </>
       )}
+
+      {/* Delete confirm dialog */}
+      <Dialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => { if (!open && !deleting) { setPendingDelete(null); setDeleteError(null); } }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <DialogTitle className="text-base">
+                {isTh
+                  ? `ลบคำขอ ${pendingDelete?.darNo ?? ""}?`
+                  : `Delete ${pendingDelete?.darNo ?? "request"}?`}
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+          <p className="text-sm text-slate-600">
+            {isTh
+              ? "การลบคำขอเอกสารนี้จะลบข้อมูลทั้งหมดรวมถึงไฟล์แนบ และไม่สามารถกู้คืนได้"
+              : "This will permanently delete the DAR and all its attachments. This action cannot be undone."}
+          </p>
+          {deleteError && (
+            <p className="text-sm text-rose-600 bg-rose-50 rounded-xl px-3 py-2">{deleteError}</p>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              disabled={deleting}
+              onClick={() => { setPendingDelete(null); setDeleteError(null); }}
+            >
+              {isTh ? "ยกเลิก" : "Cancel"}
+            </Button>
+            <Button
+              disabled={deleting}
+              onClick={confirmDelete}
+              className="bg-rose-600 text-white hover:bg-rose-700 gap-2"
+            >
+              {deleting && <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />}
+              {isTh ? "ยืนยันลบ" : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

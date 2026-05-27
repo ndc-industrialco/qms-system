@@ -1,9 +1,8 @@
-
 import { requireRole } from "@/lib/auth";
 import { getAllDepartments } from "@/services/department";
 import DepartmentTable from "@/components/it/DepartmentTable";
 import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
-import LocalizedPageTitle from "@/components/common/LocalizedPageTitle";
+import PageHeader from "@/components/common/PageHeader";
 
 export default async function ItDepartmentsPage() {
   await requireRole("IT");
@@ -13,9 +12,7 @@ export default async function ItDepartmentsPage() {
     <div className="max-w-350 mx-auto px-4 md:px-8">
       {departments.length === 0 ? (
         <>
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <LocalizedPageTitle titleKey="manageDepts" subtitleKey="noDepts" />
-          </div>
+          <PageHeader title="Manage Departments" subtitle="No departments yet" />
           <LocalizedEmptyState titleKey="emptyDepts" descriptionKey="emptyDeptsDesc" />
         </>
       ) : (

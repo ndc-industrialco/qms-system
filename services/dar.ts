@@ -255,12 +255,17 @@ async function adoptTempAttachments(opts: {
   });
 }
 
-export async function updateDarDraft(id: string, requesterId: string, input: Partial<CreateDarInput>): Promise<DarDetail> {
+export async function updateDarDraft(
+  id: string,
+  requesterId: string,
+  input: Partial<CreateDarInput>,
+  isPrivileged = false,
+): Promise<DarDetail> {
   const existing = await db.darMaster.findUnique({ where: { id }, select: { status: true, requesterId: true } });
 
   if (!existing) throw new NotFoundError("DAR");
-  if (existing.requesterId !== requesterId) throw new ForbiddenError();
-  if (existing.status !== "DRAFT") throw new ValidationError("Only DRAFT requests can be edited");
+  if (!isPrivileged && existing.requesterId !== requesterId) throw new ForbiddenError();
+  if (!isPrivileged && existing.status !== "DRAFT") throw new ValidationError("Only DRAFT requests can be edited");
 
   await db.$transaction(async (tx) => {
     const updateData: Record<string, unknown> = {};
@@ -492,21 +497,28 @@ export async function getReviewerCandidates(): Promise<ReviewerCandidate[]> {
 
 // ── Delete DRAFT ──────────────────────────────────────────────────────────────
 
-export async function deleteDar(id: string, requesterId: string): Promise<void> {
+export async function deleteDar(id: string, requesterId: string, isPrivileged = false): Promise<void> {
   const dar = await db.darMaster.findUnique({ where: { id }, select: { status: true, requesterId: true } });
 
   if (!dar) throw new NotFoundError("DAR");
-  if (dar.requesterId !== requesterId) throw new ForbiddenError();
-  if (dar.status !== "DRAFT") throw new ValidationError("ลบได้เฉพาะคำขอที่เป็นฉบับร่างเท่านั้น");
+  if (!isPrivileged && dar.requesterId !== requesterId) throw new ForbiddenError();
+  if (!isPrivileged && dar.status !== "DRAFT") throw new ValidationError("ลบได้เฉพาะคำขอที่เป็นฉบับร่างเท่านั้น");
 
+  // Delete SharePoint files first (outside transaction — network calls)
   const attachments = await db.darAttachment.findMany({ where: { darMasterId: id }, select: { spItemId: true } });
-
   if (attachments.length > 0) {
     const { deleteSpItem } = await import("@/services/sharepoint");
     await Promise.allSettled(attachments.map((a) => deleteSpItem(a.spItemId)));
   }
 
-  await db.darMaster.delete({ where: { id } });
+  // Delete all related DB records then the master in one transaction
+  await db.$transaction([
+    db.darApproval.deleteMany({ where: { darMasterId: id } }),
+    db.darAttachment.deleteMany({ where: { darMasterId: id } }),
+    db.darItem.deleteMany({ where: { darMasterId: id } }),
+    db.darDistribution.deleteMany({ where: { darMasterId: id } }),
+    db.darMaster.delete({ where: { id } }),
+  ]);
 }
 
 // ── Saved signature ───────────────────────────────────────────────────────────

@@ -1,11 +1,10 @@
-
 import { requireRole } from "@/lib/auth";
 import { getAllUsers } from "@/services/user";
 import { getActiveDepartments } from "@/services/department";
 import ItUserTable from "@/components/it/ItUserTable";
 import SyncActions from "@/components/it/SyncActions";
 import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
-import ItUsersPageHeader from "@/components/it/ItUsersPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 
 export default async function ItUsersPage() {
   await requireRole("IT");
@@ -13,10 +12,11 @@ export default async function ItUsersPage() {
 
   return (
     <div className="max-w-350 mx-auto px-4 md:px-8">
-      <div className="card-premium border border-base-300 rounded-xl shadow-sm px-5 py-4 mb-6 flex items-center justify-between gap-4">
-        <ItUsersPageHeader userCount={users.length} />
-        <SyncActions />
-      </div>
+      <PageHeader
+        title="Manage Users"
+        subtitle={`All users signed in via Microsoft 365 (${users.length})`}
+        actions={<SyncActions />}
+      />
 
       {users.length === 0 ? (
         <LocalizedEmptyState

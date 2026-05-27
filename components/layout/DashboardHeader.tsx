@@ -1,6 +1,8 @@
 ﻿"use client";
 
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 import AnnouncementTicker from "./AnnouncementTicker";
@@ -129,49 +131,52 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
         </button>
 
         {/* Profile dropdown */}
-        <div className="dropdown dropdown-end">
-          <button
-            tabIndex={0}
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-base-200 transition-colors duration-150"
-          >
-            {image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={image} alt={name} className="w-7 h-7 rounded-full object-cover ring-2 ring-base-300" />
-            ) : (
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[11px] font-bold ring-2 ring-base-300 text-primary">
-                {name.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <span className="text-[13px] font-medium hidden md:block max-w-28 truncate text-base-content">{name}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 hidden md:block text-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <div tabIndex={0} className="dropdown-content z-50 mt-1.5 w-60 bg-base-100 rounded-xl border border-base-300 shadow-lg overflow-hidden">
-            {/* User info block */}
-            <div className="px-4 py-3 border-b border-base-300 flex items-center gap-3">
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-base-200 transition-colors duration-150 outline-none">
               {image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={image} alt={name} className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-base-300" />
+                <Image src={image} alt={name} width={28} height={28} className="w-7 h-7 rounded-full object-cover ring-2 ring-base-300" />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-primary text-primary-content flex items-center justify-center text-[14px] font-bold shrink-0">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[11px] font-bold ring-2 ring-base-300 text-primary">
                   {name.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div className="min-w-0">
-                <p className="text-[13px] font-semibold text-base-content truncate">{name}</p>
-                <p className="text-[11px] text-neutral truncate">{email}</p>
-                <p className="text-[11px] text-neutral mt-0.5">{roleLabel}</p>
-              </div>
-            </div>
+              <span className="text-[13px] font-medium hidden md:block max-w-28 truncate text-base-content">{name}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 hidden md:block text-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </DropdownMenu.Trigger>
 
-            {/* Sign out */}
-            <div className="p-1">
-              <SignOutButton label={signOutLabel} />
-            </div>
-          </div>
-        </div>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              align="end"
+              sideOffset={6}
+              className="z-[9999] w-60 bg-base-100 rounded-xl border border-base-300 shadow-lg overflow-hidden animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+            >
+              {/* User info block */}
+              <div className="px-4 py-3 border-b border-base-300 flex items-center gap-3">
+                {image ? (
+                  <Image src={image} alt={name} width={36} height={36} className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-base-300" />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-primary text-primary-content flex items-center justify-center text-[14px] font-bold shrink-0">
+                    {name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-base-content truncate">{name}</p>
+                  <p className="text-[11px] text-neutral truncate">{email}</p>
+                  <p className="text-[11px] text-neutral mt-0.5">{roleLabel}</p>
+                </div>
+              </div>
+
+              {/* Sign out */}
+              <div className="p-1">
+                <SignOutButton label={signOutLabel} />
+              </div>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
       </div>
       </div>{/* end main row */}
 

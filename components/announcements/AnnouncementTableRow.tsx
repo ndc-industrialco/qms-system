@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import type { AnnouncementRow } from "@/services/announcement";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   row: AnnouncementRow;
@@ -40,12 +42,12 @@ export default function AnnouncementTableRow({ row: a, onView, onEdit, onDelete,
   }
 
   return (
-    <tr
-      className="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer group"
+    <TableRow
+      className="cursor-pointer group"
       onClick={() => onView(a)}
     >
       {/* Title */}
-      <td className="px-4 py-3 max-w-56">
+      <TableCell className="max-w-56">
         <div className="flex items-start gap-2.5">
           <div
             className="w-2.5 h-2.5 rounded-full shrink-0 mt-1"
@@ -65,17 +67,17 @@ export default function AnnouncementTableRow({ row: a, onView, onEdit, onDelete,
             )}
           </div>
         </div>
-      </td>
+      </TableCell>
 
       {/* System badge */}
-      <td className="px-4 py-3">
+      <TableCell>
         <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${systemColor}`}>
           {a.sourceSystem}
         </span>
-      </td>
+      </TableCell>
 
       {/* Display type */}
-      <td className="px-4 py-3">
+      <TableCell>
         {a.displayType === "SCROLLING" ? (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-600">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,10 +93,10 @@ export default function AnnouncementTableRow({ row: a, onView, onEdit, onDelete,
             List
           </span>
         )}
-      </td>
+      </TableCell>
 
       {/* Date range */}
-      <td className="px-4 py-3 text-center">
+      <TableCell className="text-center">
         <div className="flex flex-col gap-0.5 items-center">
           <span className="text-xs font-mono text-slate-600">
             {formatDate(a.startDate) ?? <span className="text-slate-400 not-italic">{t("announcement.dateAlways")}</span>}
@@ -103,10 +105,10 @@ export default function AnnouncementTableRow({ row: a, onView, onEdit, onDelete,
             {formatDate(a.endDate) ?? <span className="italic text-slate-400">{t("announcement.dateNoEnd")}</span>}
           </span>
         </div>
-      </td>
+      </TableCell>
 
       {/* Attachment */}
-      <td className="px-4 py-3">
+      <TableCell>
         {a.fileName && a.spWebUrl ? (
           <a
             href={a.spWebUrl}
@@ -123,10 +125,10 @@ export default function AnnouncementTableRow({ row: a, onView, onEdit, onDelete,
         ) : (
           <span className="text-slate-300 text-xs">—</span>
         )}
-      </td>
+      </TableCell>
 
       {/* Created by */}
-      <td className="px-4 py-3">
+      <TableCell>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-[#0F1059]/10 flex items-center justify-center shrink-0">
             <span className="text-[10px] font-bold text-[#0F1059]">
@@ -135,10 +137,10 @@ export default function AnnouncementTableRow({ row: a, onView, onEdit, onDelete,
           </div>
           <span className="text-sm text-slate-600 truncate max-w-24">{a.createdBy.name}</span>
         </div>
-      </td>
+      </TableCell>
 
       {/* Status toggle */}
-      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2">
           {toggling ? (
             <div className="w-4 h-4 rounded-full border-2 border-slate-200 border-t-[#0F1059] animate-spin" />
@@ -158,41 +160,47 @@ export default function AnnouncementTableRow({ row: a, onView, onEdit, onDelete,
             {isActive ? t("announcement.statusActive") : t("announcement.statusInactive")}
           </span>
         </div>
-      </td>
+      </TableCell>
 
       {/* Actions */}
-      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-end gap-1">
-          <button
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={() => onView(a)}
             title={t("common.view")}
-            className="h-11 w-11 flex items-center justify-center rounded-xl text-sky-700 hover:bg-sky-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F1059] focus-visible:ring-offset-1"
+            className="text-sky-700 hover:bg-sky-50"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={() => onEdit(a)}
             title={t("common.edit")}
-            className="h-11 w-11 flex items-center justify-center rounded-xl text-amber-600 hover:bg-amber-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-1"
+            className="text-amber-600 hover:bg-amber-50"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={() => onDelete(a)}
             title={t("common.delete")}
-            className="h-11 w-11 flex items-center justify-center rounded-xl text-rose-500 hover:bg-rose-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-1"
+            className="text-rose-500 hover:bg-rose-50"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-          </button>
+          </Button>
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

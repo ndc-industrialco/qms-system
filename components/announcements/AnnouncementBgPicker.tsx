@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 const BG_PRESETS = [
   "#0F1059", "#1D6A8A", "#065F46", "#7C2D12",
@@ -71,7 +72,7 @@ export default function AnnouncementBgPicker({ bgColor, bgImageUrl, bgImageFile,
 
         {tab === "image" && (
           <div className="flex flex-col gap-2">
-            <input type="file" accept="image/*" className="file-input file-input-bordered file-input-sm w-full text-sm"
+            <Input type="file" accept="image/*" className="w-full text-sm pt-1"
               onChange={(e) => onImageChange(e.target.files?.[0] ?? null)} />
             {(bgImageFile || bgImageUrl) ? (
               <div className="relative h-16 rounded-lg border border-base-300 overflow-hidden">

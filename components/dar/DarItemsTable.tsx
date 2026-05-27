@@ -2,36 +2,42 @@
 
 import type { DarItemInput } from "@/types/dar";
 import { useT } from "@/lib/i18n";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function DarItemsTable({ items }: { items: DarItemInput[] }) {
   const t = useT();
 
   if (items.length === 0) {
-    return <p className="text-[14px] text-neutral">{t("emptyItemsTable")}</p>;
+    return <p className="text-[14px] text-slate-500">{t("emptyItemsTable")}</p>;
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="table table-sm w-full">
-        <thead>
-          <tr className="bg-base-200 text-[14px] text-neutral border-b border-base-300">
-            <th className="py-3 px-4 font-medium w-16">{t("colNo")}</th>
-            <th className="py-3 px-4 font-medium">{t("colDocNum")}</th>
-            <th className="py-3 px-4 font-medium">{t("colDocName")}</th>
-            <th className="py-3 px-4 font-medium w-28">{t("colRevision")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.itemNo} className="border-b border-base-300 text-[14px] hover:bg-base-200 transition-colors duration-100">
-              <td className="py-3 px-4 text-neutral">{item.itemNo}</td>
-              <td className="py-3.5 px-4">{item.docNumber}</td>
-              <td className="py-3.5 px-4">{item.docName}</td>
-              <td className="py-3.5 px-4">{item.revision}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-16">{t("colNo")}</TableHead>
+          <TableHead>{t("colDocNum")}</TableHead>
+          <TableHead>{t("colDocName")}</TableHead>
+          <TableHead className="w-28">{t("colRevision")}</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {items.map((item) => (
+          <TableRow key={item.itemNo}>
+            <TableCell className="text-slate-500">{item.itemNo}</TableCell>
+            <TableCell>{item.docNumber}</TableCell>
+            <TableCell>{item.docName}</TableCell>
+            <TableCell>{item.revision}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

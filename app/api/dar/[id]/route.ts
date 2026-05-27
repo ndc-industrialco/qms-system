@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: Params): Promise<NextRe
   try {
     const session = await requireAuth();
     const { id } = await params;
-    const isPrivileged = session.user.role === "QMS" || session.user.role === "MR";
+    const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
     const dar = await getDarById(id, session.user.id, isPrivileged);
     return NextResponse.json({ data: dar, error: null });
   } catch (err) {
@@ -42,7 +42,8 @@ export async function DELETE(_req: NextRequest, { params }: Params): Promise<Nex
   try {
     const session = await requireAuth();
     const { id } = await params;
-    await deleteDar(id, session.user.id);
+    const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
+    await deleteDar(id, session.user.id, isPrivileged);
     revalidateTag("dar-list");
     return NextResponse.json({ data: null, error: null });
   } catch (err) {
@@ -58,6 +59,7 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
   try {
     const session = await requireAuth();
     const { id } = await params;
+    const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
 
     const body = await req.json();
     const parsed = updateSchema.safeParse(body);
@@ -66,7 +68,7 @@ export async function PATCH(req: NextRequest, { params }: Params): Promise<NextR
       return NextResponse.json({ data: null, error }, { status: 400 });
     }
 
-    const dar = await updateDarDraft(id, session.user.id, parsed.data);
+    const dar = await updateDarDraft(id, session.user.id, parsed.data, isPrivileged);
 
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");

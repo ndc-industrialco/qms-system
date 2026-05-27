@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import type { DarObjective, DarDocType, DarDetail, TempAttachmentInput } from "@/types/dar";
+import type { DarObjective, DarDocType, DarDetail, TempAttachmentInput, SignatureType } from "@/types/dar";
+import type { ReviewerUser } from "@/components/dar/DarReviewerSelectModal";
 
 type ItemRow = { docNumber: string; docName: string; revision: string };
 
@@ -150,6 +151,83 @@ export function useDarForm(
     }
   }
 
+  /** Validate and return true if form is valid (shows errors if not). */
+  function validateAndStart(): boolean {
+    const errs = validate(state);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return false;
+    }
+    return true;
+  }
+
+  /** Full submit flow: submit DAR → self-sign PREPARER → assign reviewer → send email. */
+  async function submitWithReviewer(
+    signatureDataUrl: string,
+    signatureType: SignatureType,
+    reviewer: ReviewerUser,
+  ): Promise<void> {
+    setIsSubmitting(true);
+    try {
+      // Step 1: Create / submit the DAR
+      let darId: string;
+
+      if (mode === "create") {
+        const res = await fetch("/api/dar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...buildBody(state, "SUBMIT"), tempAttachments }),
+        });
+        const json = await res.json();
+        if (!res.ok || json.error) { onError(json.error ?? "เกิดข้อผิดพลาด"); return; }
+        darId = json.data.id as string;
+      } else {
+        const id = initialData!.id;
+        await fetch(`/api/dar/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildBody(state, "DRAFT")),
+        });
+        const res = await fetch(`/api/dar/${id}/submit`, { method: "POST" });
+        const json = await res.json();
+        if (!res.ok || json.error) { onError(json.error ?? "เกิดข้อผิดพลาด"); return; }
+        darId = id;
+      }
+
+      // Step 2: Self-approve the PREPARER step with the captured signature
+      const approveRes = await fetch(`/api/dar/${darId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signatureDataUrl, signatureType, saveSignature: false }),
+      });
+      const approveJson = await approveRes.json();
+      if (!approveRes.ok || approveJson.error) {
+        onError(approveJson.error ?? "เกิดข้อผิดพลาดในการลงลายมือชื่อ");
+        return;
+      }
+
+      // Step 3: Assign the selected reviewer (endpoint also sends email)
+      const assignRes = await fetch(`/api/dar/${darId}/assign-reviewer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewerUserId: reviewer.id }),
+      });
+      const assignJson = await assignRes.json();
+      if (!assignRes.ok || assignJson.error) {
+        onError(assignJson.error ?? "เกิดข้อผิดพลาดในการกำหนดผู้ตรวจสอบ");
+        return;
+      }
+
+      onSuccess("ส่งคำขอสำเร็จ");
+      router.push(`/dar/${darId}`);
+      router.refresh();
+    } catch {
+      onError("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return {
     state,
     errors,
@@ -161,5 +239,7 @@ export function useDarForm(
     setField,
     saveDraft: () => callApi("DRAFT"),
     submitForm: () => callApi("SUBMIT"),
+    validateAndStart,
+    submitWithReviewer,
   };
 }

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function AnnouncementForm() {
   const router = useRouter();
@@ -70,18 +73,18 @@ export default function AnnouncementForm() {
 
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-xs md:text-sm font-semibold mb-2">Title <span className="text-error">*</span></label>
-            <input type="text" name="title" required className="input input-bordered w-full text-sm" placeholder="Enter announcement title" />
+            <label className="block text-xs md:text-sm font-semibold mb-2 text-slate-700">Title <span className="text-rose-500">*</span></label>
+            <Input type="text" name="title" required className="w-full text-sm" placeholder="Enter announcement title" />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-xs md:text-sm font-semibold mb-2">Content <span className="text-error">*</span></label>
-            <textarea name="content" required className="textarea textarea-bordered w-full h-32 text-sm" placeholder="Enter announcement content..."></textarea>
+            <label className="block text-xs md:text-sm font-semibold mb-2 text-slate-700">Content <span className="text-rose-500">*</span></label>
+            <Textarea name="content" required className="h-32" placeholder="Enter announcement content..." />
           </div>
 
           <div>
-            <label className="block text-xs md:text-sm font-semibold mb-2">Source System</label>
-            <select name="sourceSystem" className="select select-bordered w-full text-sm">
+            <label className="block text-xs md:text-sm font-semibold mb-2 text-slate-700">Source System</label>
+            <select name="sourceSystem" className="w-full h-9 px-3 py-1 text-sm rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
               <option value="QMS">QMS</option>
               <option value="IT">IT</option>
               <option value="HR">HR</option>
@@ -91,27 +94,27 @@ export default function AnnouncementForm() {
           </div>
 
           <div>
-            <label className="block text-xs md:text-sm font-semibold mb-2">Display Type</label>
-            <select name="displayType" className="select select-bordered w-full text-sm">
+            <label className="block text-xs md:text-sm font-semibold mb-2 text-slate-700">Display Type</label>
+            <select name="displayType" className="w-full h-9 px-3 py-1 text-sm rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
               <option value="LIST">Standard List (Main Page)</option>
               <option value="SCROLLING">Scrolling Ticker (Top Bar)</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-xs md:text-sm font-semibold mb-2">Start Date (Optional)</label>
-            <input type="datetime-local" name="startDate" className="input input-bordered w-full text-sm" />
+            <label className="block text-xs md:text-sm font-semibold mb-2 text-slate-700">Start Date (Optional)</label>
+            <Input type="datetime-local" name="startDate" className="w-full text-sm" />
           </div>
 
           <div>
-            <label className="block text-xs md:text-sm font-semibold mb-2">End Date (Optional)</label>
-            <input type="datetime-local" name="endDate" className="input input-bordered w-full text-sm" />
+            <label className="block text-xs md:text-sm font-semibold mb-2 text-slate-700">End Date (Optional)</label>
+            <Input type="datetime-local" name="endDate" className="w-full text-sm" />
             <p className="text-[11px] md:text-xs text-gray-500 mt-1">Leave empty if no expiration.</p>
           </div>
 
           <div className="md:col-span-2">
-            <label className="flex items-center gap-3 p-4 border border-base-300 rounded-lg bg-base-200/30 cursor-pointer">
-              <input type="checkbox" name="pushToCompanyCenter" value="true" defaultChecked className="checkbox checkbox-primary" />
+            <label className="flex items-center gap-3 p-4 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer">
+              <input type="checkbox" name="pushToCompanyCenter" value="true" defaultChecked className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500" />
               <div>
                 <span className="text-xs md:text-sm font-semibold block">Push to Company Center</span>
                 <span className="text-[11px] md:text-xs text-gray-500">Make this visible on the main dashboard page.</span>
@@ -120,11 +123,11 @@ export default function AnnouncementForm() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-xs md:text-sm font-semibold mb-2">Attachment (Optional File / Image)</label>
-            <input
+            <label className="block text-xs md:text-sm font-semibold mb-2 text-slate-700">Attachment (Optional File / Image)</label>
+            <Input
               type="file"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="file-input file-input-bordered w-full text-sm"
+              className="w-full text-sm pt-1.5"
             />
             {file && (
               <p className="text-[11px] md:text-xs text-primary mt-2 flex items-center gap-1">
@@ -135,11 +138,11 @@ export default function AnnouncementForm() {
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-base-200">
-          <button type="button" onClick={() => router.back()} className="btn btn-ghost btn-sm">Cancel</button>
-          <button type="submit" disabled={loading} className="btn btn-primary btn-sm min-w-30">
-            {loading ? <span className="loading loading-spinner loading-xs"></span> : "Publish Announcement"}
-          </button>
+        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-200">
+          <Button type="button" onClick={() => router.back()} variant="ghost" size="sm">Cancel</Button>
+          <Button type="submit" disabled={loading} size="sm" className="min-w-[150px]">
+            {loading ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span> : "Publish Announcement"}
+          </Button>
         </div>
       </div>
     </form>

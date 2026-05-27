@@ -5,6 +5,9 @@ import { revalidateTag } from "next/cache";
 import { requireAuth } from "@/lib/auth";
 import { AppError } from "@/lib/errors";
 import { assignReviewer } from "@/services/dar";
+import { sendReviewerAssignedEmail } from "@/services/email";
+import { OBJECTIVE_LABELS, DOC_TYPE_LABELS } from "@/types/dar";
+import { db } from "@/lib/db";
 import type { ApiResponse } from "@/types/api";
 import type { DarDetail } from "@/types/dar";
 
@@ -30,6 +33,34 @@ export async function POST(req: NextRequest, { params }: Params): Promise<NextRe
 
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");
+
+    // Send email notification to reviewer (fire-and-forget — don't fail the request)
+    const reviewerUser = await db.user.findUnique({
+      where: { id: parsed.data.reviewerUserId },
+      select: { name: true, email: true },
+    });
+
+    if (reviewerUser?.email && dar.darNo) {
+      sendReviewerAssignedEmail({
+        reviewer: { name: reviewerUser.name ?? "", email: reviewerUser.email },
+        requesterName: dar.requester.name ?? session.user.name ?? "",
+        requesterDepartment: dar.requester.department?.name ?? null,
+        darNo: dar.darNo,
+        darId: dar.id,
+        requestDate: dar.requestDate,
+        objective: OBJECTIVE_LABELS[dar.objective],
+        docType: dar.docTypeOther
+          ? `${DOC_TYPE_LABELS[dar.docType]} — ${dar.docTypeOther}`
+          : DOC_TYPE_LABELS[dar.docType],
+        reason: dar.reason,
+        items: dar.items,
+        attachments: dar.attachments.map((a) => ({
+          fileName: a.fileName,
+          spWebUrl: a.spWebUrl,
+        })),
+        senderEmail: session.user.email ?? undefined,
+      }).catch((e) => console.error("[email] Failed to send reviewer notification:", e));
+    }
 
     return NextResponse.json({ data: dar, error: null });
   } catch (err) {

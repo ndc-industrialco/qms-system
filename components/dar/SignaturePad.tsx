@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import type { SignatureType } from "@/types/dar";
 
 interface Props {
@@ -90,9 +91,9 @@ function DrawPad({ onChange }: { onChange: (url: string | null) => void }) {
         onTouchMove={draw}
         onTouchEnd={stopDraw}
       />
-      <button type="button" className="btn btn-ghost btn-xs self-end text-neutral" onClick={clear}>
+      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs self-end text-neutral"  type="button"   onClick={clear}>
         ล้างลายมือชื่อ
-      </button>
+      </Button>
     </div>
   );
 }
@@ -134,7 +135,7 @@ function TypePad({ onChange }: { onChange: (url: string | null) => void }) {
     <div className="flex flex-col gap-3">
       <input
         type="text"
-        className="input input-bordered w-full text-[14px]"
+        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         placeholder="พิมพ์ชื่อของคุณ"
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -146,7 +147,7 @@ function TypePad({ onChange }: { onChange: (url: string | null) => void }) {
             key={f.value}
             type="button"
             onClick={() => setFont(f.value)}
-            className={`btn btn-sm ${font === f.value ? "btn-primary" : "btn-ghost border border-base-300"}`}
+            className={`h-8 px-3 text-xs rounded-md font-medium transition-colors ${font === f.value ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-transparent border border-slate-300 text-slate-700 hover:bg-slate-50"}`}
           >
             <span style={{ fontFamily: f.value }}>{text || "ตัวอย่าง"}</span>
           </button>
@@ -234,15 +235,15 @@ export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, s
             <p className="text-[13px] text-base-content font-medium">ใช้ลายมือชื่อที่บันทึกไว้</p>
             <p className="text-[12px] text-neutral">ประเภท: {savedSignatureType}</p>
           </div>
-          <button
+          <Button size="sm" className="" 
             type="button"
-            className="btn btn-primary btn-sm"
+             
             onClick={() => {
               if (savedSignatureType) onConfirm(savedSignatureUrl, savedSignatureType);
             }}
           >
             ใช้เลย
-          </button>
+          </Button>
         </div>
       )}
 
@@ -271,7 +272,7 @@ export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, s
       <label className="flex items-center gap-2 cursor-pointer select-none text-[14px]">
         <input
           type="checkbox"
-          className="checkbox checkbox-sm checkbox-primary"
+          className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500"
           checked={saveToProfile}
           onChange={(e) => setSaveToProfile(e.target.checked)}
         />
@@ -280,17 +281,17 @@ export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, s
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2 border-t border-base-300">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>
+        <Button variant="ghost" size="sm" className=""  type="button"   onClick={onCancel}>
           ยกเลิก
-        </button>
-        <button
+        </Button>
+        <Button size="sm" className="" 
           type="button"
-          className="btn btn-primary btn-sm"
+           
           disabled={!pending}
           onClick={handleConfirm}
         >
           ยืนยันลายมือชื่อ
-        </button>
+        </Button>
       </div>
     </div>
   );

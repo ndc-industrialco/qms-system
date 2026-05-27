@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import type { DarDetail, DarApprovalRow, ReviewerCandidate } from "@/types/dar";
 import type { SignatureType } from "@/types/dar";
 import SignaturePad from "./SignaturePad";
@@ -133,15 +135,15 @@ function AssignReviewerPanel({ darId, onDone }: { darId: string; onDone: (dar: D
 
   if (!candidates) {
     return (
-      <button
+      <Button size="sm" className="" 
         type="button"
-        className="btn btn-primary btn-sm"
+         
         onClick={loadCandidates}
         disabled={loading}
       >
-        {loading ? <span className="loading loading-spinner loading-xs" /> : null}
+        {loading ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /> : null}
         กำหนดผู้ตรวจสอบ
-      </button>
+      </Button>
     );
   }
 
@@ -149,7 +151,7 @@ function AssignReviewerPanel({ darId, onDone }: { darId: string; onDone: (dar: D
     <div className="flex flex-col gap-3">
       <p className="text-[14px] text-base-content font-medium">เลือกผู้ตรวจสอบ</p>
       <select
-        className="select select-bordered select-sm w-full text-[14px]"
+        className="w-full h-8 px-3 py-1 text-[14px] rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
         value={selected}
         onChange={(e) => setSelected(e.target.value)}
       >
@@ -163,18 +165,18 @@ function AssignReviewerPanel({ darId, onDone }: { darId: string; onDone: (dar: D
       </select>
       {error && <p className="text-[13px] text-error">{error}</p>}
       <div className="flex gap-2">
-        <button
+        <Button size="sm" className="" 
           type="button"
-          className="btn btn-primary btn-sm"
+           
           disabled={!selected || submitting}
           onClick={submit}
         >
-          {submitting ? <span className="loading loading-spinner loading-xs" /> : null}
+          {submitting ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /> : null}
           ยืนยัน
-        </button>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setCandidates(null)}>
+        </Button>
+        <Button variant="ghost" size="sm" className=""  type="button"   onClick={() => setCandidates(null)}>
           ยกเลิก
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -211,8 +213,7 @@ function RejectModal({ darId, onDone, onClose }: { darId: string; onDone: (dar: 
         <h3 className="text-[16px] font-semibold text-base-content">ส่งคืนคำขอ</h3>
         <div>
           <label className="text-[13px] text-neutral mb-1 block">เหตุผลในการส่งคืน <span className="text-error">*</span></label>
-          <textarea
-            className="textarea textarea-bordered w-full text-[14px]"
+          <Textarea
             rows={4}
             placeholder="ระบุเหตุผล..."
             value={reason}
@@ -222,16 +223,16 @@ function RejectModal({ darId, onDone, onClose }: { darId: string; onDone: (dar: 
         </div>
         {error && <p className="text-[13px] text-error">{error}</p>}
         <div className="flex justify-end gap-2">
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onClose} disabled={submitting}>ยกเลิก</button>
-          <button
+          <Button variant="ghost" size="sm" className=""  type="button"   onClick={onClose} disabled={submitting}>ยกเลิก</Button>
+          <Button variant="destructive" size="sm" className="" 
             type="button"
-            className="btn btn-error btn-sm"
+             
             disabled={!reason.trim() || submitting}
             onClick={submit}
           >
-            {submitting ? <span className="loading loading-spinner loading-xs" /> : null}
+            {submitting ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /> : null}
             ยืนยันส่งคืน
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -296,7 +297,7 @@ export default function DarApprovalPanel({
 
       {/* Error */}
       {error && (
-        <div className="alert alert-error text-[14px] py-2 px-3">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-md py-2 px-3 text-[14px]">
           <span>{error}</span>
         </div>
       )}
@@ -309,15 +310,15 @@ export default function DarApprovalPanel({
             ลงลายมือชื่อยืนยันเอกสาร (ผู้จัดทำ)
           </p>
           {!showSignPad ? (
-            <button
+            <Button size="sm" className="" 
               type="button"
-              className="btn btn-primary btn-sm"
+               
               onClick={() => setShowSignPad(true)}
               disabled={approving}
             >
-              {approving ? <span className="loading loading-spinner loading-xs" /> : null}
+              {approving ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /> : null}
               ลงลายมือชื่อ
-            </button>
+            </Button>
           ) : (
             <SignaturePad
               savedSignatureUrl={savedSignatureUrl}
@@ -344,22 +345,22 @@ export default function DarApprovalPanel({
           </p>
           {!showSignPad ? (
             <div className="flex gap-2 flex-wrap">
-              <button
+              <Button size="sm" className="" 
                 type="button"
-                className="btn btn-primary btn-sm"
+                 
                 onClick={() => setShowSignPad(true)}
                 disabled={approving}
               >
-                {approving ? <span className="loading loading-spinner loading-xs" /> : null}
+                {approving ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /> : null}
                 อนุมัติ (ลงลายมือชื่อ)
-              </button>
-              <button
+              </Button>
+              <Button variant="destructive" size="sm" className="bg-transparent border border-rose-500 text-rose-500 hover:bg-rose-50" 
                 type="button"
-                className="btn btn-error btn-outline btn-sm"
+                 
                 onClick={() => setShowReject(true)}
               >
                 ส่งคืน
-              </button>
+              </Button>
             </div>
           ) : (
             <SignaturePad

@@ -4,6 +4,9 @@ import { useEffect } from "react";
 import { useT } from "@/lib/i18n";
 import { useCreateAnnouncement } from "@/hooks/use-create-announcement";
 import AnnouncementBgPicker from "@/components/announcements/AnnouncementBgPicker";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 type Props = {
   open: boolean;
@@ -34,37 +37,33 @@ export default function AnnouncementCreateDrawer({ open, onClose, onCreated }: P
   if (!open) return null;
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={t("announcement.createTitle")}
-      className="fixed inset-0 z-50 flex items-end lg:items-stretch lg:justify-end"
-    >
-      <div onClick={onClose} aria-hidden="true" className="absolute inset-0 bg-black/30" />
-
-      <div className={[
-        "relative z-10 flex flex-col bg-white shadow-2xl",
-        "w-full max-h-[92vh] rounded-t-2xl",
-        "lg:h-full lg:max-h-full lg:w-1/2 lg:rounded-none lg:rounded-l-2xl",
-      ].join(" ")}>
+    <Sheet open={open} onOpenChange={(val) => { if (!val) onClose(); }}>
+      <SheetContent side="right" className="flex flex-col p-0 w-full lg:max-w-2xl h-full" hideClose>
         {/* Mobile drag handle */}
         <div className="lg:hidden flex justify-center pt-3 pb-1 shrink-0" aria-hidden="true">
           <div className="w-10 h-1 rounded-full bg-slate-200" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-800 leading-snug">{t("announcement.createTitle")}</h2>
-            <p className="text-xs text-slate-400 mt-0.5">{isTh ? "กรอกรายละเอียดประกาศด้านล่าง" : "Fill in the announcement details below"}</p>
-          </div>
-          <button
+        <SheetHeader className="px-6 py-4 border-b border-slate-100 shrink-0 text-left relative">
+          <SheetTitle className="text-lg font-semibold text-slate-800 leading-snug pr-8">
+            {t("announcement.createTitle")}
+          </SheetTitle>
+          <SheetDescription className="text-xs text-slate-500 mt-0.5">
+            {isTh ? "กรอกรายละเอียดประกาศด้านล่าง" : "Fill in the announcement details below"}
+          </SheetDescription>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             aria-label={t("common.cancel")}
-            className="h-11 w-11 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F1059] focus-visible:ring-offset-2"
+            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
-        </div>
+          </Button>
+        </SheetHeader>
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
@@ -81,8 +80,8 @@ export default function AnnouncementCreateDrawer({ open, onClose, onCreated }: P
 
           <div>
             <label className={labelCls}>{t("announcement.fieldContent")} <span className="text-rose-600">*</span></label>
-            <textarea
-              className={`${inputCls} resize-none min-h-28`}
+            <Textarea
+              className="min-h-28"
               value={form.content}
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
               maxLength={5000}
@@ -180,24 +179,24 @@ export default function AnnouncementCreateDrawer({ open, onClose, onCreated }: P
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2 shrink-0">
-          <button
+        <SheetFooter className="px-6 py-4 border-t border-slate-100 shrink-0 flex flex-row justify-end gap-2 sm:justify-end">
+          <Button
+            variant="outline"
             onClick={onClose}
             disabled={loading}
-            className="h-11 min-w-[44px] bg-white text-slate-700 border border-slate-200 rounded-xl px-4 text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
           >
             {t("common.cancel")}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSubmit}
             disabled={loading || !form.title.trim() || !form.content.trim()}
-            className="h-11 min-w-[44px] bg-[#0F1059] text-white rounded-xl px-4 text-sm font-medium hover:bg-[#161875] transition-colors disabled:opacity-50 inline-flex items-center gap-2 min-w-28 justify-center"
+            className="min-w-28"
           >
-            {loading && <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />}
+            {loading && <div className="w-4 h-4 mr-2 rounded-full border-2 border-white/30 border-t-white animate-spin" />}
             {t("announcement.publish")}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

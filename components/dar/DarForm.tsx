@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useDarForm } from "@/hooks/use-dar-form";
 import { useToast } from "@/hooks/use-toast";
 import Toast from "@/components/common/Toast";
@@ -9,8 +10,12 @@ import DarItemsSection from "./DarItemsSection";
 import DarDistributionSection from "./DarDistributionSection";
 import DarFormActions from "./DarFormActions";
 import DarAttachmentUpload from "./DarAttachmentUpload";
-import type { DarDetail, DarObjective, DarDocType, TempAttachmentInput } from "@/types/dar";
+import DarSignSubmitModal from "./DarSignSubmitModal";
+import DarReviewerSelectModal from "./DarReviewerSelectModal";
+import type { DarDetail, DarObjective, DarDocType, TempAttachmentInput, SignatureType } from "@/types/dar";
+import type { ReviewerUser } from "./DarReviewerSelectModal";
 import { useT } from "@/lib/i18n";
+import { Textarea } from "@/components/ui/textarea";
 
 type Props = {
   mode: "create" | "edit";
@@ -23,22 +28,54 @@ type Props = {
     requestDate: string;
   };
   tempId: string;
+  hideSubmit?: boolean;
 };
 
-export default function DarForm({ mode, initialData, departments, requesterInfo, tempId }: Props) {
+export default function DarForm({ mode, initialData, departments, requesterInfo, tempId, hideSubmit = false }: Props) {
   const t = useT();
   const { toast, showToast, hideToast } = useToast();
 
   const {
     state, errors, isSaving, isSubmitting,
     savedDarId, setTempAttachments,
-    setField, saveDraft, submitForm,
+    setField, saveDraft, validateAndStart, submitWithReviewer,
   } = useDarForm(
     mode,
     initialData,
     (msg) => showToast("success", msg),
     (msg) => showToast("error", msg),
   );
+
+  // Multi-step submit flow state
+  const [showSignModal, setShowSignModal] = useState(false);
+  const [showReviewerModal, setShowReviewerModal] = useState(false);
+  const [pendingSignature, setPendingSignature] = useState<{ dataUrl: string; type: SignatureType } | null>(null);
+
+  function handleSubmitClick() {
+    if (!validateAndStart()) return;
+    setShowSignModal(true);
+  }
+
+  function handleSignConfirm(dataUrl: string, type: SignatureType) {
+    setPendingSignature({ dataUrl, type });
+    setShowSignModal(false);
+    setShowReviewerModal(true);
+  }
+
+  function handleSignCancel() {
+    setShowSignModal(false);
+  }
+
+  function handleReviewerBack() {
+    setShowReviewerModal(false);
+    setShowSignModal(true);
+  }
+
+  async function handleSend(reviewer: ReviewerUser) {
+    if (!pendingSignature) return;
+    await submitWithReviewer(pendingSignature.dataUrl, pendingSignature.type, reviewer);
+    setShowReviewerModal(false);
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -64,12 +101,8 @@ export default function DarForm({ mode, initialData, departments, requesterInfo,
         <h2 className="text-slate-800 text-base font-semibold mb-4">
           {t("sectionReason")} <span className="text-rose-600">*</span>
         </h2>
-        <textarea
-          className={`w-full bg-slate-50/50 border rounded-xl px-4 py-2.5 text-slate-700 text-sm resize-none min-h-25 focus:outline-none focus:bg-white transition-colors ${
-            errors.reason
-              ? "border-rose-400 focus:border-rose-500"
-              : "border-slate-200 focus:border-[#0F1059]"
-          }`}
+        <Textarea
+          className={errors.reason ? "border-rose-400 focus-visible:border-rose-500" : ""}
           placeholder={t("phReasonForRequest")}
           value={state.reason}
           onChange={(e) => setField("reason", e.target.value)}
@@ -116,7 +149,21 @@ export default function DarForm({ mode, initialData, departments, requesterInfo,
         isSaving={isSaving}
         isSubmitting={isSubmitting}
         onSaveDraft={saveDraft}
-        onSubmit={submitForm}
+        onSubmit={handleSubmitClick}
+        hideSubmit={hideSubmit}
+      />
+
+      <DarSignSubmitModal
+        open={showSignModal}
+        onConfirm={handleSignConfirm}
+        onCancel={handleSignCancel}
+      />
+
+      <DarReviewerSelectModal
+        open={showReviewerModal}
+        isSending={isSubmitting}
+        onBack={handleReviewerBack}
+        onSend={handleSend}
       />
 
       {toast && <Toast type={toast.type} message={toast.message} onClose={hideToast} />}
