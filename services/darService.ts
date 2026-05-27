@@ -334,8 +334,9 @@ export class DarService {
     const year = new Date().getFullYear();
 
     await db.$transaction(async (tx) => {
-      const darNo = await this.generateDarNo(year, tx);
+      const darNo = existing.darNo || await this.generateDarNo(year, tx);
       await this.darRepo.update(id, { status: "PENDING_REVIEW" as DarStatus, darNo }, tx);
+      await this.darRepo.deleteApprovalsByDarId(id, tx);
       await this.darRepo.createApproval(
         { stepRole: "PREPARER", action: "PENDING", assignedUserId: requesterId, darMasterId: id },
         tx
@@ -361,7 +362,7 @@ export class DarService {
     if (!reviewer) throw new NotFoundError("ผู้ตรวจสอบ");
 
     await db.$transaction(async (tx) => {
-      await this.darRepo.deleteApprovalsByDarId(darId, tx);
+      await this.darRepo.deleteApprovalsByDarIdExceptPreparer(darId, tx);
       await this.darRepo.createApproval(
         { stepRole: "REVIEWER", action: "PENDING", assignedUserId: reviewerUserId, darMasterId: darId },
         tx
@@ -429,7 +430,7 @@ export class DarService {
       );
 
       if (input.saveSignature) {
-        await this.userRepo.update(
+        await this.userRepo.updateProfile(
           userId,
           { savedSignatureUrl: input.signatureDataUrl, signatureType: input.signatureType },
           tx

@@ -117,6 +117,17 @@ export class DarRepository extends BaseRepository<DarMaster> {
     });
   }
 
+  async deleteApprovalsByDarIdExceptPreparer(darMasterId: string, tx: Prisma.TransactionClient) {
+    return tx.darApproval.deleteMany({
+      where: {
+        darMasterId,
+        stepRole: {
+          not: "PREPARER",
+        },
+      },
+    });
+  }
+
   // --- DarAttachment Operations ---
   async findAttachmentsByDarId(darMasterId: string, tx?: Prisma.TransactionClient) {
     const client = tx || this.getClient();

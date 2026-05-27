@@ -1,5 +1,5 @@
 import { BaseRepository } from "./baseRepository";
-import { User, Prisma } from "@/generated/prisma/client";
+import { User, Prisma, SignatureType } from "@/generated/prisma/client";
 
 export class UserRepository extends BaseRepository<User> {
   constructor() {
@@ -30,7 +30,7 @@ export class UserRepository extends BaseRepository<User> {
 
   async updateProfile(
     id: string,
-    data: { name?: string; position?: string; savedSignatureUrl?: string | null; signatureType?: string | null },
+    data: { name?: string; position?: string | null; savedSignatureUrl?: string | null; signatureType?: SignatureType | null },
     tx?: Prisma.TransactionClient
   ): Promise<User> {
     return this.getModel(tx).update({

@@ -4,6 +4,7 @@ import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
+import { SignatureType } from "@/generated/prisma/client";
 
 const userRepo = new UserRepository();
 
@@ -49,7 +50,7 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const parsed = patchSchema.parse(body);
 
-    const updateData: Record<string, unknown> = {};
+    const updateData: { name?: string; position?: string | null; savedSignatureUrl?: string | null; signatureType?: SignatureType | null } = {};
     if (parsed.name !== undefined) updateData.name = parsed.name;
     if (parsed.position !== undefined) updateData.position = parsed.position;
 
@@ -58,7 +59,7 @@ export async function PATCH(req: NextRequest) {
       updateData.signatureType = null;
     } else if (parsed.savedSignatureUrl !== undefined) {
       updateData.savedSignatureUrl = parsed.savedSignatureUrl;
-      updateData.signatureType = parsed.signatureType ?? null;
+      updateData.signatureType = (parsed.signatureType ?? null) as SignatureType | null;
     }
 
     const user = await userRepo.updateProfile(session.user.id, updateData);
