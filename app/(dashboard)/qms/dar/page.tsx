@@ -2,6 +2,11 @@
 import { requireRole } from "@/lib/auth";
 import { DarService } from "@/services/darService";
 import QmsDarListClient from "@/components/dar/QmsDarListClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Manage DAR",
+};
 
 const darService = new DarService();
 

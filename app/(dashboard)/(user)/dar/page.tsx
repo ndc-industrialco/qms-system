@@ -6,6 +6,11 @@ import { DepartmentService } from "@/services/departmentService";
 import DarTableSkeleton from "@/components/dar/DarTableSkeleton";
 import DarListClient from "@/components/dar/(user)/DarListClient";
 import type { DarSummary } from "@/types/dar";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "My Requests",
+};
 
 const darService = new DarService();
 const deptService = new DepartmentService();

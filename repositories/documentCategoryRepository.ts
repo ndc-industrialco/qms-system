@@ -6,18 +6,20 @@ export class DocumentCategoryRepository extends BaseRepository<DocumentCategory>
     super('documentCategory');
   }
 
+  private delegate(tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).documentCategory;
+  }
+
   async listByDepartment(departmentId: string, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findMany({
+    return this.delegate(tx).findMany({
       where: { departmentId },
       orderBy: [{ order: 'asc' }, { name: 'asc' }],
-      include: {
-        _count: { select: { documents: true } },
-      },
+      include: { _count: { select: { documents: true } } },
     });
   }
 
   async findByIdWithCount(id: string, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findUnique({
+    return this.delegate(tx).findUnique({
       where: { id },
       include: {
         department: { select: { id: true, name: true } },
@@ -27,7 +29,7 @@ export class DocumentCategoryRepository extends BaseRepository<DocumentCategory>
   }
 
   async hasDocuments(id: string, tx?: Prisma.TransactionClient): Promise<boolean> {
-    const count = await this.getModel(tx).count({
+    const count = await this.delegate(tx).count({
       where: { id, documents: { some: {} } },
     });
     return count > 0;

@@ -395,14 +395,11 @@ export const ModelName = {
   DarApproval: 'DarApproval',
   QmsProcessing: 'QmsProcessing',
   PublicDocument: 'PublicDocument',
-  KpiSchedule: 'KpiSchedule',
-  KpiMaster: 'KpiMaster',
-  KpiMonthlyResult: 'KpiMonthlyResult',
-  KpiMonthlyAttachment: 'KpiMonthlyAttachment',
-  KpiSignatureLog: 'KpiSignatureLog',
-  KpiAuditLog: 'KpiAuditLog',
-  KpiCorrectiveAction: 'KpiCorrectiveAction',
-  KpiApprovalLog: 'KpiApprovalLog',
+  KPI: 'KPI',
+  KPIObjective: 'KPIObjective',
+  KPIMonthlyReport: 'KPIMonthlyReport',
+  KPIMonthlyDetail: 'KPIMonthlyDetail',
+  KPICorrectiveAction: 'KPICorrectiveAction',
   DocumentControl: 'DocumentControl',
   DocumentCategory: 'DocumentCategory',
   DocumentControlRevision: 'DocumentControlRevision'
@@ -421,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "department" | "user" | "systemConfig" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "qmsProcessing" | "publicDocument" | "kpiSchedule" | "kpiMaster" | "kpiMonthlyResult" | "kpiMonthlyAttachment" | "kpiSignatureLog" | "kpiAuditLog" | "kpiCorrectiveAction" | "kpiApprovalLog" | "documentControl" | "documentCategory" | "documentControlRevision"
+    modelProps: "department" | "user" | "systemConfig" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1239,595 +1236,373 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    KpiSchedule: {
-      payload: Prisma.$KpiSchedulePayload<ExtArgs>
-      fields: Prisma.KpiScheduleFieldRefs
+    KPI: {
+      payload: Prisma.$KPIPayload<ExtArgs>
+      fields: Prisma.KPIFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.KpiScheduleFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload> | null
+          args: Prisma.KPIFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.KpiScheduleFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>
+          args: Prisma.KPIFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>
         }
         findFirst: {
-          args: Prisma.KpiScheduleFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload> | null
+          args: Prisma.KPIFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.KpiScheduleFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>
+          args: Prisma.KPIFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>
         }
         findMany: {
-          args: Prisma.KpiScheduleFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>[]
+          args: Prisma.KPIFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>[]
         }
         create: {
-          args: Prisma.KpiScheduleCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>
+          args: Prisma.KPICreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>
         }
         createMany: {
-          args: Prisma.KpiScheduleCreateManyArgs<ExtArgs>
+          args: Prisma.KPICreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.KpiScheduleCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>[]
+          args: Prisma.KPICreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>[]
         }
         delete: {
-          args: Prisma.KpiScheduleDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>
+          args: Prisma.KPIDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>
         }
         update: {
-          args: Prisma.KpiScheduleUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>
+          args: Prisma.KPIUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>
         }
         deleteMany: {
-          args: Prisma.KpiScheduleDeleteManyArgs<ExtArgs>
+          args: Prisma.KPIDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.KpiScheduleUpdateManyArgs<ExtArgs>
+          args: Prisma.KPIUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.KpiScheduleUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>[]
+          args: Prisma.KPIUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>[]
         }
         upsert: {
-          args: Prisma.KpiScheduleUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSchedulePayload>
+          args: Prisma.KPIUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIPayload>
         }
         aggregate: {
-          args: Prisma.KpiScheduleAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiSchedule>
+          args: Prisma.KPIAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKPI>
         }
         groupBy: {
-          args: Prisma.KpiScheduleGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiScheduleGroupByOutputType>[]
+          args: Prisma.KPIGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPIGroupByOutputType>[]
         }
         count: {
-          args: Prisma.KpiScheduleCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiScheduleCountAggregateOutputType> | number
+          args: Prisma.KPICountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPICountAggregateOutputType> | number
         }
       }
     }
-    KpiMaster: {
-      payload: Prisma.$KpiMasterPayload<ExtArgs>
-      fields: Prisma.KpiMasterFieldRefs
+    KPIObjective: {
+      payload: Prisma.$KPIObjectivePayload<ExtArgs>
+      fields: Prisma.KPIObjectiveFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.KpiMasterFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload> | null
+          args: Prisma.KPIObjectiveFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.KpiMasterFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>
+          args: Prisma.KPIObjectiveFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>
         }
         findFirst: {
-          args: Prisma.KpiMasterFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload> | null
+          args: Prisma.KPIObjectiveFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.KpiMasterFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>
+          args: Prisma.KPIObjectiveFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>
         }
         findMany: {
-          args: Prisma.KpiMasterFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>[]
+          args: Prisma.KPIObjectiveFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>[]
         }
         create: {
-          args: Prisma.KpiMasterCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>
+          args: Prisma.KPIObjectiveCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>
         }
         createMany: {
-          args: Prisma.KpiMasterCreateManyArgs<ExtArgs>
+          args: Prisma.KPIObjectiveCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.KpiMasterCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>[]
+          args: Prisma.KPIObjectiveCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>[]
         }
         delete: {
-          args: Prisma.KpiMasterDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>
+          args: Prisma.KPIObjectiveDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>
         }
         update: {
-          args: Prisma.KpiMasterUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>
+          args: Prisma.KPIObjectiveUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>
         }
         deleteMany: {
-          args: Prisma.KpiMasterDeleteManyArgs<ExtArgs>
+          args: Prisma.KPIObjectiveDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.KpiMasterUpdateManyArgs<ExtArgs>
+          args: Prisma.KPIObjectiveUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.KpiMasterUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>[]
+          args: Prisma.KPIObjectiveUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>[]
         }
         upsert: {
-          args: Prisma.KpiMasterUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMasterPayload>
+          args: Prisma.KPIObjectiveUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIObjectivePayload>
         }
         aggregate: {
-          args: Prisma.KpiMasterAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiMaster>
+          args: Prisma.KPIObjectiveAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKPIObjective>
         }
         groupBy: {
-          args: Prisma.KpiMasterGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiMasterGroupByOutputType>[]
+          args: Prisma.KPIObjectiveGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPIObjectiveGroupByOutputType>[]
         }
         count: {
-          args: Prisma.KpiMasterCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiMasterCountAggregateOutputType> | number
+          args: Prisma.KPIObjectiveCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPIObjectiveCountAggregateOutputType> | number
         }
       }
     }
-    KpiMonthlyResult: {
-      payload: Prisma.$KpiMonthlyResultPayload<ExtArgs>
-      fields: Prisma.KpiMonthlyResultFieldRefs
+    KPIMonthlyReport: {
+      payload: Prisma.$KPIMonthlyReportPayload<ExtArgs>
+      fields: Prisma.KPIMonthlyReportFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.KpiMonthlyResultFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload> | null
+          args: Prisma.KPIMonthlyReportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.KpiMonthlyResultFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>
+          args: Prisma.KPIMonthlyReportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>
         }
         findFirst: {
-          args: Prisma.KpiMonthlyResultFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload> | null
+          args: Prisma.KPIMonthlyReportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.KpiMonthlyResultFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>
+          args: Prisma.KPIMonthlyReportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>
         }
         findMany: {
-          args: Prisma.KpiMonthlyResultFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>[]
+          args: Prisma.KPIMonthlyReportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>[]
         }
         create: {
-          args: Prisma.KpiMonthlyResultCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>
+          args: Prisma.KPIMonthlyReportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>
         }
         createMany: {
-          args: Prisma.KpiMonthlyResultCreateManyArgs<ExtArgs>
+          args: Prisma.KPIMonthlyReportCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.KpiMonthlyResultCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>[]
+          args: Prisma.KPIMonthlyReportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>[]
         }
         delete: {
-          args: Prisma.KpiMonthlyResultDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>
+          args: Prisma.KPIMonthlyReportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>
         }
         update: {
-          args: Prisma.KpiMonthlyResultUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>
+          args: Prisma.KPIMonthlyReportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>
         }
         deleteMany: {
-          args: Prisma.KpiMonthlyResultDeleteManyArgs<ExtArgs>
+          args: Prisma.KPIMonthlyReportDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.KpiMonthlyResultUpdateManyArgs<ExtArgs>
+          args: Prisma.KPIMonthlyReportUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.KpiMonthlyResultUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>[]
+          args: Prisma.KPIMonthlyReportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>[]
         }
         upsert: {
-          args: Prisma.KpiMonthlyResultUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyResultPayload>
+          args: Prisma.KPIMonthlyReportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyReportPayload>
         }
         aggregate: {
-          args: Prisma.KpiMonthlyResultAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiMonthlyResult>
+          args: Prisma.KPIMonthlyReportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKPIMonthlyReport>
         }
         groupBy: {
-          args: Prisma.KpiMonthlyResultGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiMonthlyResultGroupByOutputType>[]
+          args: Prisma.KPIMonthlyReportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPIMonthlyReportGroupByOutputType>[]
         }
         count: {
-          args: Prisma.KpiMonthlyResultCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiMonthlyResultCountAggregateOutputType> | number
+          args: Prisma.KPIMonthlyReportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPIMonthlyReportCountAggregateOutputType> | number
         }
       }
     }
-    KpiMonthlyAttachment: {
-      payload: Prisma.$KpiMonthlyAttachmentPayload<ExtArgs>
-      fields: Prisma.KpiMonthlyAttachmentFieldRefs
+    KPIMonthlyDetail: {
+      payload: Prisma.$KPIMonthlyDetailPayload<ExtArgs>
+      fields: Prisma.KPIMonthlyDetailFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.KpiMonthlyAttachmentFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload> | null
+          args: Prisma.KPIMonthlyDetailFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.KpiMonthlyAttachmentFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>
+          args: Prisma.KPIMonthlyDetailFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>
         }
         findFirst: {
-          args: Prisma.KpiMonthlyAttachmentFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload> | null
+          args: Prisma.KPIMonthlyDetailFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.KpiMonthlyAttachmentFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>
+          args: Prisma.KPIMonthlyDetailFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>
         }
         findMany: {
-          args: Prisma.KpiMonthlyAttachmentFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>[]
+          args: Prisma.KPIMonthlyDetailFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>[]
         }
         create: {
-          args: Prisma.KpiMonthlyAttachmentCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>
+          args: Prisma.KPIMonthlyDetailCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>
         }
         createMany: {
-          args: Prisma.KpiMonthlyAttachmentCreateManyArgs<ExtArgs>
+          args: Prisma.KPIMonthlyDetailCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.KpiMonthlyAttachmentCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>[]
+          args: Prisma.KPIMonthlyDetailCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>[]
         }
         delete: {
-          args: Prisma.KpiMonthlyAttachmentDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>
+          args: Prisma.KPIMonthlyDetailDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>
         }
         update: {
-          args: Prisma.KpiMonthlyAttachmentUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>
+          args: Prisma.KPIMonthlyDetailUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>
         }
         deleteMany: {
-          args: Prisma.KpiMonthlyAttachmentDeleteManyArgs<ExtArgs>
+          args: Prisma.KPIMonthlyDetailDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.KpiMonthlyAttachmentUpdateManyArgs<ExtArgs>
+          args: Prisma.KPIMonthlyDetailUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.KpiMonthlyAttachmentUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>[]
+          args: Prisma.KPIMonthlyDetailUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>[]
         }
         upsert: {
-          args: Prisma.KpiMonthlyAttachmentUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiMonthlyAttachmentPayload>
+          args: Prisma.KPIMonthlyDetailUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPIMonthlyDetailPayload>
         }
         aggregate: {
-          args: Prisma.KpiMonthlyAttachmentAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiMonthlyAttachment>
+          args: Prisma.KPIMonthlyDetailAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKPIMonthlyDetail>
         }
         groupBy: {
-          args: Prisma.KpiMonthlyAttachmentGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiMonthlyAttachmentGroupByOutputType>[]
+          args: Prisma.KPIMonthlyDetailGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPIMonthlyDetailGroupByOutputType>[]
         }
         count: {
-          args: Prisma.KpiMonthlyAttachmentCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiMonthlyAttachmentCountAggregateOutputType> | number
+          args: Prisma.KPIMonthlyDetailCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPIMonthlyDetailCountAggregateOutputType> | number
         }
       }
     }
-    KpiSignatureLog: {
-      payload: Prisma.$KpiSignatureLogPayload<ExtArgs>
-      fields: Prisma.KpiSignatureLogFieldRefs
+    KPICorrectiveAction: {
+      payload: Prisma.$KPICorrectiveActionPayload<ExtArgs>
+      fields: Prisma.KPICorrectiveActionFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.KpiSignatureLogFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload> | null
+          args: Prisma.KPICorrectiveActionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.KpiSignatureLogFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>
+          args: Prisma.KPICorrectiveActionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>
         }
         findFirst: {
-          args: Prisma.KpiSignatureLogFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload> | null
+          args: Prisma.KPICorrectiveActionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.KpiSignatureLogFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>
+          args: Prisma.KPICorrectiveActionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>
         }
         findMany: {
-          args: Prisma.KpiSignatureLogFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>[]
+          args: Prisma.KPICorrectiveActionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>[]
         }
         create: {
-          args: Prisma.KpiSignatureLogCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>
+          args: Prisma.KPICorrectiveActionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>
         }
         createMany: {
-          args: Prisma.KpiSignatureLogCreateManyArgs<ExtArgs>
+          args: Prisma.KPICorrectiveActionCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.KpiSignatureLogCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>[]
+          args: Prisma.KPICorrectiveActionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>[]
         }
         delete: {
-          args: Prisma.KpiSignatureLogDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>
+          args: Prisma.KPICorrectiveActionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>
         }
         update: {
-          args: Prisma.KpiSignatureLogUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>
+          args: Prisma.KPICorrectiveActionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>
         }
         deleteMany: {
-          args: Prisma.KpiSignatureLogDeleteManyArgs<ExtArgs>
+          args: Prisma.KPICorrectiveActionDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.KpiSignatureLogUpdateManyArgs<ExtArgs>
+          args: Prisma.KPICorrectiveActionUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.KpiSignatureLogUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>[]
+          args: Prisma.KPICorrectiveActionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>[]
         }
         upsert: {
-          args: Prisma.KpiSignatureLogUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiSignatureLogPayload>
+          args: Prisma.KPICorrectiveActionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KPICorrectiveActionPayload>
         }
         aggregate: {
-          args: Prisma.KpiSignatureLogAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiSignatureLog>
+          args: Prisma.KPICorrectiveActionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKPICorrectiveAction>
         }
         groupBy: {
-          args: Prisma.KpiSignatureLogGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiSignatureLogGroupByOutputType>[]
+          args: Prisma.KPICorrectiveActionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPICorrectiveActionGroupByOutputType>[]
         }
         count: {
-          args: Prisma.KpiSignatureLogCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiSignatureLogCountAggregateOutputType> | number
-        }
-      }
-    }
-    KpiAuditLog: {
-      payload: Prisma.$KpiAuditLogPayload<ExtArgs>
-      fields: Prisma.KpiAuditLogFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.KpiAuditLogFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.KpiAuditLogFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>
-        }
-        findFirst: {
-          args: Prisma.KpiAuditLogFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.KpiAuditLogFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>
-        }
-        findMany: {
-          args: Prisma.KpiAuditLogFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>[]
-        }
-        create: {
-          args: Prisma.KpiAuditLogCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>
-        }
-        createMany: {
-          args: Prisma.KpiAuditLogCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.KpiAuditLogCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>[]
-        }
-        delete: {
-          args: Prisma.KpiAuditLogDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>
-        }
-        update: {
-          args: Prisma.KpiAuditLogUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>
-        }
-        deleteMany: {
-          args: Prisma.KpiAuditLogDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.KpiAuditLogUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.KpiAuditLogUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>[]
-        }
-        upsert: {
-          args: Prisma.KpiAuditLogUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiAuditLogPayload>
-        }
-        aggregate: {
-          args: Prisma.KpiAuditLogAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiAuditLog>
-        }
-        groupBy: {
-          args: Prisma.KpiAuditLogGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiAuditLogGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.KpiAuditLogCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiAuditLogCountAggregateOutputType> | number
-        }
-      }
-    }
-    KpiCorrectiveAction: {
-      payload: Prisma.$KpiCorrectiveActionPayload<ExtArgs>
-      fields: Prisma.KpiCorrectiveActionFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.KpiCorrectiveActionFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.KpiCorrectiveActionFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>
-        }
-        findFirst: {
-          args: Prisma.KpiCorrectiveActionFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.KpiCorrectiveActionFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>
-        }
-        findMany: {
-          args: Prisma.KpiCorrectiveActionFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>[]
-        }
-        create: {
-          args: Prisma.KpiCorrectiveActionCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>
-        }
-        createMany: {
-          args: Prisma.KpiCorrectiveActionCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.KpiCorrectiveActionCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>[]
-        }
-        delete: {
-          args: Prisma.KpiCorrectiveActionDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>
-        }
-        update: {
-          args: Prisma.KpiCorrectiveActionUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>
-        }
-        deleteMany: {
-          args: Prisma.KpiCorrectiveActionDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.KpiCorrectiveActionUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.KpiCorrectiveActionUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>[]
-        }
-        upsert: {
-          args: Prisma.KpiCorrectiveActionUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiCorrectiveActionPayload>
-        }
-        aggregate: {
-          args: Prisma.KpiCorrectiveActionAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiCorrectiveAction>
-        }
-        groupBy: {
-          args: Prisma.KpiCorrectiveActionGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiCorrectiveActionGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.KpiCorrectiveActionCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiCorrectiveActionCountAggregateOutputType> | number
-        }
-      }
-    }
-    KpiApprovalLog: {
-      payload: Prisma.$KpiApprovalLogPayload<ExtArgs>
-      fields: Prisma.KpiApprovalLogFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.KpiApprovalLogFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.KpiApprovalLogFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>
-        }
-        findFirst: {
-          args: Prisma.KpiApprovalLogFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.KpiApprovalLogFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>
-        }
-        findMany: {
-          args: Prisma.KpiApprovalLogFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>[]
-        }
-        create: {
-          args: Prisma.KpiApprovalLogCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>
-        }
-        createMany: {
-          args: Prisma.KpiApprovalLogCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.KpiApprovalLogCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>[]
-        }
-        delete: {
-          args: Prisma.KpiApprovalLogDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>
-        }
-        update: {
-          args: Prisma.KpiApprovalLogUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>
-        }
-        deleteMany: {
-          args: Prisma.KpiApprovalLogDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.KpiApprovalLogUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.KpiApprovalLogUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>[]
-        }
-        upsert: {
-          args: Prisma.KpiApprovalLogUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiApprovalLogPayload>
-        }
-        aggregate: {
-          args: Prisma.KpiApprovalLogAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiApprovalLog>
-        }
-        groupBy: {
-          args: Prisma.KpiApprovalLogGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiApprovalLogGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.KpiApprovalLogCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.KpiApprovalLogCountAggregateOutputType> | number
+          args: Prisma.KPICorrectiveActionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KPICorrectiveActionCountAggregateOutputType> | number
         }
       }
     }
@@ -2276,136 +2051,85 @@ export const PublicDocumentScalarFieldEnum = {
 export type PublicDocumentScalarFieldEnum = (typeof PublicDocumentScalarFieldEnum)[keyof typeof PublicDocumentScalarFieldEnum]
 
 
-export const KpiScheduleScalarFieldEnum = {
+export const KPIScalarFieldEnum = {
   id: 'id',
-  year: 'year',
-  month: 'month',
-  dueDate: 'dueDate',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type KpiScheduleScalarFieldEnum = (typeof KpiScheduleScalarFieldEnum)[keyof typeof KpiScheduleScalarFieldEnum]
-
-
-export const KpiMasterScalarFieldEnum = {
-  id: 'id',
-  year: 'year',
-  periodType: 'periodType',
-  objectiveDetails: 'objectiveDetails',
-  measurementFrequency: 'measurementFrequency',
-  calculationFormula: 'calculationFormula',
-  guidelines: 'guidelines',
-  trackingRecords: 'trackingRecords',
-  targetValue: 'targetValue',
-  departmentId: 'departmentId',
-  createdById: 'createdById',
-  objectiveStatus: 'objectiveStatus',
-  version: 'version',
-  approvedById: 'approvedById',
-  approvedAt: 'approvedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type KpiMasterScalarFieldEnum = (typeof KpiMasterScalarFieldEnum)[keyof typeof KpiMasterScalarFieldEnum]
-
-
-export const KpiMonthlyResultScalarFieldEnum = {
-  id: 'id',
-  periodYear: 'periodYear',
-  month: 'month',
-  actualValue: 'actualValue',
-  isNa: 'isNa',
+  yearly: 'yearly',
+  department: 'department',
+  prepare: 'prepare',
+  reviewer: 'reviewer',
+  approver: 'approver',
   status: 'status',
-  approvalStatus: 'approvalStatus',
-  spItemId: 'spItemId',
-  spWebUrl: 'spWebUrl',
-  spDownloadUrl: 'spDownloadUrl',
-  fileName: 'fileName',
-  submittedById: 'submittedById',
+  prepareSignature: 'prepareSignature',
+  reviewerUserId: 'reviewerUserId',
+  approverUserId: 'approverUserId',
   submittedAt: 'submittedAt',
-  approvedById: 'approvedById',
-  approvedAt: 'approvedAt',
-  rejectionReason: 'rejectionReason',
-  closedAt: 'closedAt',
-  kpiMasterId: 'kpiMasterId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type KpiMonthlyResultScalarFieldEnum = (typeof KpiMonthlyResultScalarFieldEnum)[keyof typeof KpiMonthlyResultScalarFieldEnum]
+export type KPIScalarFieldEnum = (typeof KPIScalarFieldEnum)[keyof typeof KPIScalarFieldEnum]
 
 
-export const KpiMonthlyAttachmentScalarFieldEnum = {
+export const KPIObjectiveScalarFieldEnum = {
   id: 'id',
-  kpiMonthlyResultId: 'kpiMonthlyResultId',
-  fileName: 'fileName',
-  mimeType: 'mimeType',
-  fileSize: 'fileSize',
-  spDriveId: 'spDriveId',
-  spItemId: 'spItemId',
-  spWebUrl: 'spWebUrl',
-  uploadedById: 'uploadedById',
-  createdAt: 'createdAt'
-} as const
-
-export type KpiMonthlyAttachmentScalarFieldEnum = (typeof KpiMonthlyAttachmentScalarFieldEnum)[keyof typeof KpiMonthlyAttachmentScalarFieldEnum]
-
-
-export const KpiSignatureLogScalarFieldEnum = {
-  id: 'id',
-  kpiMonthlyResultId: 'kpiMonthlyResultId',
-  signerId: 'signerId',
-  signerRole: 'signerRole',
-  contentHash: 'contentHash',
-  action: 'action',
-  signedAt: 'signedAt'
-} as const
-
-export type KpiSignatureLogScalarFieldEnum = (typeof KpiSignatureLogScalarFieldEnum)[keyof typeof KpiSignatureLogScalarFieldEnum]
-
-
-export const KpiAuditLogScalarFieldEnum = {
-  id: 'id',
-  kpiMonthlyResultId: 'kpiMonthlyResultId',
-  actorUserId: 'actorUserId',
-  action: 'action',
-  beforeJson: 'beforeJson',
-  afterJson: 'afterJson',
-  createdAt: 'createdAt'
-} as const
-
-export type KpiAuditLogScalarFieldEnum = (typeof KpiAuditLogScalarFieldEnum)[keyof typeof KpiAuditLogScalarFieldEnum]
-
-
-export const KpiCorrectiveActionScalarFieldEnum = {
-  id: 'id',
-  sequenceNo: 'sequenceNo',
-  rootCauseAnalysis: 'rootCauseAnalysis',
-  improvementGuidelines: 'improvementGuidelines',
-  responsiblePersonM365: 'responsiblePersonM365',
-  dueDate: 'dueDate',
-  kpiMonthlyResultId: 'kpiMonthlyResultId',
+  kpiId: 'kpiId',
+  target: 'target',
+  objective: 'objective',
+  frequency: 'frequency',
+  calculationFormula: 'calculationFormula',
+  actionPlanGuidelines: 'actionPlanGuidelines',
+  referenceDocuments: 'referenceDocuments',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type KpiCorrectiveActionScalarFieldEnum = (typeof KpiCorrectiveActionScalarFieldEnum)[keyof typeof KpiCorrectiveActionScalarFieldEnum]
+export type KPIObjectiveScalarFieldEnum = (typeof KPIObjectiveScalarFieldEnum)[keyof typeof KPIObjectiveScalarFieldEnum]
 
 
-export const KpiApprovalLogScalarFieldEnum = {
+export const KPIMonthlyReportScalarFieldEnum = {
   id: 'id',
+  kpiId: 'kpiId',
   month: 'month',
-  stepRole: 'stepRole',
-  actionDate: 'actionDate',
-  signatureUsedUrl: 'signatureUsedUrl',
-  signatureTypeUsed: 'signatureTypeUsed',
-  kpiMasterId: 'kpiMasterId',
-  assignedUserId: 'assignedUserId'
+  year: 'year',
+  status: 'status',
+  prepareBy: 'prepareBy',
+  reviewBy: 'reviewBy',
+  approveBy: 'approveBy',
+  submittedAt: 'submittedAt',
+  approvedAt: 'approvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
-export type KpiApprovalLogScalarFieldEnum = (typeof KpiApprovalLogScalarFieldEnum)[keyof typeof KpiApprovalLogScalarFieldEnum]
+export type KPIMonthlyReportScalarFieldEnum = (typeof KPIMonthlyReportScalarFieldEnum)[keyof typeof KPIMonthlyReportScalarFieldEnum]
+
+
+export const KPIMonthlyDetailScalarFieldEnum = {
+  id: 'id',
+  monthlyReportId: 'monthlyReportId',
+  kpiObjectiveId: 'kpiObjectiveId',
+  actualResult: 'actualResult',
+  achievedStatus: 'achievedStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KPIMonthlyDetailScalarFieldEnum = (typeof KPIMonthlyDetailScalarFieldEnum)[keyof typeof KPIMonthlyDetailScalarFieldEnum]
+
+
+export const KPICorrectiveActionScalarFieldEnum = {
+  id: 'id',
+  monthlyDetailId: 'monthlyDetailId',
+  times: 'times',
+  rootCause: 'rootCause',
+  guidelines: 'guidelines',
+  responsiblePerson: 'responsiblePerson',
+  dueDate: 'dueDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KPICorrectiveActionScalarFieldEnum = (typeof KPICorrectiveActionScalarFieldEnum)[keyof typeof KPICorrectiveActionScalarFieldEnum]
 
 
 export const DocumentControlScalarFieldEnum = {
@@ -2477,14 +2201,6 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-export const NullableJsonNullValueInput = {
-  DbNull: DbNull,
-  JsonNull: JsonNull
-} as const
-
-export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
-
-
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -2499,15 +2215,6 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
-
-
-export const JsonNullValueFilter = {
-  DbNull: DbNull,
-  JsonNull: JsonNull,
-  AnyNull: AnyNull
-} as const
-
-export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -2650,34 +2357,6 @@ export type ListEnumApprovalActionFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
- * Reference to a field of type 'KpiPeriodType'
- */
-export type EnumKpiPeriodTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiPeriodType'>
-    
-
-
-/**
- * Reference to a field of type 'KpiPeriodType[]'
- */
-export type ListEnumKpiPeriodTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiPeriodType[]'>
-    
-
-
-/**
- * Reference to a field of type 'Decimal'
- */
-export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-/**
- * Reference to a field of type 'Decimal[]'
- */
-export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-/**
  * Reference to a field of type 'KpiObjectiveStatus'
  */
 export type EnumKpiObjectiveStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiObjectiveStatus'>
@@ -2692,86 +2371,44 @@ export type ListEnumKpiObjectiveStatusFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
- * Reference to a field of type 'KpiMonthlyStatus'
+ * Reference to a field of type 'Float'
  */
-export type EnumKpiMonthlyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiMonthlyStatus'>
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
 
 
 /**
- * Reference to a field of type 'KpiMonthlyStatus[]'
+ * Reference to a field of type 'Float[]'
  */
-export type ListEnumKpiMonthlyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiMonthlyStatus[]'>
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 
 /**
- * Reference to a field of type 'KpiApprovalStatus'
+ * Reference to a field of type 'MonthlyStatus'
  */
-export type EnumKpiApprovalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiApprovalStatus'>
+export type EnumMonthlyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MonthlyStatus'>
     
 
 
 /**
- * Reference to a field of type 'KpiApprovalStatus[]'
+ * Reference to a field of type 'MonthlyStatus[]'
  */
-export type ListEnumKpiApprovalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiApprovalStatus[]'>
+export type ListEnumMonthlyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MonthlyStatus[]'>
     
 
 
 /**
- * Reference to a field of type 'KpiSignerRole'
+ * Reference to a field of type 'AchievedStatus'
  */
-export type EnumKpiSignerRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiSignerRole'>
+export type EnumAchievedStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AchievedStatus'>
     
 
 
 /**
- * Reference to a field of type 'KpiSignerRole[]'
+ * Reference to a field of type 'AchievedStatus[]'
  */
-export type ListEnumKpiSignerRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiSignerRole[]'>
-    
-
-
-/**
- * Reference to a field of type 'KpiWorkflowAction'
- */
-export type EnumKpiWorkflowActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiWorkflowAction'>
-    
-
-
-/**
- * Reference to a field of type 'KpiWorkflowAction[]'
- */
-export type ListEnumKpiWorkflowActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiWorkflowAction[]'>
-    
-
-
-/**
- * Reference to a field of type 'Json'
- */
-export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-/**
- * Reference to a field of type 'QueryMode'
- */
-export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
-    
-
-
-/**
- * Reference to a field of type 'KpiApprovalStep'
- */
-export type EnumKpiApprovalStepFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiApprovalStep'>
-    
-
-
-/**
- * Reference to a field of type 'KpiApprovalStep[]'
- */
-export type ListEnumKpiApprovalStepFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KpiApprovalStep[]'>
+export type ListEnumAchievedStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AchievedStatus[]'>
     
 
 
@@ -2786,20 +2423,6 @@ export type EnumDocControlStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'DocControlStatus[]'
  */
 export type ListEnumDocControlStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocControlStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -2923,14 +2546,11 @@ export type GlobalOmitConfig = {
   darApproval?: Prisma.DarApprovalOmit
   qmsProcessing?: Prisma.QmsProcessingOmit
   publicDocument?: Prisma.PublicDocumentOmit
-  kpiSchedule?: Prisma.KpiScheduleOmit
-  kpiMaster?: Prisma.KpiMasterOmit
-  kpiMonthlyResult?: Prisma.KpiMonthlyResultOmit
-  kpiMonthlyAttachment?: Prisma.KpiMonthlyAttachmentOmit
-  kpiSignatureLog?: Prisma.KpiSignatureLogOmit
-  kpiAuditLog?: Prisma.KpiAuditLogOmit
-  kpiCorrectiveAction?: Prisma.KpiCorrectiveActionOmit
-  kpiApprovalLog?: Prisma.KpiApprovalLogOmit
+  kPI?: Prisma.KPIOmit
+  kPIObjective?: Prisma.KPIObjectiveOmit
+  kPIMonthlyReport?: Prisma.KPIMonthlyReportOmit
+  kPIMonthlyDetail?: Prisma.KPIMonthlyDetailOmit
+  kPICorrectiveAction?: Prisma.KPICorrectiveActionOmit
   documentControl?: Prisma.DocumentControlOmit
   documentCategory?: Prisma.DocumentCategoryOmit
   documentControlRevision?: Prisma.DocumentControlRevisionOmit

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DepartmentRow } from "@/types/department";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +8,7 @@ import { useLocale } from "@/lib/locale-context";
 import Toast from "@/components/common/Toast";
 import ConfirmModal from "@/components/common/ConfirmModal";
 import DepartmentModal from "@/components/it/DepartmentModal";
+import DepartmentMembersModal from "@/components/it/DepartmentMembersModal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ export default function DepartmentTable({ departments }: Props) {
   const [selected, setSelected] = useState<DepartmentRow | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDept, setConfirmDept] = useState<DepartmentRow | null>(null);
+  const [viewingMembersDept, setViewingMembersDept] = useState<DepartmentRow | null>(null);
 
   const t = {
     title: locale === "th" ? "จัดการแผนก" : "Manage Departments",
@@ -152,12 +153,13 @@ export default function DepartmentTable({ departments }: Props) {
             {paginated.map((dept) => (
               <TableRow key={dept.id} className="text-sm hover:bg-base-200 transition-colors duration-100">
                 <TableCell>
-                  <Link
-                    href={`/it/departments/${dept.id}`}
-                    className="text-xs md:text-sm font-semibold text-neutral hover:text-primary transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => setViewingMembersDept(dept)}
+                    className="text-xs md:text-sm font-semibold text-neutral hover:text-primary transition-colors text-left font-sans"
                   >
                     {dept.name}
-                  </Link>
+                  </button>
                 </TableCell>
                 <TableCell className="text-[11px] md:text-xs text-gray-500 font-mono">
                   {dept.emailGroup ? (
@@ -167,12 +169,13 @@ export default function DepartmentTable({ departments }: Props) {
                   )}
                 </TableCell>
                 <TableCell>
-                  <Link
-                    href={`/it/departments/${dept.id}`}
-                    className="text-[11px] md:text-xs text-gray-500 hover:text-primary transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => setViewingMembersDept(dept)}
+                    className="text-[11px] md:text-xs text-gray-500 hover:text-primary transition-colors text-left"
                   >
                     {t.users(dept._count.users)}
-                  </Link>
+                  </button>
                 </TableCell>
                 <TableCell>
                   {dept.isActive ? (
@@ -218,12 +221,13 @@ export default function DepartmentTable({ departments }: Props) {
           <div key={dept.id} className="card-premium p-4 border border-base-300 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>
-                <Link
-                  href={`/it/departments/${dept.id}`}
-                  className="text-xs md:text-sm font-semibold text-neutral hover:text-primary transition-colors"
+                <button
+                  type="button"
+                  onClick={() => setViewingMembersDept(dept)}
+                  className="text-xs md:text-sm font-semibold text-neutral hover:text-primary transition-colors text-left font-sans"
                 >
                   {dept.name}
-                </Link>
+                </button>
                 {dept.emailGroup && (
                   <p className="text-[11px] text-gray-500 font-mono truncate max-w-50">
                     {dept.emailGroup}
@@ -236,9 +240,13 @@ export default function DepartmentTable({ departments }: Props) {
                 <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral shrink-0">{t.inactive}</span>
               )}
             </div>
-            <Link href={`/it/departments/${dept.id}`} className="text-[11px] md:text-xs text-gray-500 hover:text-primary transition-colors mb-3 block">
+            <button
+              type="button"
+              onClick={() => setViewingMembersDept(dept)}
+              className="text-[11px] md:text-xs text-gray-500 hover:text-primary transition-colors mb-3 block text-left font-sans"
+            >
               {t.usersLink(dept._count.users)}
-            </Link>
+            </button>
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 flex-1" onClick={() => openEdit(dept)}>
                 {t.edit}
@@ -266,6 +274,13 @@ export default function DepartmentTable({ departments }: Props) {
           onSuccess={handleSuccess}
         />
       )}
+
+      {/* Department members list modal */}
+      <DepartmentMembersModal
+        departmentId={viewingMembersDept?.id ?? null}
+        open={!!viewingMembersDept}
+        onClose={() => setViewingMembersDept(null)}
+      />
 
       {/* Pagination */}
       <Pagination

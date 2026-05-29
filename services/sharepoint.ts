@@ -11,36 +11,8 @@
  */
 
 import type { DarObjective, DarDocType } from "@/types/dar";
-
-async function getToken(): Promise<string> {
-  const tenantId = process.env.AZURE_AD_TENANT_ID!;
-  const clientId = process.env.AZURE_AD_CLIENT_ID!;
-  const clientSecret = process.env.AZURE_AD_CLIENT_SECRET!;
-
-  const url = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: "client_credentials",
-    scope: "https://graph.microsoft.com/.default",
-  });
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: body.toString(),
-  });
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Failed to acquire Graph access token: ${res.status} ${errorText}`);
-  }
-
-  const data = await res.json() as { access_token: string };
-  return data.access_token;
-}
+import { getGraphToken } from "@/lib/graph-token";
+import { graphFetch } from "@/lib/graphFetch";
 
 // ── Drive resolution ──────────────────────────────────────────────────────────
 
@@ -55,9 +27,9 @@ async function getDriveId(): Promise<string> {
   }
 
   // Fall back to site's default document library drive
-  const token = await getToken();
+  const token = await getGraphToken();
   const siteId = process.env.SHAREPOINT_SITE_ID;
-  const res = await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drive`, {
+  const res = await graphFetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drive`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
@@ -109,7 +81,7 @@ async function ensureFolderPath(driveId: string, token: string, folderPath: stri
   const encodedPath = folderPath.split("/").map(encodeURIComponent).join("/");
   const getUrl = `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedPath}`;
 
-  const getRes = await fetch(`${getUrl}?$select=id`, { headers: { Authorization: `Bearer ${token}` } });
+  const getRes = await graphFetch(`${getUrl}?$select=id`, { headers: { Authorization: `Bearer ${token}` } });
   if (getRes.ok) {
     const item = await getRes.json() as { id: string };
     return item.id;
@@ -127,7 +99,7 @@ async function ensureFolderPath(driveId: string, token: string, folderPath: stri
     // Try GET by accumulated path to avoid unnecessary creates
     const accPath = segments.slice(0, segments.indexOf(segment) + 1).join("/");
     const encodedAcc = accPath.split("/").map(encodeURIComponent).join("/");
-    const stepGet = await fetch(
+    const stepGet = await graphFetch(
       `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedAcc}?$select=id`,
       { headers: { Authorization: `Bearer ${token}` } },
     );
@@ -138,7 +110,7 @@ async function ensureFolderPath(driveId: string, token: string, folderPath: stri
     }
 
     // Create the segment under current parent
-    const createRes = await fetch(
+    const createRes = await graphFetch(
       `https://graph.microsoft.com/v1.0/drives/${driveId}/items/${parentId}/children`,
       {
         method: "POST",
@@ -180,7 +152,7 @@ export async function uploadFileToDar(opts: {
   objective: DarObjective;
   docType: DarDocType;
 }): Promise<SpUploadResult> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   const folderPath = buildFolderPath({
     departmentName: opts.departmentName,
     objective: opts.objective,
@@ -218,7 +190,7 @@ interface SpItem {
 
 async function simpleUpload(opts: UploadOpts): Promise<SpUploadResult> {
   const url = `https://graph.microsoft.com/v1.0/drives/${opts.driveId}/items/${opts.folderId}:/${encodeURIComponent(opts.uploadName)}:/content?@microsoft.graph.conflictBehavior=rename`;
-  const res = await fetch(url, {
+  const res = await graphFetch(url, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${opts.token}`,
@@ -243,7 +215,7 @@ async function simpleUpload(opts: UploadOpts): Promise<SpUploadResult> {
 async function resumableUpload(opts: UploadOpts): Promise<SpUploadResult> {
   // Create upload session
   const sessionUrl = `https://graph.microsoft.com/v1.0/drives/${opts.driveId}/items/${opts.folderId}:/${encodeURIComponent(opts.uploadName)}:/createUploadSession`;
-  const sessionRes = await fetch(sessionUrl, {
+  const sessionRes = await graphFetch(sessionUrl, {
     method: "POST",
     headers: { Authorization: `Bearer ${opts.token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ item: { "@microsoft.graph.conflictBehavior": "rename" } }),
@@ -309,7 +281,7 @@ export async function uploadFileToTemp(opts: {
   mimeType: string;
   tempId: string; // uuid generated client-side per form session
 }): Promise<TempUploadResult> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   const folderPath = `DAR/_temp/${opts.tempId}`;
   const folderId = await ensureFolderPath(driveId, token, folderPath);
   const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
@@ -328,10 +300,10 @@ export async function moveSpItem(opts: {
   targetFolderPath: string;
   newName: string;
 }): Promise<{ spWebUrl: string; spDownloadUrl: string }> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   const targetFolderId = await ensureFolderPath(driveId, token, opts.targetFolderPath);
 
-  const res = await fetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${opts.spItemId}`, {
+  const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${opts.spItemId}`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -356,9 +328,9 @@ export async function renameSpItem(opts: {
   spItemId: string;
   newName: string;
 }): Promise<{ name: string; spWebUrl: string; spDownloadUrl: string }> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
 
-  const res = await fetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${opts.spItemId}`, {
+  const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${opts.spItemId}`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -381,16 +353,16 @@ export async function renameSpItem(opts: {
 
 // Delete temp folder entirely (best-effort)
 export async function deleteTempFolder(tempId: string): Promise<void> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   const folderPath = `DAR/_temp/${tempId}`;
   const encodedPath = folderPath.split("/").map(encodeURIComponent).join("/");
-  const getRes = await fetch(
+  const getRes = await graphFetch(
     `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedPath}?$select=id`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
   if (!getRes.ok) return; // already gone or never existed
   const { id } = await getRes.json() as { id: string };
-  await fetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${id}`, {
+  await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -399,8 +371,8 @@ export async function deleteTempFolder(tempId: string): Promise<void> {
 // ── Delete file ───────────────────────────────────────────────────────────────
 
 export async function deleteSpItem(spItemId: string): Promise<void> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
-  const res = await fetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${spItemId}`, {
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
+  const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${spItemId}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -422,7 +394,7 @@ export async function uploadFileToDocControl(opts: {
   docNumber: string;
   revision?: string;
 }): Promise<SpUploadResult> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   const folderPath = buildDocControlDocumentFolderPath(opts.deptName, opts.categoryName, opts.docNumber, opts.revision);
 
   const folderId = await ensureFolderPath(driveId, token, folderPath);
@@ -473,7 +445,7 @@ export function buildDocControlDocumentFolderPath(
 }
 
 export async function ensureSpFolder(folderPath: string): Promise<void> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   await ensureFolderPath(driveId, token, folderPath);
 }
 
@@ -482,9 +454,9 @@ export async function moveSpFolderByPath(opts: {
   targetParentPath: string;
   newFolderName?: string;
 }): Promise<{ movedFolderPath: string }> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   const sourceEncoded = opts.sourceFolderPath.split("/").map(encodeURIComponent).join("/");
-  const sourceRes = await fetch(
+  const sourceRes = await graphFetch(
     `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${sourceEncoded}?$select=id,name`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
@@ -496,7 +468,7 @@ export async function moveSpFolderByPath(opts: {
   const targetParentId = await ensureFolderPath(driveId, token, opts.targetParentPath);
   const newName = opts.newFolderName ?? source.name;
 
-  const patchRes = await fetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${source.id}`, {
+  const patchRes = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${source.id}`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -513,7 +485,7 @@ export async function moveSpFolderByPath(opts: {
 }
 
 export async function deleteSpFolderByPath(folderPath: string): Promise<void> {
-  const [token, driveId] = await Promise.all([getToken(), getDriveId()]);
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   const encodedPath = folderPath.split("/").map(encodeURIComponent).join("/");
   const getRes = await fetch(
     `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedPath}?$select=id`,
@@ -525,7 +497,7 @@ export async function deleteSpFolderByPath(folderPath: string): Promise<void> {
     throw new Error(`Graph GET folder before delete ${getRes.status}: ${t}`);
   }
   const { id } = await getRes.json() as { id: string };
-  const delRes = await fetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${id}`, {
+  const delRes = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });

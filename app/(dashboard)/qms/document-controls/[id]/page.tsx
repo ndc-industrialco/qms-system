@@ -1,12 +1,15 @@
 import { requireRole } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import { DocumentControlDetailClient } from '@/components/document-control/DocumentControlDetailClient';
+import { db } from '@/lib/db';
 
 type Params = Promise<{ id: string }>;
 
-export const metadata = {
-  title: 'Document Details',
-};
+export async function generateMetadata({ params }: { params: Params }) {
+  const { id } = await params;
+  const doc = await db.documentControl.findUnique({ where: { id }, select: { docNumber: true } });
+  return { title: doc ? `${doc.docNumber} — Document Details` : "Document Details" };
+}
 
 async function getDocument(id: string, token?: string) {
   try {

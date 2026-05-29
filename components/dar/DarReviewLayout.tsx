@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n";
 import type { DarDetail } from "@/types/dar";
 import type { SignatureType } from "@/types/dar";
 import DarReadOnlyDetail from "./DarReadOnlyDetail";
 import DarApprovalPanelWrapper from "./DarApprovalPanelWrapper";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   dar: DarDetail;
@@ -17,6 +20,7 @@ interface Props {
   darNo: string | null;
   darId: string;
   isMrApprove?: boolean;
+  redirectToApproveOnAction?: boolean;
 }
 
 export default function DarReviewLayout({
@@ -28,10 +32,13 @@ export default function DarReviewLayout({
   darNo,
   darId,
   isMrApprove = false,
+  redirectToApproveOnAction = false,
 }: Props) {
   const t = useT();
+  const router = useRouter();
   const [dar, setDar] = useState<DarDetail>(initialDar);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
 
   const myPendingStep = dar.approvals.find(
     (a) => a.assignedUser.id === currentUserId && a.action === "PENDING",
@@ -91,15 +98,18 @@ export default function DarReviewLayout({
 
         {/* Right — sticky approval panel */}
         <div className="sticky top-6">
-          <DarApprovalPanelWrapper
-            initialDar={dar}
-            currentUserId={currentUserId}
-            savedSignatureUrl={savedSignatureUrl}
-            savedSignatureType={savedSignatureType}
-            onExternalUpdate={setDar}
-          />
-        </div>
-      </div>
+              <DarApprovalPanelWrapper
+                initialDar={dar}
+                currentUserId={currentUserId}
+                savedSignatureUrl={savedSignatureUrl}
+                savedSignatureType={savedSignatureType}
+                onExternalUpdate={(updated) => {
+                  setDar(updated);
+                  if (redirectToApproveOnAction) setSuccessOpen(true);
+                }}
+              />
+            </div>
+          </div>
 
       {/* ── Mobile: full detail + floating bar ── */}
       <div className="lg:hidden">
@@ -138,7 +148,10 @@ export default function DarReviewLayout({
                     currentUserId={currentUserId}
                     savedSignatureUrl={savedSignatureUrl}
                     savedSignatureType={savedSignatureType}
-                    onExternalUpdate={setDar}
+                    onExternalUpdate={(updated) => {
+                      setDar(updated);
+                      if (redirectToApproveOnAction) setSuccessOpen(true);
+                    }}
                   />
                 </div>
               </div>
@@ -163,6 +176,27 @@ export default function DarReviewLayout({
           </div>
         </div>
       )}
+
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>{t("approve.successTitle")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-600">{t("approve.successDesc")}</p>
+          <DialogFooter>
+            <Button
+              className="rounded-xl bg-[#0F1059] hover:bg-[#161875]"
+              onClick={() => {
+                setSuccessOpen(false);
+                router.push("/approve");
+                router.refresh();
+              }}
+            >
+              {t("approve.backToQueue")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       </>
     </div>
   );

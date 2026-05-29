@@ -361,67 +361,121 @@
     "retryBtn": "ลองใหม่อีกครั้ง"
   },
   "kpi": {
-    "periodType": {
-      "YEARLY": "รายปี",
-      "QUARTERLY": "รายไตรมาส"
-    },
     "reference": {
-      "title": "ข้อมูลอ้างอิง KPI",
-      "add": "เพิ่มข้อมูล KPI",
-      "searchPlaceholder": "ค้นหา KPI...",
-      "confirmDeleteTitle": "ยืนยันการลบข้อมูล KPI",
-      "confirmDeleteMessage": "คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล KPI อ้างอิงนี้? การกระทำนี้ไม่สามารถย้อนกลับได้",
+      "title": "ระบบ KPI",
+      "add": "เพิ่ม KPI",
+      "searchPlaceholder": "ค้นหาแผนก...",
+      "confirmDeleteTitle": "ลบ KPI",
+      "confirmDeleteMessage": "คุณแน่ใจหรือไม่ว่าต้องการลบ KPI นี้? การกระทำนี้ไม่สามารถย้อนกลับได้",
       "table": {
         "year": "ปี",
-        "period": "ระยะเวลา",
-        "objective": "รายละเอียดวัตถุประสงค์",
         "department": "แผนก",
-        "target": "ค่าเป้าหมาย",
         "empty": "ไม่พบข้อมูล KPI",
-        "pageInfo": "หน้า {page} จาก {totalPages} (ทั้งหมด {total} รายการ)",
         "totalItems": "รายการ"
-      },
-      "form": {
-        "year": "ปี",
-        "periodType": "ระยะเวลา",
-        "objectiveDetails": "รายละเอียดวัตถุประสงค์",
-        "measurementFrequency": "ความถี่ในการวัดผล",
-        "calculationFormula": "สูตรการคำนวณ",
-        "guidelines": "แนวทางปฏิบัติ",
-        "trackingRecords": "บันทึกข้อมูลติดตาม",
-        "targetValue": "ค่าเป้าหมาย",
-        "departmentId": "แผนก",
-        "departmentPlaceholder": "เลือกแผนก"
-      },
-      "messages": {
-        "createSuccess": "สร้างข้อมูล KPI สำเร็จ",
-        "updateSuccess": "อัปเดตข้อมูล KPI สำเร็จ",
-        "deleteSuccess": "ลบข้อมูล KPI สำเร็จ"
       },
       "action": {
         "edit": "แก้ไข",
         "delete": "ลบ"
       }
     },
+    "tabs": {
+      "setup": "ตั้งค่า KPI",
+      "monthly": "รายงานรายเดือน"
+    },
     "form": {
       "year": "ปี",
-      "periodType": "ระยะเวลา",
+      "department": "แผนก",
+      "departmentPlaceholder": "เช่น IT Programmer",
+      "prepare": "ผู้จัดทำ",
+      "reviewer": "ผู้ตรวจทาน",
+      "approver": "ผู้อนุมัติ",
+      "target": "ค่าเป้าหมาย",
       "objectiveDetails": "รายละเอียดวัตถุประสงค์",
       "measurementFrequency": "ความถี่ในการวัดผล",
+      "frequencyMonthly": "ทุกเดือน",
+      "frequencyQuarterly": "รายไตรมาส",
+      "frequencyYearly": "รายปี",
       "calculationFormula": "สูตรการคำนวณ",
-      "guidelines": "แนวทางปฏิบัติ",
-      "trackingRecords": "บันทึกข้อมูลติดตาม",
-      "targetValue": "ค่าเป้าหมาย",
-      "departmentId": "แผนก"
+      "actionPlanGuidelines": "แนวทางแผนการดำเนินงาน",
+      "referenceDocuments": "เอกสารอ้างอิง"
     },
     "messages": {
-      "createSuccess": "สร้างข้อมูล KPI สำเร็จ",
-      "updateSuccess": "อัปเดตข้อมูล KPI สำเร็จ",
-      "deleteSuccess": "ลบข้อมูล KPI สำเร็จ"
+      "createSuccess": "สร้าง KPI สำเร็จ",
+      "updateSuccess": "อัปเดต KPI สำเร็จ",
+      "deleteSuccess": "ลบ KPI สำเร็จ"
     },
     "action": {
       "edit": "แก้ไข",
       "delete": "ลบ"
+    },
+    "objective": {
+      "createTitle": "เพิ่มวัตถุประสงค์",
+      "editTitle": "แก้ไขวัตถุประสงค์",
+      "table": {
+        "objective": "วัตถุประสงค์",
+        "target": "เป้าหมาย",
+        "frequency": "ความถี่",
+        "empty": "ไม่พบวัตถุประสงค์"
+      }
+    },
+    "submit": {
+      "button": "ส่งตรวจสอบ",
+      "signatureTitle": "ลายเซ็นผู้จัดทำ",
+      "assignTitle": "มอบหมายผู้ตรวจสอบและผู้อนุมัติ",
+      "success": "ส่งวัตถุประสงค์ KPI เพื่อตรวจสอบเรียบร้อยแล้ว"
+    },
+    "monthly": {
+      "title": "รายงาน KPI รายเดือน",
+      "createReport": "สร้างรายงาน",
+      "filter": {
+        "allMonths": "ทุกเดือน",
+        "allStatuses": "ทุกสถานะ",
+        "selectKpi": "เลือก KPI"
+      },
+      "table": {
+        "month": "เดือน",
+        "department": "แผนก",
+        "objectives": "วัตถุประสงค์",
+        "ok": "ผ่าน",
+        "notOk": "ไม่ผ่าน",
+        "status": "สถานะ",
+        "target": "เป้าหมาย",
+        "actual": "ผลจริง",
+        "empty": "ไม่พบรายงานรายเดือน"
+      },
+      "status": {
+        "DRAFT": "แบบร่าง",
+        "PENDING_REVIEW": "รอตรวจสอบ",
+        "PENDING_APPROVAL": "รออนุมัติ",
+        "APPROVED": "อนุมัติแล้ว",
+        "REJECTED": "ถูกปฏิเสธ"
+      },
+      "achieved": {
+        "OK": "ผ่าน",
+        "NOT_OK": "ไม่ผ่าน",
+        "PENDING": "รอดำเนินการ"
+      },
+      "drawer": {
+        "title": "รายละเอียดรายงานรายเดือน",
+        "objectives": "วัตถุประสงค์",
+        "actualValue": "ผลจริง",
+        "rejectionPlaceholder": "ระบุเหตุผลการปฏิเสธ..."
+      },
+      "actions": {
+        "submit": "ส่งรายงาน",
+        "review": "ตรวจสอบแล้ว",
+        "approve": "อนุมัติ",
+        "reject": "ปฏิเสธ",
+        "cancel": "ยกเลิก"
+      },
+      "messages": {
+        "createSuccess": "สร้างรายงานรายเดือนสำเร็จ",
+        "updateSuccess": "บันทึกผลสำเร็จ",
+        "submitSuccess": "ส่งรายงานสำเร็จ",
+        "reviewSuccess": "ตรวจสอบรายงานสำเร็จ",
+        "approveSuccess": "อนุมัติรายงานสำเร็จ",
+        "rejectSuccess": "ปฏิเสธรายงานสำเร็จ"
+      }
     }
   },
   "documentCategory": {
@@ -573,5 +627,32 @@
       "updateSuccess": "อัปเดตแผนกสำเร็จ",
       "deleteSuccess": "ลบแผนกสำเร็จ"
     }
+  },
+  "approve": {
+    "title": "Approve Queue",
+    "subtitle": "Overview of items waiting for your approval action",
+    "totalPending": "Total Pending",
+    "pendingDar": "DAR Pending",
+    "pendingKpi": "KPI Pending",
+    "pendingDarList": "DAR Waiting For Your Action",
+    "pendingKpiReviewList": "KPI Waiting For Your Review",
+    "pendingKpiApproveList": "KPI Waiting For Your Approval",
+    "requester": "Requester",
+    "date": "Date",
+    "department": "Department",
+    "type": "Type",
+    "typeObjective": "KPI Objective",
+    "typeMonthly": "KPI Monthly",
+    "period": "Period",
+    "status": "Status",
+    "actual": "Actual",
+    "action": "Action",
+    "openAction": "Open",
+    "successTitle": "Action completed",
+    "successDesc": "The approval action was saved successfully.",
+    "backToQueue": "Back to Approve Queue",
+    "empty": "No pending DAR items",
+    "emptyKpiReview": "No pending KPI review items",
+    "emptyKpiApprove": "No pending KPI approval items"
   }
 }

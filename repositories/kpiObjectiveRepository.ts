@@ -1,57 +1,51 @@
-﻿import { KpiMaster, KpiObjectiveStatus, Prisma } from '@/generated/prisma/client';
-import { BaseRepository, PaginatedResult, PaginationParams } from '@/repositories/baseRepository';
-import { ObjectiveWorkflowUpdateDTO } from '@/types/kpiWorkflow';
+import { KPIObjective, Prisma } from '@/generated/prisma/client';
+import { BaseRepository } from '@/repositories/baseRepository';
+import { CreateKpiObjectiveDTO, UpdateKpiObjectiveDTO } from '@/types/kpi';
 
-export class KpiObjectiveRepository extends BaseRepository<KpiMaster, Prisma.KpiMasterCreateInput, Prisma.KpiMasterUpdateInput> {
+export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateKpiObjectiveDTO, UpdateKpiObjectiveDTO> {
   constructor() {
-    super('kpiMaster');
+    super('kPIObjective');
   }
 
-  async paginateObjectives(
-    params: PaginationParams,
-    where: Prisma.KpiMasterWhereInput,
-    tx?: Prisma.TransactionClient,
-  ): Promise<PaginatedResult<KpiMaster>> {
-    const page = Number(params.page) || 1;
-    const limit = Number(params.limit) || 20;
-    const skip = (page - 1) * limit;
-    const model = this.getModel(tx);
-
-    const [data, total] = await Promise.all([
-      model.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: { department: true, approvedBy: true },
-      }),
-      model.count({ where }),
-    ]);
-
-    return { data, meta: { page, limit, total } };
+  private delegate(tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).kPIObjective;
   }
 
-  async findObjectiveById(id: string, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findUnique({
-      where: { id },
-      include: { department: true, approvedBy: true },
+  async findByKpiId(kpiId: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: { kpiId },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
-  async updateWorkflow(id: string, payload: ObjectiveWorkflowUpdateDTO, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).update({
+  async findByIdWithDetails(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({
       where: { id },
-      data: payload,
-    });
-  }
-
-  async listApprovedForPeriod(year: number, departmentId?: string, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findMany({
-      where: {
-        year,
-        objectiveStatus: KpiObjectiveStatus.APPROVED,
-        ...(departmentId ? { departmentId } : {}),
+      include: {
+        kpi: true,
+        monthlyDetails: {
+          include: { correctiveActions: true },
+        },
       },
     });
+  }
+
+  async createObjective(data: CreateKpiObjectiveDTO, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).create({
+      data: {
+        kpi: { connect: { id: data.kpiId } },
+        target: data.target,
+        objective: data.objective,
+        frequency: data.frequency,
+        calculationFormula: data.calculationFormula,
+        actionPlanGuidelines: data.actionPlanGuidelines,
+        referenceDocuments: data.referenceDocuments,
+      },
+    });
+  }
+
+  async hasMonthlyDetails(id: string, tx?: Prisma.TransactionClient): Promise<boolean> {
+    const count = await this.getClient(tx).kPIMonthlyDetail.count({ where: { kpiObjectiveId: id } });
+    return count > 0;
   }
 }

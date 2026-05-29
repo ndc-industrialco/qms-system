@@ -6,14 +6,16 @@ export class DepartmentRepository extends BaseRepository<Department> {
     super("department");
   }
 
+  private delegate(tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).department;
+  }
+
   async findByName(name: string, tx?: Prisma.TransactionClient): Promise<Department | null> {
-    return this.getModel(tx).findUnique({
-      where: { name },
-    });
+    return this.delegate(tx).findUnique({ where: { name } });
   }
 
   async findActive(tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findMany({
+    return this.delegate(tx).findMany({
       where: { isActive: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
@@ -21,14 +23,14 @@ export class DepartmentRepository extends BaseRepository<Department> {
   }
 
   async findManyWithCount(tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findMany({
+    return this.delegate(tx).findMany({
       orderBy: { name: "asc" },
       include: { _count: { select: { users: true } } },
     });
   }
 
   async findByIdWithMembers(id: string, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findUnique({
+    return this.delegate(tx).findUnique({
       where: { id },
       include: {
         _count: { select: { users: true } },
@@ -41,11 +43,10 @@ export class DepartmentRepository extends BaseRepository<Department> {
   }
 
   async upsertDepartment(name: string, tx?: Prisma.TransactionClient): Promise<Department> {
-    return this.getModel(tx).upsert({
+    return this.delegate(tx).upsert({
       where: { name },
       update: {},
       create: { name },
-      select: { id: true, name: true },
     });
   }
 }

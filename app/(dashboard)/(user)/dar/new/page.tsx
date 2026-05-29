@@ -5,6 +5,11 @@ import { DarService } from "@/services/darService";
 import DarForm from "@/components/dar/DarForm";
 import DarNewHeader from "@/components/dar/DarNewHeader";
 import DarNoDepartment from "@/components/dar/DarNoDepartment";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "New Request",
+};
 
 const deptService = new DepartmentService();
 const darService = new DarService();

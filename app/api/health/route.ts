@@ -26,12 +26,11 @@ export async function GET() {
     redisStatus = "ok";
 
     // Show which cache keys currently exist (null = not cached yet)
-    const [graphToken, depts, announcements, reviewers, mrConfig] = await Promise.all([
+    const [graphToken, depts, announcements, reviewers] = await Promise.all([
       redis.exists("graph:app_token"),
       redis.exists("qms:departments:active"),
       redis.exists("qms:announcements:list"),
       redis.exists("qms:dar:reviewer_candidates"),
-      redis.exists("qms:config:CURRENT_MR_USER_ID"),
     ]);
 
     cacheKeys = {
@@ -39,7 +38,6 @@ export async function GET() {
       "qms:departments:active":         depts       ? "✅ cached" : "⬜ not cached",
       "qms:announcements:list":         announcements ? "✅ cached" : "⬜ not cached",
       "qms:dar:reviewer_candidates":    reviewers   ? "✅ cached" : "⬜ not cached",
-      "qms:config:CURRENT_MR_USER_ID":  mrConfig    ? "✅ cached" : "⬜ not cached",
     };
   } catch {
     redisStatus = "error";

@@ -67,73 +67,34 @@ export const SignatureType = {
 export type SignatureType = (typeof SignatureType)[keyof typeof SignatureType]
 
 
-export const KpiPeriodType = {
-  YEARLY: 'YEARLY',
-  QUARTERLY: 'QUARTERLY'
-} as const
-
-export type KpiPeriodType = (typeof KpiPeriodType)[keyof typeof KpiPeriodType]
-
-
-export const KpiMonthlyStatus = {
-  OK: 'OK',
-  NG: 'NG',
-  PENDING: 'PENDING'
-} as const
-
-export type KpiMonthlyStatus = (typeof KpiMonthlyStatus)[keyof typeof KpiMonthlyStatus]
-
-
-export const KpiApprovalStatus = {
-  DRAFT: 'DRAFT',
-  SUBMITTED: 'SUBMITTED',
-  REVIEWED: 'REVIEWED',
-  VERIFIED: 'VERIFIED',
-  REJECTED: 'REJECTED'
-} as const
-
-export type KpiApprovalStatus = (typeof KpiApprovalStatus)[keyof typeof KpiApprovalStatus]
-
-
-export const KpiApprovalStep = {
-  PREPARER: 'PREPARER',
-  REVIEWER: 'REVIEWER',
-  QMS_VERIFIER: 'QMS_VERIFIER'
-} as const
-
-export type KpiApprovalStep = (typeof KpiApprovalStep)[keyof typeof KpiApprovalStep]
-
-
 export const KpiObjectiveStatus = {
   DRAFT: 'DRAFT',
-  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  PENDING_REVIEW: 'PENDING_REVIEW',
   APPROVED: 'APPROVED',
-  REJECTED: 'REJECTED',
-  ARCHIVED: 'ARCHIVED'
+  REJECTED: 'REJECTED'
 } as const
 
 export type KpiObjectiveStatus = (typeof KpiObjectiveStatus)[keyof typeof KpiObjectiveStatus]
 
 
-export const KpiSignerRole = {
-  SUBMITTER: 'SUBMITTER',
-  APPROVER: 'APPROVER'
+export const MonthlyStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
 } as const
 
-export type KpiSignerRole = (typeof KpiSignerRole)[keyof typeof KpiSignerRole]
+export type MonthlyStatus = (typeof MonthlyStatus)[keyof typeof MonthlyStatus]
 
 
-export const KpiWorkflowAction = {
-  SUBMIT: 'SUBMIT',
-  APPROVE: 'APPROVE',
-  REJECT: 'REJECT',
-  CLOSE: 'CLOSE',
-  REOPEN: 'REOPEN',
-  ATTACH: 'ATTACH',
-  DETACH: 'DETACH'
+export const AchievedStatus = {
+  PENDING: 'PENDING',
+  OK: 'OK',
+  NOT_OK: 'NOT_OK'
 } as const
 
-export type KpiWorkflowAction = (typeof KpiWorkflowAction)[keyof typeof KpiWorkflowAction]
+export type AchievedStatus = (typeof AchievedStatus)[keyof typeof AchievedStatus]
 
 
 export const DocControlStatus = {

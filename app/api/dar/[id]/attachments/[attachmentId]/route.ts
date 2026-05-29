@@ -1,17 +1,23 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { AppError, ForbiddenError, NotFoundError } from "@/lib/errors";
+import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
+import { handleApiError } from "@/lib/apiErrorHandler";
 import { db } from "@/lib/db";
 import { deleteSpItem } from "@/services/sharepoint";
-import type { ApiResponse } from "@/types/api";
+import { z } from "zod";
+
+const paramSchema = z.object({
+  id: z.string().uuid(),
+  attachmentId: z.string().uuid(),
+});
 
 type Params = { params: Promise<{ id: string; attachmentId: string }> };
 
-export async function DELETE(_req: NextRequest, { params }: Params): Promise<NextResponse<ApiResponse<null>>> {
+export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const session = await requireAuth();
-    const { id: darId, attachmentId } = await params;
+    const { id: darId, attachmentId } = paramSchema.parse(await params);
 
     const attachment = await db.darAttachment.findUnique({
       where: { id: attachmentId },
@@ -32,7 +38,7 @@ export async function DELETE(_req: NextRequest, { params }: Params): Promise<Nex
     if (!isPrivileged && !isOwner) throw new ForbiddenError();
 
     if (dar.status === "COMPLETED" || dar.status === "CANCELLED") {
-      return NextResponse.json({ data: null, error: "ไม่สามารถลบไฟล์ในคำขอที่เสร็จสิ้นหรือยกเลิกแล้ว" }, { status: 400 });
+      throw new ValidationError("ไม่สามารถลบไฟล์ในคำขอที่เสร็จสิ้นหรือยกเลิกแล้ว");
     }
 
     try {
@@ -45,10 +51,6 @@ export async function DELETE(_req: NextRequest, { params }: Params): Promise<Nex
 
     return NextResponse.json({ data: null, error: null });
   } catch (err) {
-    if (err instanceof AppError) {
-      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
-    }
-    console.error("[DELETE /api/dar/[id]/attachments/[attachmentId]]", err);
-    return NextResponse.json({ data: null, error: "Internal server error" }, { status: 500 });
+    return handleApiError(err);
   }
 }

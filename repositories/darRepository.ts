@@ -6,8 +6,12 @@ export class DarRepository extends BaseRepository<DarMaster> {
     super("darMaster");
   }
 
+  private delegate(tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).darMaster;
+  }
+
   async findDetailById(id: string, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findUnique({
+    return this.delegate(tx).findUnique({
       where: { id },
       include: {
         requester: { include: { department: true } },
@@ -26,7 +30,7 @@ export class DarRepository extends BaseRepository<DarMaster> {
   }
 
   async findManySummary(take = 200, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findMany({
+    return this.delegate(tx).findMany({
       orderBy: { createdAt: "desc" },
       take,
       include: { _count: { select: { items: true } } },
@@ -39,7 +43,7 @@ export class DarRepository extends BaseRepository<DarMaster> {
     take: number,
     tx?: Prisma.TransactionClient
   ) {
-    return this.getModel(tx).findMany({
+    return this.delegate(tx).findMany({
       where: { requesterId },
       orderBy: { createdAt: "desc" },
       skip,
@@ -49,44 +53,33 @@ export class DarRepository extends BaseRepository<DarMaster> {
   }
 
   async countByRequester(requesterId: string, tx?: Prisma.TransactionClient): Promise<number> {
-    return this.getModel(tx).count({
-      where: { requesterId },
-    });
+    return this.delegate(tx).count({ where: { requesterId } });
   }
 
   // --- DarItem Operations ---
   async deleteItemsByDarId(darMasterId: string, tx: Prisma.TransactionClient) {
-    return tx.darItem.deleteMany({
-      where: { darMasterId },
-    });
+    return tx.darItem.deleteMany({ where: { darMasterId } });
   }
 
   async createItems(items: Prisma.DarItemCreateManyInput[], tx: Prisma.TransactionClient) {
-    return tx.darItem.createMany({
-      data: items,
-    });
+    return tx.darItem.createMany({ data: items });
   }
 
   // --- DarDistribution Operations ---
   async deleteDistributionsByDarId(darMasterId: string, tx: Prisma.TransactionClient) {
-    return tx.darDistribution.deleteMany({
-      where: { darMasterId },
-    });
+    return tx.darDistribution.deleteMany({ where: { darMasterId } });
   }
 
   async createDistributions(
     distributions: Prisma.DarDistributionCreateManyInput[],
     tx: Prisma.TransactionClient
   ) {
-    return tx.darDistribution.createMany({
-      data: distributions,
-    });
+    return tx.darDistribution.createMany({ data: distributions });
   }
 
   // --- DarApproval Operations ---
   async findApprovalsByDarId(darMasterId: string, tx?: Prisma.TransactionClient) {
-    const client = tx || this.getClient();
-    return client.darApproval.findMany({
+    return this.getClient(tx).darApproval.findMany({
       where: { darMasterId },
       orderBy: { id: "asc" },
       select: { id: true, stepRole: true, action: true, assignedUserId: true },
@@ -94,9 +87,33 @@ export class DarRepository extends BaseRepository<DarMaster> {
   }
 
   async findPendingApproval(darMasterId: string, userId: string, tx?: Prisma.TransactionClient) {
-    const client = tx || this.getClient();
-    return client.darApproval.findFirst({
+    return this.getClient(tx).darApproval.findFirst({
       where: { darMasterId, assignedUserId: userId, action: "PENDING" },
+    });
+  }
+
+  async countPendingApprovalsByUser(userId: string, tx?: Prisma.TransactionClient): Promise<number> {
+    return this.getClient(tx).darApproval.count({
+      where: { assignedUserId: userId, action: "PENDING" },
+    });
+  }
+
+  async findPendingApprovalsByUser(userId: string, take = 10, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).darApproval.findMany({
+      where: { assignedUserId: userId, action: "PENDING" },
+      orderBy: { darMaster: { createdAt: "desc" } },
+      take,
+      include: {
+        darMaster: {
+          select: {
+            id: true,
+            darNo: true,
+            status: true,
+            requestDate: true,
+            requester: { select: { name: true } },
+          },
+        },
+      },
     });
   }
 
@@ -105,33 +122,22 @@ export class DarRepository extends BaseRepository<DarMaster> {
   }
 
   async updateApproval(id: string, data: Prisma.DarApprovalUpdateInput, tx: Prisma.TransactionClient) {
-    return tx.darApproval.update({
-      where: { id },
-      data,
-    });
+    return tx.darApproval.update({ where: { id }, data });
   }
 
   async deleteApprovalsByDarId(darMasterId: string, tx: Prisma.TransactionClient) {
-    return tx.darApproval.deleteMany({
-      where: { darMasterId },
-    });
+    return tx.darApproval.deleteMany({ where: { darMasterId } });
   }
 
   async deleteApprovalsByDarIdExceptPreparer(darMasterId: string, tx: Prisma.TransactionClient) {
     return tx.darApproval.deleteMany({
-      where: {
-        darMasterId,
-        stepRole: {
-          not: "PREPARER",
-        },
-      },
+      where: { darMasterId, stepRole: { not: "PREPARER" } },
     });
   }
 
   // --- DarAttachment Operations ---
   async findAttachmentsByDarId(darMasterId: string, tx?: Prisma.TransactionClient) {
-    const client = tx || this.getClient();
-    return client.darAttachment.findMany({
+    return this.getClient(tx).darAttachment.findMany({
       where: { darMasterId },
       select: { spItemId: true },
     });
@@ -141,14 +147,10 @@ export class DarRepository extends BaseRepository<DarMaster> {
     attachments: Prisma.DarAttachmentCreateManyInput[],
     tx: Prisma.TransactionClient
   ) {
-    return tx.darAttachment.createMany({
-      data: attachments,
-    });
+    return tx.darAttachment.createMany({ data: attachments });
   }
 
   async deleteAttachmentsByDarId(darMasterId: string, tx: Prisma.TransactionClient) {
-    return tx.darAttachment.deleteMany({
-      where: { darMasterId },
-    });
+    return tx.darAttachment.deleteMany({ where: { darMasterId } });
   }
 }

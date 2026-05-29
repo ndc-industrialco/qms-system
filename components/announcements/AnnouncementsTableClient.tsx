@@ -13,7 +13,7 @@ import AnnouncementCreateDrawer from "@/components/announcements/AnnouncementCre
 import AnnouncementCard from "@/components/announcements/AnnouncementCard";
 import PageHeader from "@/components/common/PageHeader";
 import FilterBar from "@/components/common/FilterBar";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useUrlFilters } from "@/hooks/use-url-filters";

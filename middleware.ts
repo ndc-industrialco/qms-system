@@ -1,17 +1,17 @@
-import NextAuth from "next-auth";
+﻿import NextAuth from "next-auth";
 import { authConfig } from "@/lib/auth.config";
 import { NextResponse, type NextRequest } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { getToken } from "next-auth/jwt";
 import { isJwtBlocked } from "@/lib/jwt-blocklist";
 
-// ioredis requires Node.js TCP sockets — not available in Edge Runtime
+// ioredis requires Node.js TCP sockets and cannot run in Edge Runtime.
 export const runtime = "nodejs";
 
 const { auth } = NextAuth(authConfig);
 
 const AUTH_LIMIT = { limit: 10, windowMs: 60_000 };
-const API_LIMIT  = { limit: 60, windowMs: 60_000 };
+const API_LIMIT = { limit: 60, windowMs: 60_000 };
 
 const PUBLIC_PATHS = ["/auth/login", "/auth/error", "/unauthorized"];
 
@@ -25,84 +25,97 @@ function getClientIp(req: NextRequest): string {
   );
 }
 
-function tooManyRequests(resetAt: number): NextResponse {
-  return NextResponse.json(
-    { data: null, error: "Too many requests. Please try again later." },
-    {
-      status: 429,
-      headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) },
-    },
-  );
+function withRequestId(res: NextResponse, requestId: string): NextResponse {
+  res.headers.set("X-Request-Id", requestId);
+  return res;
 }
 
+function tooManyRequests(resetAt: number, requestId: string): NextResponse {
+  return withRequestId(
+    NextResponse.json(
+      { data: null, error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)) },
+      },
+    ),
+    requestId,
+  );
+}
 
 export default auth(async (req) => {
   const { nextUrl } = req;
   const session = req.auth;
   const path = nextUrl.pathname;
   const ip = getClientIp(req);
+  const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
 
-  // ── Rate limit API routes ──────────────────────────────────────────────────
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-request-id", requestId);
+
   if (path.startsWith("/api/")) {
     const config = path.startsWith("/api/auth") ? AUTH_LIMIT : API_LIMIT;
     let rateLimitKey = `api:ip:${ip}:${path}`;
+
     if (!path.startsWith("/api/auth")) {
       const token = await getToken({ req, secret: process.env.AUTH_SECRET! });
       if (token?.sub) rateLimitKey = `api:user:${token.sub}:${path}`;
     }
-    const result = await rateLimit(rateLimitKey, config);
-    if (!result.allowed) return tooManyRequests(result.resetAt);
 
-    const res = NextResponse.next();
+    const result = await rateLimit(rateLimitKey, config);
+    if (!result.allowed) return tooManyRequests(result.resetAt, requestId);
+
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
     res.headers.set("X-RateLimit-Limit", String(result.limit));
     res.headers.set("X-RateLimit-Remaining", String(result.remaining));
-    return res;
+    return withRequestId(res, requestId);
   }
 
-  // ── Always allow public pages ──────────────────────────────────────────────
   if (PUBLIC_PATHS.some((p) => path.startsWith(p))) {
-    // If already logged in and trying to access login page, redirect to dashboard
     if (session?.user && path === "/auth/login") {
-      return NextResponse.redirect(new URL("/", req.url));
+      return withRequestId(NextResponse.redirect(new URL("/", req.url)), requestId);
     }
-    return NextResponse.next();
+    return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId);
   }
 
-  // ── Not logged in → login ──────────────────────────────────────────────────
   if (!session?.user) {
     const url = new URL("/auth/login", req.url);
     url.searchParams.set("callbackUrl", path);
-    return NextResponse.redirect(url);
+    return withRequestId(NextResponse.redirect(url), requestId);
   }
 
-  // ── JWT Blocklist check (force logout) ────────────────────────────────────
   const jti = session.user.jti;
   if (jti && (await isJwtBlocked(jti))) {
     const url = new URL("/auth/login", req.url);
     url.searchParams.set("callbackUrl", path);
     url.searchParams.set("reason", "session_revoked");
-    return NextResponse.redirect(url);
+    return withRequestId(NextResponse.redirect(url), requestId);
   }
 
-  // ── Read role from session (supports chunked cookies from Next-Auth v5) ──────
   const role = (session.user.role ?? "USER") as UserRole;
 
-  // ── Root / dashboard → role-based home ────────────────────────────────────
-  // Removed redirect so users can access the main Company Center Dashboard
-  // if (path === "/" || path === "/dashboard") {
-  //   return roleRedirect(role, req);
-  // }
-
-  // ── Role-based access control ──────────────────────────────────────────────
   if (path.startsWith("/it/") && role !== "IT") {
-    return NextResponse.redirect(new URL("/unauthorized?reason=insufficient_role", req.url));
+    return withRequestId(
+      NextResponse.redirect(new URL("/unauthorized?reason=insufficient_role", req.url)),
+      requestId,
+    );
   }
 
-  if (path.startsWith("/qms/") && !path.startsWith("/qms/document-controls") && !path.startsWith("/qms/kpi") && role !== "QMS" && role !== "MR" && role !== "IT") {
-    return NextResponse.redirect(new URL("/unauthorized?reason=insufficient_role", req.url));
+  if (
+    path.startsWith("/qms/") &&
+    !path.startsWith("/qms/document-controls") &&
+    !path.startsWith("/qms/kpi") &&
+    role !== "QMS" &&
+    role !== "MR" &&
+    role !== "IT"
+  ) {
+    return withRequestId(
+      NextResponse.redirect(new URL("/unauthorized?reason=insufficient_role", req.url)),
+      requestId,
+    );
   }
 
-  return NextResponse.next();
+  return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId);
 });
 
 export const config = {

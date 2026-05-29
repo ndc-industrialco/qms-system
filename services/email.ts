@@ -547,3 +547,53 @@ export async function sendRejectionEmail(opts: {
 </html>`,
   });
 }
+
+export async function sendKpiObjectiveReviewerAssignedEmail(opts: {
+  reviewer: MailRecipient;
+  requesterName: string;
+  departmentName: string;
+  objectiveId: string;
+  objective: string;
+  year: number;
+}) {
+  const appUrl = process.env.NEXTAUTH_URL ?? "";
+  const url = `${appUrl}/qms/kpi`;
+  await sendMail({
+    to: [opts.reviewer],
+    subject: `[KPI] Review Required - ${opts.departmentName} / ${opts.year}`,
+    bodyHtml: `
+      <p>Hello ${opts.reviewer.name},</p>
+      <p>You have been assigned as KPI objective reviewer.</p>
+      <p><strong>Department:</strong> ${opts.departmentName}</p>
+      <p><strong>Objective:</strong> ${opts.objective}</p>
+      <p><strong>Year:</strong> ${opts.year}</p>
+      <p><a href="${url}">Open KPI Workflow</a></p>
+      <hr />
+      <p style="color:#666">Assigned by: ${opts.requesterName}</p>
+    `,
+  });
+}
+
+export async function sendKpiObjectiveApproverRequestEmail(opts: {
+  approver: MailRecipient;
+  reviewerName: string;
+  departmentName: string;
+  objective: string;
+  year: number;
+}) {
+  const appUrl = process.env.NEXTAUTH_URL ?? "";
+  const url = `${appUrl}/qms/kpi`;
+  await sendMail({
+    to: [opts.approver],
+    subject: `[KPI] Final Approval Required - ${opts.departmentName} / ${opts.year}`,
+    bodyHtml: `
+      <p>Hello ${opts.approver.name},</p>
+      <p>The KPI objective has been reviewed and is ready for final approval.</p>
+      <p><strong>Department:</strong> ${opts.departmentName}</p>
+      <p><strong>Objective:</strong> ${opts.objective}</p>
+      <p><strong>Year:</strong> ${opts.year}</p>
+      <p><strong>Reviewed by:</strong> ${opts.reviewerName}</p>
+      <p><a href="${url}">Open KPI Workflow</a></p>
+    `,
+  });
+}

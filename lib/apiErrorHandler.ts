@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { AppError } from "@/errors/customErrors";
 import { ZodError } from "zod";
+import { logger } from "@/lib/logger";
 
-export function handleApiError(error: unknown): NextResponse {
+type ApiErrorContext = {
+  route?: string;
+  method?: string;
+  requestId?: string;
+  userId?: string;
+};
+
+export function handleApiError(error: unknown, context?: ApiErrorContext): NextResponse {
   // Only log unexpected server errors — 4xx errors are expected flow, not bugs
   if (!(error instanceof AppError) || error.statusCode >= 500) {
-    console.error("[API Error]:", error);
+    logger.error("api_error", error, context);
   }
 
   if (error instanceof AppError) {
@@ -18,11 +26,22 @@ export function handleApiError(error: unknown): NextResponse {
           details: error.details,
         },
       },
-      { status: error.statusCode }
+      {
+        status: error.statusCode,
+        headers: context?.requestId ? { "X-Request-Id": context.requestId } : undefined,
+      }
     );
   }
 
   if (error instanceof ZodError) {
+    logger.warn("api_validation_error", {
+      ...context,
+      issues: error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        code: issue.code,
+        message: issue.message,
+      })),
+    });
     return NextResponse.json(
       {
         success: false,
@@ -35,12 +54,18 @@ export function handleApiError(error: unknown): NextResponse {
           })),
         },
       },
-      { status: 400 }
+      {
+        status: 400,
+        headers: context?.requestId ? { "X-Request-Id": context.requestId } : undefined,
+      }
     );
   }
 
-  // Fallback for unhandled native/unknown errors
-  const message = error instanceof Error ? error.message : "An unexpected error occurred";
+  // Fallback for unhandled native/unknown errors.
+  // Always return a generic message to the client to avoid leaking internal details
+  // (e.g., Prisma constraint text, SharePoint API responses, infrastructure messages).
+  // Detailed information is already captured by the logger.error call above.
+  const message = "An unexpected error occurred";
   return NextResponse.json(
     {
       success: false,
@@ -49,6 +74,9 @@ export function handleApiError(error: unknown): NextResponse {
         code: "INTERNAL_SERVER_ERROR",
       },
     },
-    { status: 500 }
+    {
+      status: 500,
+      headers: context?.requestId ? { "X-Request-Id": context.requestId } : undefined,
+    }
   );
 }

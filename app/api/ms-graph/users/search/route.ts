@@ -3,7 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { searchEntraUsers, fetchAllEntraUsers } from "@/services/ms-graph";
-import type { ApiResponse } from "@/types/api";
+import { handleApiError } from "@/lib/apiErrorHandler";
+import { z } from "zod";
 
 export interface ReviewerCandidate {
   id: string;
@@ -14,11 +15,14 @@ export interface ReviewerCandidate {
   jobTitle: string | null;
 }
 
-export async function GET(req: NextRequest): Promise<NextResponse<ApiResponse<ReviewerCandidate[]>>> {
+export async function GET(req: NextRequest) {
   try {
     await requireAuth();
 
-    const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
+    const querySchema = z.object({
+      q: z.string().max(100).optional().default(""),
+    });
+    const { q } = querySchema.parse({ q: req.nextUrl.searchParams.get("q")?.trim() ?? undefined });
 
     // Empty query → return all synced Graph users (capped at 100)
     // Non-empty query → search Graph by displayName / mail
@@ -52,7 +56,6 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResponse<Re
 
     return NextResponse.json({ data: results, error: null });
   } catch (err) {
-    console.error("[GET /api/ms-graph/users/search]", err);
-    return NextResponse.json({ data: null, error: "Internal server error" }, { status: 500 });
+    return handleApiError(err);
   }
 }

@@ -3,6 +3,11 @@ import { DepartmentService } from "@/services/departmentService";
 import DepartmentTable from "@/components/it/DepartmentTable";
 import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
 import PageHeader from "@/components/common/PageHeader";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Manage Departments",
+};
 
 const deptService = new DepartmentService();
 

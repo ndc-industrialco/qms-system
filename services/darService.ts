@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { DarRepository } from "@/repositories/darRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { UserRepository } from "@/repositories/userRepository";
@@ -73,21 +73,7 @@ export class DarService {
         department: { id: d.department.id, name: d.department.name },
       })),
       approvals: master.approvals.map((a: DarDetailRaw["approvals"][number]) =>
-        this.mapApproval({
-          id: a.id,
-          stepRole: a.stepRole,
-          action: a.action,
-          actionDate: a.actionDate,
-          signatureUsedUrl: a.signatureUsedUrl,
-          signatureTypeUsed: a.signatureTypeUsed,
-          comment: a.comment,
-          assignedUser: {
-            id: a.assignedUser.id,
-            name: a.assignedUser.name,
-            employeeId: a.assignedUser.employeeId,
-            department: a.assignedUser.department ?? null,
-          },
-        })
+        this.mapApproval(a)
       ),
       attachments: master.attachments.map((a: DarDetailRaw["attachments"][number]): DarAttachmentRow => ({
         id: a.id,
@@ -352,14 +338,14 @@ export class DarService {
 
     if (!dar) throw new NotFoundError("DAR");
     if (dar.requesterId !== requesterId) throw new ForbiddenError();
-    if (dar.status !== "PENDING_REVIEW") throw new ValidationError("DAR ต้องอยู่ในสถานะ PENDING_REVIEW");
+    if (dar.status !== "PENDING_REVIEW") throw new ValidationError("DAR à¸•à¹‰à¸­à¸‡à¸­à¸¢à¸¹à¹ˆà¹ƒà¸™à¸ªà¸–à¸²à¸™à¸° PENDING_REVIEW");
 
     const currentApprovals = await this.darRepo.findApprovalsByDarId(darId);
     const preparer = currentApprovals.find((a) => a.stepRole === "PREPARER");
-    if (!preparer || preparer.action !== "APPROVED") throw new ValidationError("ผู้จัดทำต้องยืนยันก่อนกำหนดผู้ตรวจสอบ");
+    if (!preparer || preparer.action !== "APPROVED") throw new ValidationError("à¸œà¸¹à¹‰à¸ˆà¸±à¸”à¸—à¸³à¸•à¹‰à¸­à¸‡à¸¢à¸·à¸™à¸¢à¸±à¸™à¸à¹ˆà¸­à¸™à¸à¸³à¸«à¸™à¸”à¸œà¸¹à¹‰à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸š");
 
     const reviewer = await this.userRepo.findById(reviewerUserId);
-    if (!reviewer) throw new NotFoundError("ผู้ตรวจสอบ");
+    if (!reviewer) throw new NotFoundError("à¸œà¸¹à¹‰à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸š");
 
     await db.$transaction(async (tx) => {
       await this.darRepo.deleteApprovalsByDarIdExceptPreparer(darId, tx);
@@ -379,11 +365,11 @@ export class DarService {
 
     const currentApprovals = await this.darRepo.findApprovalsByDarId(darId);
     const myStep = currentApprovals.find((a) => a.assignedUserId === userId && a.action === "PENDING");
-    if (!myStep) throw new ForbiddenError("ไม่พบขั้นตอนที่รอการอนุมัติของคุณ");
+    if (!myStep) throw new ForbiddenError("à¹„à¸¡à¹ˆà¸žà¸šà¸‚à¸±à¹‰à¸™à¸•à¸­à¸™à¸—à¸µà¹ˆà¸£à¸­à¸à¸²à¸£à¸­à¸™à¸¸à¸¡à¸±à¸•à¸´à¸‚à¸­à¸‡à¸„à¸¸à¸“");
 
-    if (myStep.stepRole === "PREPARER" && dar.status !== "PENDING_REVIEW") throw new ValidationError("สถานะ DAR ไม่ถูกต้อง");
-    if (myStep.stepRole === "REVIEWER" && dar.status !== "PENDING_REVIEW") throw new ValidationError("สถานะ DAR ไม่ถูกต้อง");
-    if (myStep.stepRole === "APPROVER_MR" && dar.status !== "PENDING_APPROVE") throw new ValidationError("สถานะ DAR ไม่ถูกต้อง");
+    if (myStep.stepRole === "PREPARER" && dar.status !== "PENDING_REVIEW") throw new ValidationError("à¸ªà¸–à¸²à¸™à¸° DAR à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡");
+    if (myStep.stepRole === "REVIEWER" && dar.status !== "PENDING_REVIEW") throw new ValidationError("à¸ªà¸–à¸²à¸™à¸° DAR à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡");
+    if (myStep.stepRole === "APPROVER_MR" && dar.status !== "PENDING_APPROVE") throw new ValidationError("à¸ªà¸–à¸²à¸™à¸° DAR à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡");
 
     let nextStatus: DarStatus = dar.status;
     let createMrStep = false;
@@ -399,20 +385,9 @@ export class DarService {
 
     let mrUserId: string | null = null;
     if (createMrStep) {
-      // Try Redis cache first (MR config rarely changes)
-      const MR_CACHE_KEY = "qms:config:CURRENT_MR_USER_ID";
-      try {
-        const cached = await redis.get(MR_CACHE_KEY);
-        if (cached) {
-          mrUserId = cached;
-        } else {
-          mrUserId = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID");
-          if (mrUserId) await redis.set(MR_CACHE_KEY, mrUserId, "EX", 300).catch(() => null);
-        }
-      } catch {
-        mrUserId = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID");
-      }
-      if (!mrUserId) throw new AppError("ยังไม่ได้ตั้งค่า MR ในระบบ กรุณาติดต่อ QMS", 400);
+      // Keep this uncached: tiny config lookup and avoids stale config risk.
+      mrUserId = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID");
+      if (!mrUserId) throw new AppError("à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¹„à¸”à¹‰à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸² MR à¹ƒà¸™à¸£à¸°à¸šà¸š à¸à¸£à¸¸à¸“à¸²à¸•à¸´à¸”à¸•à¹ˆà¸­ QMS", 400);
     }
 
     const now = new Date();
@@ -456,7 +431,7 @@ export class DarService {
     if (!dar) throw new NotFoundError("DAR");
 
     const myStep = await this.darRepo.findPendingApproval(darId, userId);
-    if (!myStep) throw new ForbiddenError("ไม่พบขั้นตอนที่รอการอนุมัติของคุณ");
+    if (!myStep) throw new ForbiddenError("à¹„à¸¡à¹ˆà¸žà¸šà¸‚à¸±à¹‰à¸™à¸•à¸­à¸™à¸—à¸µà¹ˆà¸£à¸­à¸à¸²à¸£à¸­à¸™à¸¸à¸¡à¸±à¸•à¸´à¸‚à¸­à¸‡à¸„à¸¸à¸“");
 
     const now = new Date();
     await db.$transaction(async (tx) => {
@@ -476,7 +451,7 @@ export class DarService {
       const cached = await redis.get(CACHE_KEY);
       if (cached) return JSON.parse(cached) as ReviewerCandidate[];
     } catch {
-      // Redis unavailable — fall through to DB
+      // Redis unavailable â€” fall through to DB
     }
 
     const users = await this.userRepo.findManyWithDept();
@@ -514,7 +489,7 @@ export class DarService {
 
     if (!dar) throw new NotFoundError("DAR");
     if (!isPrivileged && dar.requesterId !== requesterId) throw new ForbiddenError();
-    if (!isPrivileged && dar.status !== "DRAFT") throw new ValidationError("ลบได้เฉพาะคำขอที่เป็นฉบับร่างเท่านั้น");
+    if (!isPrivileged && dar.status !== "DRAFT") throw new ValidationError("à¸¥à¸šà¹„à¸”à¹‰à¹€à¸‰à¸žà¸²à¸°à¸„à¸³à¸‚à¸­à¸—à¸µà¹ˆà¹€à¸›à¹‡à¸™à¸‰à¸šà¸±à¸šà¸£à¹ˆà¸²à¸‡à¹€à¸—à¹ˆà¸²à¸™à¸±à¹‰à¸™");
 
     const attachments = await this.darRepo.findAttachmentsByDarId(id);
     if (attachments.length > 0) {
@@ -537,3 +512,4 @@ export class DarService {
     return { url: user.savedSignatureUrl, type: user.signatureType };
   }
 }
+

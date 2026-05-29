@@ -75,7 +75,7 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
     },
     initialData: initialDars,
   });
-  const dars = (queryResult.data ?? []) as DarSummary[];
+  const dars = useMemo(() => (queryResult.data ?? []) as DarSummary[], [queryResult.data]);
 
   const [sortKey, setSortKey] = useState<SortKey>("requestDate");
   const [sortDir, setSortDir] = useState<SortDir>("desc");

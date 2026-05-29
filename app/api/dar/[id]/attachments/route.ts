@@ -1,11 +1,12 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { AppError, ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
+import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
+import { handleApiError } from "@/lib/apiErrorHandler";
 import { db } from "@/lib/db";
-import { uploadFileToDar } from "@/services/sharepoint";
-import type { ApiResponse } from "@/types/api";
+import { uploadFileToDar, deleteSpItem } from "@/services/sharepoint";
 import type { DarAttachmentRow } from "@/types/dar";
+import { z } from "zod";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ALLOWED_MIME = new Set([
@@ -43,12 +44,15 @@ function hasValidMagicBytes(buffer: Uint8Array, mimeType: string): boolean {
   }
 }
 
+const paramSchema = z.object({ id: z.string().uuid() });
+
 type Params = { params: Promise<{ id: string }> };
 
-export async function POST(req: NextRequest, { params }: Params): Promise<NextResponse<ApiResponse<DarAttachmentRow>>> {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
     const session = await requireAuth();
-    const { id: darId } = await params;
+    const rawParams = await params;
+    const { id: darId } = paramSchema.parse(rawParams);
 
     const dar = await db.darMaster.findUnique({
       where: { id: darId },
@@ -73,21 +77,22 @@ export async function POST(req: NextRequest, { params }: Params): Promise<NextRe
     const formData = await req.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) {
-      return NextResponse.json({ data: null, error: "ไม่พบไฟล์ในคำขอ" }, { status: 400 });
+      throw new ValidationError("ไม่พบไฟล์ในคำขอ");
     }
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ data: null, error: "ไฟล์ต้องมีขนาดไม่เกิน 20 MB" }, { status: 400 });
+      throw new ValidationError("ไฟล์ต้องมีขนาดไม่เกิน 20 MB");
     }
     if (!ALLOWED_MIME.has(file.type)) {
-      return NextResponse.json({ data: null, error: "ประเภทไฟล์ไม่รองรับ" }, { status: 400 });
+      throw new ValidationError("ประเภทไฟล์ไม่รองรับ");
     }
 
     const darNo = dar.darNo ?? darId;
     const buffer = new Uint8Array(await file.arrayBuffer());
     if (!hasValidMagicBytes(buffer, file.type)) {
-      return NextResponse.json({ data: null, error: "เนื้อหาไฟล์ไม่ตรงกับประเภทที่ระบุ" }, { status: 400 });
+      throw new ValidationError("เนื้อหาไฟล์ไม่ตรงกับประเภทที่ระบุ");
     }
 
+    // Step 1: Upload to SharePoint
     const sp = await uploadFileToDar({
       fileBuffer: buffer,
       fileName: file.name,
@@ -98,19 +103,32 @@ export async function POST(req: NextRequest, { params }: Params): Promise<NextRe
       docType: dar.docType as Parameters<typeof uploadFileToDar>[0]["docType"],
     });
 
-    const attachment = await db.darAttachment.create({
-      data: {
-        fileName: file.name,
-        fileSize: file.size,
-        mimeType: file.type,
-        spItemId: sp.spItemId,
-        spWebUrl: sp.spWebUrl,
-        spDownloadUrl: sp.spDownloadUrl,
-        folderPath: sp.folderPath,
-        darMasterId: darId,
-        uploadedById: session.user.id,
-      },
-    });
+    // Step 2: Persist DB row. On failure, delete the SP file to avoid orphaned files.
+    let attachment;
+    try {
+      attachment = await db.darAttachment.create({
+        data: {
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+          spItemId: sp.spItemId,
+          spWebUrl: sp.spWebUrl,
+          spDownloadUrl: sp.spDownloadUrl,
+          folderPath: sp.folderPath,
+          darMasterId: darId,
+          uploadedById: session.user.id,
+        },
+      });
+    } catch (dbErr) {
+      // Compensation: delete the uploaded SP file to prevent orphan
+      console.error("[POST /api/dar/[id]/attachments] DB insert failed after SP upload. Compensating by deleting SP item.", dbErr);
+      try {
+        await deleteSpItem(sp.spItemId);
+      } catch (delErr) {
+        console.error("[POST /api/dar/[id]/attachments] Compensation SP delete also failed for item:", sp.spItemId, delErr);
+      }
+      throw dbErr;
+    }
 
     const row: DarAttachmentRow = {
       id: attachment.id,
@@ -127,10 +145,6 @@ export async function POST(req: NextRequest, { params }: Params): Promise<NextRe
 
     return NextResponse.json({ data: row, error: null }, { status: 201 });
   } catch (err) {
-    if (err instanceof AppError) {
-      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
-    }
-    console.error("[POST /api/dar/[id]/attachments]", err);
-    return NextResponse.json({ data: null, error: "Internal server error" }, { status: 500 });
+    return handleApiError(err);
   }
 }

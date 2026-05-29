@@ -16,7 +16,6 @@ import Redis from "ioredis";
 const REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __redis: Redis | undefined;
 }
 

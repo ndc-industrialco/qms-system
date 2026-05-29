@@ -110,7 +110,7 @@
       "colDocNum": "Doc. No.",
       "colDocName": "Doc. Name",
       "colRevision": "Revision",
-      "emptyItems": "Click «Add Item» to add documents.",
+      "emptyItems": "Click Â«Add ItemÂ» to add documents.",
       "addItem": "Add Item",
       "emptyItemsTable": "No document items."
     },
@@ -164,7 +164,7 @@
       "sigTypePlaceholder": "Type your name",
       "sigTypeSample": "Sample",
       "sigImageUploadLabel": "Click to upload signature image",
-      "sigImageUploadHint": "PNG, JPG — max 2MB",
+      "sigImageUploadHint": "PNG, JPG â€” max 2MB",
       "sigImageSizeError": "File must be under 2MB",
       "sigClear": "Clear",
       "sigAlt": "Signature",
@@ -197,7 +197,7 @@
       "pendingLabel": "Pending",
       "empty": "No attachments yet",
       "dropZoneLabel": "Click or drag files here",
-      "dropZoneHint": "PDF, Word, Excel, Image — max {max} MB per file",
+      "dropZoneHint": "PDF, Word, Excel, Image â€” max {max} MB per file",
       "fileSizeError": "\"{name}\" exceeds {max} MB",
       "browserNoPdf": "PDF viewer not supported in this browser",
       "browserNoPreview": "Preview not supported in this browser",
@@ -209,7 +209,7 @@
       "title": "Manage Users",
       "sync": "Sync from M365",
       "empty": "No users in the system",
-      "emptyDesc": "Click «Sync from M365» to import users from Microsoft Entra ID."
+      "emptyDesc": "Click Â«Sync from M365Â» to import users from Microsoft Entra ID."
     },
     "departments": {
       "title": "Manage Departments",
@@ -243,7 +243,7 @@
     "syncBtn": "Sync Users from M365",
     "syncBtnShort": "Sync from M365",
     "syncing": "Syncing...",
-    "syncSuccess": "Sync complete —",
+    "syncSuccess": "Sync complete â€”",
     "syncCreated": "added",
     "syncUpdated": "updated",
     "syncSkipped": "skipped"
@@ -362,58 +362,43 @@
     "retryBtn": "Try Again"
   },
   "kpi": {
-    "periodType": {
-      "YEARLY": "Yearly",
-      "QUARTERLY": "Quarterly"
-    },
     "reference": {
-      "title": "KPI Reference",
-      "add": "Add KPI Reference",
-      "searchPlaceholder": "Search KPI...",
-      "confirmDeleteTitle": "Delete KPI Reference",
-      "confirmDeleteMessage": "Are you sure you want to delete this KPI reference? This action cannot be undone.",
+      "title": "KPI Management",
+      "add": "Add KPI",
+      "searchPlaceholder": "Search department...",
+      "confirmDeleteTitle": "Delete KPI",
+      "confirmDeleteMessage": "Are you sure you want to delete this KPI? This action cannot be undone.",
       "table": {
         "year": "Year",
-        "period": "Period",
-        "objective": "Objective Details",
         "department": "Department",
-        "target": "Target Value",
         "empty": "No KPI records found",
-        "pageInfo": "Page {page} of {totalPages} ({total} total)",
         "totalItems": "items"
-      },
-      "form": {
-        "year": "Year",
-        "periodType": "Period Type",
-        "objectiveDetails": "Objective Details",
-        "measurementFrequency": "Measurement Frequency",
-        "calculationFormula": "Calculation Formula",
-        "guidelines": "Guidelines",
-        "trackingRecords": "Tracking Records",
-        "targetValue": "Target Value",
-        "departmentId": "Department",
-        "departmentPlaceholder": "Select Department"
-      },
-      "messages": {
-        "createSuccess": "KPI created successfully",
-        "updateSuccess": "KPI updated successfully",
-        "deleteSuccess": "KPI deleted successfully"
       },
       "action": {
         "edit": "Edit",
         "delete": "Delete"
       }
     },
+    "tabs": {
+      "setup": "KPI Setup",
+      "monthly": "Monthly Reports"
+    },
     "form": {
       "year": "Year",
-      "periodType": "Period Type",
-      "objectiveDetails": "Objective Details",
+      "department": "Department",
+      "departmentPlaceholder": "e.g. IT Programmer",
+      "prepare": "Preparer",
+      "reviewer": "Reviewer",
+      "approver": "Approver",
+      "target": "Target Value",
+      "objectiveDetails": "Objective Description",
       "measurementFrequency": "Measurement Frequency",
+      "frequencyMonthly": "Every Month",
+      "frequencyQuarterly": "Quarterly",
+      "frequencyYearly": "Yearly",
       "calculationFormula": "Calculation Formula",
-      "guidelines": "Guidelines",
-      "trackingRecords": "Tracking Records",
-      "targetValue": "Target Value",
-      "departmentId": "Department"
+      "actionPlanGuidelines": "Action Plan Guidelines",
+      "referenceDocuments": "Reference Documents"
     },
     "messages": {
       "createSuccess": "KPI created successfully",
@@ -423,6 +408,75 @@
     "action": {
       "edit": "Edit",
       "delete": "Delete"
+    },
+    "objective": {
+      "createTitle": "Add Objective",
+      "editTitle": "Edit Objective",
+      "table": {
+        "objective": "Objective",
+        "target": "Target",
+        "frequency": "Frequency",
+        "empty": "No objectives found"
+      }
+    },
+    "submit": {
+      "button": "Submit for Review",
+      "signatureTitle": "Preparer Signature",
+      "assignTitle": "Assign Reviewer & Approver",
+      "success": "KPI objectives submitted for review"
+    },
+    "monthly": {
+      "title": "Monthly KPI Reports",
+      "createReport": "Create Report",
+      "filter": {
+        "allMonths": "All Months",
+        "allStatuses": "All Statuses",
+        "selectKpi": "Select KPI"
+      },
+      "table": {
+        "month": "Month",
+        "department": "Department",
+        "objectives": "Objectives",
+        "ok": "OK",
+        "notOk": "Not OK",
+        "status": "Status",
+        "target": "Target",
+        "actual": "Actual",
+        "empty": "No monthly reports found"
+      },
+      "status": {
+        "DRAFT": "Draft",
+        "PENDING_REVIEW": "Pending Review",
+        "PENDING_APPROVAL": "Pending Approval",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "achieved": {
+        "OK": "OK",
+        "NOT_OK": "Not OK",
+        "PENDING": "Pending"
+      },
+      "drawer": {
+        "title": "Monthly Report Detail",
+        "objectives": "Objectives",
+        "actualValue": "Actual",
+        "rejectionPlaceholder": "Enter rejection reason..."
+      },
+      "actions": {
+        "submit": "Submit",
+        "review": "Mark Reviewed",
+        "approve": "Approve",
+        "reject": "Reject",
+        "cancel": "Cancel"
+      },
+      "messages": {
+        "createSuccess": "Monthly report created",
+        "updateSuccess": "Result saved",
+        "submitSuccess": "Report submitted",
+        "reviewSuccess": "Report reviewed",
+        "approveSuccess": "Report approved",
+        "rejectSuccess": "Report rejected"
+      }
     }
   },
   "documentCategory": {
@@ -541,7 +595,7 @@
       "noRevisions": "No revision history found"
     },
     "uploadRevisionDesc": "Upload the document file and specify its revision details below.",
-    "fileHint": "PDF, Word, Excel, Images — max 20 MB",
+    "fileHint": "PDF, Word, Excel, Images â€” max 20 MB",
     "pagination": {
       "page": "Page",
       "of": "of",
@@ -574,5 +628,32 @@
       "updateSuccess": "Department updated successfully",
       "deleteSuccess": "Department deleted successfully"
     }
+  },
+  "approve": {
+    "title": "Approve Queue",
+    "subtitle": "Overview of items waiting for your approval action",
+    "totalPending": "Total Pending",
+    "pendingDar": "DAR Pending",
+    "pendingKpi": "KPI Pending",
+    "pendingDarList": "DAR Waiting For Your Action",
+    "pendingKpiReviewList": "KPI Waiting For Your Review",
+    "pendingKpiApproveList": "KPI Waiting For Your Approval",
+    "requester": "Requester",
+    "date": "Date",
+    "department": "Department",
+    "type": "Type",
+    "typeObjective": "KPI Objective",
+    "typeMonthly": "KPI Monthly",
+    "period": "Period",
+    "status": "Status",
+    "actual": "Actual",
+    "action": "Action",
+    "openAction": "Open",
+    "successTitle": "Action completed",
+    "successDesc": "The approval action was saved successfully.",
+    "backToQueue": "Back to Approve Queue",
+    "empty": "No pending DAR items",
+    "emptyKpiReview": "No pending KPI review items",
+    "emptyKpiApprove": "No pending KPI approval items"
   }
 }

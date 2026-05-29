@@ -4,6 +4,11 @@ import { redirect } from "next/navigation";
 import { ForbiddenError } from "@/errors/customErrors";
 import { UserService } from "@/services/userService";
 import MrManagementClient from "@/components/qms/MrManagementClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Set MR",
+};
 
 const userService = new UserService();
 

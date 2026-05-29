@@ -4,6 +4,11 @@ import { DepartmentService } from "@/services/departmentService";
 import { t } from "@/lib/i18n";
 import PageHeader from "@/components/common/PageHeader";
 import ProfileClient from "@/components/profile/ProfileClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "My Profile",
+};
 
 const userRepo = new UserRepository();
 const deptService = new DepartmentService();

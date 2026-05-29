@@ -6,15 +6,19 @@ export class AnnouncementRepository extends BaseRepository<Announcement> {
     super("announcement");
   }
 
+  private delegate(tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).announcement;
+  }
+
   async findManyWithCreatedBy(tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findMany({
+    return this.delegate(tx).findMany({
       orderBy: { createdAt: "desc" },
       include: { createdBy: { select: { name: true } } },
     });
   }
 
   async findByIdWithCreatedBy(id: string, tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findUnique({
+    return this.delegate(tx).findUnique({
       where: { id },
       include: { createdBy: { select: { name: true } } },
     });
@@ -25,7 +29,7 @@ export class AnnouncementRepository extends BaseRepository<Announcement> {
     take: number,
     tx?: Prisma.TransactionClient
   ) {
-    return this.getModel(tx).findMany({
+    return this.delegate(tx).findMany({
       where,
       orderBy: { createdAt: "desc" },
       take,

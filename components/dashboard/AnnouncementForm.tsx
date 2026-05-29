@@ -142,7 +142,7 @@ export default function AnnouncementForm() {
 
         <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-200">
           <Button type="button" onClick={() => router.back()} variant="ghost" size="sm">{t("common.cancel")}</Button>
-          <Button type="submit" disabled={loading} size="sm" className="min-w-[150px]">
+          <Button type="submit" disabled={loading} size="sm" className="min-w-37.5">
             {loading ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span> : t("announcement.publishBtn")}
           </Button>
         </div>

@@ -112,10 +112,10 @@ export default function DashboardClientView({
       <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
           <div className="flex items-center justify-between gap-3 mb-6 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#0F1059]/10 flex items-center justify-center">
-              <Network className="w-4 h-4 text-[#0F1059]" />
+            <div className="w-7 h-7 rounded-lg bg-[rgb(15,16,89)]/10 flex items-center justify-center">
+              <Network className="w-4 h-4 text-[rgb(15,16,89)]" />
             </div>
-            <h2 className="text-base font-semibold text-[#0F1059]">
+            <h2 className="text-base font-semibold text-[rgb(15,16,89)]">
               {isTh ? "แผนกที่ใช้งานเอกสาร" : "Document Departments"}
             </h2>
           </div>
@@ -131,7 +131,7 @@ export default function DashboardClientView({
             <select
               value={deptSelected}
               onChange={(e) => setDeptSelected(e.target.value)}
-              className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F1059]/20"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[rgb(15,16,89)]/20"
             >
               <option value="all">{isTh ? "ทุกแผนก" : "All departments"}</option>
               {departments.map((dept) => (
@@ -145,16 +145,16 @@ export default function DashboardClientView({
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value)}
               placeholder={isTh ? "ค้นหาแผนก..." : "Filter departments..."}
-              className="w-full md:col-span-2 h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F1059]/20"
+              className="w-full md:col-span-2 h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[rgb(15,16,89)]/20"
             />
           </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory [scrollbar-width:thin]">
+          <div className="flex gap-3 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory scrollbar-thin">
           {previewDepartments.map((dept) => (
             <Link
               key={dept.id}
               href={`/qms/document-controls/dept/${dept.id}`}
-              className="group relative shrink-0 w-[168px] flex flex-col items-center justify-center p-4 bg-linear-to-br from-[#101257] to-[#080936] rounded-xl border border-white/5 shadow-md hover:shadow-xl hover:shadow-indigo-950/20 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer min-h-[132px] snap-start"
+              className="group relative shrink-0 w-42 flex flex-col items-center justify-center p-4 bg-linear-to-br from-[#101257] to-[#080936] rounded-xl border border-white/5 shadow-md hover:shadow-xl hover:shadow-indigo-950/20 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer min-h-33 snap-start"
             >
               <div className="absolute -top-5 -right-5 w-16 h-16 bg-white/5 rounded-full border border-white/5 pointer-events-none transition-transform duration-500 group-hover:scale-110" />
               <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-white/20">
@@ -178,7 +178,7 @@ export default function DashboardClientView({
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-[#0F1059] flex items-center gap-2">
+              <h2 className="text-base font-semibold text-[rgb(15,16,89)] flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="w-4 h-4"
@@ -198,7 +198,7 @@ export default function DashboardClientView({
               {canManage && (
                 <Link
                   href="/qms/announcements"
-                  className="text-xs text-[#0F1059] font-semibold hover:underline"
+                  className="text-xs text-[rgb(15,16,89)] font-semibold hover:underline"
                 >
                   {isTh ? "จัดการ" : "Manage"}
                 </Link>
@@ -213,7 +213,7 @@ export default function DashboardClientView({
 
           <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100">
-              <h2 className="text-base font-semibold text-[#0F1059] flex items-center gap-2">
+              <h2 className="text-base font-semibold text-[rgb(15,16,89)] flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="w-4 h-4"
@@ -240,7 +240,7 @@ export default function DashboardClientView({
         <div className="lg:col-span-4 flex flex-col gap-6">
           <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-[#0F1059]">
+              <h2 className="text-base font-semibold text-[rgb(15,16,89)]">
                 {isTh ? "KPI รายเดือน" : "KPI Monthly"}
               </h2>
               <span className="text-xs text-slate-400">

@@ -18,6 +18,12 @@ type FormState = {
   items: ItemRow[];
   distributionDepartmentIds: string[];
 };
+type FormKey = keyof FormState;
+type ItemError = {
+  docNumber?: { message?: string };
+  docName?: { message?: string };
+  revision?: { message?: string };
+};
 
 const formSchema = z.object({
   objective: z.union([
@@ -90,8 +96,8 @@ export function useDarForm(
   const [savedDarId, setSavedDarId] = useState<string | null>(initialData?.id ?? null);
   const [tempAttachments, setTempAttachments] = useState<TempAttachmentInput[]>([]);
 
-  const setField = useCallback((key: keyof FormState, value: any) => {
-    setValue(key, value, { shouldValidate: true });
+  const setField = useCallback(<K extends FormKey>(key: K, value: FormState[K]) => {
+    (setValue as (name: FormKey, value: FormState[FormKey], opts?: object) => void)(key, value, { shouldValidate: true });
   }, [setValue]);
 
   // Convert RHF nested errors into flat Record<string, string> expected by UI
@@ -104,11 +110,12 @@ export function useDarForm(
   
   if (formState.errors.items) {
     if (Array.isArray(formState.errors.items)) {
-      formState.errors.items.forEach((itemError: any, idx: number) => {
-        if (itemError) {
-          if (itemError.docNumber?.message) flatErrors[`items.${idx}.docNumber`] = itemError.docNumber.message;
-          if (itemError.docName?.message) flatErrors[`items.${idx}.docName`] = itemError.docName.message;
-          if (itemError.revision?.message) flatErrors[`items.${idx}.revision`] = itemError.revision.message;
+      formState.errors.items.forEach((itemError, idx: number) => {
+        const typedItemError = itemError as ItemError | undefined;
+        if (typedItemError) {
+          if (typedItemError.docNumber?.message) flatErrors[`items.${idx}.docNumber`] = typedItemError.docNumber.message;
+          if (typedItemError.docName?.message) flatErrors[`items.${idx}.docName`] = typedItemError.docName.message;
+          if (typedItemError.revision?.message) flatErrors[`items.${idx}.revision`] = typedItemError.revision.message;
         }
       });
     } else if (formState.errors.items.message) {

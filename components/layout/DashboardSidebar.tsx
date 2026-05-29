@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 
-type NavItem = { labelTh: string; labelEn: string; href: string; icon: React.ReactNode };
+type NavItem = { labelTh: string; labelEn: string; href: string; icon: React.ReactNode; exact?: boolean };
 type Props = {
   role: UserRole;
   name: string;
@@ -91,13 +91,31 @@ function ProfileIcon() {
   );
 }
 
+function KpiTargetIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  );
+}
+
+function KpiMonthlyIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
 function getSections(role: UserRole, locale: "th" | "en"): { label: string; items: NavItem[] }[] {
   const userItems: NavItem[] = [
     { labelTh: "หน้าหลัก", labelEn: "Dashboard", href: "/", icon: <HomeIcon /> },
     { labelTh: "คำขอเอกสาร", labelEn: "My Requests", href: "/dar", icon: <FileIcon /> },
-    { labelTh: "ควบคุมเอกสาร", labelEn: "Document Control", href: "/qms/document-controls", icon: <FileIcon /> },
+    { labelTh: "เอกสารทั้งหมด", labelEn: "Document Control", href: "/qms/document-controls", icon: <FileIcon /> },
     { labelTh: "โปรไฟล์ของฉัน", labelEn: "My Profile", href: "/profile", icon: <ProfileIcon /> },
-    { labelTh: "KPI (In Development)", labelEn: "KPI", href: "/qms/kpi", icon: <FileIcon /> },
+    { labelTh: "งานรออนุมัติ", labelEn: "Approve Queue", href: "/approve", icon: <CheckIcon /> },
+    { labelTh: "วัตถุประสงค์ KPI", labelEn: "KPI Objectives", href: "/qms/kpi", icon: <KpiTargetIcon />, exact: true },
+    { labelTh: "รายงาน KPI รายเดือน", labelEn: "Monthly KPI", href: "/qms/kpi/monthly", icon: <KpiMonthlyIcon /> },
   ];
   const qmsItems: NavItem[] = [
     { labelTh: "จัดการข่าวสาร", labelEn: "Manage Announcements", href: "/qms/announcements", icon: <MegaphoneIcon /> },
@@ -187,7 +205,9 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
               </p>
 
               {section.items.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const isActive = item.exact
+                  ? pathname === item.href
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
                 const label = locale === "en" ? item.labelEn : item.labelTh;
 
                 return (
@@ -262,4 +282,3 @@ export default function DashboardSidebar({ role, name, email, image, isOpen, onC
     </>
   );
 }
-

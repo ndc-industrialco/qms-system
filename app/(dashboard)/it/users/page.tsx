@@ -5,6 +5,11 @@ import ItUserTable from "@/components/it/ItUserTable";
 import SyncActions from "@/components/it/SyncActions";
 import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
 import PageHeader from "@/components/common/PageHeader";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Manage Users",
+};
 
 const userService = new UserService();
 const deptService = new DepartmentService();

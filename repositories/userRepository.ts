@@ -6,14 +6,24 @@ export class UserRepository extends BaseRepository<User> {
     super("user");
   }
 
+  private delegate(tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).user;
+  }
+
   async findByEmail(email: string, tx?: Prisma.TransactionClient): Promise<User | null> {
-    return this.getModel(tx).findUnique({
-      where: { email },
+    return this.delegate(tx).findUnique({ where: { email } });
+  }
+
+  async findAssignees(tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: { role: { in: ['QMS', 'MR', 'IT'] } },
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, email: true, role: true },
     });
   }
 
   async findManyWithDept(tx?: Prisma.TransactionClient) {
-    return this.getModel(tx).findMany({
+    return this.delegate(tx).findMany({
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -33,10 +43,7 @@ export class UserRepository extends BaseRepository<User> {
     data: { name?: string; position?: string | null; savedSignatureUrl?: string | null; signatureType?: SignatureType | null },
     tx?: Prisma.TransactionClient
   ): Promise<User> {
-    return this.getModel(tx).update({
-      where: { id },
-      data,
-    });
+    return this.delegate(tx).update({ where: { id }, data });
   }
 
   async upsertUser(
@@ -44,7 +51,7 @@ export class UserRepository extends BaseRepository<User> {
     data: Prisma.UserUncheckedCreateInput,
     tx?: Prisma.TransactionClient
   ): Promise<User> {
-    return this.getModel(tx).upsert({
+    return this.delegate(tx).upsert({
       where: { email },
       update: {
         name: data.name,

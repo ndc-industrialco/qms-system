@@ -1,18 +1,25 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
-import { AppError } from "@/lib/errors";
 import { db } from "@/lib/db";
 import { getFileInfo } from "@/lib/sharepoint";
+import { handleApiError } from "@/lib/apiErrorHandler";
+import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
+import { z } from "zod";
+
+const querySchema = z.object({
+  itemId: z.string().min(1).max(200),
+});
 
 export async function GET(req: NextRequest) {
   try {
     const session = await requireAuth();
-    const itemId = req.nextUrl.searchParams.get("itemId");
 
-    if (!itemId) {
-      return NextResponse.json({ data: null, error: "itemId is required" }, { status: 400 });
+    const parsed = querySchema.safeParse({ itemId: req.nextUrl.searchParams.get("itemId") });
+    if (!parsed.success) {
+      throw new ValidationError("itemId is required and must be a valid identifier");
     }
+    const { itemId } = parsed.data;
 
     const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
 
@@ -23,7 +30,7 @@ export async function GET(req: NextRequest) {
       });
 
       if (!attachment) {
-        return NextResponse.json({ data: null, error: "File not found" }, { status: 404 });
+        throw new NotFoundError("File");
       }
 
       const darRow = await db.darMaster.findUnique({
@@ -39,7 +46,7 @@ export async function GET(req: NextRequest) {
         });
 
         if (!assigned) {
-          return NextResponse.json({ data: null, error: "Forbidden" }, { status: 403 });
+          throw new ForbiddenError();
         }
       }
     }
@@ -69,10 +76,6 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    if (err instanceof AppError) {
-      return NextResponse.json({ data: null, error: err.message }, { status: err.statusCode });
-    }
-    console.error("[preview-proxy]", err);
-    return NextResponse.json({ data: null, error: "Failed to retrieve file" }, { status: 500 });
+    return handleApiError(err);
   }
 }

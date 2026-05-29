@@ -73,45 +73,30 @@ export type QmsProcessing = Prisma.QmsProcessingModel
  */
 export type PublicDocument = Prisma.PublicDocumentModel
 /**
- * Model KpiSchedule
+ * Model KPI
  * 
  */
-export type KpiSchedule = Prisma.KpiScheduleModel
+export type KPI = Prisma.KPIModel
 /**
- * Model KpiMaster
+ * Model KPIObjective
  * 
  */
-export type KpiMaster = Prisma.KpiMasterModel
+export type KPIObjective = Prisma.KPIObjectiveModel
 /**
- * Model KpiMonthlyResult
+ * Model KPIMonthlyReport
  * 
  */
-export type KpiMonthlyResult = Prisma.KpiMonthlyResultModel
+export type KPIMonthlyReport = Prisma.KPIMonthlyReportModel
 /**
- * Model KpiMonthlyAttachment
+ * Model KPIMonthlyDetail
  * 
  */
-export type KpiMonthlyAttachment = Prisma.KpiMonthlyAttachmentModel
+export type KPIMonthlyDetail = Prisma.KPIMonthlyDetailModel
 /**
- * Model KpiSignatureLog
+ * Model KPICorrectiveAction
  * 
  */
-export type KpiSignatureLog = Prisma.KpiSignatureLogModel
-/**
- * Model KpiAuditLog
- * 
- */
-export type KpiAuditLog = Prisma.KpiAuditLogModel
-/**
- * Model KpiCorrectiveAction
- * 
- */
-export type KpiCorrectiveAction = Prisma.KpiCorrectiveActionModel
-/**
- * Model KpiApprovalLog
- * 
- */
-export type KpiApprovalLog = Prisma.KpiApprovalLogModel
+export type KPICorrectiveAction = Prisma.KPICorrectiveActionModel
 /**
  * Model DocumentControl
  * 

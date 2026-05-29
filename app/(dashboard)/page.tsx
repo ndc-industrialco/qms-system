@@ -2,11 +2,16 @@
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import DashboardClientView from "@/components/dashboard/DashboardClientView";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+};
 
 export default async function CompanyCenterDashboard() {
   const session = await requireAuth();
   const now = new Date();
-  const currentMonth = now.getMonth() + 1;
+  // currentMonth reserved for future filtering
   const currentYear = now.getFullYear();
 
   const activeFilter = {
@@ -61,19 +66,19 @@ export default async function CompanyCenterDashboard() {
       take: 4,
     }),
 
-    db.kpiMonthlyResult.count({
-      where: { month: currentMonth, status: "OK", kpiMaster: { year: currentYear } },
+    db.kPIMonthlyDetail.count({
+      where: { achievedStatus: "OK", monthlyReport: { year: currentYear } },
     }),
 
-    db.kpiMonthlyResult.count({
-      where: { month: currentMonth, status: "NG", kpiMaster: { year: currentYear } },
+    db.kPIMonthlyDetail.count({
+      where: { achievedStatus: "NOT_OK", monthlyReport: { year: currentYear } },
     }),
 
-    db.kpiMonthlyResult.count({
-      where: { month: currentMonth, status: "PENDING", kpiMaster: { year: currentYear } },
+    db.kPIMonthlyDetail.count({
+      where: { achievedStatus: "PENDING", monthlyReport: { year: currentYear } },
     }),
 
-    db.kpiMaster.count({ where: { year: currentYear } }),
+    db.kPI.count({ where: { yearly: currentYear } }),
   ]);
 
   const canManage = ["QMS", "IT", "MR"].includes(session.user.role);

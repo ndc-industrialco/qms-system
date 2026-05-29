@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 
 function UnauthorizedContent() {
   const searchParams = useSearchParams();
@@ -13,6 +13,10 @@ function UnauthorizedContent() {
 
   const isNoM365 = reason === "no_m365_account";
   const isInsufficientRole = reason === "insufficient_role";
+
+  useEffect(() => {
+    document.title = "Unauthorized — QMS System";
+  }, []);
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">

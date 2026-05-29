@@ -92,6 +92,7 @@ export class DepartmentService {
     await this.invalidateActiveCache();
 
     const refetched = await this.deptRepo.findByIdWithMembers(dept.id);
+    if (!refetched) throw new NotFoundError("Department");
     return this.toRow(refetched);
   }
 
@@ -107,6 +108,7 @@ export class DepartmentService {
     const updated = await this.deptRepo.update(id, data);
     await this.invalidateActiveCache();
     const refetched = await this.deptRepo.findByIdWithMembers(updated.id);
+    if (!refetched) throw new NotFoundError("Department");
     return this.toRow(refetched);
   }
 

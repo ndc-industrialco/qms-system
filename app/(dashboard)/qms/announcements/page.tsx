@@ -1,6 +1,11 @@
 import { requireRole } from "@/lib/auth";
 import { AnnouncementService } from "@/services/announcementService";
 import AnnouncementsTableClient from "@/components/announcements/AnnouncementsTableClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Manage Announcements",
+};
 
 const announceService = new AnnouncementService();
 

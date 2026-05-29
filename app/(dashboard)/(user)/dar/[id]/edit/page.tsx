@@ -5,11 +5,18 @@ import { DarService } from "@/services/darService";
 import { DepartmentService } from "@/services/departmentService";
 import DarForm from "@/components/dar/DarForm";
 import DarEditHeader from "@/components/dar/DarEditHeader";
+import { db } from "@/lib/db";
 
 const darService = new DarService();
 const deptService = new DepartmentService();
 
 type Props = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: Props) {
+  const { id } = await params;
+  const dar = await db.darMaster.findUnique({ where: { id }, select: { darNo: true } });
+  return { title: dar?.darNo ? `Edit Request ${dar.darNo}` : "Edit Request" };
+}
 
 export default async function DarEditPage({ params }: Props) {
   const [session, { id }] = await Promise.all([requireAuth(), params]);

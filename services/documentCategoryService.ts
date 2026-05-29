@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DocumentCategoryRepository } from '@/repositories/documentCategoryRepository';
+import { DocumentControlRepository } from '@/repositories/documentControlRepository';
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/errors';
 import type { CreateDocumentCategoryInput, UpdateDocumentCategoryInput } from '@/types/documentControl';
 import { db } from '@/lib/db';
@@ -13,6 +14,7 @@ import {
 
 export class DocumentCategoryService {
   private repo = new DocumentCategoryRepository();
+  private docRepo = new DocumentControlRepository();
 
   async listByDepartment(departmentId: string) {
     const categories = await this.repo.listByDepartment(departmentId);
@@ -48,34 +50,35 @@ export class DocumentCategoryService {
       const deptName = cat.department?.name ?? 'Unknown';
       const oldCategoryPath = buildDocControlCategoryFolderPath(deptName, cat.name);
       const parentPath = buildDocControlCategoryFolderPath(deptName, '__tmp__').replace('/__tmp__', '');
+
+      // Step 1: Move SharePoint folder (external side effect — happens before DB)
       await moveSpFolderByPath({
         sourceFolderPath: oldCategoryPath,
         targetParentPath: parentPath,
         newFolderName: newName.replace(/[/\\:*?"<>|]/g, '_').trim(),
       });
 
-      const docs = await db.documentControl.findMany({
-        where: { categoryId: id },
-        select: { id: true, docNumber: true, spFolderPath: true },
-      });
-
-      for (const doc of docs) {
-        const newDocPath = buildDocControlDocumentFolderPath(deptName, newName, doc.docNumber);
-        await db.documentControl.update({
-          where: { id: doc.id },
-          data: { spFolderPath: newDocPath },
+      // Step 2: Wrap ALL DB path rewrites in a single transaction via repository.
+      // If the transaction fails after SP move, DB stays consistent (no partial rows),
+      // though SP path and DB path may diverge — log for manual reconciliation.
+      try {
+        await db.$transaction(async (tx) => {
+          await this.docRepo.updateCategoryDocumentPaths(
+            id,
+            deptName,
+            newName,
+            buildDocControlDocumentFolderPath,
+            (d, c, docNum, rev) => buildDocControlDocumentFolderPath(d, c, docNum, rev),
+            tx,
+          );
         });
-
-        const revisions = await db.documentControlRevision.findMany({
-          where: { documentControlId: doc.id },
-          select: { id: true, revision: true },
-        });
-        for (const rev of revisions) {
-          await db.documentControlRevision.update({
-            where: { id: rev.id },
-            data: { spFolderPath: buildDocControlDocumentFolderPath(deptName, newName, doc.docNumber, rev.revision) },
-          });
-        }
+      } catch (txErr) {
+        console.error(
+          `[DocumentCategoryService.updateCategory] DB transaction failed after SP folder rename. ` +
+          `Category ${id} SP folder is now "${newName}" but DB paths may be stale.`,
+          txErr,
+        );
+        throw txErr;
       }
     }
 

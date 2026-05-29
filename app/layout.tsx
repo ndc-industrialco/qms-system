@@ -15,7 +15,10 @@ const sarabun = Sarabun({
 });
 
 export const metadata: Metadata = {
-  title: "QMS System",
+  title: {
+    template: "%s — QMS System",
+    default: "QMS System",
+  },
   description: "Quality Management System",
 };
 

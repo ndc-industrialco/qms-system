@@ -25,6 +25,7 @@ const ROUTE_LABELS: Record<string, { th: string; en: string }> = {
   "/qms/announcements/new":  { th: "ประกาศใหม่",      en: "New Announcement" },
   "/qms/sharepoint":         { th: "SharePoint Files", en: "SharePoint Files" },
   "/qms/mr":                 { th: "กำหนด MR",         en: "Set MR" },
+  "/approve":                { th: "งานรออนุมัติ",     en: "Approve Queue" },
   "/it/users":               { th: "จัดการผู้ใช้",    en: "Manage Users" },
   "/it/departments":         { th: "จัดการแผนก",      en: "Manage Departments" },
 };
@@ -43,6 +44,10 @@ function getBreadcrumbs(pathname: string, locale: "th" | "en") {
   } else if (pathname.startsWith("/it/departments/")) {
     crumbs.push(locale === "th" ? "จัดการแผนก" : "Manage Departments");
     crumbs.push(locale === "th" ? "รายละเอียด" : "Detail");
+  } else if (pathname.startsWith("/approve/")) {
+    crumbs.push(locale === "th" ? "งานรออนุมัติ" : "Approve Queue");
+    if (pathname.endsWith("/reviewer")) crumbs.push(locale === "th" ? "ผู้ตรวจสอบ" : "Reviewer");
+    if (pathname.endsWith("/approver")) crumbs.push(locale === "th" ? "ผู้อนุมัติ" : "Approver");
   }
   return crumbs;
 }
@@ -185,4 +190,3 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
     </header>
   );
 }
-

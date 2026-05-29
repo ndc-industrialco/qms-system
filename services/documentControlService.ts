@@ -12,7 +12,14 @@ import {
   buildDocControlDocumentFolderPath,
 } from '@/services/sharepoint';
 import type { CreateDocumentControlInput, UpdateDocumentControlInput } from '@/types/documentControl';
-import { Prisma } from '@/generated/prisma/client';
+import { DocControlStatus, Prisma } from '@/generated/prisma/client';
+
+type DocumentControlWithNames = Prisma.DocumentControlGetPayload<{
+  include: {
+    department: { select: { name: true } };
+    category: { select: { name: true } };
+  };
+}>;
 
 export class DocumentControlService {
   private repo = new DocumentControlRepository();
@@ -36,7 +43,7 @@ export class DocumentControlService {
     }
 
     if (filters?.status) {
-      where.status = filters.status as any;
+      where.status = filters.status as DocControlStatus;
     }
 
     return this.repo.findManyWithUsers(
@@ -72,13 +79,13 @@ export class DocumentControlService {
       docNumber: data.docNumber,
       docName: data.docName,
       description: data.description ?? null,
-      status: (data.status || 'DRAFT') as any,
+      status: (data.status || 'DRAFT') as DocControlStatus,
       departmentId: data.departmentId,
       categoryId: data.categoryId,
       createdById: userId,
       revision: null,
       spFolderPath: docFolderPath,
-    } as any);
+    });
 
     return this._formatDocDetail(doc);
   }
@@ -89,7 +96,7 @@ export class DocumentControlService {
       throw new NotFoundError('Document');
     }
 
-    const updates: any = { updatedById: userId };
+    const updates: Prisma.DocumentControlUncheckedUpdateInput = { updatedById: userId };
     const nextDepartmentId = data.departmentId ?? doc.departmentId ?? undefined;
     const nextCategoryId = data.categoryId ?? doc.categoryId ?? undefined;
     if (!nextDepartmentId || !nextCategoryId) throw new ValidationError('Department and category are required');
@@ -101,11 +108,13 @@ export class DocumentControlService {
     if (!nextDept || !nextCategory) throw new ValidationError('Department or category not found');
     if (nextCategory.departmentId !== nextDepartmentId) throw new ValidationError('Category does not belong to department');
 
-    const currentDeptName = (doc as any).department?.name ?? 'Unknown';
-    const currentCategoryName = (doc as any).category?.name ?? 'Uncategorized';
+    const currentDeptName = (doc as DocumentControlWithNames).department?.name ?? 'Unknown';
+    const currentCategoryName = (doc as DocumentControlWithNames).category?.name ?? 'Uncategorized';
     const oldDocFolderPath = buildDocControlDocumentFolderPath(currentDeptName, currentCategoryName, doc.docNumber);
     const newDocFolderPath = buildDocControlDocumentFolderPath(nextDept.name, nextCategory.name, doc.docNumber);
+
     if (oldDocFolderPath !== newDocFolderPath) {
+      // Step 1: Move the SharePoint folder first (external side effect — cannot easily roll back)
       const targetParentPath = buildDocControlCategoryFolderPath(nextDept.name, nextCategory.name);
       await moveSpFolderByPath({
         sourceFolderPath: oldDocFolderPath,
@@ -114,15 +123,25 @@ export class DocumentControlService {
       });
       updates.spFolderPath = newDocFolderPath;
 
-      const revisions = await db.documentControlRevision.findMany({
-        where: { documentControlId: id },
-        select: { id: true, revision: true },
-      });
-      for (const rev of revisions) {
-        await db.documentControlRevision.update({
-          where: { id: rev.id },
-          data: { spFolderPath: buildDocControlDocumentFolderPath(nextDept.name, nextCategory.name, doc.docNumber, rev.revision) },
+      // Step 2: Wrap all DB path rewrites in a transaction so DB stays consistent
+      // If this fails after SP already moved, log a warning — SP compensation for folder moves
+      // is complex; the important guarantee is that DB does not end up partially updated.
+      try {
+        await db.$transaction(async (tx) => {
+          await this.repo.updateRevisionPaths(
+            id,
+            (revision) => buildDocControlDocumentFolderPath(nextDept.name, nextCategory.name, doc.docNumber, revision),
+            tx,
+          );
         });
+      } catch (txErr) {
+        // DB update failed after SP move succeeded — log for manual reconciliation
+        console.error(
+          `[DocumentControlService.updateDocument] DB transaction failed after SP folder move. ` +
+          `Document ${id} SP folder is now at ${newDocFolderPath} but DB revision paths may be stale.`,
+          txErr,
+        );
+        throw txErr;
       }
     }
 
@@ -156,7 +175,7 @@ export class DocumentControlService {
   async addRevision(
     id: string,
     userId: string,
-    data: { revision: string; effectiveDate?: string | null; status?: any },
+    data: { revision: string; effectiveDate?: string | null; status?: DocControlStatus },
     file: { buffer: Uint8Array; name: string; type: string },
   ) {
     const doc = await this.repo.findDetailById(id);
@@ -165,16 +184,12 @@ export class DocumentControlService {
     }
 
     // Resolve dept + category names for SharePoint path
-    const deptName = (doc as any).department?.name ?? 'Unknown';
-    const categoryName = (doc as any).category?.name ?? 'Uncategorized';
+    const deptName = (doc as DocumentControlWithNames).department?.name ?? 'Unknown';
+    const categoryName = (doc as DocumentControlWithNames).category?.name ?? 'Uncategorized';
 
-    // 1. Mark existing revisions as OBSOLETE
-    await db.documentControlRevision.updateMany({
-      where: { documentControlId: id },
-      data: { status: 'OBSOLETE' },
-    });
-
-    // 2. Upload file to SharePoint
+    // Step 1: Upload file to SharePoint FIRST.
+    // DB changes only happen after upload succeeds so we never mark revisions
+    // OBSOLETE without a new revision being safely stored.
     const spResult = await uploadFileToDocControl({
       fileBuffer: file.buffer,
       fileName: file.name,
@@ -185,41 +200,73 @@ export class DocumentControlService {
       revision: data.revision,
     });
 
-    // 3. Create new DocumentControlRevision
     const revisionStatus = data.status || 'ACTIVE';
-    await db.documentControlRevision.create({
-      data: {
-        documentControlId: id,
-        revision: data.revision,
-        effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : null,
-        status: revisionStatus,
-        spDriveId: spResult.driveId,
-        spItemId: spResult.spItemId,
-        spWebUrl: spResult.spWebUrl,
-        spDownloadUrl: spResult.spDownloadUrl,
-        spFolderPath: spResult.folderPath,
-        fileName: file.name,
-        fileSize: file.buffer.length,
-        mimeType: file.type,
-        createdById: userId,
-      },
-    });
 
-    // 4. Update main DocumentControl with latest revision info
-    const updatedDoc = await this.repo.update(id, {
-      revision: data.revision,
-      effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : null,
-      status: revisionStatus,
-      spDriveId: spResult.driveId,
-      spItemId: spResult.spItemId,
-      spWebUrl: spResult.spWebUrl,
-      spDownloadUrl: spResult.spDownloadUrl,
-      spFolderPath: spResult.folderPath,
-      fileName: file.name,
-      fileSize: file.buffer.length,
-      mimeType: file.type,
-      updatedById: userId,
-    });
+    // Step 2: Wrap all DB writes in a single transaction.
+    // Order: mark old revisions OBSOLETE → create new revision row → update main document.
+    // This guarantees the DB is either fully updated or fully rolled back.
+    let updatedDoc;
+    try {
+      updatedDoc = await db.$transaction(async (tx) => {
+        // 2a. Mark all existing revisions as OBSOLETE
+        await this.repo.obsoleteAndCreateRevision(
+          id,
+          {
+            documentControlId: id,
+            revision: data.revision,
+            effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : null,
+            status: revisionStatus,
+            spDriveId: spResult.driveId,
+            spItemId: spResult.spItemId,
+            spWebUrl: spResult.spWebUrl,
+            spDownloadUrl: spResult.spDownloadUrl,
+            spFolderPath: spResult.folderPath,
+            fileName: file.name,
+            fileSize: file.buffer.length,
+            mimeType: file.type,
+            createdById: userId,
+          },
+          tx,
+        );
+
+        // 2b. Update main DocumentControl with latest revision info
+        return this.repo.update(
+          id,
+          {
+            revision: data.revision,
+            effectiveDate: data.effectiveDate ? new Date(data.effectiveDate) : null,
+            status: revisionStatus,
+            spDriveId: spResult.driveId,
+            spItemId: spResult.spItemId,
+            spWebUrl: spResult.spWebUrl,
+            spDownloadUrl: spResult.spDownloadUrl,
+            spFolderPath: spResult.folderPath,
+            fileName: file.name,
+            fileSize: file.buffer.length,
+            mimeType: file.type,
+            updatedById: userId,
+          },
+          tx,
+        );
+      });
+    } catch (txErr) {
+      // Step 3: Compensation — DB transaction failed, so delete the uploaded file from SP
+      // to avoid leaving an orphaned file with no corresponding DB revision.
+      console.error(
+        `[DocumentControlService.addRevision] DB transaction failed after SP upload. ` +
+        `Attempting to delete orphaned SP item ${spResult.spItemId}.`,
+        txErr,
+      );
+      try {
+        await deleteSpItem(spResult.spItemId);
+      } catch (deleteErr) {
+        console.error(
+          `[DocumentControlService.addRevision] Compensation delete of SP item ${spResult.spItemId} also failed.`,
+          deleteErr,
+        );
+      }
+      throw txErr;
+    }
 
     return this._formatDocDetail(updatedDoc);
   }
@@ -243,12 +290,12 @@ export class DocumentControlService {
     return this.repo.delete(id);
   }
 
-  private _formatDocDetail(doc: any) {
+  private _formatDocDetail<T extends { createdAt?: Date | string | null; updatedAt?: Date | string | null; effectiveDate?: Date | string | null }>(doc: T) {
     return {
       ...doc,
-      createdAt: doc.createdAt?.toISOString?.() ?? doc.createdAt,
-      updatedAt: doc.updatedAt?.toISOString?.() ?? doc.updatedAt,
-      effectiveDate: doc.effectiveDate?.toISOString?.() ?? doc.effectiveDate,
+      createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt,
+      updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : doc.updatedAt,
+      effectiveDate: doc.effectiveDate instanceof Date ? doc.effectiveDate.toISOString() : doc.effectiveDate,
     };
   }
 }

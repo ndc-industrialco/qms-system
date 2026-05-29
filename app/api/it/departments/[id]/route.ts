@@ -13,6 +13,7 @@ const updateSchema = z.object({
   emailGroup: z.string().max(100).nullable().optional(),
   isActive: z.boolean().optional(),
 });
+const paramSchema = z.object({ id: z.string().uuid() });
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -22,7 +23,7 @@ export async function PATCH(
 ) {
   try {
     await requireRole("IT", "QMS", "MR");
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     const body = await req.json();
     const validated = updateSchema.parse(body);
     const dept = await deptService.updateDepartment(id, validated);
@@ -38,7 +39,7 @@ export async function DELETE(
 ) {
   try {
     await requireRole("IT", "QMS", "MR");
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     await deptService.deleteDepartment(id);
     return sendSuccess({ id }, "Department deleted successfully");
   } catch (err) {

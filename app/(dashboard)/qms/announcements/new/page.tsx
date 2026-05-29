@@ -2,6 +2,11 @@
 import { requireRole } from "@/lib/auth";
 import AnnouncementForm from "@/components/dashboard/AnnouncementForm";
 import NewAnnouncementHeader from "@/components/announcements/NewAnnouncementHeader";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "New Announcement",
+};
 
 export default async function NewAnnouncementPage() {
   await requireRole("QMS", "IT", "MR");

@@ -1,226 +1,131 @@
-﻿import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
+import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
 import { db } from '@/lib/db';
-import { ensureKpiApprovalTransition } from '@/lib/kpi-state-machine';
-import { createContentHash } from '@/lib/signature-hash';
-import { KpiApprovalStatus, KpiMonthlyStatus, KpiWorkflowAction } from '@/generated/prisma/client';
-import { KpiAuditLogRepository } from '@/repositories/kpiAuditLogRepository';
-import { KpiMonthlyRepository } from '@/repositories/kpiMonthlyRepository';
+import { ensureMonthlyStatusTransition } from '@/lib/kpi-state-machine';
+import { KpiMonthlyReportRepository } from '@/repositories/kpiMonthlyReportRepository';
+import { KpiMonthlyDetailRepository } from '@/repositories/kpiMonthlyDetailRepository';
+import { KpiCorrectiveActionRepository } from '@/repositories/kpiCorrectiveActionRepository';
 import { KpiObjectiveRepository } from '@/repositories/kpiObjectiveRepository';
-import { KpiSignatureRepository } from '@/repositories/kpiSignatureRepository';
-import { ActorContext, ListMonthlyQuery, UpdateMonthlyDraftDTO } from '@/types/kpiWorkflow';
+import { ActorContext, CreateMonthlyReportDTO, CreateCorrectiveActionDTO, ListMonthlyQuery, UpdateMonthlyDetailDTO } from '@/types/kpi';
 
 export class KpiMonthlyService {
-  private monthlyRepo = new KpiMonthlyRepository();
+  private reportRepo = new KpiMonthlyReportRepository();
+  private detailRepo = new KpiMonthlyDetailRepository();
+  private correctiveRepo = new KpiCorrectiveActionRepository();
   private objectiveRepo = new KpiObjectiveRepository();
-  private signatureRepo = new KpiSignatureRepository();
-  private auditRepo = new KpiAuditLogRepository();
 
-  async generateMonthlyRecords(year: number, month: number, departmentId?: string) {
-    const objectives = await this.objectiveRepo.listApprovedForPeriod(year, departmentId);
+  async createMonthlyReport(dto: CreateMonthlyReportDTO, actor: ActorContext) {
+    const existing = await db.kPIMonthlyReport.findUnique({
+      where: { kpiId_month_year: { kpiId: dto.kpiId, month: dto.month, year: dto.year } },
+    });
+    if (existing) throw new ConflictError(`Monthly report for ${dto.month} ${dto.year} already exists`);
 
-    const created = await db.$transaction(async (tx) => {
-      const rows = [];
-      for (const objective of objectives) {
-        const row = await this.monthlyRepo.createIfNotExists({
-          kpiMasterId: objective.id,
-          periodYear: year,
-          month,
-        }, tx);
-        rows.push(row);
+    const objectives = await this.objectiveRepo.findByKpiId(dto.kpiId);
+
+    return db.$transaction(async (tx) => {
+      const report = await db.kPIMonthlyReport.create({
+        data: { kpiId: dto.kpiId, month: dto.month, year: dto.year },
+      });
+
+      for (const obj of objectives) {
+        await this.detailRepo.createForReport(report.id, obj.id, tx);
       }
-      return rows;
-    });
 
-    return { generated: created.length, rows: created };
-  }
-
-  async listMonthly(query: ListMonthlyQuery) {
-    return this.monthlyRepo.paginateMonthly(query);
-  }
-
-  async getById(id: string) {
-    const row = await this.monthlyRepo.findByIdWithRelations(id);
-    if (!row) throw new NotFoundError(`KPI monthly record ${id} not found`);
-    return row;
-  }
-
-  async updateDraft(id: string, payload: UpdateMonthlyDraftDTO, actor: ActorContext) {
-    const row = await this.getById(id);
-    if (row.approvalStatus !== KpiApprovalStatus.DRAFT && row.approvalStatus !== KpiApprovalStatus.REJECTED) {
-      throw new ConflictError('Only draft/rejected monthly record can be edited');
-    }
-
-    if (actor.role === 'USER' && row.kpiMaster.departmentId !== actor.departmentId) {
-      throw new ForbiddenError('Cannot edit another department KPI record');
-    }
-
-    return this.monthlyRepo.updateDraft(id, payload);
-  }
-
-  async submit(id: string, actor: ActorContext) {
-    const row = await this.getById(id);
-    if (actor.role === 'USER' && row.kpiMaster.departmentId !== actor.departmentId) {
-      throw new ForbiddenError('Cannot submit another department KPI record');
-    }
-
-    ensureKpiApprovalTransition(row.approvalStatus, KpiApprovalStatus.SUBMITTED);
-
-    return db.$transaction(async (tx) => {
-      const before = {
-        approvalStatus: row.approvalStatus,
-        status: row.status,
-        actualValue: row.actualValue?.toString() ?? null,
-      };
-
-      const updated = await this.monthlyRepo.update(id, {
-        approvalStatus: KpiApprovalStatus.SUBMITTED,
-        submittedBy: { connect: { id: actor.userId } },
-        submittedAt: new Date(),
-      }, tx);
-
-      const signaturePayload = {
-        recordId: row.id,
-        approvalStatus: KpiApprovalStatus.SUBMITTED,
-        status: row.status,
-        actualValue: row.actualValue?.toString() ?? null,
-        submittedById: actor.userId,
-      };
-
-      await this.signatureRepo.addSignature({
-        kpiMonthlyResultId: row.id,
-        signerId: actor.userId,
-        signerRole: 'SUBMITTER',
-        contentHash: createContentHash(signaturePayload),
-        action: KpiWorkflowAction.SUBMIT,
-      }, tx);
-
-      await this.auditRepo.logEvent({
-        kpiMonthlyResultId: row.id,
-        actorUserId: actor.userId,
-        action: KpiWorkflowAction.SUBMIT,
-        beforeJson: before,
-        afterJson: {
-          ...before,
-          approvalStatus: KpiApprovalStatus.SUBMITTED,
-        },
-      }, tx);
-
-      return updated;
+      return this.reportRepo.findByIdWithDetails(report.id, tx);
     });
   }
 
-  async approve(id: string, actor: ActorContext) {
-    const row = await this.getById(id);
+  async listReports(query: ListMonthlyQuery) {
+    return this.reportRepo.paginateReports(query);
+  }
+
+  async getReportById(id: string) {
+    const report = await this.reportRepo.findByIdWithDetails(id);
+    if (!report) throw new NotFoundError(`Monthly report ${id} not found`);
+    return report;
+  }
+
+  async updateDetail(detailId: string, dto: UpdateMonthlyDetailDTO, actor: ActorContext) {
+    const detail = await db.kPIMonthlyDetail.findUnique({
+      where: { id: detailId },
+      include: { monthlyReport: true, kpiObjective: true },
+    });
+    if (!detail) throw new NotFoundError(`Monthly detail ${detailId} not found`);
+    if (detail.monthlyReport.status !== 'DRAFT' && detail.monthlyReport.status !== 'REJECTED') {
+      throw new ConflictError('Can only edit details in DRAFT or REJECTED reports');
+    }
+
+    if (dto.actualResult !== undefined && dto.actualResult !== null) {
+      return this.detailRepo.autoSetAchievedStatus(detailId, detail.kpiObjective.target, dto.actualResult);
+    }
+
+    return this.detailRepo.updateResult(detailId, {
+      actualResult: dto.actualResult,
+      achievedStatus: dto.actualResult === null ? 'PENDING' : dto.achievedStatus,
+    });
+  }
+
+  async submitReport(reportId: string, actor: ActorContext) {
+    const report = await this.getReportById(reportId);
+    ensureMonthlyStatusTransition(report.status, 'PENDING_REVIEW');
+
+    return this.reportRepo.updateStatus(reportId, 'PENDING_REVIEW', {
+      prepareBy: actor.userId,
+      submittedAt: new Date(),
+    });
+  }
+
+  async reviewReport(reportId: string, actor: ActorContext) {
     if (!['QMS', 'MR', 'IT'].includes(actor.role)) {
-      throw new ForbiddenError('Only approver roles can approve monthly KPI');
+      throw new ForbiddenError('Only QMS/MR/IT can review monthly reports');
     }
+    const report = await this.getReportById(reportId);
+    ensureMonthlyStatusTransition(report.status, 'PENDING_APPROVAL');
 
-    ensureKpiApprovalTransition(row.approvalStatus, KpiApprovalStatus.REVIEWED);
+    return this.reportRepo.updateStatus(reportId, 'PENDING_APPROVAL', { reviewBy: actor.userId });
+  }
 
-    return db.$transaction(async (tx) => {
-      const before = {
-        approvalStatus: row.approvalStatus,
-        status: row.status,
-        actualValue: row.actualValue?.toString() ?? null,
-      };
+  async approveReport(reportId: string, actor: ActorContext) {
+    if (!['QMS', 'MR', 'IT'].includes(actor.role)) {
+      throw new ForbiddenError('Only QMS/MR/IT can approve monthly reports');
+    }
+    const report = await this.getReportById(reportId);
+    ensureMonthlyStatusTransition(report.status, 'APPROVED');
 
-      const updated = await this.monthlyRepo.update(id, {
-        approvalStatus: KpiApprovalStatus.REVIEWED,
-        approvedBy: { connect: { id: actor.userId } },
-        approvedAt: new Date(),
-      }, tx);
-
-      const signaturePayload = {
-        recordId: row.id,
-        approvalStatus: KpiApprovalStatus.REVIEWED,
-        status: row.status,
-        actualValue: row.actualValue?.toString() ?? null,
-        approvedById: actor.userId,
-      };
-
-      await this.signatureRepo.addSignature({
-        kpiMonthlyResultId: row.id,
-        signerId: actor.userId,
-        signerRole: 'APPROVER',
-        contentHash: createContentHash(signaturePayload),
-        action: KpiWorkflowAction.APPROVE,
-      }, tx);
-
-      await this.auditRepo.logEvent({
-        kpiMonthlyResultId: row.id,
-        actorUserId: actor.userId,
-        action: KpiWorkflowAction.APPROVE,
-        beforeJson: before,
-        afterJson: {
-          ...before,
-          approvalStatus: KpiApprovalStatus.REVIEWED,
-        },
-      }, tx);
-
-      return updated;
+    return this.reportRepo.updateStatus(reportId, 'APPROVED', {
+      approveBy: actor.userId,
+      approvedAt: new Date(),
     });
   }
 
-  async reject(id: string, reason: string, actor: ActorContext) {
-    const row = await this.getById(id);
+  async rejectReport(reportId: string, reason: string, actor: ActorContext) {
     if (!['QMS', 'MR', 'IT'].includes(actor.role)) {
-      throw new ForbiddenError('Only approver roles can reject monthly KPI');
+      throw new ForbiddenError('Only QMS/MR/IT can reject monthly reports');
     }
-
-    if (row.approvalStatus !== KpiApprovalStatus.SUBMITTED && row.approvalStatus !== KpiApprovalStatus.REVIEWED) {
-      throw new ConflictError('Only submitted/reviewed monthly record can be rejected');
+    const report = await this.getReportById(reportId);
+    if (report.status === 'DRAFT' || report.status === 'APPROVED') {
+      throw new ConflictError(`Cannot reject a report in ${report.status} status`);
     }
+    ensureMonthlyStatusTransition(report.status, 'REJECTED');
 
-    return db.$transaction(async (tx) => {
-      const updated = await this.monthlyRepo.update(id, {
-        approvalStatus: KpiApprovalStatus.REJECTED,
-        rejectionReason: reason,
-      }, tx);
-
-      await this.auditRepo.logEvent({
-        kpiMonthlyResultId: row.id,
-        actorUserId: actor.userId,
-        action: KpiWorkflowAction.REJECT,
-        beforeJson: {
-          approvalStatus: row.approvalStatus,
-          rejectionReason: row.rejectionReason,
-        },
-        afterJson: {
-          approvalStatus: KpiApprovalStatus.REJECTED,
-          rejectionReason: reason,
-        },
-      }, tx);
-
-      return updated;
-    });
+    return this.reportRepo.updateStatus(reportId, 'REJECTED');
   }
 
-  async close(id: string, actor: ActorContext) {
-    if (!['QMS', 'MR', 'IT'].includes(actor.role)) {
-      throw new ForbiddenError('Only QMS/MR/IT can close monthly KPI');
+  async addCorrectiveAction(dto: CreateCorrectiveActionDTO, actor: ActorContext) {
+    const detail = await db.kPIMonthlyDetail.findUnique({ where: { id: dto.monthlyDetailId } });
+    if (!detail) throw new NotFoundError(`Monthly detail ${dto.monthlyDetailId} not found`);
+    if (detail.achievedStatus !== 'NOT_OK') {
+      throw new ConflictError('Corrective actions are only allowed for NOT_OK results');
     }
+    return this.correctiveRepo.createAction(dto);
+  }
 
-    const row = await this.getById(id);
-    if (row.approvalStatus !== KpiApprovalStatus.REVIEWED && row.approvalStatus !== KpiApprovalStatus.VERIFIED) {
-      throw new ConflictError('Only approved monthly record can be closed');
-    }
+  async deleteCorrectiveAction(actionId: string, actor: ActorContext) {
+    const action = await this.correctiveRepo.findById(actionId);
+    if (!action) throw new NotFoundError(`Corrective action ${actionId} not found`);
+    return this.correctiveRepo.delete(actionId);
+  }
 
-    return db.$transaction(async (tx) => {
-      const updated = await this.monthlyRepo.update(id, {
-        approvalStatus: KpiApprovalStatus.VERIFIED,
-        status: row.status === KpiMonthlyStatus.PENDING ? KpiMonthlyStatus.OK : row.status,
-        closedAt: new Date(),
-      }, tx);
-
-      await this.auditRepo.logEvent({
-        kpiMonthlyResultId: row.id,
-        actorUserId: actor.userId,
-        action: KpiWorkflowAction.CLOSE,
-        beforeJson: { approvalStatus: row.approvalStatus },
-        afterJson: { approvalStatus: KpiApprovalStatus.VERIFIED },
-      }, tx);
-
-      return updated;
-    });
+  async listCorrectiveActions(detailId: string) {
+    return this.correctiveRepo.listByDetailId(detailId);
   }
 }

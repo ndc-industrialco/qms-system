@@ -258,13 +258,6 @@ export type UserWhereInput = {
   darApprovals?: Prisma.DarApprovalListRelationFilter
   darAttachments?: Prisma.DarAttachmentListRelationFilter
   darMasters?: Prisma.DarMasterListRelationFilter
-  kpiApprovalLogs?: Prisma.KpiApprovalLogListRelationFilter
-  kpiObjectivesApproved?: Prisma.KpiMasterListRelationFilter
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultListRelationFilter
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultListRelationFilter
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentListRelationFilter
-  kpiSignatureLogs?: Prisma.KpiSignatureLogListRelationFilter
-  kpiAuditLogs?: Prisma.KpiAuditLogListRelationFilter
   qmsProcessings?: Prisma.QmsProcessingListRelationFilter
   docControlsCreated?: Prisma.DocumentControlListRelationFilter
   docControlsUpdated?: Prisma.DocumentControlListRelationFilter
@@ -291,13 +284,6 @@ export type UserOrderByWithRelationInput = {
   darApprovals?: Prisma.DarApprovalOrderByRelationAggregateInput
   darAttachments?: Prisma.DarAttachmentOrderByRelationAggregateInput
   darMasters?: Prisma.DarMasterOrderByRelationAggregateInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogOrderByRelationAggregateInput
-  kpiObjectivesApproved?: Prisma.KpiMasterOrderByRelationAggregateInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultOrderByRelationAggregateInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultOrderByRelationAggregateInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentOrderByRelationAggregateInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogOrderByRelationAggregateInput
-  kpiAuditLogs?: Prisma.KpiAuditLogOrderByRelationAggregateInput
   qmsProcessings?: Prisma.QmsProcessingOrderByRelationAggregateInput
   docControlsCreated?: Prisma.DocumentControlOrderByRelationAggregateInput
   docControlsUpdated?: Prisma.DocumentControlOrderByRelationAggregateInput
@@ -327,13 +313,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   darApprovals?: Prisma.DarApprovalListRelationFilter
   darAttachments?: Prisma.DarAttachmentListRelationFilter
   darMasters?: Prisma.DarMasterListRelationFilter
-  kpiApprovalLogs?: Prisma.KpiApprovalLogListRelationFilter
-  kpiObjectivesApproved?: Prisma.KpiMasterListRelationFilter
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultListRelationFilter
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultListRelationFilter
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentListRelationFilter
-  kpiSignatureLogs?: Prisma.KpiSignatureLogListRelationFilter
-  kpiAuditLogs?: Prisma.KpiAuditLogListRelationFilter
   qmsProcessings?: Prisma.QmsProcessingListRelationFilter
   docControlsCreated?: Prisma.DocumentControlListRelationFilter
   docControlsUpdated?: Prisma.DocumentControlListRelationFilter
@@ -399,13 +378,6 @@ export type UserCreateInput = {
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
@@ -432,13 +404,6 @@ export type UserUncheckedCreateInput = {
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -463,13 +428,6 @@ export type UserUpdateInput = {
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
@@ -496,13 +454,6 @@ export type UserUncheckedUpdateInput = {
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -754,110 +705,6 @@ export type UserUpdateOneRequiredWithoutQmsProcessingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutQmsProcessingsInput, Prisma.UserUpdateWithoutQmsProcessingsInput>, Prisma.UserUncheckedUpdateWithoutQmsProcessingsInput>
 }
 
-export type UserCreateNestedOneWithoutKpiObjectivesApprovedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiObjectivesApprovedInput, Prisma.UserUncheckedCreateWithoutKpiObjectivesApprovedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiObjectivesApprovedInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneWithoutKpiObjectivesApprovedNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiObjectivesApprovedInput, Prisma.UserUncheckedCreateWithoutKpiObjectivesApprovedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiObjectivesApprovedInput
-  upsert?: Prisma.UserUpsertWithoutKpiObjectivesApprovedInput
-  disconnect?: Prisma.UserWhereInput | boolean
-  delete?: Prisma.UserWhereInput | boolean
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKpiObjectivesApprovedInput, Prisma.UserUpdateWithoutKpiObjectivesApprovedInput>, Prisma.UserUncheckedUpdateWithoutKpiObjectivesApprovedInput>
-}
-
-export type UserCreateNestedOneWithoutKpiMonthlySubmittedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlySubmittedInput, Prisma.UserUncheckedCreateWithoutKpiMonthlySubmittedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiMonthlySubmittedInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserCreateNestedOneWithoutKpiMonthlyApprovedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlyApprovedInput, Prisma.UserUncheckedCreateWithoutKpiMonthlyApprovedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiMonthlyApprovedInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneWithoutKpiMonthlySubmittedNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlySubmittedInput, Prisma.UserUncheckedCreateWithoutKpiMonthlySubmittedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiMonthlySubmittedInput
-  upsert?: Prisma.UserUpsertWithoutKpiMonthlySubmittedInput
-  disconnect?: Prisma.UserWhereInput | boolean
-  delete?: Prisma.UserWhereInput | boolean
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKpiMonthlySubmittedInput, Prisma.UserUpdateWithoutKpiMonthlySubmittedInput>, Prisma.UserUncheckedUpdateWithoutKpiMonthlySubmittedInput>
-}
-
-export type UserUpdateOneWithoutKpiMonthlyApprovedNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlyApprovedInput, Prisma.UserUncheckedCreateWithoutKpiMonthlyApprovedInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiMonthlyApprovedInput
-  upsert?: Prisma.UserUpsertWithoutKpiMonthlyApprovedInput
-  disconnect?: Prisma.UserWhereInput | boolean
-  delete?: Prisma.UserWhereInput | boolean
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKpiMonthlyApprovedInput, Prisma.UserUpdateWithoutKpiMonthlyApprovedInput>, Prisma.UserUncheckedUpdateWithoutKpiMonthlyApprovedInput>
-}
-
-export type UserCreateNestedOneWithoutKpiMonthlyAttachmentsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlyAttachmentsInput, Prisma.UserUncheckedCreateWithoutKpiMonthlyAttachmentsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiMonthlyAttachmentsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutKpiMonthlyAttachmentsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlyAttachmentsInput, Prisma.UserUncheckedCreateWithoutKpiMonthlyAttachmentsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiMonthlyAttachmentsInput
-  upsert?: Prisma.UserUpsertWithoutKpiMonthlyAttachmentsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKpiMonthlyAttachmentsInput, Prisma.UserUpdateWithoutKpiMonthlyAttachmentsInput>, Prisma.UserUncheckedUpdateWithoutKpiMonthlyAttachmentsInput>
-}
-
-export type UserCreateNestedOneWithoutKpiSignatureLogsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiSignatureLogsInput, Prisma.UserUncheckedCreateWithoutKpiSignatureLogsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiSignatureLogsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutKpiSignatureLogsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiSignatureLogsInput, Prisma.UserUncheckedCreateWithoutKpiSignatureLogsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiSignatureLogsInput
-  upsert?: Prisma.UserUpsertWithoutKpiSignatureLogsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKpiSignatureLogsInput, Prisma.UserUpdateWithoutKpiSignatureLogsInput>, Prisma.UserUncheckedUpdateWithoutKpiSignatureLogsInput>
-}
-
-export type UserCreateNestedOneWithoutKpiAuditLogsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiAuditLogsInput, Prisma.UserUncheckedCreateWithoutKpiAuditLogsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiAuditLogsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutKpiAuditLogsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiAuditLogsInput, Prisma.UserUncheckedCreateWithoutKpiAuditLogsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiAuditLogsInput
-  upsert?: Prisma.UserUpsertWithoutKpiAuditLogsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKpiAuditLogsInput, Prisma.UserUpdateWithoutKpiAuditLogsInput>, Prisma.UserUncheckedUpdateWithoutKpiAuditLogsInput>
-}
-
-export type UserCreateNestedOneWithoutKpiApprovalLogsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiApprovalLogsInput, Prisma.UserUncheckedCreateWithoutKpiApprovalLogsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiApprovalLogsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutKpiApprovalLogsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutKpiApprovalLogsInput, Prisma.UserUncheckedCreateWithoutKpiApprovalLogsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKpiApprovalLogsInput
-  upsert?: Prisma.UserUpsertWithoutKpiApprovalLogsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKpiApprovalLogsInput, Prisma.UserUpdateWithoutKpiApprovalLogsInput>, Prisma.UserUncheckedUpdateWithoutKpiApprovalLogsInput>
-}
-
 export type UserCreateNestedOneWithoutDocControlsCreatedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutDocControlsCreatedInput, Prisma.UserUncheckedCreateWithoutDocControlsCreatedInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutDocControlsCreatedInput
@@ -920,13 +767,6 @@ export type UserCreateWithoutDepartmentInput = {
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
@@ -951,13 +791,6 @@ export type UserUncheckedCreateWithoutDepartmentInput = {
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -1027,13 +860,6 @@ export type UserCreateWithoutAnnouncementsInput = {
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
@@ -1059,13 +885,6 @@ export type UserUncheckedCreateWithoutAnnouncementsInput = {
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -1105,13 +924,6 @@ export type UserUpdateWithoutAnnouncementsInput = {
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
@@ -1137,13 +949,6 @@ export type UserUncheckedUpdateWithoutAnnouncementsInput = {
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -1167,13 +972,6 @@ export type UserCreateWithoutDarMastersInput = {
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
@@ -1199,13 +997,6 @@ export type UserUncheckedCreateWithoutDarMastersInput = {
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -1245,13 +1036,6 @@ export type UserUpdateWithoutDarMastersInput = {
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
@@ -1277,13 +1061,6 @@ export type UserUncheckedUpdateWithoutDarMastersInput = {
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -1307,13 +1084,6 @@ export type UserCreateWithoutDarAttachmentsInput = {
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
@@ -1339,13 +1109,6 @@ export type UserUncheckedCreateWithoutDarAttachmentsInput = {
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -1385,13 +1148,6 @@ export type UserUpdateWithoutDarAttachmentsInput = {
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
@@ -1417,13 +1173,6 @@ export type UserUncheckedUpdateWithoutDarAttachmentsInput = {
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -1447,13 +1196,6 @@ export type UserCreateWithoutDarApprovalsInput = {
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
@@ -1479,13 +1221,6 @@ export type UserUncheckedCreateWithoutDarApprovalsInput = {
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -1525,13 +1260,6 @@ export type UserUpdateWithoutDarApprovalsInput = {
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
@@ -1557,13 +1285,6 @@ export type UserUncheckedUpdateWithoutDarApprovalsInput = {
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -1588,13 +1309,6 @@ export type UserCreateWithoutQmsProcessingsInput = {
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
@@ -1620,13 +1334,6 @@ export type UserUncheckedCreateWithoutQmsProcessingsInput = {
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1666,13 +1373,6 @@ export type UserUpdateWithoutQmsProcessingsInput = {
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
@@ -1698,993 +1398,6 @@ export type UserUncheckedUpdateWithoutQmsProcessingsInput = {
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
-}
-
-export type UserCreateWithoutKpiObjectivesApprovedInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
-}
-
-export type UserUncheckedCreateWithoutKpiObjectivesApprovedInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  departmentId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
-}
-
-export type UserCreateOrConnectWithoutKpiObjectivesApprovedInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiObjectivesApprovedInput, Prisma.UserUncheckedCreateWithoutKpiObjectivesApprovedInput>
-}
-
-export type UserUpsertWithoutKpiObjectivesApprovedInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutKpiObjectivesApprovedInput, Prisma.UserUncheckedUpdateWithoutKpiObjectivesApprovedInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiObjectivesApprovedInput, Prisma.UserUncheckedCreateWithoutKpiObjectivesApprovedInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutKpiObjectivesApprovedInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutKpiObjectivesApprovedInput, Prisma.UserUncheckedUpdateWithoutKpiObjectivesApprovedInput>
-}
-
-export type UserUpdateWithoutKpiObjectivesApprovedInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
-}
-
-export type UserUncheckedUpdateWithoutKpiObjectivesApprovedInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
-}
-
-export type UserCreateWithoutKpiMonthlySubmittedInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
-}
-
-export type UserUncheckedCreateWithoutKpiMonthlySubmittedInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  departmentId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
-}
-
-export type UserCreateOrConnectWithoutKpiMonthlySubmittedInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlySubmittedInput, Prisma.UserUncheckedCreateWithoutKpiMonthlySubmittedInput>
-}
-
-export type UserCreateWithoutKpiMonthlyApprovedInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
-}
-
-export type UserUncheckedCreateWithoutKpiMonthlyApprovedInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  departmentId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
-}
-
-export type UserCreateOrConnectWithoutKpiMonthlyApprovedInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlyApprovedInput, Prisma.UserUncheckedCreateWithoutKpiMonthlyApprovedInput>
-}
-
-export type UserUpsertWithoutKpiMonthlySubmittedInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutKpiMonthlySubmittedInput, Prisma.UserUncheckedUpdateWithoutKpiMonthlySubmittedInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlySubmittedInput, Prisma.UserUncheckedCreateWithoutKpiMonthlySubmittedInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutKpiMonthlySubmittedInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutKpiMonthlySubmittedInput, Prisma.UserUncheckedUpdateWithoutKpiMonthlySubmittedInput>
-}
-
-export type UserUpdateWithoutKpiMonthlySubmittedInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
-}
-
-export type UserUncheckedUpdateWithoutKpiMonthlySubmittedInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
-}
-
-export type UserUpsertWithoutKpiMonthlyApprovedInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutKpiMonthlyApprovedInput, Prisma.UserUncheckedUpdateWithoutKpiMonthlyApprovedInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlyApprovedInput, Prisma.UserUncheckedCreateWithoutKpiMonthlyApprovedInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutKpiMonthlyApprovedInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutKpiMonthlyApprovedInput, Prisma.UserUncheckedUpdateWithoutKpiMonthlyApprovedInput>
-}
-
-export type UserUpdateWithoutKpiMonthlyApprovedInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
-}
-
-export type UserUncheckedUpdateWithoutKpiMonthlyApprovedInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
-}
-
-export type UserCreateWithoutKpiMonthlyAttachmentsInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
-}
-
-export type UserUncheckedCreateWithoutKpiMonthlyAttachmentsInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  departmentId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
-}
-
-export type UserCreateOrConnectWithoutKpiMonthlyAttachmentsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlyAttachmentsInput, Prisma.UserUncheckedCreateWithoutKpiMonthlyAttachmentsInput>
-}
-
-export type UserUpsertWithoutKpiMonthlyAttachmentsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutKpiMonthlyAttachmentsInput, Prisma.UserUncheckedUpdateWithoutKpiMonthlyAttachmentsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiMonthlyAttachmentsInput, Prisma.UserUncheckedCreateWithoutKpiMonthlyAttachmentsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutKpiMonthlyAttachmentsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutKpiMonthlyAttachmentsInput, Prisma.UserUncheckedUpdateWithoutKpiMonthlyAttachmentsInput>
-}
-
-export type UserUpdateWithoutKpiMonthlyAttachmentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
-}
-
-export type UserUncheckedUpdateWithoutKpiMonthlyAttachmentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
-}
-
-export type UserCreateWithoutKpiSignatureLogsInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
-}
-
-export type UserUncheckedCreateWithoutKpiSignatureLogsInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  departmentId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
-}
-
-export type UserCreateOrConnectWithoutKpiSignatureLogsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiSignatureLogsInput, Prisma.UserUncheckedCreateWithoutKpiSignatureLogsInput>
-}
-
-export type UserUpsertWithoutKpiSignatureLogsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutKpiSignatureLogsInput, Prisma.UserUncheckedUpdateWithoutKpiSignatureLogsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiSignatureLogsInput, Prisma.UserUncheckedCreateWithoutKpiSignatureLogsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutKpiSignatureLogsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutKpiSignatureLogsInput, Prisma.UserUncheckedUpdateWithoutKpiSignatureLogsInput>
-}
-
-export type UserUpdateWithoutKpiSignatureLogsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
-}
-
-export type UserUncheckedUpdateWithoutKpiSignatureLogsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
-}
-
-export type UserCreateWithoutKpiAuditLogsInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
-}
-
-export type UserUncheckedCreateWithoutKpiAuditLogsInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  departmentId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
-}
-
-export type UserCreateOrConnectWithoutKpiAuditLogsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiAuditLogsInput, Prisma.UserUncheckedCreateWithoutKpiAuditLogsInput>
-}
-
-export type UserUpsertWithoutKpiAuditLogsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutKpiAuditLogsInput, Prisma.UserUncheckedUpdateWithoutKpiAuditLogsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiAuditLogsInput, Prisma.UserUncheckedCreateWithoutKpiAuditLogsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutKpiAuditLogsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutKpiAuditLogsInput, Prisma.UserUncheckedUpdateWithoutKpiAuditLogsInput>
-}
-
-export type UserUpdateWithoutKpiAuditLogsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
-}
-
-export type UserUncheckedUpdateWithoutKpiAuditLogsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
-}
-
-export type UserCreateWithoutKpiApprovalLogsInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
-}
-
-export type UserUncheckedCreateWithoutKpiApprovalLogsInput = {
-  id?: string
-  employeeId?: string | null
-  msUserId?: string | null
-  name?: string | null
-  email: string
-  emailVerified?: Date | string | null
-  image?: string | null
-  role?: $Enums.UserRole
-  position?: string | null
-  savedSignatureUrl?: string | null
-  signatureType?: $Enums.SignatureType | null
-  departmentId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
-  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
-  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
-  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
-  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
-}
-
-export type UserCreateOrConnectWithoutKpiApprovalLogsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiApprovalLogsInput, Prisma.UserUncheckedCreateWithoutKpiApprovalLogsInput>
-}
-
-export type UserUpsertWithoutKpiApprovalLogsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutKpiApprovalLogsInput, Prisma.UserUncheckedUpdateWithoutKpiApprovalLogsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutKpiApprovalLogsInput, Prisma.UserUncheckedCreateWithoutKpiApprovalLogsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutKpiApprovalLogsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutKpiApprovalLogsInput, Prisma.UserUncheckedUpdateWithoutKpiApprovalLogsInput>
-}
-
-export type UserUpdateWithoutKpiApprovalLogsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
-  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
-  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
-  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
-}
-
-export type UserUncheckedUpdateWithoutKpiApprovalLogsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
-  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
-  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
-  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
-  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2708,13 +1421,6 @@ export type UserCreateWithoutDocControlsCreatedInput = {
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
@@ -2740,13 +1446,6 @@ export type UserUncheckedCreateWithoutDocControlsCreatedInput = {
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2775,13 +1474,6 @@ export type UserCreateWithoutDocControlsUpdatedInput = {
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
@@ -2807,13 +1499,6 @@ export type UserUncheckedCreateWithoutDocControlsUpdatedInput = {
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2853,13 +1538,6 @@ export type UserUpdateWithoutDocControlsCreatedInput = {
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
@@ -2885,13 +1563,6 @@ export type UserUncheckedUpdateWithoutDocControlsCreatedInput = {
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2926,13 +1597,6 @@ export type UserUpdateWithoutDocControlsUpdatedInput = {
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
@@ -2958,13 +1622,6 @@ export type UserUncheckedUpdateWithoutDocControlsUpdatedInput = {
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2988,13 +1645,6 @@ export type UserCreateWithoutDocRevisionsCreatedInput = {
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
@@ -3020,13 +1670,6 @@ export type UserUncheckedCreateWithoutDocRevisionsCreatedInput = {
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
   darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedCreateNestedManyWithoutAssignedUserInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutSubmittedByInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedCreateNestedManyWithoutApprovedByInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedCreateNestedManyWithoutSignerInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedCreateNestedManyWithoutActorUserInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -3066,13 +1709,6 @@ export type UserUpdateWithoutDocRevisionsCreatedInput = {
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
@@ -3098,13 +1734,6 @@ export type UserUncheckedUpdateWithoutDocRevisionsCreatedInput = {
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -3144,13 +1773,6 @@ export type UserUpdateWithoutDepartmentInput = {
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
@@ -3175,13 +1797,6 @@ export type UserUncheckedUpdateWithoutDepartmentInput = {
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
   darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
-  kpiApprovalLogs?: Prisma.KpiApprovalLogUncheckedUpdateManyWithoutAssignedUserNestedInput
-  kpiObjectivesApproved?: Prisma.KpiMasterUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlySubmitted?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutSubmittedByNestedInput
-  kpiMonthlyApproved?: Prisma.KpiMonthlyResultUncheckedUpdateManyWithoutApprovedByNestedInput
-  kpiMonthlyAttachments?: Prisma.KpiMonthlyAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
-  kpiSignatureLogs?: Prisma.KpiSignatureLogUncheckedUpdateManyWithoutSignerNestedInput
-  kpiAuditLogs?: Prisma.KpiAuditLogUncheckedUpdateManyWithoutActorUserNestedInput
   qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -3214,13 +1829,6 @@ export type UserCountOutputType = {
   darApprovals: number
   darAttachments: number
   darMasters: number
-  kpiApprovalLogs: number
-  kpiObjectivesApproved: number
-  kpiMonthlySubmitted: number
-  kpiMonthlyApproved: number
-  kpiMonthlyAttachments: number
-  kpiSignatureLogs: number
-  kpiAuditLogs: number
   qmsProcessings: number
   docControlsCreated: number
   docControlsUpdated: number
@@ -3232,13 +1840,6 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   darApprovals?: boolean | UserCountOutputTypeCountDarApprovalsArgs
   darAttachments?: boolean | UserCountOutputTypeCountDarAttachmentsArgs
   darMasters?: boolean | UserCountOutputTypeCountDarMastersArgs
-  kpiApprovalLogs?: boolean | UserCountOutputTypeCountKpiApprovalLogsArgs
-  kpiObjectivesApproved?: boolean | UserCountOutputTypeCountKpiObjectivesApprovedArgs
-  kpiMonthlySubmitted?: boolean | UserCountOutputTypeCountKpiMonthlySubmittedArgs
-  kpiMonthlyApproved?: boolean | UserCountOutputTypeCountKpiMonthlyApprovedArgs
-  kpiMonthlyAttachments?: boolean | UserCountOutputTypeCountKpiMonthlyAttachmentsArgs
-  kpiSignatureLogs?: boolean | UserCountOutputTypeCountKpiSignatureLogsArgs
-  kpiAuditLogs?: boolean | UserCountOutputTypeCountKpiAuditLogsArgs
   qmsProcessings?: boolean | UserCountOutputTypeCountQmsProcessingsArgs
   docControlsCreated?: boolean | UserCountOutputTypeCountDocControlsCreatedArgs
   docControlsUpdated?: boolean | UserCountOutputTypeCountDocControlsUpdatedArgs
@@ -3281,55 +1882,6 @@ export type UserCountOutputTypeCountDarAttachmentsArgs<ExtArgs extends runtime.T
  */
 export type UserCountOutputTypeCountDarMastersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.DarMasterWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountKpiApprovalLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.KpiApprovalLogWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountKpiObjectivesApprovedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.KpiMasterWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountKpiMonthlySubmittedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.KpiMonthlyResultWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountKpiMonthlyApprovedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.KpiMonthlyResultWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountKpiMonthlyAttachmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.KpiMonthlyAttachmentWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountKpiSignatureLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.KpiSignatureLogWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountKpiAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.KpiAuditLogWhereInput
 }
 
 /**
@@ -3380,13 +1932,6 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   darApprovals?: boolean | Prisma.User$darApprovalsArgs<ExtArgs>
   darAttachments?: boolean | Prisma.User$darAttachmentsArgs<ExtArgs>
   darMasters?: boolean | Prisma.User$darMastersArgs<ExtArgs>
-  kpiApprovalLogs?: boolean | Prisma.User$kpiApprovalLogsArgs<ExtArgs>
-  kpiObjectivesApproved?: boolean | Prisma.User$kpiObjectivesApprovedArgs<ExtArgs>
-  kpiMonthlySubmitted?: boolean | Prisma.User$kpiMonthlySubmittedArgs<ExtArgs>
-  kpiMonthlyApproved?: boolean | Prisma.User$kpiMonthlyApprovedArgs<ExtArgs>
-  kpiMonthlyAttachments?: boolean | Prisma.User$kpiMonthlyAttachmentsArgs<ExtArgs>
-  kpiSignatureLogs?: boolean | Prisma.User$kpiSignatureLogsArgs<ExtArgs>
-  kpiAuditLogs?: boolean | Prisma.User$kpiAuditLogsArgs<ExtArgs>
   qmsProcessings?: boolean | Prisma.User$qmsProcessingsArgs<ExtArgs>
   docControlsCreated?: boolean | Prisma.User$docControlsCreatedArgs<ExtArgs>
   docControlsUpdated?: boolean | Prisma.User$docControlsUpdatedArgs<ExtArgs>
@@ -3454,13 +1999,6 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   darApprovals?: boolean | Prisma.User$darApprovalsArgs<ExtArgs>
   darAttachments?: boolean | Prisma.User$darAttachmentsArgs<ExtArgs>
   darMasters?: boolean | Prisma.User$darMastersArgs<ExtArgs>
-  kpiApprovalLogs?: boolean | Prisma.User$kpiApprovalLogsArgs<ExtArgs>
-  kpiObjectivesApproved?: boolean | Prisma.User$kpiObjectivesApprovedArgs<ExtArgs>
-  kpiMonthlySubmitted?: boolean | Prisma.User$kpiMonthlySubmittedArgs<ExtArgs>
-  kpiMonthlyApproved?: boolean | Prisma.User$kpiMonthlyApprovedArgs<ExtArgs>
-  kpiMonthlyAttachments?: boolean | Prisma.User$kpiMonthlyAttachmentsArgs<ExtArgs>
-  kpiSignatureLogs?: boolean | Prisma.User$kpiSignatureLogsArgs<ExtArgs>
-  kpiAuditLogs?: boolean | Prisma.User$kpiAuditLogsArgs<ExtArgs>
   qmsProcessings?: boolean | Prisma.User$qmsProcessingsArgs<ExtArgs>
   docControlsCreated?: boolean | Prisma.User$docControlsCreatedArgs<ExtArgs>
   docControlsUpdated?: boolean | Prisma.User$docControlsUpdatedArgs<ExtArgs>
@@ -3482,13 +2020,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     darApprovals: Prisma.$DarApprovalPayload<ExtArgs>[]
     darAttachments: Prisma.$DarAttachmentPayload<ExtArgs>[]
     darMasters: Prisma.$DarMasterPayload<ExtArgs>[]
-    kpiApprovalLogs: Prisma.$KpiApprovalLogPayload<ExtArgs>[]
-    kpiObjectivesApproved: Prisma.$KpiMasterPayload<ExtArgs>[]
-    kpiMonthlySubmitted: Prisma.$KpiMonthlyResultPayload<ExtArgs>[]
-    kpiMonthlyApproved: Prisma.$KpiMonthlyResultPayload<ExtArgs>[]
-    kpiMonthlyAttachments: Prisma.$KpiMonthlyAttachmentPayload<ExtArgs>[]
-    kpiSignatureLogs: Prisma.$KpiSignatureLogPayload<ExtArgs>[]
-    kpiAuditLogs: Prisma.$KpiAuditLogPayload<ExtArgs>[]
     qmsProcessings: Prisma.$QmsProcessingPayload<ExtArgs>[]
     docControlsCreated: Prisma.$DocumentControlPayload<ExtArgs>[]
     docControlsUpdated: Prisma.$DocumentControlPayload<ExtArgs>[]
@@ -3908,13 +2439,6 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   darApprovals<T extends Prisma.User$darApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$darApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DarApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   darAttachments<T extends Prisma.User$darAttachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$darAttachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DarAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   darMasters<T extends Prisma.User$darMastersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$darMastersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DarMasterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  kpiApprovalLogs<T extends Prisma.User$kpiApprovalLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kpiApprovalLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KpiApprovalLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  kpiObjectivesApproved<T extends Prisma.User$kpiObjectivesApprovedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kpiObjectivesApprovedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KpiMasterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  kpiMonthlySubmitted<T extends Prisma.User$kpiMonthlySubmittedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kpiMonthlySubmittedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KpiMonthlyResultPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  kpiMonthlyApproved<T extends Prisma.User$kpiMonthlyApprovedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kpiMonthlyApprovedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KpiMonthlyResultPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  kpiMonthlyAttachments<T extends Prisma.User$kpiMonthlyAttachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kpiMonthlyAttachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KpiMonthlyAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  kpiSignatureLogs<T extends Prisma.User$kpiSignatureLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kpiSignatureLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KpiSignatureLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  kpiAuditLogs<T extends Prisma.User$kpiAuditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kpiAuditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KpiAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   qmsProcessings<T extends Prisma.User$qmsProcessingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$qmsProcessingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QmsProcessingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   docControlsCreated<T extends Prisma.User$docControlsCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$docControlsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentControlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   docControlsUpdated<T extends Prisma.User$docControlsUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$docControlsUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentControlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4457,174 +2981,6 @@ export type User$darMastersArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.DarMasterScalarFieldEnum | Prisma.DarMasterScalarFieldEnum[]
-}
-
-/**
- * User.kpiApprovalLogs
- */
-export type User$kpiApprovalLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KpiApprovalLog
-   */
-  select?: Prisma.KpiApprovalLogSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KpiApprovalLog
-   */
-  omit?: Prisma.KpiApprovalLogOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KpiApprovalLogInclude<ExtArgs> | null
-  where?: Prisma.KpiApprovalLogWhereInput
-  orderBy?: Prisma.KpiApprovalLogOrderByWithRelationInput | Prisma.KpiApprovalLogOrderByWithRelationInput[]
-  cursor?: Prisma.KpiApprovalLogWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.KpiApprovalLogScalarFieldEnum | Prisma.KpiApprovalLogScalarFieldEnum[]
-}
-
-/**
- * User.kpiObjectivesApproved
- */
-export type User$kpiObjectivesApprovedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KpiMaster
-   */
-  select?: Prisma.KpiMasterSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KpiMaster
-   */
-  omit?: Prisma.KpiMasterOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KpiMasterInclude<ExtArgs> | null
-  where?: Prisma.KpiMasterWhereInput
-  orderBy?: Prisma.KpiMasterOrderByWithRelationInput | Prisma.KpiMasterOrderByWithRelationInput[]
-  cursor?: Prisma.KpiMasterWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.KpiMasterScalarFieldEnum | Prisma.KpiMasterScalarFieldEnum[]
-}
-
-/**
- * User.kpiMonthlySubmitted
- */
-export type User$kpiMonthlySubmittedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KpiMonthlyResult
-   */
-  select?: Prisma.KpiMonthlyResultSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KpiMonthlyResult
-   */
-  omit?: Prisma.KpiMonthlyResultOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KpiMonthlyResultInclude<ExtArgs> | null
-  where?: Prisma.KpiMonthlyResultWhereInput
-  orderBy?: Prisma.KpiMonthlyResultOrderByWithRelationInput | Prisma.KpiMonthlyResultOrderByWithRelationInput[]
-  cursor?: Prisma.KpiMonthlyResultWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.KpiMonthlyResultScalarFieldEnum | Prisma.KpiMonthlyResultScalarFieldEnum[]
-}
-
-/**
- * User.kpiMonthlyApproved
- */
-export type User$kpiMonthlyApprovedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KpiMonthlyResult
-   */
-  select?: Prisma.KpiMonthlyResultSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KpiMonthlyResult
-   */
-  omit?: Prisma.KpiMonthlyResultOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KpiMonthlyResultInclude<ExtArgs> | null
-  where?: Prisma.KpiMonthlyResultWhereInput
-  orderBy?: Prisma.KpiMonthlyResultOrderByWithRelationInput | Prisma.KpiMonthlyResultOrderByWithRelationInput[]
-  cursor?: Prisma.KpiMonthlyResultWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.KpiMonthlyResultScalarFieldEnum | Prisma.KpiMonthlyResultScalarFieldEnum[]
-}
-
-/**
- * User.kpiMonthlyAttachments
- */
-export type User$kpiMonthlyAttachmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KpiMonthlyAttachment
-   */
-  select?: Prisma.KpiMonthlyAttachmentSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KpiMonthlyAttachment
-   */
-  omit?: Prisma.KpiMonthlyAttachmentOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KpiMonthlyAttachmentInclude<ExtArgs> | null
-  where?: Prisma.KpiMonthlyAttachmentWhereInput
-  orderBy?: Prisma.KpiMonthlyAttachmentOrderByWithRelationInput | Prisma.KpiMonthlyAttachmentOrderByWithRelationInput[]
-  cursor?: Prisma.KpiMonthlyAttachmentWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.KpiMonthlyAttachmentScalarFieldEnum | Prisma.KpiMonthlyAttachmentScalarFieldEnum[]
-}
-
-/**
- * User.kpiSignatureLogs
- */
-export type User$kpiSignatureLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KpiSignatureLog
-   */
-  select?: Prisma.KpiSignatureLogSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KpiSignatureLog
-   */
-  omit?: Prisma.KpiSignatureLogOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KpiSignatureLogInclude<ExtArgs> | null
-  where?: Prisma.KpiSignatureLogWhereInput
-  orderBy?: Prisma.KpiSignatureLogOrderByWithRelationInput | Prisma.KpiSignatureLogOrderByWithRelationInput[]
-  cursor?: Prisma.KpiSignatureLogWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.KpiSignatureLogScalarFieldEnum | Prisma.KpiSignatureLogScalarFieldEnum[]
-}
-
-/**
- * User.kpiAuditLogs
- */
-export type User$kpiAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KpiAuditLog
-   */
-  select?: Prisma.KpiAuditLogSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KpiAuditLog
-   */
-  omit?: Prisma.KpiAuditLogOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KpiAuditLogInclude<ExtArgs> | null
-  where?: Prisma.KpiAuditLogWhereInput
-  orderBy?: Prisma.KpiAuditLogOrderByWithRelationInput | Prisma.KpiAuditLogOrderByWithRelationInput[]
-  cursor?: Prisma.KpiAuditLogWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.KpiAuditLogScalarFieldEnum | Prisma.KpiAuditLogScalarFieldEnum[]
 }
 
 /**

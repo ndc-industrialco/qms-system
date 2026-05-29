@@ -8,12 +8,13 @@ import { z } from "zod";
 
 const announcementService = new AnnouncementService();
 const toggleSchema = z.object({ active: z.boolean() });
+const paramSchema = z.object({ id: z.string().uuid() });
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     await requireRole("QMS", "IT", "MR");
 
     const row = await announcementService.getAnnouncement(id);
@@ -25,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     await requireRole("QMS", "IT", "MR");
 
     const body = await req.json();
@@ -53,7 +54,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     await requireRole("QMS", "IT", "MR");
 
     const body = await req.json();
@@ -68,7 +69,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     await requireRole("QMS", "IT", "MR");
 
     await announcementService.deleteAnnouncement(id);

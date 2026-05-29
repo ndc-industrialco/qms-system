@@ -15,7 +15,18 @@ export interface PaginatedResult<T> {
   };
 }
 
-export abstract class BaseRepository<T, CreateDTO = any, UpdateDTO = any> {
+interface ModelDelegate<T, CreateDTO, UpdateDTO> {
+  findMany(args?: Record<string, unknown>): Promise<T[]>;
+  count(args?: { where?: unknown }): Promise<number>;
+  findUnique(args: Record<string, unknown>): Promise<T | null>;
+  findFirst(args?: Record<string, unknown>): Promise<T | null>;
+  create(args: { data: CreateDTO | Record<string, unknown> }): Promise<T>;
+  update(args: { where: Record<string, unknown>; data: UpdateDTO | Record<string, unknown> }): Promise<T>;
+  delete(args: { where: { id: string } }): Promise<T>;
+  upsert(args: Record<string, unknown>): Promise<T>;
+}
+
+export abstract class BaseRepository<T, CreateDTO = unknown, UpdateDTO = unknown> {
   constructor(protected modelName: Uncapitalize<Prisma.ModelName>) {}
 
   protected getClient(tx?: Prisma.TransactionClient) {
@@ -24,13 +35,13 @@ export abstract class BaseRepository<T, CreateDTO = any, UpdateDTO = any> {
 
   protected getModel(tx?: Prisma.TransactionClient) {
     const client = this.getClient(tx);
-    return (client as any)[this.modelName];
+    return (client as unknown as Record<string, unknown>)[this.modelName] as ModelDelegate<T, CreateDTO, UpdateDTO>;
   }
 
   async paginate(
     params: PaginationParams,
-    where: any = {},
-    orderBy: any = { createdAt: "desc" },
+    where: unknown = {},
+    orderBy: unknown = { createdAt: "desc" },
     tx?: Prisma.TransactionClient
   ): Promise<PaginatedResult<T>> {
     const page = Number(params.page) || 1;

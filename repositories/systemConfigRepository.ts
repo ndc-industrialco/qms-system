@@ -6,8 +6,12 @@ export class SystemConfigRepository extends BaseRepository<SystemConfig> {
     super("systemConfig");
   }
 
+  private delegate(tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).systemConfig;
+  }
+
   async findValueByKey(configKey: string, tx?: Prisma.TransactionClient): Promise<string | null> {
-    const row = await this.getModel(tx).findUnique({
+    const row = await this.delegate(tx).findUnique({
       where: { configKey },
       select: { configValue: true },
     });
@@ -20,7 +24,7 @@ export class SystemConfigRepository extends BaseRepository<SystemConfig> {
     description?: string,
     tx?: Prisma.TransactionClient
   ): Promise<SystemConfig> {
-    return this.getModel(tx).upsert({
+    return this.delegate(tx).upsert({
       where: { configKey },
       update: { configValue },
       create: { configKey, configValue, description },

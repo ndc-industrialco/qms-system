@@ -1,24 +1,19 @@
-import { Metadata } from "next";
-import { DepartmentService } from "@/services/departmentService";
 import { auth } from "@/lib/auth";
-import KpiClient from "../../../../components/kpi/KpiClient";
+import KpiObjectivesClient from "@/components/kpi/KpiObjectivesClient";
+import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "KPI",
-  description: "Manage QMS KPI Master references",
-};
+export const metadata: Metadata = { title: "KPI" };
 
-export default async function KpiPage() {
+export default async function KpiObjectivesPage() {
   const session = await auth();
-  const canEdit = ["QMS", "MR", "IT"].includes(session?.user?.role ?? "");
-
-  const deptService = new DepartmentService();
-  const departments = await deptService.getActiveDepartments();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <KpiClient departments={departments} canEdit={canEdit} />
+      <KpiObjectivesClient
+        role={(session?.user?.role ?? "USER") as "USER" | "IT" | "QMS" | "MR"}
+        userId={session?.user?.id ?? ""}
+        userDepartmentId={session?.user?.departmentId}
+      />
     </div>
   );
 }
-

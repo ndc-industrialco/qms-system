@@ -62,14 +62,11 @@ export const ModelName = {
   DarApproval: 'DarApproval',
   QmsProcessing: 'QmsProcessing',
   PublicDocument: 'PublicDocument',
-  KpiSchedule: 'KpiSchedule',
-  KpiMaster: 'KpiMaster',
-  KpiMonthlyResult: 'KpiMonthlyResult',
-  KpiMonthlyAttachment: 'KpiMonthlyAttachment',
-  KpiSignatureLog: 'KpiSignatureLog',
-  KpiAuditLog: 'KpiAuditLog',
-  KpiCorrectiveAction: 'KpiCorrectiveAction',
-  KpiApprovalLog: 'KpiApprovalLog',
+  KPI: 'KPI',
+  KPIObjective: 'KPIObjective',
+  KPIMonthlyReport: 'KPIMonthlyReport',
+  KPIMonthlyDetail: 'KPIMonthlyDetail',
+  KPICorrectiveAction: 'KPICorrectiveAction',
   DocumentControl: 'DocumentControl',
   DocumentCategory: 'DocumentCategory',
   DocumentControlRevision: 'DocumentControlRevision'
@@ -275,136 +272,85 @@ export const PublicDocumentScalarFieldEnum = {
 export type PublicDocumentScalarFieldEnum = (typeof PublicDocumentScalarFieldEnum)[keyof typeof PublicDocumentScalarFieldEnum]
 
 
-export const KpiScheduleScalarFieldEnum = {
+export const KPIScalarFieldEnum = {
   id: 'id',
-  year: 'year',
-  month: 'month',
-  dueDate: 'dueDate',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type KpiScheduleScalarFieldEnum = (typeof KpiScheduleScalarFieldEnum)[keyof typeof KpiScheduleScalarFieldEnum]
-
-
-export const KpiMasterScalarFieldEnum = {
-  id: 'id',
-  year: 'year',
-  periodType: 'periodType',
-  objectiveDetails: 'objectiveDetails',
-  measurementFrequency: 'measurementFrequency',
-  calculationFormula: 'calculationFormula',
-  guidelines: 'guidelines',
-  trackingRecords: 'trackingRecords',
-  targetValue: 'targetValue',
-  departmentId: 'departmentId',
-  createdById: 'createdById',
-  objectiveStatus: 'objectiveStatus',
-  version: 'version',
-  approvedById: 'approvedById',
-  approvedAt: 'approvedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type KpiMasterScalarFieldEnum = (typeof KpiMasterScalarFieldEnum)[keyof typeof KpiMasterScalarFieldEnum]
-
-
-export const KpiMonthlyResultScalarFieldEnum = {
-  id: 'id',
-  periodYear: 'periodYear',
-  month: 'month',
-  actualValue: 'actualValue',
-  isNa: 'isNa',
+  yearly: 'yearly',
+  department: 'department',
+  prepare: 'prepare',
+  reviewer: 'reviewer',
+  approver: 'approver',
   status: 'status',
-  approvalStatus: 'approvalStatus',
-  spItemId: 'spItemId',
-  spWebUrl: 'spWebUrl',
-  spDownloadUrl: 'spDownloadUrl',
-  fileName: 'fileName',
-  submittedById: 'submittedById',
+  prepareSignature: 'prepareSignature',
+  reviewerUserId: 'reviewerUserId',
+  approverUserId: 'approverUserId',
   submittedAt: 'submittedAt',
-  approvedById: 'approvedById',
-  approvedAt: 'approvedAt',
-  rejectionReason: 'rejectionReason',
-  closedAt: 'closedAt',
-  kpiMasterId: 'kpiMasterId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type KpiMonthlyResultScalarFieldEnum = (typeof KpiMonthlyResultScalarFieldEnum)[keyof typeof KpiMonthlyResultScalarFieldEnum]
+export type KPIScalarFieldEnum = (typeof KPIScalarFieldEnum)[keyof typeof KPIScalarFieldEnum]
 
 
-export const KpiMonthlyAttachmentScalarFieldEnum = {
+export const KPIObjectiveScalarFieldEnum = {
   id: 'id',
-  kpiMonthlyResultId: 'kpiMonthlyResultId',
-  fileName: 'fileName',
-  mimeType: 'mimeType',
-  fileSize: 'fileSize',
-  spDriveId: 'spDriveId',
-  spItemId: 'spItemId',
-  spWebUrl: 'spWebUrl',
-  uploadedById: 'uploadedById',
-  createdAt: 'createdAt'
-} as const
-
-export type KpiMonthlyAttachmentScalarFieldEnum = (typeof KpiMonthlyAttachmentScalarFieldEnum)[keyof typeof KpiMonthlyAttachmentScalarFieldEnum]
-
-
-export const KpiSignatureLogScalarFieldEnum = {
-  id: 'id',
-  kpiMonthlyResultId: 'kpiMonthlyResultId',
-  signerId: 'signerId',
-  signerRole: 'signerRole',
-  contentHash: 'contentHash',
-  action: 'action',
-  signedAt: 'signedAt'
-} as const
-
-export type KpiSignatureLogScalarFieldEnum = (typeof KpiSignatureLogScalarFieldEnum)[keyof typeof KpiSignatureLogScalarFieldEnum]
-
-
-export const KpiAuditLogScalarFieldEnum = {
-  id: 'id',
-  kpiMonthlyResultId: 'kpiMonthlyResultId',
-  actorUserId: 'actorUserId',
-  action: 'action',
-  beforeJson: 'beforeJson',
-  afterJson: 'afterJson',
-  createdAt: 'createdAt'
-} as const
-
-export type KpiAuditLogScalarFieldEnum = (typeof KpiAuditLogScalarFieldEnum)[keyof typeof KpiAuditLogScalarFieldEnum]
-
-
-export const KpiCorrectiveActionScalarFieldEnum = {
-  id: 'id',
-  sequenceNo: 'sequenceNo',
-  rootCauseAnalysis: 'rootCauseAnalysis',
-  improvementGuidelines: 'improvementGuidelines',
-  responsiblePersonM365: 'responsiblePersonM365',
-  dueDate: 'dueDate',
-  kpiMonthlyResultId: 'kpiMonthlyResultId',
+  kpiId: 'kpiId',
+  target: 'target',
+  objective: 'objective',
+  frequency: 'frequency',
+  calculationFormula: 'calculationFormula',
+  actionPlanGuidelines: 'actionPlanGuidelines',
+  referenceDocuments: 'referenceDocuments',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type KpiCorrectiveActionScalarFieldEnum = (typeof KpiCorrectiveActionScalarFieldEnum)[keyof typeof KpiCorrectiveActionScalarFieldEnum]
+export type KPIObjectiveScalarFieldEnum = (typeof KPIObjectiveScalarFieldEnum)[keyof typeof KPIObjectiveScalarFieldEnum]
 
 
-export const KpiApprovalLogScalarFieldEnum = {
+export const KPIMonthlyReportScalarFieldEnum = {
   id: 'id',
+  kpiId: 'kpiId',
   month: 'month',
-  stepRole: 'stepRole',
-  actionDate: 'actionDate',
-  signatureUsedUrl: 'signatureUsedUrl',
-  signatureTypeUsed: 'signatureTypeUsed',
-  kpiMasterId: 'kpiMasterId',
-  assignedUserId: 'assignedUserId'
+  year: 'year',
+  status: 'status',
+  prepareBy: 'prepareBy',
+  reviewBy: 'reviewBy',
+  approveBy: 'approveBy',
+  submittedAt: 'submittedAt',
+  approvedAt: 'approvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
-export type KpiApprovalLogScalarFieldEnum = (typeof KpiApprovalLogScalarFieldEnum)[keyof typeof KpiApprovalLogScalarFieldEnum]
+export type KPIMonthlyReportScalarFieldEnum = (typeof KPIMonthlyReportScalarFieldEnum)[keyof typeof KPIMonthlyReportScalarFieldEnum]
+
+
+export const KPIMonthlyDetailScalarFieldEnum = {
+  id: 'id',
+  monthlyReportId: 'monthlyReportId',
+  kpiObjectiveId: 'kpiObjectiveId',
+  actualResult: 'actualResult',
+  achievedStatus: 'achievedStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KPIMonthlyDetailScalarFieldEnum = (typeof KPIMonthlyDetailScalarFieldEnum)[keyof typeof KPIMonthlyDetailScalarFieldEnum]
+
+
+export const KPICorrectiveActionScalarFieldEnum = {
+  id: 'id',
+  monthlyDetailId: 'monthlyDetailId',
+  times: 'times',
+  rootCause: 'rootCause',
+  guidelines: 'guidelines',
+  responsiblePerson: 'responsiblePerson',
+  dueDate: 'dueDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KPICorrectiveActionScalarFieldEnum = (typeof KPICorrectiveActionScalarFieldEnum)[keyof typeof KPICorrectiveActionScalarFieldEnum]
 
 
 export const DocumentControlScalarFieldEnum = {
@@ -476,14 +422,6 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-export const NullableJsonNullValueInput = {
-  DbNull: DbNull,
-  JsonNull: JsonNull
-} as const
-
-export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
-
-
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -498,13 +436,4 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
-
-
-export const JsonNullValueFilter = {
-  DbNull: DbNull,
-  JsonNull: JsonNull,
-  AnyNull: AnyNull
-} as const
-
-export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

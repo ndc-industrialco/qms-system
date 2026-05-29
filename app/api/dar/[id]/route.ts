@@ -5,15 +5,17 @@ import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { type NextRequest } from "next/server";
 import { revalidateTag } from "next/cache";
+import { z } from "zod";
 
 const darService = new DarService();
+const paramSchema = z.object({ id: z.string().uuid() });
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const session = await requireAuth();
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
     
     const dar = await darService.getDarById(id, session.user.id, isPrivileged);
@@ -26,7 +28,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const session = await requireAuth();
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
 
     await darService.deleteDar(id, session.user.id, isPrivileged);
@@ -41,7 +43,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const session = await requireAuth();
-    const { id } = await params;
+    const { id } = paramSchema.parse(await params);
     const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
 
     const body = await req.json();
