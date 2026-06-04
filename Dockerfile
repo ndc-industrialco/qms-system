@@ -12,10 +12,6 @@ COPY . .
 # Generate Prisma client now that schema.prisma is present
 RUN npx prisma generate
 
-# NEXT_PUBLIC_* vars are inlined at build time — must be passed as build args
-ARG NEXT_PUBLIC_SENTRY_DSN
-ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
-
 # Build Next.js (npm run build already calls set-runtime.js internally)
 RUN NEXT_TELEMETRY_DISABLED=1 npm run build -- --no-lint
 
