@@ -50,7 +50,6 @@ jobs:
           DIRECT_DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
           NEXTAUTH_URL: http://localhost:3000
           AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'dummy-auth-secret-key-at-least-thirty-two-characters-long' }}
-          NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
         run: npm run build
 
   docker-build-push:
@@ -102,8 +101,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
