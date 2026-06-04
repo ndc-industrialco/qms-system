@@ -23,7 +23,7 @@ function createClient(): Redis {
   const client = new Redis(REDIS_URL, {
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
-    lazyConnect: false,
+    lazyConnect: true,
   });
 
   client.on("error", (err: Error) => {

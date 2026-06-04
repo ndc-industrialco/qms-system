@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>FM-DC-01 ใบคำขอดำเนินการเรื่องเอกสาร (DAR)</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 10mm 8mm 8mm 8mm;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 9.5px;
+      color: #000;
+      line-height: 1.2;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 194mm;
+      margin: 0 auto;
+      background-color: #fff;
+    }
+
+    /* Common Borders & Grid styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 4px;
+    }
+
+    td, th {
+      border: 1px solid #000;
+      padding: 3px 4px;
+      vertical-align: middle;
+    }
+
+    .no-border-table td {
+      border: none;
+      padding: 1px 2px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .text-left {
+      text-align: left;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .font-bold {
+      font-weight: bold;
+    }
+
+    .bg-gray {
+      background-color: #f3f4f6;
+    }
+
+    /* Section Headers */
+    .section-title {
+      font-weight: bold;
+      text-align: center;
+      background-color: #fff;
+      border: 1px solid #000;
+      border-bottom: none;
+      padding: 2px;
+      font-size: 10px;
+    }
+
+    /* Checkbox list styles */
+    .checkbox-container {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      margin-bottom: 4px;
+      display: grid;
+      grid-gap: 2px;
+    }
+
+    .grid-3-col {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .grid-4-col {
+      grid-template-columns: 1.2fr 1.2fr 1.2fr 0.9fr;
+    }
+
+    .grid-5-col {
+      grid-template-columns: 1fr 1fr 1fr 1fr 0.8fr;
+      padding: 3px 6px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+    }
+
+    .checkbox-box {
+      width: 9px;
+      height: 9px;
+      border: 1px solid #000;
+      margin-right: 4px;
+      display: inline-block;
+      text-align: center;
+      line-height: 9px;
+      font-size: 8px;
+      font-weight: bold;
+    }
+
+    .checkbox-box.checked::after {
+      content: "✓";
+    }
+
+    /* Header Logo Styles */
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2px;
+    }
+
+    .logo-block {
+      background-color: #0f172a;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 2px 6px;
+      letter-spacing: -0.5px;
+      border-radius: 2px;
+    }
+
+    .logo-text {
+      color: #1e3a8a;
+      font-size: 6px;
+      font-weight: bold;
+      margin-left: 4px;
+      line-height: 1;
+      letter-spacing: 0.5px;
+    }
+
+    /* Blue Remark Box */
+    .remark-box {
+      border: 1.5px solid #2563eb;
+      color: #1e40af;
+      padding: 4px 6px;
+      margin-bottom: 4px;
+      font-size: 8px;
+      line-height: 1.3;
+    }
+
+    .remark-box span {
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    /* Blank lines helper */
+    .dotted-line {
+      border-bottom: 1px dotted #000;
+      display: inline-block;
+      width: 100px;
+    }
+
+    .line-container {
+      padding: 4px;
+      border: 1px solid #000;
+      margin-bottom: 4px;
+      min-height: 42px;
+    }
+
+    /* Footer styling */
+    .footer-note {
+      font-size: 8px;
+      text-align: right;
+      margin-top: 4px;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Double tables layout for document delivery */
+    .double-table-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .half-table {
+      width: 49.3%;
+    }
+
+    .half-table th {
+      font-size: 8px;
+      padding: 2px;
+    }
+
+    .half-table td {
+      height: 12px;
+      padding: 1px 2px;
+    }
+
+    .dcc-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1.3fr 1fr 1.2fr;
+      border: 1px solid #000;
+      margin-bottom: 4px;
+    }
+
+    .dcc-col {
+      border-right: 1px solid #000;
+      padding: 4px;
+    }
+
+    .dcc-col:last-child {
+      border-right: none;
+    }
+
+    .signature-area {
+      height: 48px;
+      border: 1px dashed #9ca3af;
+      margin: 2px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 8px;
+    }
+
+    /* Print media overrides */
+    @media print {
+      body {
+        background-color: #fff;
+      }
+      .container {
+        width: 100%;
+        max-width: 100%;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- 1. Header (Logo & Form Name) -->
+  <table style="margin-bottom: 2px;">
+    <tbody>
+      <tr>
+        <td style="width: 25%; text-align: left; padding: 2px 4px;">
+          <div class="logo-container">
+            <div class="logo-block">NDC</div>
+            <div class="logo-text">INDUSTRIAL<br>CO., LTD.</div>
+          </div>
+        </td>
+        <td style="width: 50%; text-align: center;">
+          <div class="font-bold" style="font-size: 13px; letter-spacing: 0.5px;">(Document Action Request)</div>
+          <div class="font-bold" style="font-size: 12px;">ใบคำขอดำเนินการเรื่องเอกสาร (DAR)</div>
+        </td>
+        <td style="width: 25%; padding: 0; vertical-align: top;">
+          <table style="width: 100%; height: 100%; border: none; margin: 0;">
+            <tbody>
+              <tr>
+                <td class="font-bold text-center bg-gray" style="padding: 2px; font-size: 9px; border-top: none; border-left: none; border-right: none;">For DCC</td>
+              </tr>
+              <tr>
+                <!-- Mapping: DB -> dar.darNo -->
+                <td style="padding: 2px 4px; border-left: none; border-right: none; font-size: 9px;"><strong>DAR No. :</strong> {dar.darNo || ""}</td>
+              </tr>
+              <tr>
+                <!-- Mapping: DB -> dar.requestDate -->
+                <td style="padding: 2px 4px; border-bottom: none; border-left: none; border-right: none; font-size: 9px;">
+                  <strong>Date :</strong> {dar.requestDate ? new Date(dar.requestDate).toLocaleDateString('th-TH') : ""}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 2. Requester Info Grid -->
+  <table style="margin-bottom: 4px;">
+    <tbody>
+      <tr class="text-center font-bold bg-gray" style="font-size: 8.5px;">
+        <td style="width: 12%;">รหัส ID</td>
+        <td style="width: 32%;">ชื่อ Name</td>
+        <td style="width: 20%;">ตำแหน่ง Position</td>
+        <td style="width: 20%;">แผนก Department</td>
+        <td style="width: 16%;">วันที่ขอ Date</td>
+      </tr>
+      <tr class="text-center" style="font-size: 9px; height: 16px;">
+        <!-- Mapping: DB -> dar.requester.employeeId, dar.requester.name, dar.requester.position, dar.requester.department.name, dar.requestDate -->
+        <td>{dar.requester.employeeId || "-"}</td>
+        <td class="text-left" style="padding-left: 8px;">{dar.requester.name || "-"}</td>
+        <td>{dar.requester.position || "-"}</td>
+        <td>{dar.requester.department?.name || "-"}</td>
+        <td>{dar.requestDate ? new Date(dar.requestDate).toLocaleDateString('th-TH') : "-"}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 3. Objective Section -->
+  <div class="section-title">Objective / วัตถุประสงค์</div>
+  <!-- Mapping: DB -> dar.objective (เช็คค่า Enum ในกล่องติ๊กถูก) -->
+  <div class="checkbox-container grid-3-col">
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.objective === 'PREPARE_NEW' ? 'checked' : ''}"></div>
+      <div>
+        <strong>จัดทำเอกสารใหม่</strong><br>
+        <span style="font-size: 8px;">Prepare new document</span>
+      </div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.objective === 'REQUEST_COPY_CONTROLLED' ? 'checked' : ''}"></div>
+      <div>
+        <strong>ขอสำเนาควบคุม</strong><br>
+        <span style="font-size: 8px;">Request a controlled copy</span>
+      </div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.objective === 'CANCEL' ? 'checked' : ''}"></div>
+      <div>
+        <strong>ยกเลิกเอกสาร</strong><br>
+        <span style="font-size: 8px;">Cancel the document</span>
+      </div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.objective === 'REVISE' ? 'checked' : ''}"></div>
+      <div>
+        <strong>แก้ไขเอกสาร</strong><br>
+        <span style="font-size: 8px;">Revise documents</span>
+      </div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.objective === 'REQUEST_COPY_UNCONTROLLED' ? 'checked' : ''}"></div>
+      <div>
+        <strong>ขอสำเนาไม่ควบคุม</strong><br>
+        <span style="font-size: 8px;">Request an uncontrolled copy</span>
+      </div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.objective === 'OTHER' ? 'checked' : ''}"></div>
+      <div style="width: 100%;">
+        <!-- Mapping: DB -> dar.objectiveOther -->
+        <strong>Other</strong> <span style="border-bottom: 1px dotted #000; display: inline-block; width: 70%; height: 10px; padding-left: 4px;">{dar.objectiveOther || ""}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Types of Documents Section -->
+  <div class="section-title">Types of documents / ประเภทของเอกสาร</div>
+  <!-- Mapping: DB -> dar.docType (เช็คค่า Enum ในกล่องติ๊กถูก) -->
+  <div class="checkbox-container grid-4-col">
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'MANUAL' ? 'checked' : ''}"></div>
+      <div>Manual/M</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'PROCEDURE' ? 'checked' : ''}"></div>
+      <div>Procedure/P</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'SOP' ? 'checked' : ''}"></div>
+      <div style="font-size: 8.5px;">Standard Operating Procedures (SOP)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'INCOMING_INSPECTION' ? 'checked' : ''}"></div>
+      <div style="font-size: 8.5px;">Incoming Inspection Sheet</div>
+    </div>
+    
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'FORMAT' ? 'checked' : ''}"></div>
+      <div>Format/FM</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'EXTERNAL_SUPPORT' ? 'checked' : ''}"></div>
+      <div>External Support Document</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'SIP' ? 'checked' : ''}"></div>
+      <div style="font-size: 8.5px;">Standard Inspection Procedures (SIP)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'OTHER' ? 'checked' : ''}"></div>
+      <!-- Mapping: DB -> dar.docTypeOther -->
+      <div style="width: 100%;">Other <span style="border-bottom: 1px dotted #000; display: inline-block; width: 60%; height: 10px; padding-left: 4px;">{dar.docTypeOther || ""}</span></div>
+    </div>
+
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'DRAWING' ? 'checked' : ''}"></div>
+      <div>Drawing</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'SUPPORT_DOC' ? 'checked' : ''}"></div>
+      <div>Support Document/SD</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.docType === 'IPQC' ? 'checked' : ''}"></div>
+      <div style="font-size: 8.5px;">In-Process Quality Control (IPQC)</div>
+    </div>
+    <div class="checkbox-item"></div>
+  </div>
+
+  <!-- 5. List Table -->
+  <table style="margin-bottom: 4px;">
+    <thead>
+      <tr class="text-center font-bold bg-gray" style="font-size: 9px;">
+        <td style="width: 6%;">No.</td>
+        <td style="width: 50%;">List</td>
+        <td style="width: 18%;">Document Number</td>
+        <td style="width: 11%;">Revision No.</td>
+        <td style="width: 15%;">Effective Date</td>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Mapping: DB -> dar.items (ลูปข้อมูลรายการเอกสาร) -->
+      {dar.items.map((item, index) => (
+        <tr key={item.id} class="text-center" style="font-size: 9px; height: 16px;">
+          <td>{index + 1}</td>
+          <!-- Mapping: DB -> item.docName -->
+          <td class="text-left" style="padding-left: 6px;">{item.docName}</td>
+          <!-- Mapping: DB -> item.docNumber -->
+          <td class="font-bold" style="font-family: monospace; font-size: 9.5px;">{item.docNumber}</td>
+          <!-- Mapping: DB -> item.revision -->
+          <td>{item.revision}</td>
+          <!-- Mapping: DB -> item.effectiveDate (ถ้ามี) -->
+          <td>{item.effectiveDate ? new Date(item.effectiveDate).toLocaleDateString('th-TH') : "-"}</td>
+        </tr>
+      ))}
+      <!-- เติมแถวว่างเพื่อประคอง Layout ให้เต็ม 5 แถวเหมือนเดิม -->
+      {Array.from({ length: Math.max(0, 5 - dar.items.length) }).map((_, i) => (
+        <tr key={`empty-${i}`} style="height: 16px;">
+          <td>&nbsp;</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <!-- 6. Reason Section -->
+  <div class="section-title">เหตุผลในการขึ้นทะเบียนเอกสาร (Reason for Registration of Documents)</div>
+  <div class="line-container">
+    <!-- Mapping: DB -> dar.reason -->
+    <div style="font-size: 9.5px; padding: 4px; line-height: 1.5; white-space: pre-wrap;">
+      {dar.reason || "ไม่มีเหตุผลระบุไว้"}
+    </div>
+  </div>
+
+  <!-- 7. Distributions Section -->
+  <div class="section-title">แจกจ่ายให้กับหน่วยงานที่เกี่ยวข้อง (Distributed to relevant agencies)</div>
+  <!-- Mapping: DB -> dar.distributions (สแกนหาการแจกจ่ายให้กับแผนกต่าง ๆ เพื่อติ๊กถูก) -->
+  <div class="checkbox-container grid-5-col">
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'QMS') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Quality Management System (QMS)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'HR') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Human resource (HR)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'PU') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Purchasing (PU)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'WH') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Warehouse (WH)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'OTHERS_1') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Others <span style="border-bottom: 1px dotted #000; display: inline-block; width: 45%; height: 8px;"></span></div>
+    </div>
+
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'ACC') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Accounting (ACC)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'EN') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Engineering (EN)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'Translator') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Translator</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'SM') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Sales (SM)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'OTHERS_2') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Others <span style="border-bottom: 1px dotted #000; display: inline-block; width: 45%; height: 8px;"></span></div>
+    </div>
+
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'IT') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Information Technology (IT)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'GA') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">General Affair (GA)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'Mold') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Mold (Mo)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'Production') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Production (PD)</div>
+    </div>
+    <div class="checkbox-item"></div>
+
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'QA') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Quality Assurance (QA,QC,LAB)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'Maintenance') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Maintenance (MN)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'Planning') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Planning (PN)</div>
+    </div>
+    <div class="checkbox-item">
+      <div class="checkbox-box {dar.distributions.some(d => d.department.name === 'Safety') ? 'checked' : ''}"></div>
+      <div style="font-size: 8px;">Safety Health and Environment</div>
+    </div>
+    <div class="checkbox-item"></div>
+  </div>
+
+  <!-- 8. Remark Blue Box -->
+  <div class="remark-box">
+    <div><span>หมายเหตุ</span> 1. ใน DAR 1 ฉบับ สามารถยื่นทะเบียนเอกสารได้หลายฉบับ และต้องเป็นเอกสารที่ใช้เพื่อจุดประสงค์เดียวกัน และต่อเอกสารประเภทเดียวกันเท่านั้น เช่น การขอขึ้นทะเบียน SOP ใหม่</div>
+    <div><span>Remark</span> 1. One DAR can register multiple documents, but only the documents for the same purpose and the same type of documents are required, such as applying for a new SOP document.</div>
+    <div style="margin-top: 1px;">2. การดำเนินการขึ้นทะเบียนรวมถึงการแจกจ่ายเอกสารใช้ระยะเวลาภายใน 5 วันทำการ (ไม่รวมวันหยุด)</div>
+    <div>2. Registration process including document distribution takes within 5 working days (excluding holidays).</div>
+  </div>
+
+  <!-- 9. Signatures Block -->
+  <!-- Mapping: DB -> dar.approvals (ดึงข้อมูลรูปภาพลายเซ็นแยกตามบทบาทขั้นตอน) -->
+  <table style="margin-bottom: 4px; table-layout: fixed; text-align: center;">
+    <thead>
+      <tr class="font-bold bg-gray" style="font-size: 8.5px;">
+        <td style="width: 33.33%;">PREPARED</td>
+        <td style="width: 33.33%;">CHECKED</td>
+        <td style="width: 33.33%;">APPROVED</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="height: 48px;">
+        <!-- 9.1. ผู้จัดทำ (PREPARER) -->
+        <td style="padding: 2px; vertical-align: middle;">
+          {(() => {
+            const p = dar.approvals.find(a => a.stepRole === "PREPARER" && a.action === "APPROVED");
+            return p?.signatureUsedUrl ? (
+              <img src={p.signatureUsedUrl} alt="Preparer Signature" style="max-height: 44px; max-width: 100%; object-fit: contain;" />
+            ) : (
+              <div style="font-size: 8px; color: #bbb;">(ยังไม่ได้ลงชื่อ)</div>
+            );
+          })()}
+        </td>
+        <!-- 9.2. ผู้ตรวจสอบ (REVIEWER) -->
+        <td style="padding: 2px; vertical-align: middle;">
+          {(() => {
+            const r = dar.approvals.find(a => a.stepRole === "REVIEWER" && a.action === "APPROVED");
+            return r?.signatureUsedUrl ? (
+              <img src={r.signatureUsedUrl} alt="Reviewer Signature" style="max-height: 44px; max-width: 100%; object-fit: contain;" />
+            ) : (
+              <div style="font-size: 8px; color: #bbb;">(ยังไม่ได้ตรวจสอบ)</div>
+            );
+          })()}
+        </td>
+        <!-- 9.3. ผู้อนุมัติ / MR (APPROVER_MR) -->
+        <td style="padding: 2px; vertical-align: middle;">
+          {(() => {
+            const a = dar.approvals.find(a => a.stepRole === "APPROVER_MR" && a.action === "APPROVED");
+            return a?.signatureUsedUrl ? (
+              <img src={a.signatureUsedUrl} alt="MR Signature" style="max-height: 44px; max-width: 100%; object-fit: contain;" />
+            ) : (
+              <div style="font-size: 8px; color: #bbb;">(ยังไม่ได้อนุมัติ)</div>
+            );
+          })()}
+        </td>
+      </tr>
+      <tr style="font-size: 8px; height: 14px;">
+        <!-- วันที่ลงลายมือชื่อ -->
+        <td class="text-left" style="padding-left: 6px;">
+          Date : {dar.approvals.find(a => a.stepRole === "PREPARER" && a.action === "APPROVED")?.actionDate ? new Date(dar.approvals.find(a => a.stepRole === "PREPARER")!.actionDate!).toLocaleDateString('th-TH') : ""}
+        </td>
+        <td class="text-left" style="padding-left: 6px;">
+          Date : {dar.approvals.find(a => a.stepRole === "REVIEWER" && a.action === "APPROVED")?.actionDate ? new Date(dar.approvals.find(a => a.stepRole === "REVIEWER")!.actionDate!).toLocaleDateString('th-TH') : ""}
+        </td>
+        <td class="text-left" style="padding-left: 6px;">
+          Date : {dar.approvals.find(a => a.stepRole === "APPROVER_MR" && a.action === "APPROVED")?.actionDate ? new Date(dar.approvals.find(a => a.stepRole === "APPROVER_MR")!.actionDate!).toLocaleDateString('th-TH') : ""}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 10. For DCC Section Container -->
+  <!-- Mapping: DB -> dar.qmsProcessing (ข้อมูลเช็คลิสต์และลายเซ็นฝั่งเจ้าหน้าที่ DCC) -->
+  <div class="section-title">สำหรับเจ้าหน้าที่ DCC</div>
+  <div class="dcc-grid">
+    <!-- Col 1 (Checklist ด้านที่ 1) -->
+    <div class="dcc-col" style="font-size: 8px;">
+      <div class="checkbox-item" style="margin-bottom: 2px;">
+        <div class="checkbox-box {dar.qmsProcessing?.chkHasAttachment ? 'checked' : ''}"></div>
+        <div>มีเอกสารแนบท้าย<br><span style="font-size: 7px; color: #555;">There are attached documents.</span></div>
+      </div>
+      <div class="checkbox-item" style="margin-bottom: 2px;">
+        <div class="checkbox-box {dar.qmsProcessing?.chkPrintAndValidate ? 'checked' : ''}"></div>
+        <div>จัดพิมพ์เอกสารและตรวจสอบความถูกต้อง<br><span style="font-size: 7px; color: #555;">Print documents and validate them</span></div>
+      </div>
+      <div class="checkbox-item">
+        <div class="checkbox-box {dar.qmsProcessing?.chkImpactInvestigated ? 'checked' : ''}"></div>
+        <div>ตรวจสอบผลกระทบต่อเอกสารหรืองานที่เกี่ยวข้องแล้ว<br><span style="font-size: 7px; color: #555;">The impact on related documents or work has been investigated.</span></div>
+      </div>
+      <div class="checkbox-item" style="margin-top: 2px;">
+        <div class="checkbox-box {dar.qmsProcessing?.chkGetBackProcess ? 'checked' : ''}"></div>
+        <div>รับเอกสารคืนเพื่อดำเนินการ<br><span style="font-size: 7px; color: #555;">Get the documents back for processing</span></div>
+      </div>
+    </div>
+    
+    <!-- Col 2 (Checklist ด้านที่ 2) -->
+    <div class="dcc-col" style="font-size: 8px;">
+      <div class="checkbox-item" style="margin-bottom: 2px;">
+        <!-- chkNoAttachment สวนทางกับ chkHasAttachment -->
+        <div class="checkbox-box {!dar.qmsProcessing?.chkHasAttachment ? 'checked' : ''}"></div>
+        <div>ไม่มีเอกสารแนบท้าย<br><span style="font-size: 7px; color: #555;">No attached documents.</span></div>
+      </div>
+      <div class="checkbox-item" style="margin-bottom: 2px;">
+        <div class="checkbox-box {dar.qmsProcessing?.chkRenumber ? 'checked' : ''}"></div>
+        <div>กำหนดหมายเลขเอกสารใหม่<br><span style="font-size: 7px; color: #555;">Renumber documents</span></div>
+      </div>
+      <div class="checkbox-item">
+        <div class="checkbox-box {dar.qmsProcessing?.chkSubmitVerification ? 'checked' : ''}"></div>
+        <div>ส่งเอกสารให้หน่วยงานตรวจสอบความถูกต้อง<br><span style="font-size: 7px; color: #555;">Submit the documents to the verification agency</span></div>
+      </div>
+      <div class="checkbox-item" style="margin-top: 2px;">
+        <div class="checkbox-box {dar.qmsProcessing?.chkCopyDistribute ? 'checked' : ''}"></div>
+        <div>สำเนาเอกสารเพื่อแจกจ่าย<br><span style="font-size: 7px; color: #555;">Copy of document for distribution</span></div>
+      </div>
+    </div>
+    
+    <!-- Col 3 (DCC Signature) -->
+    <!-- Mapping: DB -> dar.qmsProcessing.qmsUser (ผู้ทำการประมวลผล DCC) -->
+    <div class="dcc-col text-center" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div class="font-bold bg-gray" style="border: 1px solid #000; padding: 2px; font-size: 8px;">DCC</div>
+      <div class="signature-area" style="height: 48px; border: 1px dashed #9ca3af; display: flex; align-items: center; justify-content: center;">
+        {dar.qmsProcessing?.qmsUser?.savedSignatureUrl ? (
+          <img src={dar.qmsProcessing.qmsUser.savedSignatureUrl} alt="DCC Signature" style="max-height: 44px; max-width: 100%; object-fit: contain;" />
+        ) : (
+          "Signature Box"
+        )}
+      </div>
+      <div class="text-left font-bold" style="font-size: 8px;">
+        Date : {dar.qmsProcessing?.processDate ? new Date(dar.qmsProcessing.processDate).toLocaleDateString('th-TH') : ""}
+      </div>
+    </div>
+    
+    <!-- Col 4 (DCC Remark / Comments) -->
+    <!-- Mapping: DB -> dar.qmsProcessing.comments -->
+    <div class="dcc-col" style="display: flex; flex-direction: column; justify-content: flex-start;">
+      <div class="font-bold" style="font-size: 8.5px;">Remark :</div>
+      <div style="font-size: 8px; margin-top: 3px; line-height: 1.3;">
+        {dar.qmsProcessing?.comments || ""}
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. Document Delivery or Document Recall -->
+  <div class="font-bold text-center bg-gray" style="border: 1px solid #000; border-bottom: none; padding: 2px; font-size: 8.5px;">
+    ส่วนการนำจ่ายเอกสาร หรือการเรียกคืนเอกสาร (As for document delivery or document recall)
+  </div>
+  <div style="border: 1px solid #000; padding: 4px; font-size: 8.5px; border-bottom: none;">
+    <!-- ส่วนข้อมูลนำจ่ายสามารถวนลูปหรือทิ้งเป็นบรรทัดว่างสำหรับ DCC ในการป้อนรายละเอียดหน้างานตามพอร์ตโฟลิโอ -->
+    <div style="margin-bottom: 3px;">
+      No. <span class="dotted-line" style="width: 60px;"></span> Document Name <span class="dotted-line" style="width: 250px;"></span> Document Number <span class="dotted-line" style="width: 120px;"></span> Rev. <span class="dotted-line" style="width: 30px;"></span>
+    </div>
+    <div>
+      No. <span class="dotted-line" style="width: 60px;"></span> Document Name <span class="dotted-line" style="width: 250px;"></span> Document Number <span class="dotted-line" style="width: 120px;"></span> Rev. <span class="dotted-line" style="width: 30px;"></span>
+    </div>
+  </div>
+
+  <!-- Double Split Tables (สำหรับแจกจ่าย/เรียกคืนเอกสารหน้างาน - เว้นว่างเป็นตารางแบบฟอร์มให้กรอก) -->
+  <div class="double-table-container">
+    
+    <!-- Left Table -->
+    <table class="half-table">
+      <thead>
+        <tr class="text-center font-bold bg-gray" style="font-size: 7.5px;">
+          <th style="width: 15%;">แผนก</th>
+          <th style="width: 35%;">ผู้รับเอกสาร-คืน</th>
+          <th style="width: 20%;">วันที่รับเอกสาร</th>
+          <th style="width: 30%;">ผู้คืนเอกสาร (DC)</th>
+        </tr>
+        <tr class="text-center" style="font-size: 7px; color: #555;">
+          <th>Department</th>
+          <th>Document recipient-return</th>
+          <th>Date of receipt</th>
+          <th>Document Return Receiver (DC)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <!-- Right Table -->
+    <table class="half-table">
+      <thead>
+        <tr class="text-center font-bold bg-gray" style="font-size: 7.5px;">
+          <th style="width: 15%;">แผนก</th>
+          <th style="width: 35%;">ผู้รับเอกสาร-คืน</th>
+          <th style="width: 20%;">วันที่รับเอกสาร</th>
+          <th style="width: 30%;">ผู้คืนเอกสาร (DC)</th>
+        </tr>
+        <tr class="text-center" style="font-size: 7px; color: #555;">
+          <th>Department</th>
+          <th>Document recipient-return</th>
+          <th>Date of receipt</th>
+          <th>Document Return Receiver (DC)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <!-- 12. Footer Document Info -->
+  <div class="footer-note">
+    FM-DC-01 : Rev.02 : 18-07-2025
+  </div>
+
+</div>
+
+</body>
+</html>
