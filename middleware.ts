@@ -43,6 +43,20 @@ function tooManyRequests(resetAt: number, requestId: string): NextResponse {
   );
 }
 
+function logRequest(method: string, path: string, status: number, ip: string, requestId: string, userId?: string): void {
+  console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level: "info",
+    message: "http_request",
+    method,
+    path,
+    status,
+    ip,
+    requestId,
+    ...(userId ? { userId } : {}),
+  }));
+}
+
 export default auth(async (req) => {
   const { nextUrl } = req;
   const session = req.auth;
@@ -63,8 +77,12 @@ export default auth(async (req) => {
     }
 
     const result = await rateLimit(rateLimitKey, config);
-    if (!result.allowed) return tooManyRequests(result.resetAt, requestId);
+    if (!result.allowed) {
+      logRequest(req.method, path, 429, ip, requestId, session?.user?.id);
+      return tooManyRequests(result.resetAt, requestId);
+    }
 
+    logRequest(req.method, path, 200, ip, requestId, session?.user?.id);
     const res = NextResponse.next({ request: { headers: requestHeaders } });
     res.headers.set("X-RateLimit-Limit", String(result.limit));
     res.headers.set("X-RateLimit-Remaining", String(result.remaining));
@@ -79,6 +97,7 @@ export default auth(async (req) => {
   }
 
   if (!session?.user) {
+    logRequest(req.method, path, 401, ip, requestId);
     const url = new URL("/auth/login", req.url);
     url.searchParams.set("callbackUrl", path);
     return withRequestId(NextResponse.redirect(url), requestId);
@@ -115,6 +134,7 @@ export default auth(async (req) => {
     );
   }
 
+  logRequest(req.method, path, 200, ip, requestId, session?.user?.id);
   return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId);
 });
 
