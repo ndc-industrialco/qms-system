@@ -54,7 +54,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
 
   async submitObjectives(
     id: string,
-    payload: { prepareSignature: string; reviewerUserId: string; approverUserId: string; submittedAt: Date },
+    payload: { prepareSignature: string; reviewerUserId: string; approverUserId: string; submittedAt: Date; prepare?: string },
     tx?: Prisma.TransactionClient,
   ) {
     return this.delegate(tx).update({
@@ -65,42 +65,53 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
         reviewerUserId: payload.reviewerUserId,
         approverUserId: payload.approverUserId,
         submittedAt: payload.submittedAt,
+        ...(payload.prepare ? { prepare: payload.prepare } : {}),
       },
       include: { objectives: true }
     });
   }
 
   async findPendingReviewByUser(userId: string, take = 10, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+
+    // IDs where reviewer has already approved
+    const reviewedIds = await client.approvalSignature.findMany({
+      where: { module: "KPI", step: "REVIEWER", action: "APPROVED" },
+      select: { documentId: true },
+    });
+    const reviewedIdSet = reviewedIds.map((r) => r.documentId);
+
     return this.delegate(tx).findMany({
       where: {
         status: "PENDING_REVIEW",
         reviewerUserId: userId,
+        id: { notIn: reviewedIdSet },
       },
       orderBy: [{ yearly: "desc" }, { updatedAt: "desc" }],
       take,
-      select: {
-        id: true,
-        department: true,
-        yearly: true,
-        status: true,
-      },
+      select: { id: true, department: true, yearly: true, status: true },
     });
   }
 
   async findPendingApproveByUser(userId: string, take = 10, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+
+    // IDs where reviewer has approved → approver can now act
+    const reviewedIds = await client.approvalSignature.findMany({
+      where: { module: "KPI", step: "REVIEWER", action: "APPROVED" },
+      select: { documentId: true },
+    });
+    const reviewedIdSet = reviewedIds.map((r) => r.documentId);
+
     return this.delegate(tx).findMany({
       where: {
         status: "PENDING_REVIEW",
         approverUserId: userId,
+        id: { in: reviewedIdSet },
       },
       orderBy: [{ yearly: "desc" }, { updatedAt: "desc" }],
       take,
-      select: {
-        id: true,
-        department: true,
-        yearly: true,
-        status: true,
-      },
+      select: { id: true, department: true, yearly: true, status: true },
     });
   }
 

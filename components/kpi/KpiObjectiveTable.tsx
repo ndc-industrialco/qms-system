@@ -2,6 +2,16 @@
 
 import type { KPIObjective } from "@/generated/prisma/client";
 import { useT } from "@/lib/i18n";
+import { KPI_UNITS, isPresetUnit } from "@/lib/kpi-units";
+
+function UnitLabel({ unit, t }: { unit: string | null | undefined; t: ReturnType<typeof useT> }) {
+  if (!unit) return null;
+  if (isPresetUnit(unit)) {
+    const labelKey = KPI_UNITS.find(u => u.value === unit)?.labelKey;
+    return <span className="ml-0.5 text-slate-400 font-normal">{labelKey ? t(labelKey as Parameters<typeof t>[0]) : unit}</span>;
+  }
+  return <span className="ml-0.5 text-slate-400 font-normal">{unit}</span>;
+}
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 
@@ -42,7 +52,9 @@ export default function KpiObjectiveTable({ data, canEdit, onEdit, onDelete }: P
                 <td className="px-4 py-3 text-sm text-slate-800 font-medium max-w-xs">
                   <p className="line-clamp-2">{row.objective}</p>
                 </td>
-                <td className="px-4 py-3 text-center font-mono text-sm text-primary font-semibold">{row.target}</td>
+                <td className="px-4 py-3 text-center font-mono text-sm text-primary font-semibold">
+                  {row.target}<UnitLabel unit={row.unit} t={t} />
+                </td>
                 <td className="px-4 py-3 text-center text-sm text-slate-600">{row.frequency}</td>
                 {canEdit && (
                   <td className="px-4 py-3 text-right">
@@ -68,7 +80,7 @@ export default function KpiObjectiveTable({ data, canEdit, onEdit, onDelete }: P
           <div key={row.id} className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 space-y-2">
             <p className="text-sm font-semibold text-slate-800">{row.objective}</p>
             <div className="flex gap-4 text-xs text-slate-500">
-              <span>{t("kpi.objective.table.target")}: <strong className="text-primary">{row.target}</strong></span>
+              <span>{t("kpi.objective.table.target")}: <strong className="text-primary">{row.target}<UnitLabel unit={row.unit} t={t} /></strong></span>
               <span>{t("kpi.objective.table.frequency")}: <strong className="text-slate-700">{row.frequency}</strong></span>
             </div>
             {canEdit && (

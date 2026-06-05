@@ -88,6 +88,45 @@ export function useUpdateMonthlyDetail() {
   });
 }
 
+export function useUpdateMonthlyReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ kpiId, reportId, data }: { kpiId: string; reportId: string; data: { remark?: string | null } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/monthly/${reportId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, { kpiId, reportId }) => {
+      qc.invalidateQueries({ queryKey: ["kpiMonthly", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpiMonthlyReport", reportId] });
+    },
+  });
+}
+
+export function useUploadMonthlyAttachment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ kpiId, reportId, file }: { kpiId: string; reportId: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(`/api/kpi/${kpiId}/monthly/${reportId}/attachment`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, { kpiId, reportId }) => {
+      qc.invalidateQueries({ queryKey: ["kpiMonthly", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpiMonthlyReport", reportId] });
+    },
+  });
+}
+
 export function useSubmitMonthlyReport() {
   const qc = useQueryClient();
   return useMutation({

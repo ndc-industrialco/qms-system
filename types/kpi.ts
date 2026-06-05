@@ -19,6 +19,7 @@ export interface UpdateKpiDTO {
 export interface CreateKpiObjectiveDTO {
   kpiId: string;
   target: number;
+  unit?: string;
   objective: string;
   frequency: string;
   calculationFormula: string;
@@ -28,6 +29,7 @@ export interface CreateKpiObjectiveDTO {
 
 export interface UpdateKpiObjectiveDTO {
   target?: number;
+  unit?: string;
   objective?: string;
   frequency?: string;
   calculationFormula?: string;
@@ -44,6 +46,21 @@ export interface CreateMonthlyReportDTO {
 export interface UpdateMonthlyDetailDTO {
   actualResult?: number | null;
   achievedStatus?: AchievedStatus;
+}
+
+export interface UpdateMonthlyReportDTO {
+  remark?: string | null;
+}
+
+export interface MonthlyReportAttachmentDTO {
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  spItemId: string;
+  spWebUrl: string;
+  spDownloadUrl: string;
+  uploadedBy: string;
+  uploadedAt: Date;
 }
 
 export interface CreateCorrectiveActionDTO {
@@ -77,6 +94,7 @@ export interface SubmitKpiObjectivesDTO {
 export interface ListMonthlyQuery {
   page: number;
   limit: number;
+  kpiId?: string;
   year?: number;
   month?: string;
   department?: string;

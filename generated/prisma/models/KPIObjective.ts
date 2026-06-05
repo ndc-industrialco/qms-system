@@ -38,6 +38,7 @@ export type KPIObjectiveMinAggregateOutputType = {
   id: string | null
   kpiId: string | null
   target: number | null
+  unit: string | null
   objective: string | null
   frequency: string | null
   calculationFormula: string | null
@@ -51,6 +52,7 @@ export type KPIObjectiveMaxAggregateOutputType = {
   id: string | null
   kpiId: string | null
   target: number | null
+  unit: string | null
   objective: string | null
   frequency: string | null
   calculationFormula: string | null
@@ -64,6 +66,7 @@ export type KPIObjectiveCountAggregateOutputType = {
   id: number
   kpiId: number
   target: number
+  unit: number
   objective: number
   frequency: number
   calculationFormula: number
@@ -87,6 +90,7 @@ export type KPIObjectiveMinAggregateInputType = {
   id?: true
   kpiId?: true
   target?: true
+  unit?: true
   objective?: true
   frequency?: true
   calculationFormula?: true
@@ -100,6 +104,7 @@ export type KPIObjectiveMaxAggregateInputType = {
   id?: true
   kpiId?: true
   target?: true
+  unit?: true
   objective?: true
   frequency?: true
   calculationFormula?: true
@@ -113,6 +118,7 @@ export type KPIObjectiveCountAggregateInputType = {
   id?: true
   kpiId?: true
   target?: true
+  unit?: true
   objective?: true
   frequency?: true
   calculationFormula?: true
@@ -213,6 +219,7 @@ export type KPIObjectiveGroupByOutputType = {
   id: string
   kpiId: string
   target: number
+  unit: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -249,6 +256,7 @@ export type KPIObjectiveWhereInput = {
   id?: Prisma.StringFilter<"KPIObjective"> | string
   kpiId?: Prisma.StringFilter<"KPIObjective"> | string
   target?: Prisma.FloatFilter<"KPIObjective"> | number
+  unit?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   objective?: Prisma.StringFilter<"KPIObjective"> | string
   frequency?: Prisma.StringFilter<"KPIObjective"> | string
   calculationFormula?: Prisma.StringFilter<"KPIObjective"> | string
@@ -264,6 +272,7 @@ export type KPIObjectiveOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   kpiId?: Prisma.SortOrder
   target?: Prisma.SortOrder
+  unit?: Prisma.SortOrderInput | Prisma.SortOrder
   objective?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
   calculationFormula?: Prisma.SortOrder
@@ -282,6 +291,7 @@ export type KPIObjectiveWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.KPIObjectiveWhereInput | Prisma.KPIObjectiveWhereInput[]
   kpiId?: Prisma.StringFilter<"KPIObjective"> | string
   target?: Prisma.FloatFilter<"KPIObjective"> | number
+  unit?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   objective?: Prisma.StringFilter<"KPIObjective"> | string
   frequency?: Prisma.StringFilter<"KPIObjective"> | string
   calculationFormula?: Prisma.StringFilter<"KPIObjective"> | string
@@ -297,6 +307,7 @@ export type KPIObjectiveOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   kpiId?: Prisma.SortOrder
   target?: Prisma.SortOrder
+  unit?: Prisma.SortOrderInput | Prisma.SortOrder
   objective?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
   calculationFormula?: Prisma.SortOrder
@@ -318,6 +329,7 @@ export type KPIObjectiveScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"KPIObjective"> | string
   kpiId?: Prisma.StringWithAggregatesFilter<"KPIObjective"> | string
   target?: Prisma.FloatWithAggregatesFilter<"KPIObjective"> | number
+  unit?: Prisma.StringNullableWithAggregatesFilter<"KPIObjective"> | string | null
   objective?: Prisma.StringWithAggregatesFilter<"KPIObjective"> | string
   frequency?: Prisma.StringWithAggregatesFilter<"KPIObjective"> | string
   calculationFormula?: Prisma.StringWithAggregatesFilter<"KPIObjective"> | string
@@ -330,6 +342,7 @@ export type KPIObjectiveScalarWhereWithAggregatesInput = {
 export type KPIObjectiveCreateInput = {
   id?: string
   target: number
+  unit?: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -345,6 +358,7 @@ export type KPIObjectiveUncheckedCreateInput = {
   id?: string
   kpiId: string
   target: number
+  unit?: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -358,6 +372,7 @@ export type KPIObjectiveUncheckedCreateInput = {
 export type KPIObjectiveUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -373,6 +388,7 @@ export type KPIObjectiveUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kpiId?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -387,6 +403,7 @@ export type KPIObjectiveCreateManyInput = {
   id?: string
   kpiId: string
   target: number
+  unit?: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -399,6 +416,7 @@ export type KPIObjectiveCreateManyInput = {
 export type KPIObjectiveUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -412,6 +430,7 @@ export type KPIObjectiveUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kpiId?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -435,6 +454,7 @@ export type KPIObjectiveCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   kpiId?: Prisma.SortOrder
   target?: Prisma.SortOrder
+  unit?: Prisma.SortOrder
   objective?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
   calculationFormula?: Prisma.SortOrder
@@ -452,6 +472,7 @@ export type KPIObjectiveMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   kpiId?: Prisma.SortOrder
   target?: Prisma.SortOrder
+  unit?: Prisma.SortOrder
   objective?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
   calculationFormula?: Prisma.SortOrder
@@ -465,6 +486,7 @@ export type KPIObjectiveMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   kpiId?: Prisma.SortOrder
   target?: Prisma.SortOrder
+  unit?: Prisma.SortOrder
   objective?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
   calculationFormula?: Prisma.SortOrder
@@ -550,6 +572,7 @@ export type KPIObjectiveUpdateOneRequiredWithoutMonthlyDetailsNestedInput = {
 export type KPIObjectiveCreateWithoutKpiInput = {
   id?: string
   target: number
+  unit?: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -563,6 +586,7 @@ export type KPIObjectiveCreateWithoutKpiInput = {
 export type KPIObjectiveUncheckedCreateWithoutKpiInput = {
   id?: string
   target: number
+  unit?: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -606,6 +630,7 @@ export type KPIObjectiveScalarWhereInput = {
   id?: Prisma.StringFilter<"KPIObjective"> | string
   kpiId?: Prisma.StringFilter<"KPIObjective"> | string
   target?: Prisma.FloatFilter<"KPIObjective"> | number
+  unit?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   objective?: Prisma.StringFilter<"KPIObjective"> | string
   frequency?: Prisma.StringFilter<"KPIObjective"> | string
   calculationFormula?: Prisma.StringFilter<"KPIObjective"> | string
@@ -618,6 +643,7 @@ export type KPIObjectiveScalarWhereInput = {
 export type KPIObjectiveCreateWithoutMonthlyDetailsInput = {
   id?: string
   target: number
+  unit?: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -632,6 +658,7 @@ export type KPIObjectiveUncheckedCreateWithoutMonthlyDetailsInput = {
   id?: string
   kpiId: string
   target: number
+  unit?: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -660,6 +687,7 @@ export type KPIObjectiveUpdateToOneWithWhereWithoutMonthlyDetailsInput = {
 export type KPIObjectiveUpdateWithoutMonthlyDetailsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -674,6 +702,7 @@ export type KPIObjectiveUncheckedUpdateWithoutMonthlyDetailsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kpiId?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -686,6 +715,7 @@ export type KPIObjectiveUncheckedUpdateWithoutMonthlyDetailsInput = {
 export type KPIObjectiveCreateManyKpiInput = {
   id?: string
   target: number
+  unit?: string | null
   objective: string
   frequency: string
   calculationFormula: string
@@ -698,6 +728,7 @@ export type KPIObjectiveCreateManyKpiInput = {
 export type KPIObjectiveUpdateWithoutKpiInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -711,6 +742,7 @@ export type KPIObjectiveUpdateWithoutKpiInput = {
 export type KPIObjectiveUncheckedUpdateWithoutKpiInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -724,6 +756,7 @@ export type KPIObjectiveUncheckedUpdateWithoutKpiInput = {
 export type KPIObjectiveUncheckedUpdateManyWithoutKpiInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   target?: Prisma.FloatFieldUpdateOperationsInput | number
+  unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objective?: Prisma.StringFieldUpdateOperationsInput | string
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
@@ -768,6 +801,7 @@ export type KPIObjectiveSelect<ExtArgs extends runtime.Types.Extensions.Internal
   id?: boolean
   kpiId?: boolean
   target?: boolean
+  unit?: boolean
   objective?: boolean
   frequency?: boolean
   calculationFormula?: boolean
@@ -784,6 +818,7 @@ export type KPIObjectiveSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   id?: boolean
   kpiId?: boolean
   target?: boolean
+  unit?: boolean
   objective?: boolean
   frequency?: boolean
   calculationFormula?: boolean
@@ -798,6 +833,7 @@ export type KPIObjectiveSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   id?: boolean
   kpiId?: boolean
   target?: boolean
+  unit?: boolean
   objective?: boolean
   frequency?: boolean
   calculationFormula?: boolean
@@ -812,6 +848,7 @@ export type KPIObjectiveSelectScalar = {
   id?: boolean
   kpiId?: boolean
   target?: boolean
+  unit?: boolean
   objective?: boolean
   frequency?: boolean
   calculationFormula?: boolean
@@ -821,7 +858,7 @@ export type KPIObjectiveSelectScalar = {
   updatedAt?: boolean
 }
 
-export type KPIObjectiveOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kpiId" | "target" | "objective" | "frequency" | "calculationFormula" | "actionPlanGuidelines" | "referenceDocuments" | "createdAt" | "updatedAt", ExtArgs["result"]["kPIObjective"]>
+export type KPIObjectiveOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kpiId" | "target" | "unit" | "objective" | "frequency" | "calculationFormula" | "actionPlanGuidelines" | "referenceDocuments" | "createdAt" | "updatedAt", ExtArgs["result"]["kPIObjective"]>
 export type KPIObjectiveInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
   monthlyDetails?: boolean | Prisma.KPIObjective$monthlyDetailsArgs<ExtArgs>
@@ -844,6 +881,7 @@ export type $KPIObjectivePayload<ExtArgs extends runtime.Types.Extensions.Intern
     id: string
     kpiId: string
     target: number
+    unit: string | null
     objective: string
     frequency: string
     calculationFormula: string
@@ -1279,6 +1317,7 @@ export interface KPIObjectiveFieldRefs {
   readonly id: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly kpiId: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly target: Prisma.FieldRef<"KPIObjective", 'Float'>
+  readonly unit: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly objective: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly frequency: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly calculationFormula: Prisma.FieldRef<"KPIObjective", 'String'>

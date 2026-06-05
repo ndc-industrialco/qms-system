@@ -3,9 +3,10 @@ import { requireRole } from "@/lib/auth";
 import AnnouncementForm from "@/components/dashboard/AnnouncementForm";
 import NewAnnouncementHeader from "@/components/announcements/NewAnnouncementHeader";
 import type { Metadata } from "next";
+import en from "@/messages/en.json";
 
 export const metadata: Metadata = {
-  title: "New Announcement",
+  title: en.announcement.createTitle,
 };
 
 export default async function NewAnnouncementPage() {

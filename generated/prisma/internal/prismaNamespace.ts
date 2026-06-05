@@ -2166,6 +2166,7 @@ export const KPIObjectiveScalarFieldEnum = {
   id: 'id',
   kpiId: 'kpiId',
   target: 'target',
+  unit: 'unit',
   objective: 'objective',
   frequency: 'frequency',
   calculationFormula: 'calculationFormula',
@@ -2189,6 +2190,15 @@ export const KPIMonthlyReportScalarFieldEnum = {
   approveBy: 'approveBy',
   submittedAt: 'submittedAt',
   approvedAt: 'approvedAt',
+  remark: 'remark',
+  attachmentFileName: 'attachmentFileName',
+  attachmentFileSize: 'attachmentFileSize',
+  attachmentMimeType: 'attachmentMimeType',
+  attachmentSpItemId: 'attachmentSpItemId',
+  attachmentWebUrl: 'attachmentWebUrl',
+  attachmentDownloadUrl: 'attachmentDownloadUrl',
+  attachmentUploadedAt: 'attachmentUploadedAt',
+  attachmentUploadedBy: 'attachmentUploadedBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

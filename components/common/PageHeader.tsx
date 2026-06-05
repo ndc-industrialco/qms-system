@@ -1,11 +1,18 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
+import { useT, type TranslationKey } from "@/lib/i18n";
 
 type Props = {
   /** Primary heading displayed on the left */
-  title: string;
+  title?: string;
+  titleKey?: TranslationKey;
+  titleParams?: Record<string, string | number>;
   /** Optional secondary line below the title (e.g. record count, breadcrumb) */
   subtitle?: string;
+  subtitleKey?: TranslationKey;
+  subtitleParams?: Record<string, string | number>;
   /** Buttons / controls rendered on the right */
   actions?: ReactNode;
   className?: string;
@@ -21,7 +28,20 @@ type Props = {
  *   actions={<Button onClick={openCreate}>Add User</Button>}
  * />
  */
-export default function PageHeader({ title, subtitle, actions, className }: Props) {
+export default function PageHeader({
+  title,
+  titleKey,
+  titleParams,
+  subtitle,
+  subtitleKey,
+  subtitleParams,
+  actions,
+  className,
+}: Props) {
+  const t = useT();
+  const resolvedTitle = title ?? (titleKey ? t(titleKey, titleParams) : "");
+  const resolvedSubtitle = subtitle ?? (subtitleKey ? t(subtitleKey, subtitleParams) : "");
+
   return (
     <div
       className={cn(
@@ -32,10 +52,10 @@ export default function PageHeader({ title, subtitle, actions, className }: Prop
     >
       <div className="flex flex-col min-w-0">
         <h1 className="text-base md:text-lg font-bold text-primary leading-tight truncate">
-          {title}
+          {resolvedTitle}
         </h1>
-        {subtitle && (
-          <p className="text-[11px] md:text-xs text-neutral mt-0.5">{subtitle}</p>
+        {resolvedSubtitle && (
+          <p className="text-[11px] md:text-xs text-neutral mt-0.5">{resolvedSubtitle}</p>
         )}
       </div>
 

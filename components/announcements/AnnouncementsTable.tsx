@@ -32,7 +32,7 @@ export default function AnnouncementsTable({ rows, onView, onEdit, onDelete, onT
           </svg>
         </div>
         <p className="text-slate-800 font-semibold text-base mb-1">{t("announcement.empty")}</p>
-        <p className="text-slate-400 text-sm">ยังไม่มีประกาศในระบบ</p>
+        <p className="text-slate-400 text-sm">{t("announcement.emptyDesc")}</p>
       </div>
     );
   }

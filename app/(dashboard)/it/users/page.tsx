@@ -6,9 +6,10 @@ import SyncActions from "@/components/it/SyncActions";
 import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
 import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
+import en from "@/messages/en.json";
 
 export const metadata: Metadata = {
-  title: "Manage Users",
+  title: en.it.users.title,
 };
 
 const userService = new UserService();
@@ -24,8 +25,9 @@ export default async function ItUsersPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
-        title="Manage Users"
-        subtitle={`All users signed in via Microsoft 365 (${users.length})`}
+        titleKey="it.users.title"
+        subtitleKey="it.users.subtitle"
+        subtitleParams={{ count: users.length }}
         actions={<SyncActions />}
       />
 

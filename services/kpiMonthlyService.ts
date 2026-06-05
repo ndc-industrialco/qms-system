@@ -7,8 +7,11 @@ import { KpiCorrectiveActionRepository } from '@/repositories/kpiCorrectiveActio
 import { KpiObjectiveRepository } from '@/repositories/kpiObjectiveRepository';
 import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRepository';
 import { UserRepository } from '@/repositories/userRepository';
-import { ActorContext, CreateMonthlyReportDTO, CreateCorrectiveActionDTO, ListMonthlyQuery, UpdateMonthlyDetailDTO } from '@/types/kpi';
+import { ActorContext, CreateMonthlyReportDTO, CreateCorrectiveActionDTO, ListMonthlyQuery, UpdateMonthlyDetailDTO, UpdateMonthlyReportDTO } from '@/types/kpi';
 import type { SignatureType } from '@/generated/prisma/client';
+import { ALLOWED_MIME, MAX_FILE_SIZE, hasValidMagicBytes } from '@/lib/fileValidation';
+import { uploadFileToKpiMonthly } from '@/services/sharepoint';
+import { ValidationError } from '@/errors/customErrors';
 
 export class KpiMonthlyService {
   private reportRepo = new KpiMonthlyReportRepository();
@@ -62,6 +65,49 @@ export class KpiMonthlyService {
     });
   }
 
+  async updateReportMetadata(reportId: string, dto: UpdateMonthlyReportDTO, actor: ActorContext) {
+    const report = await this.getReportById(reportId);
+    this.ensureReportEditableByActor(report, actor);
+    return this.reportRepo.updateMetadata(reportId, dto);
+  }
+
+  async uploadReportAttachment(reportId: string, file: File, actor: ActorContext) {
+    const report = await this.getReportById(reportId);
+    this.ensureReportEditableByActor(report, actor);
+
+    if (file.size > MAX_FILE_SIZE) {
+      throw new ValidationError(`File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`);
+    }
+    if (!ALLOWED_MIME.has(file.type)) {
+      throw new ValidationError(`File type ${file.type} is not allowed`);
+    }
+
+    const buffer = new Uint8Array(await file.arrayBuffer());
+    if (!hasValidMagicBytes(buffer, file.type)) {
+      throw new ValidationError('File signature does not match its type');
+    }
+
+    const uploaded = await uploadFileToKpiMonthly({
+      fileBuffer: buffer,
+      fileName: file.name,
+      mimeType: file.type,
+      departmentName: report.kpi.department,
+      year: report.year,
+      month: report.month,
+    });
+
+    return this.reportRepo.updateAttachment(reportId, {
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+      spItemId: uploaded.spItemId,
+      spWebUrl: uploaded.spWebUrl,
+      spDownloadUrl: uploaded.spDownloadUrl,
+      uploadedBy: actor.userId,
+      uploadedAt: new Date(),
+    });
+  }
+
   async submitReport(reportId: string, actor: ActorContext) {
     const report = await this.getReportById(reportId);
     ensureMonthlyStatusTransition(report.status, 'PENDING_REVIEW');
@@ -103,17 +149,22 @@ export class KpiMonthlyService {
       throw new ForbiddenError('Only QMS/MR/IT can review monthly reports');
     }
     const report = await this.getReportById(reportId);
-    ensureMonthlyStatusTransition(report.status, 'PENDING_APPROVAL');
+    ensureMonthlyStatusTransition(report.status, 'APPROVED');
 
+    const now = new Date();
     return db.$transaction(async (tx) => {
-      const updated = await this.reportRepo.updateStatus(reportId, 'PENDING_APPROVAL', { reviewBy: actor.userId }, tx);
+      const updated = await this.reportRepo.updateStatus(reportId, 'APPROVED', {
+        reviewBy: actor.userId,
+        approveBy: actor.userId,
+        approvedAt: now,
+      }, tx);
       await this.approvalSignatureRepo.upsertStep({
         module: 'KPI_MONTHLY',
         documentId: reportId,
         step: 'REVIEWER',
         signerUserId: actor.userId,
         action: 'APPROVED',
-        actionDate: new Date(),
+        actionDate: now,
         signaturePath: sigBody?.signatureDataUrl,
       }, tx);
 
@@ -208,5 +259,19 @@ export class KpiMonthlyService {
 
   async listCorrectiveActions(detailId: string) {
     return this.correctiveRepo.listByDetailId(detailId);
+  }
+
+  private ensureReportEditableByActor(
+    report: Awaited<ReturnType<KpiMonthlyReportRepository['findByIdWithDetails']>>,
+    actor: ActorContext,
+  ) {
+    if (!report) throw new NotFoundError('Monthly report not found');
+    if (report.status === 'APPROVED') {
+      throw new ConflictError('Cannot edit an approved monthly report');
+    }
+    if (['QMS', 'MR', 'IT'].includes(actor.role)) return;
+    if (report.status !== 'DRAFT' && report.status !== 'REJECTED') {
+      throw new ConflictError('Can only edit monthly report in DRAFT or REJECTED status');
+    }
   }
 }

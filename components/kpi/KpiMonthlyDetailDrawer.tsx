@@ -1,31 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { useT } from "@/lib/i18n";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle, CheckCircle2, ExternalLink, FileText,
+  ShieldCheck, Upload, X, XCircle,
+} from "lucide-react";
 import {
   useKpiMonthlyById,
-  useSubmitMonthlyReport,
-  useReviewMonthlyReport,
-  useApproveMonthlyReport,
   useRejectMonthlyReport,
+  useReviewMonthlyReport,
+  useSubmitMonthlyReport,
   useUpdateMonthlyDetail,
+  useUpdateMonthlyReport,
+  useUploadMonthlyAttachment,
 } from "@/hooks/api/use-kpi-monthly";
-import type { MonthlyStatus, AchievedStatus } from "@/generated/prisma/client";
+import { useAddCorrectiveAction, useDeleteCorrectiveAction } from "@/hooks/api/use-kpi-corrective";
+import type { AchievedStatus, MonthlyStatus } from "@/generated/prisma/client";
 
 type UserRole = "USER" | "IT" | "QMS" | "MR";
-
 const PRIVILEGED_ROLES: UserRole[] = ["IT", "QMS", "MR"];
-
-function isPrivileged(role: UserRole): boolean {
-  return PRIVILEGED_ROLES.includes(role);
-}
+function isPrivileged(role: UserRole) { return PRIVILEGED_ROLES.includes(role); }
 
 interface Props {
   kpiId: string | null;
@@ -35,26 +37,75 @@ interface Props {
   userRole: UserRole;
 }
 
-const STATUS_STYLES: Record<MonthlyStatus, string> = {
-  DRAFT: "bg-slate-100 text-slate-500 border border-slate-200",
-  PENDING_REVIEW: "bg-amber-50 text-amber-600 border border-amber-200",
-  PENDING_APPROVAL: "bg-blue-50 text-blue-600 border border-blue-200",
-  APPROVED: "bg-emerald-50 text-emerald-600 border border-emerald-200",
-  REJECTED: "bg-rose-50 text-rose-600 border border-rose-200",
+const STATUS_CONFIG: Record<MonthlyStatus, { style: string; label?: string }> = {
+  DRAFT:            { style: "bg-slate-50 text-slate-500 border-slate-200"       },
+  PENDING_REVIEW:   { style: "bg-amber-50 text-amber-600 border-amber-200"       },
+  PENDING_APPROVAL: { style: "bg-sky-50 text-sky-600 border-sky-200"             },
+  APPROVED:         { style: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+  REJECTED:         { style: "bg-rose-50 text-rose-600 border-rose-200"          },
 };
 
-const ACHIEVED_STYLES: Record<AchievedStatus, string> = {
-  OK: "bg-emerald-50 text-emerald-600 border border-emerald-200",
-  NOT_OK: "bg-rose-50 text-rose-600 border border-rose-200",
-  PENDING: "bg-amber-50 text-amber-600 border border-amber-200",
+const ACHIEVED_CONFIG: Record<AchievedStatus, { style: string; dot: string }> = {
+  OK:      { style: "bg-emerald-50 text-emerald-600 border-emerald-200", dot: "bg-emerald-500" },
+  NOT_OK:  { style: "bg-rose-50 text-rose-600 border-rose-200",          dot: "bg-rose-500"   },
+  PENDING: { style: "bg-amber-50 text-amber-600 border-amber-200",       dot: "bg-amber-400"  },
+};
+
+type CorrectiveActionRow = {
+  id: string;
+  times: number;
+  rootCause: string;
+  guidelines: string;
+  responsiblePerson: string;
+  dueDate: string | Date;
 };
 
 type DetailRow = {
   id: string;
   actualResult: number | null;
   achievedStatus: AchievedStatus;
-  kpiObjective: { objective: string; target: number };
+  kpiObjective: { objective: string; target: number; unit?: string | null };
+  correctiveActions?: CorrectiveActionRow[];
 };
+
+type CorrectiveDraft = {
+  times: string;
+  rootCause: string;
+  guidelines: string;
+  responsiblePerson: string;
+  dueDate: string;
+};
+
+const EMPTY_DRAFT: CorrectiveDraft = {
+  times: "1", rootCause: "", guidelines: "", responsiblePerson: "", dueDate: "",
+};
+
+function FieldLabel({ children, required = false }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+      {children} {required && <span className="text-rose-500">*</span>}
+    </label>
+  );
+}
+
+function ReadField({ value }: { value: string }) {
+  return (
+    <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+      {value || <span className="text-slate-300">—</span>}
+    </div>
+  );
+}
+
+function DrawerSkeleton() {
+  return (
+    <div className="space-y-4 p-6">
+      <Skeleton className="h-6 w-2/3" />
+      <Skeleton className="h-4 w-1/3" />
+      <Skeleton className="h-32 w-full rounded-2xl" />
+      <Skeleton className="h-32 w-full rounded-2xl" />
+    </div>
+  );
+}
 
 export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenChange, userRole }: Props) {
   const t = useT();
@@ -65,42 +116,124 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
 
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
-  const [editingDetailId, setEditingDetailId] = useState<string | null>(null);
-  const [actualInput, setActualInput] = useState<string>("");
+  const [actualInputs, setActualInputs] = useState<Record<string, string>>({});
+  const [savedInputs, setSavedInputs] = useState<Record<string, string>>({});
+  const [remark, setRemark] = useState("");
+  const [remarkDirty, setRemarkDirty] = useState(false);
+  const [correctiveDrafts, setCorrectiveDrafts] = useState<Record<string, CorrectiveDraft>>({});
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const updateDetailMutation = useUpdateMonthlyDetail();
-  const submitMutation = useSubmitMonthlyReport();
-  const reviewMutation = useReviewMonthlyReport();
-  const approveMutation = useApproveMonthlyReport();
-  const rejectMutation = useRejectMonthlyReport();
+  const updateDetailMutation    = useUpdateMonthlyDetail();
+  const updateReportMutation    = useUpdateMonthlyReport();
+  const uploadMutation          = useUploadMonthlyAttachment();
+  const addCorrectiveMutation   = useAddCorrectiveAction();
+  const deleteCorrectiveMutation = useDeleteCorrectiveAction();
+  const submitMutation        = useSubmitMonthlyReport();
+  const reviewMutation        = useReviewMonthlyReport();
+  const rejectMutation        = useRejectMonthlyReport();
 
   const anyLoading =
-    submitMutation.isPending ||
-    reviewMutation.isPending ||
-    approveMutation.isPending ||
-    rejectMutation.isPending ||
-    updateDetailMutation.isPending;
+    updateDetailMutation.isPending || updateReportMutation.isPending ||
+    uploadMutation.isPending || addCorrectiveMutation.isPending ||
+    deleteCorrectiveMutation.isPending ||
+    submitMutation.isPending || reviewMutation.isPending ||
+    rejectMutation.isPending;
 
   const reportStatus = report?.status as MonthlyStatus | undefined;
-
-  // IT/QMS/MR can always edit regardless of status
-  // USER can only edit when DRAFT or REJECTED (not yet fully approved)
   const isEditable = privileged
     ? reportStatus !== "APPROVED"
     : reportStatus === "DRAFT" || reportStatus === "REJECTED";
+  const details = (report?.details ?? []) as DetailRow[];
+  const notOkDetails = details.filter((d) => d.achievedStatus === "NOT_OK");
 
-  // IT/QMS/MR can always approve/review
-  const canApprove = privileged;
+  useEffect(() => {
+    setRemark(report?.remark ?? "");
+    setRemarkDirty(false);
+    if (report?.details) {
+      const init: Record<string, string> = {};
+      for (const d of report.details as DetailRow[]) {
+        init[d.id] = d.actualResult !== null ? String(d.actualResult) : "";
+      }
+      setActualInputs(init);
+      setSavedInputs(init);
+    }
+  }, [report?.id, report?.remark]);
 
-  async function handleSaveDetail(detailId: string) {
+  const detailsDirty = details.some((d) => (actualInputs[d.id] ?? "") !== (savedInputs[d.id] ?? ""));
+
+  async function handleSaveAllDetails() {
+    if (!kpiId || !reportId) return;
+    const dirtyDetails = details.filter((d) => (actualInputs[d.id] ?? "") !== (savedInputs[d.id] ?? ""));
+    try {
+      await Promise.all(dirtyDetails.map((d) =>
+        updateDetailMutation.mutateAsync({
+          kpiId, reportId, detailId: d.id,
+          data: { actualResult: actualInputs[d.id] !== "" ? Number(actualInputs[d.id]) : null },
+        })
+      ));
+      setSavedInputs({ ...actualInputs });
+      toast.success(t("kpi.monthly.messages.updateSuccess"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+    }
+  }
+
+  async function handleSaveRemark() {
     if (!kpiId || !reportId) return;
     try {
-      await updateDetailMutation.mutateAsync({
+      await updateReportMutation.mutateAsync({ kpiId, reportId, data: { remark } });
+      toast.success(t("kpi.monthly.messages.updateSuccess"));
+      setRemarkDirty(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+    }
+  }
+
+  async function handleUploadAttachment(file: File | null) {
+    if (!kpiId || !reportId || !file) return;
+    try {
+      await uploadMutation.mutateAsync({ kpiId, reportId, file });
+      toast.success(t("kpi.monthly.messages.updateSuccess"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+    }
+  }
+
+  function updateDraft(detailId: string, field: keyof CorrectiveDraft, value: string) {
+    setCorrectiveDrafts((prev) => ({
+      ...prev,
+      [detailId]: { ...(prev[detailId] ?? EMPTY_DRAFT), [field]: value },
+    }));
+  }
+
+  async function handleAddCorrective(detailId: string) {
+    if (!kpiId || !reportId) return;
+    const draft = correctiveDrafts[detailId] ?? EMPTY_DRAFT;
+    if (!draft.rootCause.trim() || !draft.guidelines.trim() || !draft.responsiblePerson.trim() || !draft.dueDate) return;
+    try {
+      await addCorrectiveMutation.mutateAsync({
         kpiId, reportId, detailId,
-        data: { actualResult: actualInput !== "" ? Number(actualInput) : null },
+        data: {
+          times: Number(draft.times) || 1,
+          rootCause: draft.rootCause,
+          guidelines: draft.guidelines,
+          responsiblePerson: draft.responsiblePerson,
+          dueDate: draft.dueDate,
+        },
       });
       toast.success(t("kpi.monthly.messages.updateSuccess"));
-      setEditingDetailId(null);
+      setCorrectiveDrafts((prev) => ({ ...prev, [detailId]: EMPTY_DRAFT }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+    }
+  }
+
+  async function handleDeleteCorrective(detailId: string, actionId: string) {
+    if (!kpiId || !reportId) return;
+    try {
+      await deleteCorrectiveMutation.mutateAsync({ kpiId, reportId, detailId, actionId });
+      toast.success(t("kpi.monthly.messages.deleteCorrectiveSuccess"));
+      setConfirmDeleteId(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
     }
@@ -126,16 +259,6 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
     }
   }
 
-  async function handleApprove() {
-    if (!kpiId || !reportId) return;
-    try {
-      await approveMutation.mutateAsync({ kpiId, reportId });
-      toast.success(t("kpi.monthly.messages.approveSuccess"));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
-    }
-  }
-
   async function handleReject() {
     if (!kpiId || !reportId || !rejectReason.trim()) return;
     try {
@@ -150,13 +273,17 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto flex flex-col gap-0 p-0">
-        <SheetHeader className="px-6 py-5 border-b border-slate-100">
+      <SheetContent className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+
+        {/* Header */}
+        <SheetHeader className="shrink-0 border-b border-slate-100 px-6 py-4">
           <div className="flex items-center justify-between gap-3">
-            <SheetTitle className="text-primary font-bold">{t("kpi.monthly.drawer.title")}</SheetTitle>
+            <SheetTitle className="text-base font-bold text-primary">
+              {t("kpi.monthly.drawer.title")}
+            </SheetTitle>
             {privileged && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">
-                <ShieldCheck className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                <ShieldCheck className="h-3 w-3" />
                 {t("approve.fullAccess")}
               </span>
             )}
@@ -164,194 +291,430 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
         </SheetHeader>
 
         {isLoading || !report ? (
-          <div className="p-6 space-y-4">
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-20 w-full" />
-          </div>
+          <DrawerSkeleton />
         ) : (
-          <div className="flex-1 overflow-y-auto">
-            {/* Header info */}
-            <div className="px-6 py-4 border-b border-slate-50 space-y-1">
-              <p className="text-sm font-semibold text-slate-800">{report.month} {report.year}</p>
-              <p className="text-sm text-slate-500">{report.kpi?.department}</p>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${STATUS_STYLES[report.status as MonthlyStatus]}`}>
-                {t(`kpi.monthly.status.${report.status}` as Parameters<typeof t>[0])}
-              </span>
+          <>
+            {/* Report meta strip */}
+            <div className="shrink-0 border-b border-slate-100 bg-slate-50/60 px-6 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  <p className="text-sm font-bold text-slate-800">{report.month} {report.year}</p>
+                  <span className="text-xs text-slate-400">{report.kpi?.department}</span>
+                </div>
+                <span className={cn(
+                  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                  STATUS_CONFIG[report.status as MonthlyStatus]?.style
+                )}>
+                  {t(`kpi.monthly.status.${report.status}` as Parameters<typeof t>[0])}
+                </span>
+              </div>
             </div>
 
-            {/* Details grid */}
-            <div className="px-6 py-5 space-y-4">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t("kpi.monthly.drawer.objectives")}</p>
-              {(report.details ?? []).map((detail: DetailRow) => (
-                <div key={detail.id} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 space-y-2">
-                  <p className="text-sm font-medium text-slate-700">{detail.kpiObjective.objective}</p>
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <span>
-                      {t("kpi.monthly.table.target")}: <strong className="text-slate-700">{detail.kpiObjective.target}</strong>
-                    </span>
-                    <span>
-                      {t("kpi.monthly.table.actual")}:{" "}
-                      {editingDetailId === detail.id ? (
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={actualInput}
-                          onChange={e => setActualInput(e.target.value)}
-                          className="h-6 w-24 inline-flex rounded-lg text-xs px-2 py-0"
-                        />
-                      ) : (
-                        <strong className="text-slate-700">{detail.actualResult ?? "—"}</strong>
-                      )}
-                    </span>
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="space-y-5 px-6 py-5">
+
+                {/* ── Section 1: Objectives ── */}
+                <section>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">01</span>
+                    <h3 className="text-sm font-bold text-slate-800">{t("kpi.monthly.section.objectives")}</h3>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ACHIEVED_STYLES[detail.achievedStatus]}`}>
-                      {t(`kpi.monthly.achieved.${detail.achievedStatus}` as Parameters<typeof t>[0])}
-                    </span>
-                    {isEditable && (
-                      editingDetailId === detail.id ? (
-                        <div className="flex gap-1.5 ml-auto">
+
+                  <div className="space-y-3">
+                    {details.map((detail, index) => {
+                      const ach = ACHIEVED_CONFIG[detail.achievedStatus];
+                      return (
+                        <div
+                          key={detail.id}
+                          className={cn(
+                            "rounded-2xl border p-4 transition-colors",
+                            detail.achievedStatus === "NOT_OK"
+                              ? "border-rose-100 bg-rose-50/30"
+                              : "border-slate-100 bg-white"
+                          )}
+                        >
+                          {/* Objective header */}
+                          <div className="mb-3 flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-2">
+                              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
+                                {index + 1}
+                              </span>
+                              <p className="text-sm font-semibold leading-snug text-slate-800">
+                                {detail.kpiObjective.objective}
+                              </p>
+                            </div>
+                            <span className={cn(
+                              "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
+                              ach.style
+                            )}>
+                              <span className={cn("h-1.5 w-1.5 rounded-full", ach.dot)} />
+                              {t(`kpi.monthly.achieved.${detail.achievedStatus}` as Parameters<typeof t>[0])}
+                            </span>
+                          </div>
+
+                          {/* Target + Actual grid */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <FieldLabel>{t("kpi.monthly.field.target")}</FieldLabel>
+                              <ReadField value={`${detail.kpiObjective.target}${detail.kpiObjective.unit ? ` ${detail.kpiObjective.unit}` : ""}`} />
+                            </div>
+                            <div>
+                              <FieldLabel required={isEditable}>{t("kpi.monthly.field.actualResult")}</FieldLabel>
+                              {isEditable ? (
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={actualInputs[detail.id] ?? ""}
+                                  onChange={(e) => setActualInputs((prev) => ({ ...prev, [detail.id]: e.target.value }))}
+                                  className="rounded-xl text-sm"
+                                  disabled={anyLoading}
+                                />
+                              ) : (
+                                <ReadField value={detail.actualResult !== null ? String(detail.actualResult) : "—"} />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                {/* ── Section 2: Note & Attachment ── */}
+                <section>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">02</span>
+                    <h3 className="text-sm font-bold text-slate-800">{t("kpi.monthly.section.remarkAttachment")}</h3>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                    {/* Remark */}
+                    <div className="mb-4">
+                      <FieldLabel>{t("kpi.monthly.field.remark")}</FieldLabel>
+                      <Textarea
+                        value={remark}
+                        onChange={(e) => { setRemark(e.target.value); setRemarkDirty(true); }}
+                        disabled={!isEditable || anyLoading}
+                        className="resize-none rounded-xl text-sm"
+                        rows={3}
+                        placeholder={t("kpi.monthly.field.remarkPlaceholder")}
+                      />
+                      {isEditable && remarkDirty && (
+                        <div className="mt-2 flex justify-end">
                           <Button
                             size="sm"
-                            className="h-6 text-xs rounded-lg bg-primary hover:bg-primary/90"
-                            onClick={() => handleSaveDetail(detail.id)}
+                            className="rounded-xl bg-primary hover:bg-primary/90"
+                            onClick={handleSaveRemark}
                             disabled={anyLoading}
                           >
                             {t("common.save")}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 text-xs rounded-lg"
-                            onClick={() => setEditingDetailId(null)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Attachment */}
+                    <div>
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <FieldLabel>{t("kpi.monthly.field.attachment")}</FieldLabel>
+                        {report.attachmentWebUrl && (
+                          <a
+                            href={report.attachmentWebUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                           >
-                            {t("common.cancel")}
-                          </Button>
+                            <ExternalLink className="h-3 w-3" />
+                            {t("common.view")}
+                          </a>
+                        )}
+                      </div>
+
+                      {report.attachmentFileName ? (
+                        <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                          <FileText className="h-4 w-4 shrink-0 text-emerald-500" />
+                          <span className="min-w-0 flex-1 truncate text-xs">{report.attachmentFileName}</span>
                         </div>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-6 text-xs rounded-lg ml-auto"
-                          onClick={() => {
-                            setEditingDetailId(detail.id);
-                            setActualInput(detail.actualResult !== null ? String(detail.actualResult) : "");
-                          }}
-                        >
-                          {t("common.edit")}
-                        </Button>
-                      )
+                        <p className="text-xs text-slate-400">{t("kpi.monthly.field.noAttachment")}</p>
+                      )}
+
+                      {isEditable && (
+                        <label className="mt-2.5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 px-4 py-3 text-xs font-medium text-slate-500 transition-colors hover:border-slate-400 hover:bg-slate-50">
+                          <Upload className="h-4 w-4" />
+                          {t("kpi.monthly.field.uploadFile")}
+                          <input
+                            type="file"
+                            className="sr-only"
+                            disabled={anyLoading}
+                            onChange={(e) => {
+                              void handleUploadAttachment(e.target.files?.[0] ?? null);
+                              e.currentTarget.value = "";
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </section>
+
+                {/* ── Section 3: Corrective Actions ── */}
+                <section>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className={cn(
+                      "rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white",
+                      notOkDetails.length > 0 ? "bg-rose-500" : "bg-primary"
+                    )}>03</span>
+                    <h3 className="text-sm font-bold text-slate-800">{t("kpi.monthly.section.correctiveActions")}</h3>
+                    {notOkDetails.length > 0 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-600">
+                        <AlertTriangle className="h-3 w-3" />
+                        {notOkDetails.length}
+                      </span>
                     )}
                   </div>
-                </div>
-              ))}
+
+                  {notOkDetails.length === 0 ? (
+                    <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                      <p className="text-sm text-emerald-700">{t("kpi.monthly.correctiveAction.noneRequired")}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {notOkDetails.map((detail) => {
+                        const draft = correctiveDrafts[detail.id] ?? EMPTY_DRAFT;
+                        const existing = detail.correctiveActions ?? [];
+                        return (
+                          <div key={detail.id} className="rounded-2xl border border-rose-100 bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                            <div className="mb-3 flex items-start gap-2">
+                              <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-rose-500" />
+                              <p className="text-sm font-semibold text-slate-800">{detail.kpiObjective.objective}</p>
+                            </div>
+
+                            {/* Existing corrective actions */}
+                            {existing.length > 0 && (
+                              <div className="mb-4 space-y-2">
+                                {existing.map((action) => {
+                                  const isConfirming = confirmDeleteId === action.id;
+                                  return (
+                                    <div
+                                      key={action.id}
+                                      className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-xs text-slate-600"
+                                    >
+                                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-600">
+                                          #{action.times}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-slate-400">
+                                            {new Date(action.dueDate).toLocaleDateString("en-GB")}
+                                          </span>
+                                          {/* Optional delete — only for editable state */}
+                                          {isEditable && (
+                                            isConfirming ? (
+                                              <div className="flex items-center gap-1">
+                                                <button
+                                                  type="button"
+                                                  className="rounded-lg bg-rose-600 px-2 py-0.5 text-[10px] font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-50"
+                                                  disabled={anyLoading}
+                                                  onClick={() => handleDeleteCorrective(detail.id, action.id)}
+                                                >
+                                                  {t("common.confirm")}
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+                                                  disabled={anyLoading}
+                                                  onClick={() => setConfirmDeleteId(null)}
+                                                >
+                                                  {t("common.cancel")}
+                                                </button>
+                                              </div>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                className="flex h-5 w-5 items-center justify-center rounded-md text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-500"
+                                                onClick={() => setConfirmDeleteId(action.id)}
+                                                title={t("kpi.monthly.correctiveAction.deleteConfirm")}
+                                              >
+                                                <X className="h-3 w-3" />
+                                              </button>
+                                            )
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="space-y-1">
+                                        <p><span className="font-semibold text-slate-700">{t("kpi.monthly.correctiveAction.rootCause")}:</span> {action.rootCause}</p>
+                                        <p><span className="font-semibold text-slate-700">{t("kpi.monthly.correctiveAction.guidelines")}:</span> {action.guidelines}</p>
+                                        <p><span className="font-semibold text-slate-700">{t("kpi.monthly.correctiveAction.responsible")}:</span> {action.responsiblePerson}</p>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {/* Add new corrective action form */}
+                            {isEditable && (
+                              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-3">
+                                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                  {t("kpi.monthly.correctiveAction.addNew")}
+                                </p>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <FieldLabel required>{t("kpi.monthly.correctiveAction.times")}</FieldLabel>
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      value={draft.times}
+                                      className="rounded-xl text-sm"
+                                      onChange={(e) => updateDraft(detail.id, "times", e.target.value)}
+                                    />
+                                  </div>
+                                  <div>
+                                    <FieldLabel>{t("kpi.monthly.table.month")}</FieldLabel>
+                                    <ReadField value={`${report.month} ${report.year}`} />
+                                  </div>
+                                  <div className="col-span-2">
+                                    <FieldLabel required>{t("kpi.monthly.correctiveAction.rootCause")}</FieldLabel>
+                                    <Textarea
+                                      value={draft.rootCause}
+                                      rows={2}
+                                      className="resize-none rounded-xl text-sm"
+                                      onChange={(e) => updateDraft(detail.id, "rootCause", e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="col-span-2">
+                                    <FieldLabel required>{t("kpi.monthly.correctiveAction.guidelines")}</FieldLabel>
+                                    <Textarea
+                                      value={draft.guidelines}
+                                      rows={2}
+                                      className="resize-none rounded-xl text-sm"
+                                      onChange={(e) => updateDraft(detail.id, "guidelines", e.target.value)}
+                                    />
+                                  </div>
+                                  <div>
+                                    <FieldLabel required>{t("kpi.monthly.correctiveAction.responsible")}</FieldLabel>
+                                    <Input
+                                      value={draft.responsiblePerson}
+                                      className="rounded-xl text-sm"
+                                      onChange={(e) => updateDraft(detail.id, "responsiblePerson", e.target.value)}
+                                    />
+                                  </div>
+                                  <div>
+                                    <FieldLabel required>{t("kpi.monthly.correctiveAction.dueDate")}</FieldLabel>
+                                    <Input
+                                      type="date"
+                                      value={draft.dueDate}
+                                      className="rounded-xl text-sm"
+                                      onChange={(e) => updateDraft(detail.id, "dueDate", e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="col-span-2 flex justify-end">
+                                    <Button
+                                      size="sm"
+                                      className="rounded-xl bg-primary hover:bg-primary/90"
+                                      onClick={() => handleAddCorrective(detail.id)}
+                                      disabled={anyLoading || !draft.rootCause.trim() || !draft.guidelines.trim() || !draft.responsiblePerson.trim() || !draft.dueDate}
+                                    >
+                                      {t("common.save")}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Action Footer */}
-        {report && (
-          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 space-y-3">
-            {showRejectForm && (
-              <div className="space-y-2">
-                <Textarea
-                  placeholder={t("kpi.monthly.drawer.rejectionPlaceholder")}
-                  value={rejectReason}
-                  onChange={e => setRejectReason(e.target.value)}
-                  className="rounded-xl text-sm resize-none"
-                  rows={3}
-                />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white flex-1"
-                    onClick={handleReject}
-                    disabled={!rejectReason.trim() || anyLoading}
-                  >
-                    <XCircle className="w-4 h-4 mr-1.5" />{t("kpi.monthly.actions.reject")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-xl"
-                    onClick={() => setShowRejectForm(false)}
-                    disabled={anyLoading}
-                  >
-                    {t("common.cancel")}
-                  </Button>
+            {/* ── Footer actions ── */}
+            <div className="shrink-0 border-t border-slate-100 bg-white px-6 py-4">
+              {showRejectForm ? (
+                <div className="space-y-2.5">
+                  <Textarea
+                    placeholder={t("kpi.monthly.drawer.rejectionPlaceholder")}
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    className="resize-none rounded-xl text-sm"
+                    rows={2}
+                    autoFocus
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1 rounded-xl bg-rose-600 text-white hover:bg-rose-700"
+                      onClick={handleReject}
+                      disabled={!rejectReason.trim() || anyLoading}
+                    >
+                      <XCircle className="mr-1.5 h-4 w-4" />
+                      {t("kpi.monthly.actions.reject")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl"
+                      onClick={() => setShowRejectForm(false)}
+                      disabled={anyLoading}
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {/* User / Privileged: DRAFT / REJECTED — บันทึกผล หรือ ส่งรายงาน */}
+                  {isEditable && (reportStatus === "DRAFT" || reportStatus === "REJECTED") && (
+                    detailsDirty ? (
+                      <Button
+                        className="flex-1 rounded-xl bg-primary hover:bg-primary/90"
+                        onClick={handleSaveAllDetails}
+                        disabled={anyLoading}
+                      >
+                        {t("kpi.monthly.actions.saveResults")}
+                      </Button>
+                    ) : (
+                      <Button
+                        className="flex-1 rounded-xl bg-primary hover:bg-primary/90"
+                        onClick={handleSubmit}
+                        disabled={anyLoading}
+                      >
+                        {t("kpi.monthly.actions.submit")}
+                      </Button>
+                    )
+                  )}
 
-            {!showRejectForm && (
-              <div className="flex flex-wrap gap-2">
-                {/* USER: submit only when editable (DRAFT/REJECTED) */}
-                {isEditable && !canApprove && (
-                  <Button
-                    className="rounded-xl bg-primary hover:bg-primary/90 flex-1"
-                    onClick={handleSubmit}
-                    disabled={anyLoading}
-                  >
-                    {t("kpi.monthly.actions.submit")}
-                  </Button>
-                )}
-
-                {/* IT/QMS/MR: can submit if DRAFT/REJECTED regardless */}
-                {privileged && (reportStatus === "DRAFT" || reportStatus === "REJECTED") && (
-                  <Button
-                    className="rounded-xl bg-primary hover:bg-primary/90 flex-1"
-                    onClick={handleSubmit}
-                    disabled={anyLoading}
-                  >
-                    {t("kpi.monthly.actions.submit")}
-                  </Button>
-                )}
-
-                {/* Review: privileged can always review when PENDING_REVIEW */}
-                {canApprove && reportStatus === "PENDING_REVIEW" && (
-                  <>
-                    <Button
-                      className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex-1"
-                      onClick={handleReview}
-                      disabled={anyLoading}
-                    >
-                      <CheckCircle2 className="w-4 h-4 mr-1.5" />{t("kpi.monthly.actions.review")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50"
-                      onClick={() => setShowRejectForm(true)}
-                      disabled={anyLoading}
-                    >
-                      <XCircle className="w-4 h-4 mr-1.5" />{t("kpi.monthly.actions.reject")}
-                    </Button>
-                  </>
-                )}
-
-                {/* Approve: privileged can always approve when PENDING_APPROVAL */}
-                {canApprove && reportStatus === "PENDING_APPROVAL" && (
-                  <>
-                    <Button
-                      className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex-1"
-                      onClick={handleApprove}
-                      disabled={anyLoading}
-                    >
-                      <CheckCircle2 className="w-4 h-4 mr-1.5" />{t("kpi.monthly.actions.approve")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50"
-                      onClick={() => setShowRejectForm(true)}
-                      disabled={anyLoading}
-                    >
-                      <XCircle className="w-4 h-4 mr-1.5" />{t("kpi.monthly.actions.reject")}
-                    </Button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+                  {/* Privileged: review → approve PENDING_REVIEW */}
+                  {privileged && (reportStatus === "PENDING_REVIEW" || reportStatus === "PENDING_APPROVAL") && (
+                    <>
+                      <Button
+                        className="flex-1 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+                        onClick={handleReview}
+                        disabled={anyLoading}
+                      >
+                        <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                        {t("kpi.monthly.actions.approve")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50"
+                        onClick={() => setShowRejectForm(true)}
+                        disabled={anyLoading}
+                      >
+                        <XCircle className="mr-1.5 h-4 w-4" />
+                        {t("kpi.monthly.actions.reject")}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
         )}
       </SheetContent>
     </Sheet>

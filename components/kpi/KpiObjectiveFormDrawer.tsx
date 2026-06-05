@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createKpiObjectiveSchema } from "@/schemas/kpiSchema";
 import { useT } from "@/lib/i18n";
+import { KPI_UNITS, isPresetUnit } from "@/lib/kpi-units";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -34,11 +35,13 @@ function FieldError({ message }: { message?: string }) {
 export default function KpiObjectiveFormDrawer({ open, onOpenChange, objective, onSubmit }: Props) {
   const t = useT();
   const isEdit = !!objective;
+  const [customUnit, setCustomUnit] = useState("");
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(bodySchema),
     defaultValues: {
       target: 0,
+      unit: undefined,
       objective: "",
       frequency: "Every Month",
       calculationFormula: "",
@@ -47,18 +50,25 @@ export default function KpiObjectiveFormDrawer({ open, onOpenChange, objective, 
     },
   });
 
+  const unitValue = watch("unit");
+  const isOther = unitValue === "other" || (!!unitValue && !isPresetUnit(unitValue));
+
   useEffect(() => {
     if (!open) return;
+    const savedUnit = (objective as { unit?: string | null } | undefined)?.unit ?? undefined;
+    const isCustom = !!savedUnit && !isPresetUnit(savedUnit);
+    setCustomUnit(isCustom ? savedUnit! : "");
     reset(objective
       ? {
           target: objective.target,
+          unit: isCustom ? "other" : savedUnit,
           objective: objective.objective,
           frequency: objective.frequency,
           calculationFormula: objective.calculationFormula,
           actionPlanGuidelines: objective.actionPlanGuidelines,
           referenceDocuments: objective.referenceDocuments ?? "",
         }
-      : { target: 0, objective: "", frequency: "Every Month", calculationFormula: "", actionPlanGuidelines: "", referenceDocuments: "" }
+      : { target: 0, unit: undefined, objective: "", frequency: "Every Month", calculationFormula: "", actionPlanGuidelines: "", referenceDocuments: "" }
     );
   }, [open, objective, reset]);
 
@@ -72,9 +82,13 @@ export default function KpiObjectiveFormDrawer({ open, onOpenChange, objective, 
         </SheetHeader>
 
         <form id="kpi-objective-form" className="flex-1 overflow-y-auto px-6 py-6 space-y-5"
-          onSubmit={handleSubmit(async (values) => { await onSubmit(values); onOpenChange(false); })}>
+          onSubmit={handleSubmit(async (values) => {
+            const finalUnit = values.unit === "other" ? (customUnit.trim() || undefined) : values.unit;
+            await onSubmit({ ...values, unit: finalUnit });
+            onOpenChange(false);
+          })}>
 
-          {/* Target */}
+          {/* Target + Unit */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-slate-800 text-sm font-semibold mb-2 block">
@@ -88,20 +102,54 @@ export default function KpiObjectiveFormDrawer({ open, onOpenChange, objective, 
 
             <div>
               <label className="text-slate-800 text-sm font-semibold mb-2 block">
-                {t("kpi.form.measurementFrequency")} <span className="text-rose-600">*</span>
+                {t("kpi.form.unit")}
+                <span className="text-slate-400 text-xs font-normal ml-1">{t("common.optional")}</span>
               </label>
-              <Select value={watch("frequency")} onValueChange={(v) => setValue("frequency", v, { shouldValidate: true })}>
+              <Select
+                value={isOther ? "other" : (unitValue ?? "")}
+                onValueChange={(v) => {
+                  setValue("unit", v || undefined, { shouldValidate: true });
+                  if (v !== "other") setCustomUnit("");
+                }}
+              >
                 <SelectTrigger className={cn(inputBase, inputDefault, "h-10.5")}>
-                  <SelectValue />
+                  <SelectValue placeholder={t("kpi.form.unitPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Every Month">{t("kpi.form.frequencyMonthly")}</SelectItem>
-                  <SelectItem value="Quarterly">{t("kpi.form.frequencyQuarterly")}</SelectItem>
-                  <SelectItem value="Yearly">{t("kpi.form.frequencyYearly")}</SelectItem>
+                  {KPI_UNITS.map((u) => (
+                    <SelectItem key={u.value} value={u.value}>{t(u.labelKey as Parameters<typeof t>[0])}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <FieldError message={errors.frequency?.message} />
+              {isOther && (
+                <input
+                  type="text"
+                  className={cn(inputBase, inputDefault, "mt-2")}
+                  placeholder={t("kpi.form.unitCustomPlaceholder")}
+                  value={customUnit}
+                  onChange={(e) => setCustomUnit(e.target.value)}
+                />
+              )}
+              <FieldError message={errors.unit?.message} />
             </div>
+          </div>
+
+          {/* Frequency */}
+          <div>
+            <label className="text-slate-800 text-sm font-semibold mb-2 block">
+              {t("kpi.form.measurementFrequency")} <span className="text-rose-600">*</span>
+            </label>
+            <Select value={watch("frequency")} onValueChange={(v) => setValue("frequency", v, { shouldValidate: true })}>
+              <SelectTrigger className={cn(inputBase, inputDefault, "h-10.5")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Every Month">{t("kpi.form.frequencyMonthly")}</SelectItem>
+                <SelectItem value="Quarterly">{t("kpi.form.frequencyQuarterly")}</SelectItem>
+                <SelectItem value="Yearly">{t("kpi.form.frequencyYearly")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <FieldError message={errors.frequency?.message} />
           </div>
 
           {/* Objective text */}

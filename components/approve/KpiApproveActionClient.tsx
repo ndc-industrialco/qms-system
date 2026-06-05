@@ -1,13 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAppQuery } from "@/hooks/use-app-query";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
+import KpiApprovalTimeline, { type KpiApprovalSignature } from "@/components/kpi/KpiApprovalTimeline";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 type Mode = "reviewer" | "approver";
 type KpiType = "kpi" | "kpi-monthly";
@@ -19,21 +23,56 @@ type Props = {
   kpiId?: string;
 };
 
+type KpiObjective = {
+  id: string;
+  objective: string;
+  target: number;
+  unit?: string | null;
+  frequency: string;
+  calculationFormula: string;
+  actionPlanGuidelines: string;
+  referenceDocuments?: string | null;
+};
+
+type MonthlyDetail = {
+  id: string;
+  kpiObjective: { objective: string };
+  achievedStatus: string;
+  actualResult: number | null;
+};
+
+const STATUS_STYLES: Record<string, string> = {
+  DRAFT: "bg-slate-100 text-slate-600 border-slate-200",
+  SUBMITTED: "bg-amber-50 text-amber-600 border-amber-200",
+  IN_REVIEW: "bg-amber-50 text-amber-600 border-amber-200",
+  PENDING_REVIEW: "bg-amber-50 text-amber-600 border-amber-200",
+  PENDING_APPROVAL: "bg-amber-50 text-amber-600 border-amber-200",
+  APPROVED: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  REJECTED: "bg-rose-50 text-rose-600 border-rose-200",
+};
+
+const ACHIEVED_STYLES: Record<string, string> = {
+  OK: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  NOT_OK: "bg-rose-50 text-rose-600 border-rose-200",
+  PENDING: "bg-amber-50 text-amber-600 border-amber-200",
+};
+
 export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props) {
   const t = useT();
   const router = useRouter();
+  const qc = useQueryClient();
   const [sigOpen, setSigOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<"approve" | "reject" | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const query = useAppQuery({
     queryKey: ["approve-action", type, id, kpiId],
     realtimeClass: "A",
     queryFn: async () => {
-      const url = type === "kpi"
-        ? `/api/kpi/${id}`
-        : `/api/kpi/${kpiId}/monthly/${id}`;
+      const url =
+        type === "kpi" ? `/api/kpi/${id}` : `/api/kpi/${kpiId}/monthly/${id}`;
       const res = await fetch(url);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error?.message ?? json.message ?? "Failed to load");
@@ -41,10 +80,10 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
     },
   });
 
-  const title = useMemo(() => {
-    if (type === "kpi") return `${t("approve.typeObjective")} - ${query.data?.department ?? ""}`;
-    return `${t("approve.typeMonthly")} - ${query.data?.kpi?.department ?? ""}`;
-  }, [query.data, t, type]);
+  const department = useMemo(() => {
+    if (!query.data) return "";
+    return type === "kpi" ? query.data.department : (query.data.kpi?.department ?? "");
+  }, [query.data, type]);
 
   async function submitAction(
     action: "approve" | "reject",
@@ -54,24 +93,22 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
       setSubmitting(true);
       let url = "";
       if (type === "kpi") {
-        if (action === "approve") {
-          url = mode === "reviewer" ? `/api/kpi/${id}/review` : `/api/kpi/${id}/approve`;
-        } else {
-          url = `/api/kpi/${id}/reject`;
-        }
+        url =
+          action === "approve"
+            ? mode === "reviewer" ? `/api/kpi/${id}/review` : `/api/kpi/${id}/approve`
+            : `/api/kpi/${id}/reject`;
       } else {
-        if (action === "approve") {
-          url = mode === "reviewer"
-            ? `/api/kpi/${kpiId}/monthly/${id}/review`
-            : `/api/kpi/${kpiId}/monthly/${id}/approve`;
-        } else {
-          url = `/api/kpi/${kpiId}/monthly/${id}/reject`;
-        }
+        url =
+          action === "approve"
+            ? mode === "reviewer"
+              ? `/api/kpi/${kpiId}/monthly/${id}/review`
+              : `/api/kpi/${kpiId}/monthly/${id}/approve`
+            : `/api/kpi/${kpiId}/monthly/${id}/reject`;
       }
 
       const bodyPayload = {
         ...(action === "reject" ? { reason: "Rejected from approve action page" } : {}),
-        ...(sigPayload || {}),
+        ...(sigPayload ?? {}),
       };
 
       const res = await fetch(url, {
@@ -81,6 +118,15 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error?.message ?? json.message ?? "Action failed");
+
+      const kpiRecordId = type === "kpi" ? id : kpiId;
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["kpi"] }),
+        qc.invalidateQueries({ queryKey: ["kpi", kpiRecordId] }),
+        qc.invalidateQueries({ queryKey: ["approve-action", type, id, kpiId] }),
+      ]);
+
+      setSheetOpen(false);
       setSuccessOpen(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("common.error"), { duration: Infinity });
@@ -91,45 +137,64 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
   }
 
   if (query.isLoading) {
-    return <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-sm text-slate-500">{t("common.loading")}</div>;
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-32 rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
   if (!query.data) {
-    return <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-sm text-rose-600">{t("common.error")}</div>;
+    return (
+      <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-sm text-rose-600">
+        {t("common.error")}
+      </div>
+    );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <h1 className="text-2xl font-bold tracking-tight text-[#0F1059]">{title}</h1>
-        <p className="text-sm text-slate-600 mt-1">
-          {mode === "reviewer" ? t("approve.pendingKpiReviewList") : t("approve.pendingKpiApproveList")}
-        </p>
-      </div>
+  const kpi = query.data;
+  const status: string = kpi.status ?? "";
+  const statusStyle = STATUS_STYLES[status] ?? "bg-slate-100 text-slate-600 border-slate-200";
+  const statusLabel = t(`kpi.monthly.status.${status}` as never) ?? status;
+  const objectives: KpiObjective[] = type === "kpi" ? (kpi.objectives ?? []) : [];
+  const monthlyDetails: MonthlyDetail[] = type === "kpi-monthly" ? (kpi.details ?? []) : [];
+  const approvalSignatures: KpiApprovalSignature[] = type === "kpi" ? (kpi.approvalSignatures ?? []) : [];
 
-      {type === "kpi" ? (
-        <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-2">
-          <p className="text-sm text-slate-600">{t("approve.department")}: <span className="font-semibold text-slate-800">{query.data.department}</span></p>
-          <p className="text-sm text-slate-600">{t("kpi.form.year")}: <span className="font-semibold text-slate-800">{query.data.yearly}</span></p>
-          <p className="text-sm text-slate-600">{t("approve.status")}: <span className="font-semibold text-slate-800">{query.data.status}</span></p>
-        </div>
-      ) : (
-        <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
-          <p className="text-sm text-slate-600">{t("approve.period")}: <span className="font-semibold text-slate-800">{query.data.month} {query.data.year}</span></p>
-          <div className="space-y-2">
-            {(query.data.details ?? []).slice(0, 10).map((d: { id: string; kpiObjective: { objective: string }; achievedStatus: string; actualResult: number | null }) => (
-              <div key={d.id} className="rounded-xl border border-slate-100 p-3">
-                <p className="text-sm font-medium text-slate-800">{d.kpiObjective.objective}</p>
-                <p className="text-xs text-slate-500 mt-1">{t("approve.actual")}: {d.actualResult ?? "-"} | {d.achievedStatus}</p>
-              </div>
-            ))}
-          </div>
+  const reviewerName = type === "kpi"
+    ? (kpi.reviewerUser?.name ?? kpi.reviewer ?? "-")
+    : (kpi.kpi?.reviewerUser?.name ?? kpi.kpi?.reviewer ?? "-");
+  const approverName = type === "kpi"
+    ? (kpi.approverUser?.name ?? kpi.approver ?? "-")
+    : (kpi.kpi?.approverUser?.name ?? kpi.kpi?.approver ?? "-");
+  const preparerName = type === "kpi"
+    ? (kpi.prepare ?? "-")
+    : (kpi.kpi?.prepare ?? "-");
+  const submittedAt: string | null = type === "kpi" ? (kpi.submittedAt ?? null) : null;
+
+  const ActionPanel = (
+    <div className="rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+      {/* Timeline section */}
+      {type === "kpi" && approvalSignatures.length > 0 && (
+        <div className="p-5 border-b border-slate-100">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
+            {t("dar.approval.title")}
+          </p>
+          <KpiApprovalTimeline
+            signatures={approvalSignatures}
+            preparerName={preparerName}
+          />
         </div>
       )}
 
-      <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex gap-3">
+      {/* Action section */}
+      <div className="p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          {mode === "reviewer" ? t("approve.stepReview") : t("approve.stepApprove")}
+        </p>
         <Button
-          className="rounded-xl bg-[#0F1059] hover:bg-[#161875]"
+          className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
           disabled={submitting}
           onClick={() => { setPendingAction("approve"); setSigOpen(true); }}
         >
@@ -137,17 +202,158 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50"
+          className="w-full rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 h-11 font-semibold"
           disabled={submitting}
           onClick={() => { setPendingAction("reject"); setSigOpen(true); }}
         >
           {t("kpi.monthly.actions.reject")}
         </Button>
       </div>
+    </div>
+  );
+
+  const DetailContent = (
+    <div className="space-y-4">
+      {/* KPI Info Card */}
+      <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold tracking-tight text-primary">
+              {type === "kpi" ? t("approve.typeObjective") : t("approve.typeMonthly")}
+            </h2>
+            <p className="text-sm text-slate-500 mt-0.5">{department}</p>
+          </div>
+          <span className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shrink-0 ${statusStyle}`}>
+            {statusLabel}
+          </span>
+        </div>
+
+        <div className="border-t border-slate-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+          <InfoRow label={t("approve.department")} value={department || "-"} />
+          <InfoRow label={t("kpi.form.year")} value={String(kpi.yearly ?? kpi.kpi?.yearly ?? "-")} />
+          {type === "kpi-monthly" && (
+            <InfoRow label={t("approve.period")} value={`${kpi.month ?? ""} ${kpi.year ?? ""}`} />
+          )}
+          <InfoRow label={t("kpi.form.prepare")} value={preparerName} />
+          <InfoRow label={t("kpi.form.reviewer")} value={reviewerName} />
+          <InfoRow label={t("kpi.form.approver")} value={approverName} />
+          {submittedAt && (
+            <InfoRow
+              label={t("kpi.metaCard.submittedAt")}
+              value={new Date(submittedAt).toLocaleDateString()}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Objectives */}
+      {type === "kpi" && objectives.length > 0 && (
+        <ObjectivesSection objectives={objectives} t={t} />
+      )}
+
+      {/* Monthly details */}
+      {type === "kpi-monthly" && monthlyDetails.length > 0 && (
+        <MonthlyDetailsSection details={monthlyDetails} t={t} />
+      )}
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Banner */}
+      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
+        <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-amber-800">
+            {mode === "reviewer" ? t("approve.pendingKpiReviewList") : t("approve.pendingKpiApproveList")}
+          </p>
+          <p className="text-xs text-amber-700 mt-0.5">{department}</p>
+        </div>
+      </div>
+
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm text-slate-400">
+        <Link href="/approve" className="hover:text-slate-600 transition-colors">{t("approve.title")}</Link>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        <span className="text-slate-600 font-medium">
+          {type === "kpi" ? t("approve.typeObjective") : t("approve.typeMonthly")}
+        </span>
+      </nav>
+
+      {/* Desktop: two-column */}
+      <div className="hidden lg:grid lg:grid-cols-[1fr_300px] lg:gap-6 lg:items-start">
+        <div>{DetailContent}</div>
+        <div className="sticky top-6">{ActionPanel}</div>
+      </div>
+
+      {/* Mobile: stacked */}
+      <div className="lg:hidden">{DetailContent}</div>
+
+      {/* Mobile floating bar */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40">
+        {sheetOpen && (
+          <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setSheetOpen(false)} />
+        )}
+        <div className={`relative z-50 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 ${sheetOpen ? "rounded-t-2xl" : ""}`}>
+          {sheetOpen ? (
+            <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full bg-slate-200" />
+              </div>
+              <div className="px-4 pb-8 space-y-3 pt-2">
+                <p className="text-sm font-semibold text-slate-800">{department}</p>
+                <Button
+                  className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
+                  disabled={submitting}
+                  onClick={() => { setPendingAction("approve"); setSigOpen(true); }}
+                >
+                  {mode === "reviewer" ? t("kpi.monthly.actions.review") : t("kpi.monthly.actions.approve")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 h-11 font-semibold"
+                  disabled={submitting}
+                  onClick={() => { setPendingAction("reject"); setSigOpen(true); }}
+                >
+                  {t("kpi.monthly.actions.reject")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-slate-500 font-medium">
+                  {mode === "reviewer" ? t("approve.pendingKpiReviewList") : t("approve.pendingKpiApproveList")}
+                </p>
+                <p className="text-sm font-semibold text-slate-800 truncate">{department}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSheetOpen(true)}
+                className="shrink-0 h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-[#161875] active:scale-95 transition-all"
+              >
+                {mode === "reviewer" ? t("kpi.monthly.actions.review") : t("kpi.monthly.actions.approve")}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       <KpiSignatureDialog
         open={sigOpen}
-        title={mode === "reviewer" ? t("kpi.monthly.actions.review") : t("kpi.monthly.actions.approve")}
+        title={
+          pendingAction === "reject"
+            ? t("kpi.monthly.actions.reject")
+            : mode === "reviewer"
+            ? t("kpi.monthly.actions.review")
+            : t("kpi.monthly.actions.approve")
+        }
         onOpenChange={setSigOpen}
         onConfirm={async (payload) => {
           if (!pendingAction) return;
@@ -163,18 +369,155 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
           <p className="text-sm text-slate-600">{t("approve.successDesc")}</p>
           <DialogFooter>
             <Button
-              className="rounded-xl bg-[#0F1059] hover:bg-[#161875]"
-              onClick={() => {
-                setSuccessOpen(false);
-                router.push("/approve");
-                router.refresh();
-              }}
+              className="rounded-xl bg-primary hover:bg-[#161875]"
+              onClick={() => { setSuccessOpen(false); router.push("/approve"); router.refresh(); }}
             >
               {t("approve.backToQueue")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+/* ─── sub-components ─── */
+
+type Translator = ReturnType<typeof useT>;
+
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-slate-400">{label}</span>
+      <span className="text-sm font-medium text-slate-800">{value}</span>
+    </div>
+  );
+}
+
+function ObjectivesSection({ objectives, t }: { objectives: KpiObjective[]; t: Translator }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  function toggle(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <h3 className="text-sm font-semibold text-slate-800 mb-4">
+        {t("kpi.objective.table.objective")}
+        <span className="ml-2 text-xs font-normal text-slate-400">({objectives.length})</span>
+      </h3>
+
+      <div className="space-y-2">
+        {objectives.map((obj, idx) => {
+          const isOpen = expanded.has(obj.id);
+          return (
+            <div key={obj.id} className="rounded-xl border border-slate-100 overflow-hidden">
+              {/* Header row */}
+              <button
+                type="button"
+                onClick={() => toggle(obj.id)}
+                className="w-full flex items-start gap-3 p-4 text-left hover:bg-slate-50 transition-colors"
+              >
+                <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                  {idx + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-800 leading-snug">{obj.objective}</p>
+                  <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                    <span className="text-xs text-slate-500">
+                      {t("kpi.objective.table.target")}: <span className="font-semibold text-slate-700">{obj.target}{obj.unit ? ` ${obj.unit}` : ""}</span>
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-slate-300" />
+                    <span className="text-xs text-slate-500">{obj.frequency}</span>
+                  </div>
+                </div>
+                {isOpen ? (
+                  <ChevronUp className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                )}
+              </button>
+
+              {/* Expanded details */}
+              {isOpen && (
+                <div className="border-t border-slate-100 px-4 pb-4 pt-3 space-y-3 bg-slate-50/50">
+                  <DetailField label={t("kpi.form.calculationFormula")} value={obj.calculationFormula} />
+                  <DetailField label={t("kpi.form.actionPlanGuidelines")} value={obj.actionPlanGuidelines} />
+                  {obj.referenceDocuments && (
+                    <DetailField label={t("kpi.form.referenceDocuments")} value={obj.referenceDocuments} />
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DetailField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-0.5">
+      <p className="text-xs font-medium text-slate-400">{label}</p>
+      <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{value}</p>
+    </div>
+  );
+}
+
+function MonthlyDetailsSection({ details, t }: { details: MonthlyDetail[]; t: Translator }) {
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <h3 className="text-sm font-semibold text-slate-800 mb-4">
+        {t("kpi.monthly.drawer.objectives")}
+        <span className="ml-2 text-xs font-normal text-slate-400">({details.length})</span>
+      </h3>
+
+      {/* Desktop table */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-100">
+              <th className="pb-2 text-left text-xs font-semibold text-slate-400 pr-4">{t("kpi.objective.table.objective")}</th>
+              <th className="pb-2 text-right text-xs font-semibold text-slate-400 pr-4 whitespace-nowrap">{t("kpi.monthly.drawer.actualValue")}</th>
+              <th className="pb-2 text-left text-xs font-semibold text-slate-400 whitespace-nowrap">{t("approve.status")}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {details.map((d) => (
+              <tr key={d.id}>
+                <td className="py-3 pr-4 text-slate-800 font-medium leading-snug">{d.kpiObjective.objective}</td>
+                <td className="py-3 pr-4 text-right text-slate-600">{d.actualResult ?? "-"}</td>
+                <td className="py-3">
+                  <span className={`inline-flex items-center rounded-lg border px-2 py-0.5 text-xs font-semibold ${ACHIEVED_STYLES[d.achievedStatus] ?? "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                    {t(`kpi.monthly.achieved.${d.achievedStatus}` as never) ?? d.achievedStatus}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="sm:hidden space-y-3">
+        {details.map((d) => (
+          <div key={d.id} className="rounded-xl border border-slate-100 p-3 space-y-1.5">
+            <p className="text-sm font-medium text-slate-800 leading-snug">{d.kpiObjective.objective}</p>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-500">{t("approve.actual")}: {d.actualResult ?? "-"}</span>
+              <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-xs font-semibold ${ACHIEVED_STYLES[d.achievedStatus] ?? "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                {t(`kpi.monthly.achieved.${d.achievedStatus}` as never) ?? d.achievedStatus}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

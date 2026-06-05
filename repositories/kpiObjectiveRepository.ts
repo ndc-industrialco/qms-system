@@ -35,6 +35,7 @@ export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateK
       data: {
         kpi: { connect: { id: data.kpiId } },
         target: data.target,
+        unit: data.unit,
         objective: data.objective,
         frequency: data.frequency,
         calculationFormula: data.calculationFormula,

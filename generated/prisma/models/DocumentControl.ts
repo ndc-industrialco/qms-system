@@ -861,14 +861,6 @@ export type EnumDocControlStatusFieldUpdateOperationsInput = {
   set?: $Enums.DocControlStatus
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type DocumentControlCreateNestedManyWithoutCategoryInput = {
   create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutCategoryInput, Prisma.DocumentControlUncheckedCreateWithoutCategoryInput> | Prisma.DocumentControlCreateWithoutCategoryInput[] | Prisma.DocumentControlUncheckedCreateWithoutCategoryInput[]
   connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutCategoryInput | Prisma.DocumentControlCreateOrConnectWithoutCategoryInput[]

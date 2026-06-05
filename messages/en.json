@@ -12,6 +12,7 @@
     "search": "Search",
     "filter": "Filter",
     "noData": "No data found",
+    "noItems": "No items found",
     "confirm": "Confirm",
     "back": "Back",
     "next": "Next",
@@ -184,6 +185,23 @@
       "bannerDesc": "Please review all details below, then sign to approve or return.",
       "breadcrumb": "Approve"
     },
+    "reviewerSelect": {
+      "title": "Select Reviewer",
+      "subtitle": "Search and pick a reviewer for this request",
+      "searchPlaceholder": "Search name, email, or employee ID...",
+      "allDepartments": "All departments",
+      "allTitles": "All positions",
+      "sortBy": "Sort by",
+      "sortName": "Name",
+      "sortDepartment": "Department",
+      "sortJobTitle": "Position",
+      "loadingError": "Could not load user list. Please try again.",
+      "noMatch": "No matching users found",
+      "selectedReviewer": "Selected reviewer",
+      "resultCount": "{displayed} / {total} items",
+      "back": "Back",
+      "send": "Send Request"
+    },
     "signModal": {
       "title": "Sign to Confirm Request",
       "subtitle": "Please sign before submitting your DAR request"
@@ -257,7 +275,8 @@
       "title": "Manage Users",
       "sync": "Sync from M365",
       "empty": "No users in the system",
-      "emptyDesc": "Click Â«Sync from M365Â» to import users from Microsoft Entra ID."
+      "emptyDesc": "Click Â«Sync from M365Â» to import users from Microsoft Entra ID.",
+      "subtitle": "All users signed in via Microsoft 365 ({count})"
     },
     "departments": {
       "title": "Manage Departments",
@@ -371,6 +390,7 @@
     "placeholderTitle": "Enter announcement title",
     "placeholderContent": "Enter announcement content...",
     "publishBtn": "Publish Announcement",
+    "emptyDesc": "Create the first announcement to get started.",
     "displayTypeList": "Standard List (Main Page)",
     "displayTypeScrolling": "Scrolling Ticker (Top Bar)",
     "unauthorized": "Unauthorized",
@@ -456,6 +476,9 @@
       "reviewer": "Reviewer",
       "approver": "Approver",
       "target": "Target Value",
+      "unit": "Unit",
+      "unitPlaceholder": "Select unit...",
+      "unitCustomPlaceholder": "Enter custom unit...",
       "objectiveDetails": "Objective Description",
       "measurementFrequency": "Measurement Frequency",
       "frequencyMonthly": "Every Month",
@@ -530,7 +553,8 @@
         "rejectionPlaceholder": "Enter rejection reason..."
       },
       "actions": {
-        "submit": "Submit",
+        "submit": "Submit Report",
+        "saveResults": "Save Results",
         "review": "Mark Reviewed",
         "approve": "Approve",
         "reject": "Reject",
@@ -542,8 +566,41 @@
         "submitSuccess": "Report submitted",
         "reviewSuccess": "Report reviewed",
         "approveSuccess": "Report approved",
-        "rejectSuccess": "Report rejected"
+        "rejectSuccess": "Report rejected",
+        "deleteCorrectiveSuccess": "Corrective action deleted"
+      },
+      "section": {
+        "objectives": "Objectives & Performance",
+        "remarkAttachment": "Remark & Attachment",
+        "correctiveActions": "Corrective / Improvement Actions"
+      },
+      "field": {
+        "target": "Target",
+        "actualResult": "Actual Result",
+        "remark": "Remark",
+        "remarkPlaceholder": "Add a remark...",
+        "attachment": "Attachment",
+        "noAttachment": "No attachment",
+        "uploadFile": "Upload file"
+      },
+      "correctiveAction": {
+        "addNew": "Add new corrective action",
+        "noneRequired": "All objectives achieved — no corrective action required.",
+        "times": "Times",
+        "rootCause": "Root cause analysis",
+        "guidelines": "Guidelines for improvement",
+        "responsible": "Responsible person",
+        "dueDate": "Due date",
+        "deleteConfirm": "Delete this corrective action?"
       }
+    },
+    "unit": {
+      "percent": "%",
+      "times": "Times",
+      "count": "Count",
+      "days": "Days",
+      "hours": "Hours",
+      "other": "Other"
     }
   },
   "documentCategory": {

@@ -3,7 +3,7 @@ import { ConflictError } from '@/errors/customErrors';
 
 const ALLOWED_TRANSITIONS: Record<MonthlyStatus, MonthlyStatus[]> = {
   DRAFT: ['PENDING_REVIEW'],
-  PENDING_REVIEW: ['PENDING_APPROVAL', 'REJECTED'],
+  PENDING_REVIEW: ['APPROVED', 'REJECTED'],
   PENDING_APPROVAL: ['APPROVED', 'REJECTED'],
   APPROVED: [],
   REJECTED: ['DRAFT'],

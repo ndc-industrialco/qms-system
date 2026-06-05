@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useReviewerCandidates, type ReviewerCandidate } from "@/hooks/api/use-reviewer-candidates";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useT } from "@/lib/i18n";
 
 export type { ReviewerCandidate };
 /** @deprecated import ReviewerCandidate from hooks/api/use-reviewer-candidates instead */
@@ -20,13 +21,14 @@ interface Props {
   onSend: (reviewer: ReviewerCandidate) => void;
 }
 
-const SORT_LABELS: Record<SortKey, string> = {
-  name: "ชื่อ",
-  department: "แผนก",
-  jobTitle: "ตำแหน่ง",
+const SORT_LABEL_KEYS: Record<SortKey, "dar.reviewerSelect.sortName" | "dar.reviewerSelect.sortDepartment" | "dar.reviewerSelect.sortJobTitle"> = {
+  name: "dar.reviewerSelect.sortName",
+  department: "dar.reviewerSelect.sortDepartment",
+  jobTitle: "dar.reviewerSelect.sortJobTitle",
 };
 
 export default function DarReviewerSelectModal({ open, isSending, onBack, onSend }: Props) {
+  const t = useT();
   const [selected, setSelected] = useState<ReviewerCandidate | null>(null);
   const [search, setSearch] = useState("");
   const [filterDept, setFilterDept] = useState<string>("__all__");
@@ -86,16 +88,16 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
     <Dialog open={open} onOpenChange={(o) => { if (!o && !isSending) onBack(); }}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>เลือกผู้ตรวจสอบ</DialogTitle>
+          <DialogTitle>{t("dar.reviewerSelect.title")}</DialogTitle>
           <p className="text-sm text-slate-500 mt-1">
-            ค้นหาและเลือกผู้ตรวจสอบสำหรับคำขอนี้
+            {t("dar.reviewerSelect.subtitle")}
           </p>
         </DialogHeader>
 
         <div className="flex flex-col gap-3">
           {/* Search */}
           <Input
-            placeholder="ค้นหาชื่อ, อีเมล หรือรหัสพนักงาน..."
+            placeholder={t("dar.reviewerSelect.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             disabled={isSending}
@@ -110,7 +112,7 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
               disabled={isSending || isLoading}
               className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="__all__">ทุกแผนก</option>
+              <option value="__all__">{t("dar.reviewerSelect.allDepartments")}</option>
               {departments.map((d) => (
                 <option key={d} value={d}>{d}</option>
               ))}
@@ -122,9 +124,9 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
               disabled={isSending || isLoading}
               className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="__all__">ทุกตำแหน่ง</option>
-              {jobTitles.map((t) => (
-                <option key={t} value={t}>{t}</option>
+              <option value="__all__">{t("dar.reviewerSelect.allTitles")}</option>
+              {jobTitles.map((jobTitle) => (
+                <option key={jobTitle} value={jobTitle}>{jobTitle}</option>
               ))}
             </select>
 
@@ -134,8 +136,8 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
               disabled={isSending || isLoading}
               className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
-                <option key={k} value={k}>เรียงตาม{SORT_LABELS[k]}</option>
+              {(Object.keys(SORT_LABEL_KEYS) as SortKey[]).map((k) => (
+                <option key={k} value={k}>{t("dar.reviewerSelect.sortBy")} {t(SORT_LABEL_KEYS[k])}</option>
               ))}
             </select>
           </div>
@@ -149,14 +151,14 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
 
           {/* Error */}
           {!isLoading && isError && (
-            <p className="text-sm text-rose-600 text-center py-2">ไม่สามารถโหลดรายชื่อผู้ใช้ได้ กรุณาลองใหม่</p>
+            <p className="text-sm text-rose-600 text-center py-2">{t("dar.reviewerSelect.loadingError")}</p>
           )}
 
           {/* User list */}
           {!isLoading && !isError && (
             <div className="border border-slate-200 rounded-lg divide-y divide-slate-100 max-h-60 overflow-y-auto">
               {displayed.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-6">ไม่พบผู้ใช้ที่ตรงกัน</p>
+                <p className="text-sm text-slate-500 text-center py-6">{t("dar.reviewerSelect.noMatch")}</p>
               ) : (
                 displayed.map((r) => (
                   <button
@@ -197,7 +199,7 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
           {/* Result count */}
           {!isLoading && !isError && allUsers.length > 0 && (
             <p className="text-xs text-slate-400 text-right -mt-1">
-              {displayed.length} / {allUsers.length} รายการ
+              {t("dar.reviewerSelect.resultCount", { displayed: displayed.length, total: allUsers.length })}
             </p>
           )}
 
@@ -208,7 +210,7 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
                 {(selected.name || "?").charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-slate-500">ผู้ตรวจสอบที่เลือก</p>
+                <p className="text-xs text-slate-500">{t("dar.reviewerSelect.selectedReviewer")}</p>
                 <p className="text-sm font-semibold text-slate-800">
                   {selected.name}
                   {selected.employeeId && (
@@ -225,7 +227,7 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
 
         <div className="flex justify-between gap-2 pt-2 border-t border-slate-100">
           <Button variant="ghost" size="sm" onClick={onBack} disabled={isSending}>
-            ย้อนกลับ
+            {t("dar.reviewerSelect.back")}
           </Button>
           <Button
             size="sm"
@@ -235,7 +237,7 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
             {isSending && (
               <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block mr-1" />
             )}
-            ส่งคำขอ
+            {t("dar.reviewerSelect.send")}
           </Button>
         </div>
       </DialogContent>

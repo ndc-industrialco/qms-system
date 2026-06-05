@@ -113,6 +113,16 @@ export function useUrlFilters({
     [router],
   );
 
+  const setParams = useCallback(
+    (updates: Record<string, string>) => {
+      const next = { ...ref.current.rawValues, ...updates };
+      setRawValues(next);
+      const { debouncedSearch: ds, pathname: p, keys: k, searchKey: sk } = ref.current;
+      router.replace(toUrl(p, k, next, sk, ds), { scroll: false });
+    },
+    [router],
+  );
+
   /** Reset all params and clear the URL. */
   const clearAll = useCallback(() => {
     const empty = Object.fromEntries(ref.current.keys.map((k) => [k, ""]));
@@ -136,6 +146,7 @@ export function useUrlFilters({
     /** Immediate values — use as `value` on controlled inputs. */
     rawValues,
     setParam,
+    setParams,
     clearAll,
     /** True when any param is non-empty (used to show/hide Clear button). */
     hasFilters,

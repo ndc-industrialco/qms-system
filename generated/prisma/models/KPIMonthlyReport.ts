@@ -28,10 +28,12 @@ export type AggregateKPIMonthlyReport = {
 
 export type KPIMonthlyReportAvgAggregateOutputType = {
   year: number | null
+  attachmentFileSize: number | null
 }
 
 export type KPIMonthlyReportSumAggregateOutputType = {
   year: number | null
+  attachmentFileSize: number | null
 }
 
 export type KPIMonthlyReportMinAggregateOutputType = {
@@ -45,6 +47,15 @@ export type KPIMonthlyReportMinAggregateOutputType = {
   approveBy: string | null
   submittedAt: Date | null
   approvedAt: Date | null
+  remark: string | null
+  attachmentFileName: string | null
+  attachmentFileSize: number | null
+  attachmentMimeType: string | null
+  attachmentSpItemId: string | null
+  attachmentWebUrl: string | null
+  attachmentDownloadUrl: string | null
+  attachmentUploadedAt: Date | null
+  attachmentUploadedBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +71,15 @@ export type KPIMonthlyReportMaxAggregateOutputType = {
   approveBy: string | null
   submittedAt: Date | null
   approvedAt: Date | null
+  remark: string | null
+  attachmentFileName: string | null
+  attachmentFileSize: number | null
+  attachmentMimeType: string | null
+  attachmentSpItemId: string | null
+  attachmentWebUrl: string | null
+  attachmentDownloadUrl: string | null
+  attachmentUploadedAt: Date | null
+  attachmentUploadedBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -75,6 +95,15 @@ export type KPIMonthlyReportCountAggregateOutputType = {
   approveBy: number
   submittedAt: number
   approvedAt: number
+  remark: number
+  attachmentFileName: number
+  attachmentFileSize: number
+  attachmentMimeType: number
+  attachmentSpItemId: number
+  attachmentWebUrl: number
+  attachmentDownloadUrl: number
+  attachmentUploadedAt: number
+  attachmentUploadedBy: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -83,10 +112,12 @@ export type KPIMonthlyReportCountAggregateOutputType = {
 
 export type KPIMonthlyReportAvgAggregateInputType = {
   year?: true
+  attachmentFileSize?: true
 }
 
 export type KPIMonthlyReportSumAggregateInputType = {
   year?: true
+  attachmentFileSize?: true
 }
 
 export type KPIMonthlyReportMinAggregateInputType = {
@@ -100,6 +131,15 @@ export type KPIMonthlyReportMinAggregateInputType = {
   approveBy?: true
   submittedAt?: true
   approvedAt?: true
+  remark?: true
+  attachmentFileName?: true
+  attachmentFileSize?: true
+  attachmentMimeType?: true
+  attachmentSpItemId?: true
+  attachmentWebUrl?: true
+  attachmentDownloadUrl?: true
+  attachmentUploadedAt?: true
+  attachmentUploadedBy?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -115,6 +155,15 @@ export type KPIMonthlyReportMaxAggregateInputType = {
   approveBy?: true
   submittedAt?: true
   approvedAt?: true
+  remark?: true
+  attachmentFileName?: true
+  attachmentFileSize?: true
+  attachmentMimeType?: true
+  attachmentSpItemId?: true
+  attachmentWebUrl?: true
+  attachmentDownloadUrl?: true
+  attachmentUploadedAt?: true
+  attachmentUploadedBy?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -130,6 +179,15 @@ export type KPIMonthlyReportCountAggregateInputType = {
   approveBy?: true
   submittedAt?: true
   approvedAt?: true
+  remark?: true
+  attachmentFileName?: true
+  attachmentFileSize?: true
+  attachmentMimeType?: true
+  attachmentSpItemId?: true
+  attachmentWebUrl?: true
+  attachmentDownloadUrl?: true
+  attachmentUploadedAt?: true
+  attachmentUploadedBy?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -232,6 +290,15 @@ export type KPIMonthlyReportGroupByOutputType = {
   approveBy: string | null
   submittedAt: Date | null
   approvedAt: Date | null
+  remark: string | null
+  attachmentFileName: string | null
+  attachmentFileSize: number | null
+  attachmentMimeType: string | null
+  attachmentSpItemId: string | null
+  attachmentWebUrl: string | null
+  attachmentDownloadUrl: string | null
+  attachmentUploadedAt: Date | null
+  attachmentUploadedBy: string | null
   createdAt: Date
   updatedAt: Date
   _count: KPIMonthlyReportCountAggregateOutputType | null
@@ -270,6 +337,15 @@ export type KPIMonthlyReportWhereInput = {
   approveBy?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
+  remark?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentFileName?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentFileSize?: Prisma.IntNullableFilter<"KPIMonthlyReport"> | number | null
+  attachmentMimeType?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentSpItemId?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentWebUrl?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentDownloadUrl?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentUploadedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
+  attachmentUploadedBy?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
   createdAt?: Prisma.DateTimeFilter<"KPIMonthlyReport"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIMonthlyReport"> | Date | string
   kpi?: Prisma.XOR<Prisma.KPIScalarRelationFilter, Prisma.KPIWhereInput>
@@ -287,6 +363,15 @@ export type KPIMonthlyReportOrderByWithRelationInput = {
   approveBy?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  remark?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentFileName?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentFileSize?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentMimeType?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentSpItemId?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentWebUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentDownloadUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentUploadedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentUploadedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   kpi?: Prisma.KPIOrderByWithRelationInput
@@ -308,6 +393,15 @@ export type KPIMonthlyReportWhereUniqueInput = Prisma.AtLeast<{
   approveBy?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
+  remark?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentFileName?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentFileSize?: Prisma.IntNullableFilter<"KPIMonthlyReport"> | number | null
+  attachmentMimeType?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentSpItemId?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentWebUrl?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentDownloadUrl?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentUploadedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
+  attachmentUploadedBy?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
   createdAt?: Prisma.DateTimeFilter<"KPIMonthlyReport"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIMonthlyReport"> | Date | string
   kpi?: Prisma.XOR<Prisma.KPIScalarRelationFilter, Prisma.KPIWhereInput>
@@ -325,6 +419,15 @@ export type KPIMonthlyReportOrderByWithAggregationInput = {
   approveBy?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  remark?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentFileName?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentFileSize?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentMimeType?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentSpItemId?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentWebUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentDownloadUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentUploadedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  attachmentUploadedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.KPIMonthlyReportCountOrderByAggregateInput
@@ -348,6 +451,15 @@ export type KPIMonthlyReportScalarWhereWithAggregatesInput = {
   approveBy?: Prisma.StringNullableWithAggregatesFilter<"KPIMonthlyReport"> | string | null
   submittedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"KPIMonthlyReport"> | Date | string | null
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"KPIMonthlyReport"> | Date | string | null
+  remark?: Prisma.StringNullableWithAggregatesFilter<"KPIMonthlyReport"> | string | null
+  attachmentFileName?: Prisma.StringNullableWithAggregatesFilter<"KPIMonthlyReport"> | string | null
+  attachmentFileSize?: Prisma.IntNullableWithAggregatesFilter<"KPIMonthlyReport"> | number | null
+  attachmentMimeType?: Prisma.StringNullableWithAggregatesFilter<"KPIMonthlyReport"> | string | null
+  attachmentSpItemId?: Prisma.StringNullableWithAggregatesFilter<"KPIMonthlyReport"> | string | null
+  attachmentWebUrl?: Prisma.StringNullableWithAggregatesFilter<"KPIMonthlyReport"> | string | null
+  attachmentDownloadUrl?: Prisma.StringNullableWithAggregatesFilter<"KPIMonthlyReport"> | string | null
+  attachmentUploadedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"KPIMonthlyReport"> | Date | string | null
+  attachmentUploadedBy?: Prisma.StringNullableWithAggregatesFilter<"KPIMonthlyReport"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"KPIMonthlyReport"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"KPIMonthlyReport"> | Date | string
 }
@@ -362,6 +474,15 @@ export type KPIMonthlyReportCreateInput = {
   approveBy?: string | null
   submittedAt?: Date | string | null
   approvedAt?: Date | string | null
+  remark?: string | null
+  attachmentFileName?: string | null
+  attachmentFileSize?: number | null
+  attachmentMimeType?: string | null
+  attachmentSpItemId?: string | null
+  attachmentWebUrl?: string | null
+  attachmentDownloadUrl?: string | null
+  attachmentUploadedAt?: Date | string | null
+  attachmentUploadedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   kpi: Prisma.KPICreateNestedOneWithoutMonthlyReportsInput
@@ -379,6 +500,15 @@ export type KPIMonthlyReportUncheckedCreateInput = {
   approveBy?: string | null
   submittedAt?: Date | string | null
   approvedAt?: Date | string | null
+  remark?: string | null
+  attachmentFileName?: string | null
+  attachmentFileSize?: number | null
+  attachmentMimeType?: string | null
+  attachmentSpItemId?: string | null
+  attachmentWebUrl?: string | null
+  attachmentDownloadUrl?: string | null
+  attachmentUploadedAt?: Date | string | null
+  attachmentUploadedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   details?: Prisma.KPIMonthlyDetailUncheckedCreateNestedManyWithoutMonthlyReportInput
@@ -394,6 +524,15 @@ export type KPIMonthlyReportUpdateInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   kpi?: Prisma.KPIUpdateOneRequiredWithoutMonthlyReportsNestedInput
@@ -411,6 +550,15 @@ export type KPIMonthlyReportUncheckedUpdateInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   details?: Prisma.KPIMonthlyDetailUncheckedUpdateManyWithoutMonthlyReportNestedInput
@@ -427,6 +575,15 @@ export type KPIMonthlyReportCreateManyInput = {
   approveBy?: string | null
   submittedAt?: Date | string | null
   approvedAt?: Date | string | null
+  remark?: string | null
+  attachmentFileName?: string | null
+  attachmentFileSize?: number | null
+  attachmentMimeType?: string | null
+  attachmentSpItemId?: string | null
+  attachmentWebUrl?: string | null
+  attachmentDownloadUrl?: string | null
+  attachmentUploadedAt?: Date | string | null
+  attachmentUploadedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -441,6 +598,15 @@ export type KPIMonthlyReportUpdateManyMutationInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -456,6 +622,15 @@ export type KPIMonthlyReportUncheckedUpdateManyInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -487,12 +662,22 @@ export type KPIMonthlyReportCountOrderByAggregateInput = {
   approveBy?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
+  remark?: Prisma.SortOrder
+  attachmentFileName?: Prisma.SortOrder
+  attachmentFileSize?: Prisma.SortOrder
+  attachmentMimeType?: Prisma.SortOrder
+  attachmentSpItemId?: Prisma.SortOrder
+  attachmentWebUrl?: Prisma.SortOrder
+  attachmentDownloadUrl?: Prisma.SortOrder
+  attachmentUploadedAt?: Prisma.SortOrder
+  attachmentUploadedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type KPIMonthlyReportAvgOrderByAggregateInput = {
   year?: Prisma.SortOrder
+  attachmentFileSize?: Prisma.SortOrder
 }
 
 export type KPIMonthlyReportMaxOrderByAggregateInput = {
@@ -506,6 +691,15 @@ export type KPIMonthlyReportMaxOrderByAggregateInput = {
   approveBy?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
+  remark?: Prisma.SortOrder
+  attachmentFileName?: Prisma.SortOrder
+  attachmentFileSize?: Prisma.SortOrder
+  attachmentMimeType?: Prisma.SortOrder
+  attachmentSpItemId?: Prisma.SortOrder
+  attachmentWebUrl?: Prisma.SortOrder
+  attachmentDownloadUrl?: Prisma.SortOrder
+  attachmentUploadedAt?: Prisma.SortOrder
+  attachmentUploadedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -521,12 +715,22 @@ export type KPIMonthlyReportMinOrderByAggregateInput = {
   approveBy?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
+  remark?: Prisma.SortOrder
+  attachmentFileName?: Prisma.SortOrder
+  attachmentFileSize?: Prisma.SortOrder
+  attachmentMimeType?: Prisma.SortOrder
+  attachmentSpItemId?: Prisma.SortOrder
+  attachmentWebUrl?: Prisma.SortOrder
+  attachmentDownloadUrl?: Prisma.SortOrder
+  attachmentUploadedAt?: Prisma.SortOrder
+  attachmentUploadedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type KPIMonthlyReportSumOrderByAggregateInput = {
   year?: Prisma.SortOrder
+  attachmentFileSize?: Prisma.SortOrder
 }
 
 export type KPIMonthlyReportScalarRelationFilter = {
@@ -580,6 +784,14 @@ export type EnumMonthlyStatusFieldUpdateOperationsInput = {
   set?: $Enums.MonthlyStatus
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type KPIMonthlyReportCreateNestedOneWithoutDetailsInput = {
   create?: Prisma.XOR<Prisma.KPIMonthlyReportCreateWithoutDetailsInput, Prisma.KPIMonthlyReportUncheckedCreateWithoutDetailsInput>
   connectOrCreate?: Prisma.KPIMonthlyReportCreateOrConnectWithoutDetailsInput
@@ -604,6 +816,15 @@ export type KPIMonthlyReportCreateWithoutKpiInput = {
   approveBy?: string | null
   submittedAt?: Date | string | null
   approvedAt?: Date | string | null
+  remark?: string | null
+  attachmentFileName?: string | null
+  attachmentFileSize?: number | null
+  attachmentMimeType?: string | null
+  attachmentSpItemId?: string | null
+  attachmentWebUrl?: string | null
+  attachmentDownloadUrl?: string | null
+  attachmentUploadedAt?: Date | string | null
+  attachmentUploadedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   details?: Prisma.KPIMonthlyDetailCreateNestedManyWithoutMonthlyReportInput
@@ -619,6 +840,15 @@ export type KPIMonthlyReportUncheckedCreateWithoutKpiInput = {
   approveBy?: string | null
   submittedAt?: Date | string | null
   approvedAt?: Date | string | null
+  remark?: string | null
+  attachmentFileName?: string | null
+  attachmentFileSize?: number | null
+  attachmentMimeType?: string | null
+  attachmentSpItemId?: string | null
+  attachmentWebUrl?: string | null
+  attachmentDownloadUrl?: string | null
+  attachmentUploadedAt?: Date | string | null
+  attachmentUploadedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   details?: Prisma.KPIMonthlyDetailUncheckedCreateNestedManyWithoutMonthlyReportInput
@@ -664,6 +894,15 @@ export type KPIMonthlyReportScalarWhereInput = {
   approveBy?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
+  remark?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentFileName?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentFileSize?: Prisma.IntNullableFilter<"KPIMonthlyReport"> | number | null
+  attachmentMimeType?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentSpItemId?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentWebUrl?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentDownloadUrl?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
+  attachmentUploadedAt?: Prisma.DateTimeNullableFilter<"KPIMonthlyReport"> | Date | string | null
+  attachmentUploadedBy?: Prisma.StringNullableFilter<"KPIMonthlyReport"> | string | null
   createdAt?: Prisma.DateTimeFilter<"KPIMonthlyReport"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIMonthlyReport"> | Date | string
 }
@@ -678,6 +917,15 @@ export type KPIMonthlyReportCreateWithoutDetailsInput = {
   approveBy?: string | null
   submittedAt?: Date | string | null
   approvedAt?: Date | string | null
+  remark?: string | null
+  attachmentFileName?: string | null
+  attachmentFileSize?: number | null
+  attachmentMimeType?: string | null
+  attachmentSpItemId?: string | null
+  attachmentWebUrl?: string | null
+  attachmentDownloadUrl?: string | null
+  attachmentUploadedAt?: Date | string | null
+  attachmentUploadedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   kpi: Prisma.KPICreateNestedOneWithoutMonthlyReportsInput
@@ -694,6 +942,15 @@ export type KPIMonthlyReportUncheckedCreateWithoutDetailsInput = {
   approveBy?: string | null
   submittedAt?: Date | string | null
   approvedAt?: Date | string | null
+  remark?: string | null
+  attachmentFileName?: string | null
+  attachmentFileSize?: number | null
+  attachmentMimeType?: string | null
+  attachmentSpItemId?: string | null
+  attachmentWebUrl?: string | null
+  attachmentDownloadUrl?: string | null
+  attachmentUploadedAt?: Date | string | null
+  attachmentUploadedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -724,6 +981,15 @@ export type KPIMonthlyReportUpdateWithoutDetailsInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   kpi?: Prisma.KPIUpdateOneRequiredWithoutMonthlyReportsNestedInput
@@ -740,6 +1006,15 @@ export type KPIMonthlyReportUncheckedUpdateWithoutDetailsInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -754,6 +1029,15 @@ export type KPIMonthlyReportCreateManyKpiInput = {
   approveBy?: string | null
   submittedAt?: Date | string | null
   approvedAt?: Date | string | null
+  remark?: string | null
+  attachmentFileName?: string | null
+  attachmentFileSize?: number | null
+  attachmentMimeType?: string | null
+  attachmentSpItemId?: string | null
+  attachmentWebUrl?: string | null
+  attachmentDownloadUrl?: string | null
+  attachmentUploadedAt?: Date | string | null
+  attachmentUploadedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -768,6 +1052,15 @@ export type KPIMonthlyReportUpdateWithoutKpiInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   details?: Prisma.KPIMonthlyDetailUpdateManyWithoutMonthlyReportNestedInput
@@ -783,6 +1076,15 @@ export type KPIMonthlyReportUncheckedUpdateWithoutKpiInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   details?: Prisma.KPIMonthlyDetailUncheckedUpdateManyWithoutMonthlyReportNestedInput
@@ -798,6 +1100,15 @@ export type KPIMonthlyReportUncheckedUpdateManyWithoutKpiInput = {
   approveBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentFileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  attachmentMimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentSpItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attachmentUploadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  attachmentUploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -844,6 +1155,15 @@ export type KPIMonthlyReportSelect<ExtArgs extends runtime.Types.Extensions.Inte
   approveBy?: boolean
   submittedAt?: boolean
   approvedAt?: boolean
+  remark?: boolean
+  attachmentFileName?: boolean
+  attachmentFileSize?: boolean
+  attachmentMimeType?: boolean
+  attachmentSpItemId?: boolean
+  attachmentWebUrl?: boolean
+  attachmentDownloadUrl?: boolean
+  attachmentUploadedAt?: boolean
+  attachmentUploadedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -862,6 +1182,15 @@ export type KPIMonthlyReportSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   approveBy?: boolean
   submittedAt?: boolean
   approvedAt?: boolean
+  remark?: boolean
+  attachmentFileName?: boolean
+  attachmentFileSize?: boolean
+  attachmentMimeType?: boolean
+  attachmentSpItemId?: boolean
+  attachmentWebUrl?: boolean
+  attachmentDownloadUrl?: boolean
+  attachmentUploadedAt?: boolean
+  attachmentUploadedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -878,6 +1207,15 @@ export type KPIMonthlyReportSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   approveBy?: boolean
   submittedAt?: boolean
   approvedAt?: boolean
+  remark?: boolean
+  attachmentFileName?: boolean
+  attachmentFileSize?: boolean
+  attachmentMimeType?: boolean
+  attachmentSpItemId?: boolean
+  attachmentWebUrl?: boolean
+  attachmentDownloadUrl?: boolean
+  attachmentUploadedAt?: boolean
+  attachmentUploadedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -894,11 +1232,20 @@ export type KPIMonthlyReportSelectScalar = {
   approveBy?: boolean
   submittedAt?: boolean
   approvedAt?: boolean
+  remark?: boolean
+  attachmentFileName?: boolean
+  attachmentFileSize?: boolean
+  attachmentMimeType?: boolean
+  attachmentSpItemId?: boolean
+  attachmentWebUrl?: boolean
+  attachmentDownloadUrl?: boolean
+  attachmentUploadedAt?: boolean
+  attachmentUploadedBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type KPIMonthlyReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kpiId" | "month" | "year" | "status" | "prepareBy" | "reviewBy" | "approveBy" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["kPIMonthlyReport"]>
+export type KPIMonthlyReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kpiId" | "month" | "year" | "status" | "prepareBy" | "reviewBy" | "approveBy" | "submittedAt" | "approvedAt" | "remark" | "attachmentFileName" | "attachmentFileSize" | "attachmentMimeType" | "attachmentSpItemId" | "attachmentWebUrl" | "attachmentDownloadUrl" | "attachmentUploadedAt" | "attachmentUploadedBy" | "createdAt" | "updatedAt", ExtArgs["result"]["kPIMonthlyReport"]>
 export type KPIMonthlyReportInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
   details?: boolean | Prisma.KPIMonthlyReport$detailsArgs<ExtArgs>
@@ -928,6 +1275,15 @@ export type $KPIMonthlyReportPayload<ExtArgs extends runtime.Types.Extensions.In
     approveBy: string | null
     submittedAt: Date | null
     approvedAt: Date | null
+    remark: string | null
+    attachmentFileName: string | null
+    attachmentFileSize: number | null
+    attachmentMimeType: string | null
+    attachmentSpItemId: string | null
+    attachmentWebUrl: string | null
+    attachmentDownloadUrl: string | null
+    attachmentUploadedAt: Date | null
+    attachmentUploadedBy: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["kPIMonthlyReport"]>
@@ -1365,6 +1721,15 @@ export interface KPIMonthlyReportFieldRefs {
   readonly approveBy: Prisma.FieldRef<"KPIMonthlyReport", 'String'>
   readonly submittedAt: Prisma.FieldRef<"KPIMonthlyReport", 'DateTime'>
   readonly approvedAt: Prisma.FieldRef<"KPIMonthlyReport", 'DateTime'>
+  readonly remark: Prisma.FieldRef<"KPIMonthlyReport", 'String'>
+  readonly attachmentFileName: Prisma.FieldRef<"KPIMonthlyReport", 'String'>
+  readonly attachmentFileSize: Prisma.FieldRef<"KPIMonthlyReport", 'Int'>
+  readonly attachmentMimeType: Prisma.FieldRef<"KPIMonthlyReport", 'String'>
+  readonly attachmentSpItemId: Prisma.FieldRef<"KPIMonthlyReport", 'String'>
+  readonly attachmentWebUrl: Prisma.FieldRef<"KPIMonthlyReport", 'String'>
+  readonly attachmentDownloadUrl: Prisma.FieldRef<"KPIMonthlyReport", 'String'>
+  readonly attachmentUploadedAt: Prisma.FieldRef<"KPIMonthlyReport", 'DateTime'>
+  readonly attachmentUploadedBy: Prisma.FieldRef<"KPIMonthlyReport", 'String'>
   readonly createdAt: Prisma.FieldRef<"KPIMonthlyReport", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"KPIMonthlyReport", 'DateTime'>
 }

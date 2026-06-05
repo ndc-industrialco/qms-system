@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useT } from "@/lib/i18n";
+import { KPI_UNITS } from "@/lib/kpi-units";
 import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, Send, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock } from "lucide-react";
+import { Plus, Pencil, Trash2, Send, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import ConfirmModal from "@/components/common/ConfirmModal";
@@ -19,6 +20,7 @@ import {
   useDeleteObjective,
   useSubmitKpiObjectives,
 } from "@/hooks/api/use-kpi";
+import KpiApprovalTimeline from "@/components/kpi/KpiApprovalTimeline";
 import type { KPIObjective } from "@/generated/prisma/client";
 
 type UserRole = "USER" | "IT" | "QMS" | "MR";
@@ -27,8 +29,6 @@ const PRIVILEGED_ROLES: UserRole[] = ["IT", "QMS", "MR"];
 function isPrivileged(role: UserRole): boolean {
   return PRIVILEGED_ROLES.includes(role);
 }
-
-interface Assignee { id: string; name: string | null; email: string; role: string }
 
 interface Props {
   kpiId: string;
@@ -84,21 +84,9 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
   // IT/QMS/MR: always CRUD regardless of status
   // USER: only CRUD when DRAFT or REJECTED
   const canAlwaysEdit = privileged;
-  const canSubmit = privileged || role === "MR";
 
   const { data: resp, isLoading } = useKpiById(kpiId);
   const kpi = resp?.data;
-
-  const { data: assigneeResp } = useQuery<{ data: Assignee[] }>({
-    queryKey: ["assignees"],
-    queryFn: async () => {
-      const res = await fetch("/api/users/assignees");
-      if (!res.ok) throw new Error("Failed to load assignees");
-      return res.json();
-    },
-    enabled: canAlwaysEdit || canSubmit,
-  });
-  const assignees: Assignee[] = assigneeResp?.data ?? [];
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<KPIObjective | null>(null);
@@ -166,6 +154,12 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
 
   return (
     <div className="space-y-6">
+      <nav className="flex items-center gap-1.5 text-sm text-slate-400">
+        <Link href="/qms/kpi" className="hover:text-slate-600 transition-colors">{t("kpi.reference.title")}</Link>
+        <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+        <span className="text-slate-600 font-medium truncate">{kpi.department}</span>
+      </nav>
+
       <PageHeader
         title={kpi.department}
         subtitle={String(kpi.yearly)}
@@ -277,6 +271,21 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
         </div>
       </div>
 
+      {/* Approval Workflow Timeline */}
+      {Array.isArray((kpi as typeof kpi & { approvalSignatures?: unknown[] }).approvalSignatures) &&
+        (kpi as typeof kpi & { approvalSignatures?: unknown[] }).approvalSignatures!.length > 0 && (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+            {t("dar.approval.title")}
+          </p>
+          <KpiApprovalTimeline
+            signatures={(kpi as typeof kpi & { approvalSignatures?: Parameters<typeof KpiApprovalTimeline>[0]["signatures"] }).approvalSignatures ?? []}
+            preparerName={kpi.prepare || null}
+            layout="horizontal"
+          />
+        </div>
+      )}
+
       {objectives.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-6">
           <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-4 text-slate-400">
@@ -297,7 +306,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
                   <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-500">
                     <span>
                       {t("kpi.objective.table.target")}:{" "}
-                      <strong className="text-primary">{obj.target}</strong>
+                      <strong className="text-primary">{obj.target}{obj.unit ? <span className="ml-0.5 text-slate-400 font-normal">{t(KPI_UNITS.find(u => u.value === obj.unit)?.labelKey as Parameters<typeof t>[0] ?? '')}</span> : ''}</strong>
                     </span>
                     <span>
                       {t("kpi.objective.table.frequency")}:{" "}
@@ -396,7 +405,6 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
           setAssignOpen(open);
           if (!open) setPendingSignature(null);
         }}
-        assignees={assignees}
         initialReviewerId={kpi.reviewerUserId ?? undefined}
         initialApproverId={kpi.approverUserId ?? undefined}
         onConfirm={handleAssignConfirm}

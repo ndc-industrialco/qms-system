@@ -38,4 +38,16 @@ export class KpiMonthlyDetailRepository extends BaseRepository<KPIMonthlyDetail,
   async createForReport(monthlyReportId: string, kpiObjectiveId: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).create({ data: { monthlyReportId, kpiObjectiveId } });
   }
+
+  async createManyForReport(monthlyReportId: string, kpiObjectiveIds: string[], tx?: Prisma.TransactionClient) {
+    if (kpiObjectiveIds.length === 0) return { count: 0 };
+
+    return this.delegate(tx).createMany({
+      data: kpiObjectiveIds.map((kpiObjectiveId) => ({
+        monthlyReportId,
+        kpiObjectiveId,
+      })),
+      skipDuplicates: true,
+    });
+  }
 }

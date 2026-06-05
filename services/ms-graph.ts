@@ -147,7 +147,7 @@ export async function searchEntraUsers(query: string): Promise<GraphUser[]> {
   const params = new URLSearchParams({
     $select: SELECT_FIELDS,
     $top: "25",
-    $search: `"displayName:${query}" OR "mail:${query}"`,
+    $search: `"displayName:${query}" OR "mail:${query}" OR "employeeId:${query}"`,
     $filter: "accountEnabled eq true and userType eq 'Member'",
     $orderby: "displayName asc",
   });

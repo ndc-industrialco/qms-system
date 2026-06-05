@@ -426,6 +426,43 @@ export async function uploadFileToDocControl(opts: {
   });
 }
 
+export async function uploadFileToKpiMonthly(opts: {
+  fileBuffer: Uint8Array;
+  fileName: string;
+  mimeType: string;
+  departmentName: string;
+  year: number;
+  month: string;
+}): Promise<SpUploadResult> {
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
+  const folderPath = `KPI Monthly/${sanitizeFolderSegment(opts.departmentName)}/${opts.year}/${sanitizeFolderSegment(opts.month)}`;
+  const folderId = await ensureFolderPath(driveId, token, folderPath);
+  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+  const uploadName = `${opts.year}_${opts.month}_${safeBase}`;
+
+  if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+    return simpleUpload({
+      token,
+      driveId,
+      folderId,
+      uploadName,
+      fileBuffer: opts.fileBuffer,
+      mimeType: opts.mimeType,
+      folderPath,
+    });
+  }
+
+  return resumableUpload({
+    token,
+    driveId,
+    folderId,
+    uploadName,
+    fileBuffer: opts.fileBuffer,
+    mimeType: opts.mimeType,
+    folderPath,
+  });
+}
+
 function sanitizeFolderSegment(input: string): string {
   return input.replace(/[/\\:*?"<>|]/g, "_").trim() || "Unknown";
 }

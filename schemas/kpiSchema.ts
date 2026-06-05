@@ -1,5 +1,4 @@
 import { z } from 'zod';
-
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
 export const createKpiSchema = z.object({
@@ -30,6 +29,7 @@ export const kpiQuerySchema = z.object({
 export const createKpiObjectiveSchema = z.object({
   kpiId: z.string().uuid('Invalid KPI ID'),
   target: z.number().positive('Target must be a positive number'),
+  unit: z.string().min(1).optional(),
   objective: z.string().min(1, 'Objective is required'),
   frequency: z.string().min(1, 'Frequency is required'),
   calculationFormula: z.string().min(1, 'Calculation formula is required'),
@@ -48,6 +48,16 @@ export const createMonthlyReportSchema = z.object({
 export const updateMonthlyDetailSchema = z.object({
   actualResult: z.number().nullable().optional(),
   achievedStatus: z.enum(['PENDING', 'OK', 'NOT_OK']).optional(),
+});
+
+export const updateMonthlyReportSchema = z.object({
+  remark: z.string().max(5000).nullable().optional(),
+});
+
+export const monthlyAttachmentUploadSchema = z.object({
+  fileName: z.string().min(1).max(255),
+  fileSize: z.number().int().positive(),
+  mimeType: z.string().min(1),
 });
 
 export const createCorrectiveActionSchema = z.object({

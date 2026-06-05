@@ -265,6 +265,7 @@ model KPIObjective {
   id                   String             @id @default(uuid())
   kpiId                String             @map("kpi_id")
   target               Float
+  unit                 String?
   objective            String             @db.Text
   frequency            String
   calculationFormula   String             @map("calculation_formula") @db.Text
@@ -289,6 +290,15 @@ model KPIMonthlyReport {
   approveBy   String?            @map("approve_by")
   submittedAt DateTime?          @map("submitted_at")
   approvedAt  DateTime?          @map("approved_at")
+  remark      String?            @db.Text
+  attachmentFileName String?     @map("attachment_file_name")
+  attachmentFileSize Int?        @map("attachment_file_size")
+  attachmentMimeType String?     @map("attachment_mime_type")
+  attachmentSpItemId String?     @map("attachment_sp_item_id")
+  attachmentWebUrl String?       @map("attachment_web_url") @db.Text
+  attachmentDownloadUrl String?  @map("attachment_download_url") @db.Text
+  attachmentUploadedAt DateTime? @map("attachment_uploaded_at")
+  attachmentUploadedBy String?   @map("attachment_uploaded_by")
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   kpi         KPI                @relation(fields: [kpiId], references: [id], onDelete: Cascade)

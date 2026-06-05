@@ -2,15 +2,21 @@ import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErr
 import { db } from '@/lib/db';
 import { KpiRepository } from '@/repositories/kpiRepository';
 import { KpiObjectiveRepository } from '@/repositories/kpiObjectiveRepository';
+import { KpiMonthlyReportRepository } from '@/repositories/kpiMonthlyReportRepository';
+import { KpiMonthlyDetailRepository } from '@/repositories/kpiMonthlyDetailRepository';
 import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRepository';
 import { UserRepository } from '@/repositories/userRepository';
 import { CreateKpiDTO, UpdateKpiDTO, CreateKpiObjectiveDTO, UpdateKpiObjectiveDTO, ListKpiQuery, SubmitKpiObjectivesDTO } from '@/types/kpi';
 import type { ActorContext } from '@/types/kpi';
-import type { SignatureType } from '@/generated/prisma/client';
+import type { Prisma, SignatureType } from '@/generated/prisma/client';
+
+const KPI_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
 export class KpiService {
   private kpiRepo = new KpiRepository();
   private objectiveRepo = new KpiObjectiveRepository();
+  private monthlyReportRepo = new KpiMonthlyReportRepository();
+  private monthlyDetailRepo = new KpiMonthlyDetailRepository();
   private approvalSignatureRepo = new ApprovalSignatureRepository();
   private userRepo = new UserRepository();
 
@@ -41,16 +47,23 @@ export class KpiService {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
 
-    const userIds = [kpi.reviewerUserId, kpi.approverUserId].filter(Boolean) as string[];
-    const users = userIds.length > 0
-      ? await this.userRepo.findByIds(userIds)
-      : [];
+    const signatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
+
+    const preparerSig = signatures.find(s => s.step === 'PREPARER');
+    const userIds = [kpi.reviewerUserId, kpi.approverUserId, preparerSig?.signerUserId ?? null]
+      .filter(Boolean) as string[];
+    const users = userIds.length > 0 ? await this.userRepo.findByIds(userIds) : [];
     const userMap = new Map(users.map(u => [u.id, u]));
+
+    const preparerUser = preparerSig?.signerUserId ? (userMap.get(preparerSig.signerUserId) ?? null) : null;
+    const resolvedPrepare = kpi.prepare || preparerUser?.name || preparerUser?.email || '';
 
     return {
       ...kpi,
+      prepare: resolvedPrepare,
       reviewerUser: kpi.reviewerUserId ? (userMap.get(kpi.reviewerUserId) ?? null) : null,
       approverUser: kpi.approverUserId ? (userMap.get(kpi.approverUserId) ?? null) : null,
+      approvalSignatures: signatures,
     };
   }
 
@@ -110,12 +123,16 @@ export class KpiService {
     if (kpi.objectives.length === 0) throw new ConflictError('Cannot submit KPI with no objectives');
     const now = new Date();
 
+    const preparer = await this.userRepo.findById(preparerUserId);
+    const preparerName = preparer?.name || preparer?.email || '';
+
     return db.$transaction(async (tx) => {
       const updated = await this.kpiRepo.submitObjectives(id, {
         prepareSignature: dto.prepareSignature,
         reviewerUserId: dto.reviewerUserId,
         approverUserId: dto.approverUserId,
         submittedAt: now,
+        prepare: preparerName,
       }, tx);
 
       await this.approvalSignatureRepo.deleteByDocument('KPI', id, tx);
@@ -190,6 +207,12 @@ export class KpiService {
     if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI is not pending approval');
     if (kpi.approverUserId !== actor.userId) throw new ForbiddenError('You are not assigned as approver');
 
+    const signatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
+    const reviewerSig = signatures.find(s => s.step === 'REVIEWER');
+    if (!reviewerSig || reviewerSig.action !== 'APPROVED') {
+      throw new ConflictError('Reviewer must approve before approver can proceed');
+    }
+
     return db.$transaction(async (tx) => {
       const updated = await this.kpiRepo.setStatus(id, 'APPROVED', tx);
       await this.approvalSignatureRepo.upsertStep({
@@ -209,8 +232,24 @@ export class KpiService {
         }, tx);
       }
 
+      await this.generateMonthlyReportsForApprovedKpi({
+        kpiId: kpi.id,
+        year: kpi.yearly,
+        objectiveIds: kpi.objectives.map((objective) => objective.id),
+      }, tx);
+
       return updated;
     });
+  }
+
+  private async generateMonthlyReportsForApprovedKpi(
+    payload: { kpiId: string; year: number; objectiveIds: string[] },
+    tx: Prisma.TransactionClient,
+  ) {
+    for (const month of KPI_MONTHS) {
+      const report = await this.monthlyReportRepo.findOrCreate(payload.kpiId, month, payload.year, tx);
+      await this.monthlyDetailRepo.createManyForReport(report.id, payload.objectiveIds, tx);
+    }
   }
 
   async rejectObjectives(id: string, actor: ActorContext) {

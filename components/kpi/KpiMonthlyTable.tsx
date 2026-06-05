@@ -3,20 +3,17 @@
 import { useT } from "@/lib/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { MonthlyStatus, AchievedStatus } from "@/generated/prisma/client";
-
-interface KpiObjectiveSnapshot {
-  id: string;
-  objective: string;
-  target: number;
-}
+import { cn } from "@/lib/utils";
+import {
+  CalendarDays, CheckCircle2, ChevronLeft, ChevronRight,
+  Clock, FileText, MessageSquareText, XCircle,
+} from "lucide-react";
+import type { AchievedStatus, MonthlyStatus } from "@/generated/prisma/client";
 
 interface DetailSnapshot {
   id: string;
   actualResult: number | null;
   achievedStatus: AchievedStatus;
-  kpiObjective: KpiObjectiveSnapshot;
 }
 
 interface KpiMonthlyReportRow {
@@ -26,6 +23,8 @@ interface KpiMonthlyReportRow {
   status: MonthlyStatus;
   kpi: { id: string; department: string };
   details: DetailSnapshot[];
+  remark?: string | null;
+  attachmentFileName?: string | null;
 }
 
 interface Meta {
@@ -42,42 +41,75 @@ interface Props {
   onRowClick: (row: KpiMonthlyReportRow) => void;
 }
 
-const STATUS_STYLES: Record<MonthlyStatus, string> = {
-  DRAFT: "bg-slate-100 text-slate-500 border border-slate-200",
-  PENDING_REVIEW: "bg-amber-50 text-amber-600 border border-amber-200",
-  PENDING_APPROVAL: "bg-blue-50 text-blue-600 border border-blue-200",
-  APPROVED: "bg-emerald-50 text-emerald-600 border border-emerald-200",
-  REJECTED: "bg-rose-50 text-rose-600 border border-rose-200",
+const STATUS_CONFIG: Record<MonthlyStatus, { style: string; icon: React.ElementType; label?: string }> = {
+  DRAFT:            { style: "bg-slate-50 text-slate-500 border-slate-200",       icon: FileText     },
+  PENDING_REVIEW:   { style: "bg-amber-50 text-amber-600 border-amber-200",       icon: Clock        },
+  PENDING_APPROVAL: { style: "bg-sky-50 text-sky-600 border-sky-200",             icon: Clock        },
+  APPROVED:         { style: "bg-emerald-50 text-emerald-600 border-emerald-200", icon: CheckCircle2 },
+  REJECTED:         { style: "bg-rose-50 text-rose-600 border-rose-200",          icon: XCircle      },
 };
-
 
 function StatusBadge({ status }: { status: MonthlyStatus }) {
   const t = useT();
+  const cfg = STATUS_CONFIG[status];
+  const Icon = cfg.icon;
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[status]}`}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium", cfg.style)}>
+      <Icon className="h-3 w-3" />
       {t(`kpi.monthly.status.${status}` as Parameters<typeof t>[0])}
     </span>
   );
 }
 
+function OkRatioBar({ details }: { details: DetailSnapshot[] }) {
+  const total = details.length;
+  if (total === 0) return <span className="text-xs text-slate-400">—</span>;
+
+  const ok = details.filter((d) => d.achievedStatus === "OK").length;
+  const notOk = details.filter((d) => d.achievedStatus === "NOT_OK").length;
+  const pct = Math.round((ok / total) * 100);
+
+  return (
+    <div className="flex min-w-20 flex-col gap-1">
+      <div className="flex items-center justify-between gap-1 text-xs">
+        <span className="font-semibold text-emerald-600">{ok}</span>
+        <span className="text-slate-300">/</span>
+        <span className="font-semibold text-rose-500">{notOk}</span>
+        <span className="ml-auto text-slate-400">{pct}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+        <div
+          className="h-full rounded-full bg-emerald-400 transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
 function TableSkeleton() {
   return (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-14 w-full rounded-xl" />
-      ))}
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="divide-y divide-slate-50">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 px-5 py-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-20 flex-1" />
+            <Skeleton className="h-5 w-24 rounded-full" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-      <svg className="w-12 h-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-      </svg>
-      <p className="text-sm">{message}</p>
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-100 bg-white px-6 py-16 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50">
+        <CalendarDays className="h-6 w-6 text-slate-400" />
+      </div>
+      <p className="text-sm font-semibold text-slate-700">{message}</p>
     </div>
   );
 }
@@ -89,52 +121,56 @@ export function KpiMonthlyTable({ data, isLoading, meta, onPageChange, onRowClic
   if (isLoading) return <TableSkeleton />;
   if (!data.length) return <EmptyState message={t("kpi.monthly.table.empty")} />;
 
-  const okCount = (details: DetailSnapshot[]) => details.filter(d => d.achievedStatus === "OK").length;
-  const notOkCount = (details: DetailSnapshot[]) => details.filter(d => d.achievedStatus === "NOT_OK").length;
-
   return (
-    <div className="space-y-4">
-      {/* Desktop Table */}
-      <div className="hidden lg:block overflow-x-auto rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white">
+    <div className="space-y-3">
+      {/* Desktop table */}
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] lg:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100">
-              <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3.5">
+              <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
                 {t("kpi.monthly.table.month")}
               </th>
-              <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3.5">
-                {t("kpi.monthly.table.department")}
-              </th>
-              <th className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3.5">
+              <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
                 {t("kpi.monthly.table.objectives")}
               </th>
-              <th className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3.5">
-                {t("kpi.monthly.table.ok")}
+              <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+                {t("kpi.monthly.table.ok")} / {t("kpi.monthly.table.notOk")}
               </th>
-              <th className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3.5">
-                {t("kpi.monthly.table.notOk")}
-              </th>
-              <th className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3.5">
+              <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
                 {t("kpi.monthly.table.status")}
+              </th>
+              <th className="w-12 px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Meta
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {data.map((row) => (
-              <tr key={row.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => onRowClick(row)}>
-                <td className="px-5 py-3.5 text-slate-700 font-medium whitespace-nowrap">
-                  {row.month} {row.year}
+              <tr
+                key={row.id}
+                className="cursor-pointer transition-colors hover:bg-slate-50/70"
+                onClick={() => onRowClick(row)}
+              >
+                <td className="whitespace-nowrap px-5 py-3.5">
+                  <span className="text-sm font-semibold text-slate-800">{row.month} {row.year}</span>
                 </td>
-                <td className="px-5 py-3.5 text-slate-600">{row.kpi.department}</td>
-                <td className="px-5 py-3.5 text-center text-slate-700">{row.details.length}</td>
                 <td className="px-5 py-3.5 text-center">
-                  <span className="text-emerald-600 font-semibold">{okCount(row.details)}</span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                    {row.details.length}
+                  </span>
                 </td>
-                <td className="px-5 py-3.5 text-center">
-                  <span className="text-rose-600 font-semibold">{notOkCount(row.details)}</span>
+                <td className="px-5 py-3.5">
+                  <OkRatioBar details={row.details} />
                 </td>
                 <td className="px-5 py-3.5 text-center">
                   <StatusBadge status={row.status} />
+                </td>
+                <td className="px-5 py-3.5">
+                  <div className="flex items-center justify-center gap-2 text-slate-400">
+                    {row.remark && <MessageSquareText className="h-3.5 w-3.5 text-primary" />}
+                    {row.attachmentFileName && <FileText className="h-3.5 w-3.5 text-emerald-500" />}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -142,40 +178,62 @@ export function KpiMonthlyTable({ data, isLoading, meta, onPageChange, onRowClic
         </table>
       </div>
 
-      {/* Mobile Card List */}
-      <div className="lg:hidden space-y-3">
+      {/* Mobile cards */}
+      <div className="space-y-2.5 lg:hidden">
         {data.map((row) => (
-          <div key={row.id}
-            className="rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 cursor-pointer hover:bg-slate-50 transition-colors"
-            onClick={() => onRowClick(row)}>
-            <div className="flex items-start justify-between gap-2 mb-2">
+          <button
+            key={row.id}
+            type="button"
+            className="w-full rounded-2xl border border-slate-100 bg-white p-4 text-left shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-colors hover:bg-slate-50"
+            onClick={() => onRowClick(row)}
+          >
+            <div className="mb-2.5 flex items-start justify-between gap-3">
               <div>
-                <p className="font-semibold text-slate-800 text-sm">{row.month} {row.year}</p>
-                <p className="text-xs text-slate-400">{row.kpi.department}</p>
+                <p className="text-sm font-semibold text-slate-800">{row.month} {row.year}</p>
+                <p className="mt-0.5 text-xs text-slate-400">{row.kpi.department}</p>
               </div>
               <StatusBadge status={row.status} />
             </div>
-            <div className="flex gap-4 text-xs text-slate-500 mt-2">
-              <span>{t("kpi.monthly.table.objectives")}: <strong>{row.details.length}</strong></span>
-              <span className="text-emerald-600">{t("kpi.monthly.table.ok")}: <strong>{okCount(row.details)}</strong></span>
-              <span className="text-rose-600">{t("kpi.monthly.table.notOk")}: <strong>{notOkCount(row.details)}</strong></span>
+            <div className="mb-2.5">
+              <OkRatioBar details={row.details} />
             </div>
-          </div>
+            <div className="flex items-center gap-3 text-xs text-slate-400">
+              <span className="inline-flex items-center gap-1">
+                <FileText className="h-3 w-3" />
+                {row.details.length} {t("kpi.monthly.table.objectives").toLowerCase()}
+              </span>
+              {row.remark && <MessageSquareText className="h-3.5 w-3.5 text-primary" />}
+              {row.attachmentFileName && <FileText className="h-3.5 w-3.5 text-emerald-500" />}
+            </div>
+          </button>
         ))}
       </div>
 
       {/* Pagination */}
       {meta && totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
-          <p className="text-sm text-slate-400">{meta.page} / {totalPages} ({meta.total})</p>
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-xs text-slate-400">
+            {meta.page} / {totalPages}
+            <span className="ml-1 text-slate-300">({meta.total})</span>
+          </p>
           <div className="flex gap-1.5">
-            <Button variant="outline" size="sm" className="rounded-xl" disabled={meta.page <= 1}
-              onClick={() => onPageChange?.(meta.page - 1)}>
-              <ChevronLeft className="w-4 h-4" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl"
+              disabled={meta.page <= 1}
+              onClick={() => onPageChange?.(meta.page - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" className="rounded-xl" disabled={meta.page >= totalPages}
-              onClick={() => onPageChange?.(meta.page + 1)}>
-              <ChevronRight className="w-4 h-4" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl"
+              disabled={meta.page >= totalPages}
+              onClick={() => onPageChange?.(meta.page + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

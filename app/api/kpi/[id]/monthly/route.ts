@@ -7,11 +7,12 @@ import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 
 const service = new KpiMonthlyService();
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAuth();
+    const { id } = await params;
     const query = monthlyQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
-    const result = await service.listReports({ page: query.page ?? 1, limit: query.limit ?? 20, year: query.year, month: query.month, status: query.status, department: undefined });
+    const result = await service.listReports({ page: query.page ?? 1, limit: query.limit ?? 20, year: query.year, month: query.month, status: query.status, kpiId: id });
     return sendSuccess(result.data, 'Monthly reports retrieved successfully', 200, result.meta);
   } catch (error) {
     return handleApiError(error);

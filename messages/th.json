@@ -12,6 +12,7 @@
     "search": "ค้นหา",
     "filter": "กรอง",
     "noData": "ไม่พบข้อมูล",
+    "noItems": "ไม่พบรายการ",
     "confirm": "ยืนยัน",
     "back": "กลับ",
     "next": "ถัดไป",
@@ -183,6 +184,23 @@
       "bannerDesc": "กรุณาตรวจสอบรายละเอียดทั้งหมดด้านล่าง จากนั้นลงลายมือชื่อเพื่ออนุมัติหรือส่งคืน",
       "breadcrumb": "อนุมัติ"
     },
+    "reviewerSelect": {
+      "title": "เลือกผู้ตรวจสอบ",
+      "subtitle": "ค้นหาและเลือกผู้ตรวจสอบสำหรับคำขอนี้",
+      "searchPlaceholder": "ค้นหาชื่อ, อีเมล หรือรหัสพนักงาน...",
+      "allDepartments": "ทุกแผนก",
+      "allTitles": "ทุกตำแหน่ง",
+      "sortBy": "เรียงตาม",
+      "sortName": "ชื่อ",
+      "sortDepartment": "แผนก",
+      "sortJobTitle": "ตำแหน่ง",
+      "loadingError": "ไม่สามารถโหลดรายชื่อผู้ใช้ได้ กรุณาลองใหม่",
+      "noMatch": "ไม่พบผู้ใช้ที่ตรงกัน",
+      "selectedReviewer": "ผู้ตรวจสอบที่เลือก",
+      "resultCount": "{displayed} / {total} รายการ",
+      "back": "ย้อนกลับ",
+      "send": "ส่งคำขอ"
+    },
     "signModal": {
       "title": "ลงลายมือชื่อยืนยันคำขอ",
       "subtitle": "กรุณาลงลายมือชื่อของคุณก่อนส่งคำขอ DAR"
@@ -256,7 +274,8 @@
       "title": "จัดการผู้ใช้",
       "sync": "ซิงค์จาก M365",
       "empty": "ยังไม่มีผู้ใช้ในระบบ",
-      "emptyDesc": "กด «ซิงค์ผู้ใช้จาก M365» เพื่อนำเข้าข้อมูลจาก Microsoft Entra ID"
+      "emptyDesc": "กด «ซิงค์ผู้ใช้จาก M365» เพื่อนำเข้าข้อมูลจาก Microsoft Entra ID",
+      "subtitle": "ผู้ใช้ทั้งหมดที่ลงชื่อเข้าใช้ผ่าน Microsoft 365 ({count})"
     },
     "departments": {
       "title": "จัดการแผนก",
@@ -370,6 +389,7 @@
     "placeholderTitle": "กรอกหัวข้อประกาศ",
     "placeholderContent": "กรอกเนื้อหาประกาศ...",
     "publishBtn": "เผยแพร่ประกาศ",
+    "emptyDesc": "สร้างประกาศแรกเพื่อเริ่มต้นใช้งาน",
     "displayTypeList": "รายการมาตรฐาน (หน้าหลัก)",
     "displayTypeScrolling": "ข้อความวิ่ง (แถบด้านบน)",
     "unauthorized": "ไม่มีสิทธิ์เข้าถึง",
@@ -455,6 +475,9 @@
       "reviewer": "ผู้ตรวจทาน",
       "approver": "ผู้อนุมัติ",
       "target": "ค่าเป้าหมาย",
+      "unit": "หน่วย",
+      "unitPlaceholder": "เลือกหน่วย...",
+      "unitCustomPlaceholder": "ระบุหน่วยอื่นๆ...",
       "objectiveDetails": "รายละเอียดวัตถุประสงค์",
       "measurementFrequency": "ความถี่ในการวัดผล",
       "frequencyMonthly": "ทุกเดือน",
@@ -530,6 +553,7 @@
       },
       "actions": {
         "submit": "ส่งรายงาน",
+        "saveResults": "บันทึกผล",
         "review": "ตรวจสอบแล้ว",
         "approve": "อนุมัติ",
         "reject": "ปฏิเสธ",
@@ -541,8 +565,41 @@
         "submitSuccess": "ส่งรายงานสำเร็จ",
         "reviewSuccess": "ตรวจสอบรายงานสำเร็จ",
         "approveSuccess": "อนุมัติรายงานสำเร็จ",
-        "rejectSuccess": "ปฏิเสธรายงานสำเร็จ"
+        "rejectSuccess": "ปฏิเสธรายงานสำเร็จ",
+        "deleteCorrectiveSuccess": "ลบการดำเนินการแก้ไขสำเร็จ"
+      },
+      "section": {
+        "objectives": "วัตถุประสงค์และผลการดำเนินงาน",
+        "remarkAttachment": "หมายเหตุและไฟล์แนบ",
+        "correctiveActions": "การดำเนินการแก้ไข / ปรับปรุง"
+      },
+      "field": {
+        "target": "เป้าหมาย",
+        "actualResult": "ผลจริง",
+        "remark": "หมายเหตุ",
+        "remarkPlaceholder": "เพิ่มหมายเหตุ...",
+        "attachment": "ไฟล์แนบ",
+        "noAttachment": "ไม่มีไฟล์แนบ",
+        "uploadFile": "อัปโหลดไฟล์"
+      },
+      "correctiveAction": {
+        "addNew": "เพิ่มการดำเนินการแก้ไข",
+        "noneRequired": "วัตถุประสงค์ทั้งหมดบรรลุเป้าหมาย — ไม่จำเป็นต้องดำเนินการแก้ไข",
+        "times": "ครั้งที่",
+        "rootCause": "การวิเคราะห์สาเหตุ",
+        "guidelines": "แนวทางแก้ไขปรับปรุง",
+        "responsible": "ผู้รับผิดชอบ",
+        "dueDate": "กำหนดเสร็จ",
+        "deleteConfirm": "ลบการดำเนินการแก้ไขนี้?"
       }
+    },
+    "unit": {
+      "percent": "%",
+      "times": "ครั้ง",
+      "count": "จำนวน",
+      "days": "วัน",
+      "hours": "ชั่วโมง",
+      "other": "อื่นๆ"
     }
   },
   "documentCategory": {

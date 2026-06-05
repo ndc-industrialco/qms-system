@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 const YT_ID = "XKch3HFovaQ";
 const YT_SRC =
@@ -10,7 +11,18 @@ const YT_SRC =
   `&controls=0&showinfo=0&rel=0&iv_load_policy=3` +
   `&modestbranding=1&disablekb=1&fs=0&playsinline=1`;
 
+/** Only allow same-site relative paths to avoid open-redirects. */
+function safeCallbackUrl(raw: string | null): string {
+  if (!raw) return "/";
+  // Must be a single-leading-slash relative path (not "//host" protocol-relative).
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  return raw;
+}
+
 export default function LoginClient() {
+  const searchParams = useSearchParams();
+  const callbackUrl = safeCallbackUrl(searchParams.get("callbackUrl"));
+
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
       {/* ── YouTube background ── */}
@@ -95,7 +107,7 @@ export default function LoginClient() {
 
           <form
             action={async () => {
-              await signIn("microsoft-entra-id", { callbackUrl: "/" });
+              await signIn("microsoft-entra-id", { callbackUrl });
             }}
             className="w-full"
           >

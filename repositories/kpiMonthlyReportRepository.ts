@@ -1,6 +1,6 @@
 import { KPIMonthlyReport, MonthlyStatus, Prisma } from '@/generated/prisma/client';
 import { BaseRepository, PaginatedResult } from '@/repositories/baseRepository';
-import { CreateMonthlyReportDTO, ListMonthlyQuery } from '@/types/kpi';
+import { CreateMonthlyReportDTO, ListMonthlyQuery, MonthlyReportAttachmentDTO, UpdateMonthlyReportDTO } from '@/types/kpi';
 
 export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport, CreateMonthlyReportDTO, Prisma.KPIMonthlyReportUpdateInput> {
   constructor() {
@@ -20,9 +20,11 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
   }
 
   async findOrCreate(kpiId: string, month: string, year: number, tx?: Prisma.TransactionClient) {
-    const existing = await this.delegate(tx).findUnique({ where: { kpiId_month_year: { kpiId, month, year } } });
-    if (existing) return existing;
-    return this.delegate(tx).create({ data: { kpiId, month, year } });
+    return this.delegate(tx).upsert({
+      where: { kpiId_month_year: { kpiId, month, year } },
+      update: {},
+      create: { kpiId, month, year },
+    });
   }
 
   async findByIdWithDetails(id: string, tx?: Prisma.TransactionClient) {
@@ -47,6 +49,7 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
     const skip = (page - 1) * limit;
 
     const where: Prisma.KPIMonthlyReportWhereInput = {
+      ...(query.kpiId ? { kpiId: query.kpiId } : {}),
       ...(query.year ? { year: query.year } : {}),
       ...(query.month ? { month: query.month } : {}),
       ...(query.status ? { status: query.status } : {}),
@@ -59,7 +62,15 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
         skip,
         take: limit,
         orderBy: [{ year: 'desc' }, { month: 'asc' }],
-        include: { kpi: true, details: { include: { kpiObjective: true } } },
+        include: {
+          kpi: true,
+          details: {
+            include: {
+              kpiObjective: true,
+              correctiveActions: { orderBy: { times: 'asc' } },
+            },
+          },
+        },
       }),
       this.delegate(tx).count({ where }),
     ]);
@@ -69,6 +80,31 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
 
   async updateStatus(id: string, status: MonthlyStatus, fields?: Partial<{ prepareBy: string; reviewBy: string; approveBy: string; submittedAt: Date; approvedAt: Date }>, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).update({ where: { id }, data: { status, ...fields } });
+  }
+
+  async updateMetadata(id: string, dto: UpdateMonthlyReportDTO, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).update({
+      where: { id },
+      data: {
+        remark: dto.remark ?? null,
+      },
+    });
+  }
+
+  async updateAttachment(id: string, dto: MonthlyReportAttachmentDTO, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).update({
+      where: { id },
+      data: {
+        attachmentFileName: dto.fileName,
+        attachmentFileSize: dto.fileSize,
+        attachmentMimeType: dto.mimeType,
+        attachmentSpItemId: dto.spItemId,
+        attachmentWebUrl: dto.spWebUrl,
+        attachmentDownloadUrl: dto.spDownloadUrl,
+        attachmentUploadedAt: dto.uploadedAt,
+        attachmentUploadedBy: dto.uploadedBy,
+      },
+    });
   }
 
   async countByStatuses(statuses: MonthlyStatus[], tx?: Prisma.TransactionClient): Promise<number> {
