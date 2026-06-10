@@ -28,7 +28,10 @@
     "qmsDar": "Manage DAR",
     "sharepoint": "SharePoint Files",
     "users": "Manage Users",
-    "departments": "Manage Departments"
+    "departments": "Manage Departments",
+    "myWork": "My Work",
+    "itAdmin": "IT Admin",
+    "closeSidebar": "Close sidebar"
   },
   "roles": {
     "USER": "User",
@@ -271,6 +274,28 @@
     }
   },
   "it": {
+    "auditLog": {
+      "title": "Audit Log",
+      "subtitle": "{count} records",
+      "exportExcel": "Export Excel",
+      "exporting": "Exporting...",
+      "colDateTime": "Date / Time",
+      "colActor": "Actor",
+      "colRole": "Role",
+      "colAction": "Action",
+      "colResourceType": "Resource Type",
+      "colResourceId": "Resource ID",
+      "colDetails": "Details",
+      "filterAction": "Action",
+      "filterResource": "Resource",
+      "filterDateFrom": "From",
+      "filterDateTo": "To",
+      "allActions": "All Actions",
+      "allResources": "All Resources",
+      "empty": "No audit records",
+      "emptyDesc": "No records match the selected filters.",
+      "navLabel": "Audit Log"
+    },
     "users": {
       "title": "Manage Users",
       "sync": "Sync from M365",
@@ -447,6 +472,7 @@
     "rolePrivilegedDesc": "role has unrestricted CRUD access on all KPI items at all times.",
     "roleUserDesc": "You can create and edit objectives only while KPI status is Draft or Rejected. Actions are locked once approved.",
     "roleUserApprovedDesc": "This KPI has been fully approved. CRUD actions are locked for your role.",
+    "roleUserWrongDeptDesc": "You do not have permission to edit this KPI. Your department does not match this KPI.",
     "reference": {
       "title": "KPI Management",
       "add": "Add KPI",
@@ -462,6 +488,26 @@
       "action": {
         "edit": "Edit",
         "delete": "Delete"
+      },
+      "departments": {
+        "title": "Manage Departments",
+        "add": "Add Department",
+        "editTitle": "Edit Department",
+        "addTitle": "Add New Department",
+        "labelName": "Department Name",
+        "placeholderName": "e.g. IT, QMS, HR",
+        "confirmDeleteTitle": "Delete Department",
+        "confirmDeleteMsg": "Delete department \"{name}\"? This action cannot be undone.",
+        "cantDelete": "Cannot delete department with {n} user(s)",
+        "addSuccess": "Department added",
+        "editSuccess": "Department updated",
+        "deleteSuccess": "Department deleted",
+        "users": "{n} user(s)",
+        "colUsers": "Users",
+        "colStatus": "Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "labelActive": "Department is active"
       }
     },
     "tabs": {
@@ -513,6 +559,28 @@
       "signatureTitle": "Preparer Signature",
       "assignTitle": "Assign Reviewer & Approver",
       "success": "KPI objectives submitted for review"
+    },
+    "recall": {
+      "button": "Recall",
+      "confirmTitle": "Recall Submission",
+      "confirmMessage": "Are you sure you want to recall this KPI submission? The status will be reset to Draft and all assigned signatures will be cleared.",
+      "success": "KPI submission recalled successfully"
+    },
+    "review": {
+      "button": "Review & Sign",
+      "signatureTitle": "Reviewer Signature",
+      "success": "KPI reviewed successfully"
+    },
+    "approve": {
+      "button": "Approve & Sign",
+      "signatureTitle": "Approver Signature",
+      "success": "KPI approved successfully"
+    },
+    "reject": {
+      "button": "Reject",
+      "confirmTitle": "Reject KPI",
+      "confirmMessage": "Are you sure you want to reject this KPI? The status will be changed to Rejected and the preparer will be notified.",
+      "success": "KPI rejected successfully"
     },
     "monthly": {
       "title": "Monthly KPI Reports",
@@ -900,6 +968,166 @@
     "heroBanner": {
       "viewDetails": "View Details",
       "empty": "No announcements"
+    }
+  },
+  "car": {
+    "page": {
+      "title": "CAR — Corrective Action Requests",
+      "subtitle": "Corrective Action Requests",
+      "userTitle": "Department CARs",
+      "userSubtitle": "CARs related to your department"
+    },
+    "list": {
+      "empty": "No CARs found",
+      "searchPlaceholder": "Search CAR No., detail, department...",
+      "filterStatus": "Status",
+      "filterType": "Type",
+      "allStatuses": "All statuses",
+      "allTypes": "All types",
+      "countLabel": "CARs",
+      "colCarNo": "CAR No.",
+      "colType": "Type",
+      "colDept": "Department",
+      "colDetail": "Detail",
+      "colStatus": "Status",
+      "colIssuedAt": "Issued Date",
+      "colDueAt": "Due Date",
+      "mobileDepartment": "Department",
+      "mobileIssuer": "Issued by",
+      "mobileIssuedAt": "Issued",
+      "mobileDueAt": "Due"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "ISSUED": "Issued",
+      "RESPONDED": "Responded",
+      "VERIFY_1": "Awaiting Verify 1",
+      "VERIFY_2": "Awaiting Verify 2",
+      "CLOSED": "Closed",
+      "RE_CAR": "Re-CAR",
+      "CANCELLED": "Cancelled"
+    },
+    "source": {
+      "I": "Internal audit",
+      "C": "Customer complaint",
+      "N": "Product non-conformance",
+      "O": "Other"
+    },
+    "detail": {
+      "reCarBadge": "Re-CAR",
+      "refLabel": "Ref:",
+      "btnEdit": "Edit",
+      "btnVerify": "Record Verification",
+      "btnCreatingReCar": "Creating...",
+      "btnCreateReCar": "Create Re-CAR",
+      "respondPrompt": "Your department needs to respond to this CAR",
+      "btnRespond": "Respond to CAR",
+      "verifyTitle": "Record Verification Round {round}",
+      "respondFormTitle": "Respond to CAR",
+      "verifyFormTitle": "Verification Result",
+      "timelineTitle": "Timeline",
+      "responseTitle": "Department Response",
+      "labelType": "Type",
+      "labelTargetDept": "Target Department",
+      "labelIssuer": "Issued By",
+      "labelIso": "ISO Standards",
+      "labelIssuedAt": "Issue Date",
+      "labelDueAt": "Response Due",
+      "labelDefect": "Defect Detail",
+      "labelNonConformance": "Non-conformance Ref",
+      "labelResponder": "Responder",
+      "labelRespondedAt": "Responded At",
+      "labelPlannedDate": "Planned Date",
+      "labelWhyAnalysis": "5 Why Analysis",
+      "labelRootCause": "Root Cause Summary",
+      "labelImmediateAction": "Immediate Action",
+      "labelPreventiveAction": "Preventive Action"
+    },
+    "form": {
+      "createTitle": "Create New CAR",
+      "editTitle": "Edit CAR {carNo}",
+      "btnCreate": "+ Create New CAR",
+      "section1": "Section 1 — Type & Source",
+      "section2": "Section 2 — ISO Standards",
+      "section3": "Section 3 — Details",
+      "section4": "Section 4 — Issuer",
+      "section5": "Section 5 — Target Department",
+      "sourceDetailPlaceholder": "Additional details...",
+      "reCarCheckbox": "Re-CAR (reference existing CAR)",
+      "reCarRefLabel": "Referenced CAR No.",
+      "reCarRefPlaceholder": "CAR ID...",
+      "defectLabel": "Defect Detail / Problem Trend *",
+      "nonConformanceLabel": "Non-conformance with Requirements *",
+      "issuerPickerLabel": "Issuer (select from Microsoft 365)",
+      "issuerPickerPlaceholder": "Search employee name or email...",
+      "issuerPositionLabel": "Issuer Position *",
+      "issuerPositionPlaceholder": "Position (auto-fill from MS365 or enter manually)",
+      "deptLabel": "Department *",
+      "deptPlaceholder": "-- Select Department --",
+      "groupPickerLabel": "Email Group (MS365 — notifications)",
+      "groupPickerPlaceholder": "Search MS365 email group...",
+      "groupMailHint": "Email will be sent to:",
+      "issuerRequired": "Please select the issuer",
+      "btnSave": "Save Changes",
+      "btnSaving": "Saving...",
+      "btnCreate2": "Create CAR"
+    },
+    "issue": {
+      "btnIssue": "Issue CAR",
+      "confirmTitle": "Confirm Issue CAR",
+      "confirmMsg": "Issue CAR number {carNo}?",
+      "confirmEmailNote": "The system will send an email notification to the department immediately.",
+      "btnConfirm": "Confirm Issue",
+      "btnConfirming": "Processing..."
+    },
+    "respond": {
+      "sectionAnalysis": "Root Cause Analysis",
+      "whyLabel": "5 Why Analysis *",
+      "whyPlaceholder": "Analyze root cause using 5 Why...",
+      "otherToolLabel": "Other tools (if any)",
+      "otherToolPlaceholder": "If using tools other than 5 Why, please provide details...",
+      "sectionRootCause": "Root Cause",
+      "rootCauseSummaryLabel": "Root Cause Summary *",
+      "sectionActions": "Actions",
+      "immediateLabel": "Immediate Corrective Action *",
+      "preventiveLabel": "Preventive Action *",
+      "plannedDateLabel": "Planned Completion Date *",
+      "sectionResponder": "Responder",
+      "positionLabel": "Position *",
+      "positionPlaceholder": "Your position",
+      "btnSubmit": "Submit Response",
+      "btnSubmitting": "Submitting...",
+      "successMsg": "Response submitted successfully"
+    },
+    "verify": {
+      "findingsLabel": "Verification Findings *",
+      "findingsPlaceholder": "Record findings from verification...",
+      "resultLabel": "Verification Result *",
+      "resultPassed": "Corrective action completed as planned → Close CAR",
+      "resultFailed1": "Could not complete corrective action → Follow-up round 2",
+      "resultFailed2": "Could not complete corrective action → Re-CAR",
+      "nextDueDateLabel": "Follow-up round 2 due date *",
+      "reCarWarning": "This CAR will be set to RE_CAR status and QMS must create a new Re-CAR",
+      "verifierPositionLabel": "Verifier Position *",
+      "verifierPositionPlaceholder": "Your position",
+      "btnSave": "Save Verification Round {round}",
+      "btnSaving": "Saving...",
+      "successMsg": "Verification recorded successfully"
+    },
+    "timeline": {
+      "stepIssued": "CAR Issued",
+      "stepResponded": "Department Responded",
+      "stepVerify1": "Verification Round 1",
+      "stepVerify2": "Verification Round 2",
+      "stepMrSigned": "MR Signed (Closed)",
+      "labelIssuedBy": "Issued by",
+      "labelNo": "No.",
+      "labelPlannedDate": "Planned date:",
+      "labelResult": "Result:",
+      "labelPassed": "Passed",
+      "labelFailed": "Failed",
+      "labelNextDue": "Round 2 due:",
+      "reCarTitle": "Related Re-CARs:"
     }
   }
 }

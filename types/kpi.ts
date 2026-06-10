@@ -76,6 +76,8 @@ export interface ActorContext {
   userId: string;
   role: 'USER' | 'IT' | 'QMS' | 'MR';
   departmentId?: string | null;
+  email?: string;
+  name?: string;
 }
 
 export interface ListKpiQuery {

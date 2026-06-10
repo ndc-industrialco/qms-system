@@ -1,7 +1,10 @@
+import { NotificationService } from '@/services/notificationService';
 import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
 import { UserRepository } from "@/repositories/userRepository";
 import { sendReviewerAssignedEmail } from "@/services/email";
+import { ActionTokenService } from "@/services/actionTokenService";
+import { ApprovalModule, ApprovalStep } from "@/generated/prisma/client";
 import { OBJECTIVE_LABELS, DOC_TYPE_LABELS } from "@/types/dar";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
@@ -31,29 +34,42 @@ export async function POST(req: NextRequest, { params }: Params) {
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");
 
-    // Send email notification to reviewer (fire-and-forget — don't fail the request)
     const reviewerUser = await userRepo.findById(parsed.reviewerUserId);
 
     if (reviewerUser?.email && dar.darNo) {
-      sendReviewerAssignedEmail({
-        reviewer: { name: reviewerUser.name ?? "", email: reviewerUser.email },
-        requesterName: dar.requester.name ?? session.user.name ?? "",
-        requesterDepartment: dar.requester.department?.name ?? null,
-        darNo: dar.darNo,
-        darId: dar.id,
-        requestDate: dar.requestDate,
-        objective: OBJECTIVE_LABELS[dar.objective],
-        docType: dar.docTypeOther
-          ? `${DOC_TYPE_LABELS[dar.docType]} — ${dar.docTypeOther}`
-          : DOC_TYPE_LABELS[dar.docType],
-        reason: dar.reason,
-        items: dar.items,
-        attachments: dar.attachments.map((a) => ({
-          fileName: a.fileName,
-          spWebUrl: a.spWebUrl,
-        })),
-        senderEmail: session.user.email ?? undefined,
-      }).catch((e) => console.error("[email] Failed to send reviewer notification:", e));
+      await ActionTokenService.revokeByDocument(ApprovalModule.DAR, id);
+      const reviewerToken = await ActionTokenService.issue({
+        module: ApprovalModule.DAR,
+        documentId: id,
+        role: ApprovalStep.REVIEWER,
+        issuedTo: parsed.reviewerUserId,
+      });
+
+      NotificationService.sendEmailOnce(
+        `DAR:${id}:REVIEWER_ASSIGNED:reviewer:${reviewerUser.id}:${reviewerToken.substring(0, 16)}`,
+        () => sendReviewerAssignedEmail({
+          reviewer: { name: reviewerUser.name ?? "", email: reviewerUser.email },
+          requesterName: dar.requester.name ?? session.user.name ?? "",
+          requesterDepartment: dar.requester.department?.name ?? null,
+          darNo: dar.darNo!,
+          darId: dar.id,
+          requestDate: dar.requestDate,
+          objective: OBJECTIVE_LABELS[dar.objective],
+          docType: dar.docTypeOther
+            ? `${DOC_TYPE_LABELS[dar.docType]} — ${dar.docTypeOther}`
+            : DOC_TYPE_LABELS[dar.docType],
+          reason: dar.reason,
+          items: dar.items,
+          attachments: dar.attachments.map((a) => ({
+            fileName: a.fileName,
+            spWebUrl: a.spWebUrl,
+          })),
+          actionToken: reviewerToken,
+          senderEmail: session.user.email ?? undefined,
+        }),
+        reviewerUser.email,
+        'DAR Reviewer Assigned',
+      ).catch(() => { /* logged inside NotificationService */ });
     }
 
     return sendSuccess(dar, "Reviewer assigned successfully");

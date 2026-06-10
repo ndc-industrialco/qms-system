@@ -1,7 +1,8 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
+import { sendSuccess } from "@/lib/apiResponse";
 import { UserService } from "@/services/userService";
 import { blockJwt } from "@/lib/jwt-blocklist";
 
@@ -25,16 +26,13 @@ export async function POST(
     const body = await req.json();
     const parsed = bodySchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { data: null, error: parsed.error.issues[0]?.message ?? "Invalid body" },
-        { status: 400 }
-      );
+      throw new Error(parsed.error.issues[0]?.message ?? "Invalid body");
     }
 
     await userService.verifyUserExists(id);
     await blockJwt(parsed.data.jti, parsed.data.ttlSec);
 
-    return NextResponse.json({ data: { blocked: true }, error: null });
+    return sendSuccess({ blocked: true }, "Session blocked successfully");
   } catch (err) {
     return handleApiError(err);
   }

@@ -304,6 +304,7 @@ export type KPIOrderByWithRelationInput = {
 
 export type KPIWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  department_yearly?: Prisma.KPIDepartmentYearlyCompoundUniqueInput
   AND?: Prisma.KPIWhereInput | Prisma.KPIWhereInput[]
   OR?: Prisma.KPIWhereInput[]
   NOT?: Prisma.KPIWhereInput | Prisma.KPIWhereInput[]
@@ -321,7 +322,7 @@ export type KPIWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
   objectives?: Prisma.KPIObjectiveListRelationFilter
   monthlyReports?: Prisma.KPIMonthlyReportListRelationFilter
-}, "id">
+}, "id" | "department_yearly">
 
 export type KPIOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -481,6 +482,11 @@ export type KPIUncheckedUpdateManyInput = {
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type KPIDepartmentYearlyCompoundUniqueInput = {
+  department: string
+  yearly: number
 }
 
 export type KPICountOrderByAggregateInput = {

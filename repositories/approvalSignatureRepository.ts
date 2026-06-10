@@ -77,6 +77,13 @@ export class ApprovalSignatureRepository extends BaseRepository<ApprovalSignatur
     });
   }
 
+  async findByDocumentAndStep(module: ApprovalModule, documentId: string, step: ApprovalStep) {
+    return this.getClient().approvalSignature.findUnique({
+      where: { module_documentId_step: { module, documentId, step } },
+      include: { signerUser: { select: { id: true, name: true, email: true, department: { select: { name: true } } } } },
+    });
+  }
+
   async deleteByDocument(module: ApprovalModule, documentId: string, tx: Prisma.TransactionClient) {
     return tx.approvalSignature.deleteMany({
       where: { module, documentId },

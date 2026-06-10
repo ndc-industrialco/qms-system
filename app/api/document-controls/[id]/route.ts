@@ -38,10 +38,10 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
-    await requireRole('QMS', 'IT', 'MR');
+    const session = await requireRole('QMS', 'IT', 'MR');
     const { id } = await params;
 
-    await docService.deleteDocument(id);
+    await docService.deleteDocument(id, session.user.id);
     return sendSuccess(null, 'Document deleted successfully');
   } catch (err) {
     return handleApiError(err);

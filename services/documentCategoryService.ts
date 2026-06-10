@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { logger } from '@/lib/logger';
 import { DocumentCategoryRepository } from '@/repositories/documentCategoryRepository';
 import { DocumentControlRepository } from '@/repositories/documentControlRepository';
 import { DepartmentRepository } from '@/repositories/departmentRepository';
@@ -75,7 +76,7 @@ export class DocumentCategoryService {
           );
         });
       } catch (txErr) {
-        console.error(
+        logger.error(
           `[DocumentCategoryService.updateCategory] DB transaction failed after SP folder rename. ` +
           `Category ${id} SP folder is now "${newName}" but DB paths may be stale.`,
           txErr,

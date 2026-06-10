@@ -1,3 +1,4 @@
+import { NotificationService } from '@/services/notificationService';
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
@@ -23,12 +24,20 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     if (updated.approverUserId) {
       const approver = await userRepo.findById(updated.approverUserId);
       if (approver?.email) {
-        sendKpiApprovalRequestEmail({
-          approver: { name: approver.name ?? '', email: approver.email },
-          departmentName: updated.department,
-          year: updated.yearly,
-          reviewerName: session.user.name ?? '',
-        }).catch((e) => console.error('[email] Failed to send KPI approver request email:', e));
+        NotificationService.sendEmailOnce(
+          `KPI:${id}:REVIEWED:approver:${approver.id}:${(updated.approverToken ?? '').substring(0, 16)}`,
+          () => sendKpiApprovalRequestEmail({
+            approver: { name: approver.name ?? '', email: approver.email },
+            departmentName: updated.department,
+            year: updated.yearly,
+            reviewerName: session.user.name ?? '',
+            objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
+            actionToken: updated.approverToken ?? '',
+            senderEmail: session.user.email ?? undefined,
+          }),
+          approver.email,
+          'KPI Approval Request',
+        ).catch(() => { /* logged inside NotificationService */ });
       }
     }
 

@@ -8,7 +8,7 @@ import { KpiObjectiveRepository } from '@/repositories/kpiObjectiveRepository';
 import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRepository';
 import { UserRepository } from '@/repositories/userRepository';
 import { ActorContext, CreateMonthlyReportDTO, CreateCorrectiveActionDTO, ListMonthlyQuery, UpdateMonthlyDetailDTO, UpdateMonthlyReportDTO } from '@/types/kpi';
-import type { SignatureType } from '@/generated/prisma/client';
+import type { MonthlyStatus, SignatureType } from '@/generated/prisma/client';
 import { ALLOWED_MIME, MAX_FILE_SIZE, hasValidMagicBytes } from '@/lib/fileValidation';
 import { uploadFileToKpiMonthly } from '@/services/sharepoint';
 import { ValidationError } from '@/errors/customErrors';
@@ -43,9 +43,12 @@ export class KpiMonthlyService {
   }
 
   async getReportById(id: string) {
-    const report = await this.reportRepo.findByIdWithDetails(id);
+    const [report, approvalSignatures] = await Promise.all([
+      this.reportRepo.findByIdWithDetails(id),
+      this.approvalSignatureRepo.findByDocument('KPI_MONTHLY', id),
+    ]);
     if (!report) throw new NotFoundError(`Monthly report ${id} not found`);
-    return report;
+    return { ...report, approvalSignatures };
   }
 
   async updateDetail(detailId: string, dto: UpdateMonthlyDetailDTO) {
@@ -108,7 +111,17 @@ export class KpiMonthlyService {
     });
   }
 
-  async submitReport(reportId: string, actor: ActorContext) {
+  async submitReport(
+    reportId: string, 
+    actor: ActorContext,
+    sigBody?: { 
+      signatureDataUrl?: string; 
+      signatureType?: SignatureType; 
+      saveSignature?: boolean;
+      reviewerUserId?: string;
+      approverUserId?: string;
+    }
+  ) {
     const report = await this.getReportById(reportId);
     ensureMonthlyStatusTransition(report.status, 'PENDING_REVIEW');
     const now = new Date();
@@ -126,16 +139,26 @@ export class KpiMonthlyService {
         signerUserId: actor.userId,
         action: 'APPROVED',
         actionDate: now,
+        signaturePath: sigBody?.signatureDataUrl,
       }, tx);
-      if (report.kpi.approverUserId) {
+
+      if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
+        await this.userRepo.saveSignature(actor.userId, {
+          savedSignatureUrl: sigBody.signatureDataUrl,
+          signatureType: sigBody.signatureType || 'DRAW',
+        }, tx);
+      }
+      const reviewerId = sigBody?.reviewerUserId || report.kpi.reviewerUserId;
+      if (reviewerId) {
         await this.approvalSignatureRepo.upsertStep({
           module: 'KPI_MONTHLY',
           documentId: reportId,
-          step: 'APPROVER',
-          signerUserId: report.kpi.approverUserId,
+          step: 'REVIEWER',
+          signerUserId: reviewerId,
           action: 'PENDING',
         }, tx);
       }
+
       return updated;
     });
   }
@@ -145,19 +168,25 @@ export class KpiMonthlyService {
     actor: ActorContext,
     sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean }
   ) {
-    if (!['QMS', 'MR', 'IT'].includes(actor.role)) {
-      throw new ForbiddenError('Only QMS/MR/IT can review monthly reports');
-    }
     const report = await this.getReportById(reportId);
-    ensureMonthlyStatusTransition(report.status, 'APPROVED');
+
+    const reviewerStep = await this.approvalSignatureRepo.findByDocumentAndStep('KPI_MONTHLY', reportId, 'REVIEWER');
+    if (reviewerStep && reviewerStep.signerUserId !== actor.userId && !['QMS', 'MR', 'IT'].includes(actor.role)) {
+      throw new ForbiddenError('You are not assigned to review this monthly report');
+    }
+
+    const hasApprover = await this.approvalSignatureRepo.findByDocumentAndStep('KPI_MONTHLY', reportId, 'APPROVER');
+    const nextStatus = hasApprover ? 'PENDING_APPROVAL' : 'APPROVED';
+    ensureMonthlyStatusTransition(report.status, nextStatus as MonthlyStatus);
 
     const now = new Date();
     return db.$transaction(async (tx) => {
-      const updated = await this.reportRepo.updateStatus(reportId, 'APPROVED', {
-        reviewBy: actor.userId,
-        approveBy: actor.userId,
-        approvedAt: now,
-      }, tx);
+      const updateData: Partial<{ reviewBy: string; approveBy: string; approvedAt: Date }> = { reviewBy: actor.userId };
+      if (!hasApprover) {
+        updateData.approveBy = actor.userId;
+        updateData.approvedAt = now;
+      }
+      const updated = await this.reportRepo.updateStatus(reportId, nextStatus as MonthlyStatus, updateData, tx);
       await this.approvalSignatureRepo.upsertStep({
         module: 'KPI_MONTHLY',
         documentId: reportId,
@@ -184,11 +213,13 @@ export class KpiMonthlyService {
     actor: ActorContext,
     sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean }
   ) {
-    if (!['QMS', 'MR', 'IT'].includes(actor.role)) {
-      throw new ForbiddenError('Only QMS/MR/IT can approve monthly reports');
-    }
     const report = await this.getReportById(reportId);
     ensureMonthlyStatusTransition(report.status, 'APPROVED');
+
+    const approverStep = await this.approvalSignatureRepo.findByDocumentAndStep('KPI_MONTHLY', reportId, 'APPROVER');
+    if (approverStep && approverStep.signerUserId !== actor.userId && !['QMS', 'MR', 'IT'].includes(actor.role)) {
+      throw new ForbiddenError('You are not assigned to approve this monthly report');
+    }
 
     const now = new Date();
     return db.$transaction(async (tx) => {
@@ -232,7 +263,7 @@ export class KpiMonthlyService {
       await this.approvalSignatureRepo.upsertStep({
         module: 'KPI_MONTHLY',
         documentId: reportId,
-        step: 'APPROVER',
+        step: report.status === 'PENDING_REVIEW' ? 'REVIEWER' : 'APPROVER',
         signerUserId: actor.userId,
         action: 'REJECTED',
         actionDate: new Date(),

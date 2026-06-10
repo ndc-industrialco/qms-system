@@ -1,6 +1,7 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
+import { sendSuccess } from "@/lib/apiResponse";
 import { searchEntraUsers, fetchAllEntraUsers } from "@/services/ms-graph";
 import { UserService } from "@/services/userService";
 import { z } from "zod";
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     const msUserIds = graphUsers.map((u) => u.id).filter(Boolean) as string[];
     if (msUserIds.length === 0) {
-      return NextResponse.json({ data: [], error: null });
+      return sendSuccess([], "No users found");
     }
 
     const dbUsers = await userService.findByMsUserIds(msUserIds);
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
         jobTitle: u.jobTitle,
       }));
 
-    return NextResponse.json({ data: results, error: null });
+    return sendSuccess(results, "Users retrieved successfully");
   } catch (err) {
     return handleApiError(err);
   }

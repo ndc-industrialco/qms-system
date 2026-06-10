@@ -403,7 +403,16 @@ export const ModelName = {
   KPICorrectiveAction: 'KPICorrectiveAction',
   DocumentControl: 'DocumentControl',
   DocumentCategory: 'DocumentCategory',
-  DocumentControlRevision: 'DocumentControlRevision'
+  DocumentControlRevision: 'DocumentControlRevision',
+  AuditLog: 'AuditLog',
+  NotificationLog: 'NotificationLog',
+  ActionToken: 'ActionToken',
+  CarMaster: 'CarMaster',
+  CarResponse: 'CarResponse',
+  CarVerification: 'CarVerification',
+  CarMrSignature: 'CarMrSignature',
+  CarAttachment: 'CarAttachment',
+  CarNotificationLog: 'CarNotificationLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -419,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "department" | "user" | "systemConfig" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision"
+    modelProps: "department" | "user" | "systemConfig" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carNotificationLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1903,6 +1912,672 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AuditLog: {
+      payload: Prisma.$AuditLogPayload<ExtArgs>
+      fields: Prisma.AuditLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        findMany: {
+          args: Prisma.AuditLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>[]
+        }
+        create: {
+          args: Prisma.AuditLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        createMany: {
+          args: Prisma.AuditLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>[]
+        }
+        delete: {
+          args: Prisma.AuditLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        update: {
+          args: Prisma.AuditLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditLog>
+        }
+        groupBy: {
+          args: Prisma.AuditLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    NotificationLog: {
+      payload: Prisma.$NotificationLogPayload<ExtArgs>
+      fields: Prisma.NotificationLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NotificationLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NotificationLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>
+        }
+        findFirst: {
+          args: Prisma.NotificationLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NotificationLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>
+        }
+        findMany: {
+          args: Prisma.NotificationLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>[]
+        }
+        create: {
+          args: Prisma.NotificationLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>
+        }
+        createMany: {
+          args: Prisma.NotificationLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NotificationLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>[]
+        }
+        delete: {
+          args: Prisma.NotificationLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>
+        }
+        update: {
+          args: Prisma.NotificationLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.NotificationLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NotificationLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NotificationLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.NotificationLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationLogPayload>
+        }
+        aggregate: {
+          args: Prisma.NotificationLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotificationLog>
+        }
+        groupBy: {
+          args: Prisma.NotificationLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NotificationLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    ActionToken: {
+      payload: Prisma.$ActionTokenPayload<ExtArgs>
+      fields: Prisma.ActionTokenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ActionTokenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ActionTokenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>
+        }
+        findFirst: {
+          args: Prisma.ActionTokenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ActionTokenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>
+        }
+        findMany: {
+          args: Prisma.ActionTokenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>[]
+        }
+        create: {
+          args: Prisma.ActionTokenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>
+        }
+        createMany: {
+          args: Prisma.ActionTokenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ActionTokenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>[]
+        }
+        delete: {
+          args: Prisma.ActionTokenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>
+        }
+        update: {
+          args: Prisma.ActionTokenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>
+        }
+        deleteMany: {
+          args: Prisma.ActionTokenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ActionTokenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ActionTokenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>[]
+        }
+        upsert: {
+          args: Prisma.ActionTokenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ActionTokenPayload>
+        }
+        aggregate: {
+          args: Prisma.ActionTokenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateActionToken>
+        }
+        groupBy: {
+          args: Prisma.ActionTokenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ActionTokenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ActionTokenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ActionTokenCountAggregateOutputType> | number
+        }
+      }
+    }
+    CarMaster: {
+      payload: Prisma.$CarMasterPayload<ExtArgs>
+      fields: Prisma.CarMasterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarMasterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarMasterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>
+        }
+        findFirst: {
+          args: Prisma.CarMasterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarMasterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>
+        }
+        findMany: {
+          args: Prisma.CarMasterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>[]
+        }
+        create: {
+          args: Prisma.CarMasterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>
+        }
+        createMany: {
+          args: Prisma.CarMasterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarMasterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>[]
+        }
+        delete: {
+          args: Prisma.CarMasterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>
+        }
+        update: {
+          args: Prisma.CarMasterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>
+        }
+        deleteMany: {
+          args: Prisma.CarMasterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarMasterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarMasterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>[]
+        }
+        upsert: {
+          args: Prisma.CarMasterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMasterPayload>
+        }
+        aggregate: {
+          args: Prisma.CarMasterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarMaster>
+        }
+        groupBy: {
+          args: Prisma.CarMasterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarMasterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarMasterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarMasterCountAggregateOutputType> | number
+        }
+      }
+    }
+    CarResponse: {
+      payload: Prisma.$CarResponsePayload<ExtArgs>
+      fields: Prisma.CarResponseFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarResponseFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarResponseFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>
+        }
+        findFirst: {
+          args: Prisma.CarResponseFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarResponseFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>
+        }
+        findMany: {
+          args: Prisma.CarResponseFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>[]
+        }
+        create: {
+          args: Prisma.CarResponseCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>
+        }
+        createMany: {
+          args: Prisma.CarResponseCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarResponseCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>[]
+        }
+        delete: {
+          args: Prisma.CarResponseDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>
+        }
+        update: {
+          args: Prisma.CarResponseUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>
+        }
+        deleteMany: {
+          args: Prisma.CarResponseDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarResponseUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarResponseUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>[]
+        }
+        upsert: {
+          args: Prisma.CarResponseUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarResponsePayload>
+        }
+        aggregate: {
+          args: Prisma.CarResponseAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarResponse>
+        }
+        groupBy: {
+          args: Prisma.CarResponseGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarResponseGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarResponseCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarResponseCountAggregateOutputType> | number
+        }
+      }
+    }
+    CarVerification: {
+      payload: Prisma.$CarVerificationPayload<ExtArgs>
+      fields: Prisma.CarVerificationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarVerificationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarVerificationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>
+        }
+        findFirst: {
+          args: Prisma.CarVerificationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarVerificationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>
+        }
+        findMany: {
+          args: Prisma.CarVerificationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>[]
+        }
+        create: {
+          args: Prisma.CarVerificationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>
+        }
+        createMany: {
+          args: Prisma.CarVerificationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarVerificationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>[]
+        }
+        delete: {
+          args: Prisma.CarVerificationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>
+        }
+        update: {
+          args: Prisma.CarVerificationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>
+        }
+        deleteMany: {
+          args: Prisma.CarVerificationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarVerificationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarVerificationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>[]
+        }
+        upsert: {
+          args: Prisma.CarVerificationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarVerificationPayload>
+        }
+        aggregate: {
+          args: Prisma.CarVerificationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarVerification>
+        }
+        groupBy: {
+          args: Prisma.CarVerificationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarVerificationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarVerificationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarVerificationCountAggregateOutputType> | number
+        }
+      }
+    }
+    CarMrSignature: {
+      payload: Prisma.$CarMrSignaturePayload<ExtArgs>
+      fields: Prisma.CarMrSignatureFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarMrSignatureFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarMrSignatureFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>
+        }
+        findFirst: {
+          args: Prisma.CarMrSignatureFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarMrSignatureFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>
+        }
+        findMany: {
+          args: Prisma.CarMrSignatureFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>[]
+        }
+        create: {
+          args: Prisma.CarMrSignatureCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>
+        }
+        createMany: {
+          args: Prisma.CarMrSignatureCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarMrSignatureCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>[]
+        }
+        delete: {
+          args: Prisma.CarMrSignatureDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>
+        }
+        update: {
+          args: Prisma.CarMrSignatureUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>
+        }
+        deleteMany: {
+          args: Prisma.CarMrSignatureDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarMrSignatureUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarMrSignatureUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>[]
+        }
+        upsert: {
+          args: Prisma.CarMrSignatureUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrSignaturePayload>
+        }
+        aggregate: {
+          args: Prisma.CarMrSignatureAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarMrSignature>
+        }
+        groupBy: {
+          args: Prisma.CarMrSignatureGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarMrSignatureGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarMrSignatureCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarMrSignatureCountAggregateOutputType> | number
+        }
+      }
+    }
+    CarAttachment: {
+      payload: Prisma.$CarAttachmentPayload<ExtArgs>
+      fields: Prisma.CarAttachmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarAttachmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarAttachmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>
+        }
+        findFirst: {
+          args: Prisma.CarAttachmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarAttachmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>
+        }
+        findMany: {
+          args: Prisma.CarAttachmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>[]
+        }
+        create: {
+          args: Prisma.CarAttachmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>
+        }
+        createMany: {
+          args: Prisma.CarAttachmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarAttachmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>[]
+        }
+        delete: {
+          args: Prisma.CarAttachmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>
+        }
+        update: {
+          args: Prisma.CarAttachmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.CarAttachmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarAttachmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarAttachmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.CarAttachmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarAttachmentPayload>
+        }
+        aggregate: {
+          args: Prisma.CarAttachmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarAttachment>
+        }
+        groupBy: {
+          args: Prisma.CarAttachmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarAttachmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarAttachmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarAttachmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    CarNotificationLog: {
+      payload: Prisma.$CarNotificationLogPayload<ExtArgs>
+      fields: Prisma.CarNotificationLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarNotificationLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarNotificationLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>
+        }
+        findFirst: {
+          args: Prisma.CarNotificationLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarNotificationLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>
+        }
+        findMany: {
+          args: Prisma.CarNotificationLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>[]
+        }
+        create: {
+          args: Prisma.CarNotificationLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>
+        }
+        createMany: {
+          args: Prisma.CarNotificationLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarNotificationLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>[]
+        }
+        delete: {
+          args: Prisma.CarNotificationLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>
+        }
+        update: {
+          args: Prisma.CarNotificationLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.CarNotificationLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarNotificationLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarNotificationLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.CarNotificationLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarNotificationLogPayload>
+        }
+        aggregate: {
+          args: Prisma.CarNotificationLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarNotificationLog>
+        }
+        groupBy: {
+          args: Prisma.CarNotificationLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarNotificationLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarNotificationLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarNotificationLogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2295,12 +2970,172 @@ export const DocumentControlRevisionScalarFieldEnum = {
 export type DocumentControlRevisionScalarFieldEnum = (typeof DocumentControlRevisionScalarFieldEnum)[keyof typeof DocumentControlRevisionScalarFieldEnum]
 
 
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  actorUserId: 'actorUserId',
+  actorRole: 'actorRole',
+  action: 'action',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  before: 'before',
+  after: 'after',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const NotificationLogScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  channel: 'channel',
+  status: 'status',
+  recipient: 'recipient',
+  subject: 'subject',
+  errorMessage: 'errorMessage',
+  attempts: 'attempts',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationLogScalarFieldEnum = (typeof NotificationLogScalarFieldEnum)[keyof typeof NotificationLogScalarFieldEnum]
+
+
+export const ActionTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  module: 'module',
+  documentId: 'documentId',
+  role: 'role',
+  issuedTo: 'issuedTo',
+  metadata: 'metadata',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ActionTokenScalarFieldEnum = (typeof ActionTokenScalarFieldEnum)[keyof typeof ActionTokenScalarFieldEnum]
+
+
+export const CarMasterScalarFieldEnum = {
+  id: 'id',
+  carNo: 'carNo',
+  carYear: 'carYear',
+  sequenceNo: 'sequenceNo',
+  status: 'status',
+  sourceType: 'sourceType',
+  sourceDetail: 'sourceDetail',
+  isoStandards: 'isoStandards',
+  defectDetail: 'defectDetail',
+  nonConformanceRef: 'nonConformanceRef',
+  issuerId: 'issuerId',
+  issuerPosition: 'issuerPosition',
+  issuedAt: 'issuedAt',
+  targetDepartmentId: 'targetDepartmentId',
+  targetEmailGroup: 'targetEmailGroup',
+  responseDueAt: 'responseDueAt',
+  reCar: 'reCar',
+  reCarRefId: 'reCarRefId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarMasterScalarFieldEnum = (typeof CarMasterScalarFieldEnum)[keyof typeof CarMasterScalarFieldEnum]
+
+
+export const CarResponseScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  responderId: 'responderId',
+  responderPosition: 'responderPosition',
+  respondedAt: 'respondedAt',
+  whyAnalysis: 'whyAnalysis',
+  additionalToolDetail: 'additionalToolDetail',
+  rootCausePerson: 'rootCausePerson',
+  rootCauseMaterial: 'rootCauseMaterial',
+  rootCauseMachine: 'rootCauseMachine',
+  rootCauseMethod: 'rootCauseMethod',
+  rootCauseOther: 'rootCauseOther',
+  rootCauseOtherDetail: 'rootCauseOtherDetail',
+  rootCauseSummary: 'rootCauseSummary',
+  immediateAction: 'immediateAction',
+  preventiveAction: 'preventiveAction',
+  plannedCompletionDate: 'plannedCompletionDate'
+} as const
+
+export type CarResponseScalarFieldEnum = (typeof CarResponseScalarFieldEnum)[keyof typeof CarResponseScalarFieldEnum]
+
+
+export const CarVerificationScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  round: 'round',
+  verifierId: 'verifierId',
+  verifierPosition: 'verifierPosition',
+  verifiedAt: 'verifiedAt',
+  findings: 'findings',
+  result: 'result',
+  nextDueDate: 'nextDueDate'
+} as const
+
+export type CarVerificationScalarFieldEnum = (typeof CarVerificationScalarFieldEnum)[keyof typeof CarVerificationScalarFieldEnum]
+
+
+export const CarMrSignatureScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  mrUserId: 'mrUserId',
+  signedAt: 'signedAt',
+  comment: 'comment'
+} as const
+
+export type CarMrSignatureScalarFieldEnum = (typeof CarMrSignatureScalarFieldEnum)[keyof typeof CarMrSignatureScalarFieldEnum]
+
+
+export const CarAttachmentScalarFieldEnum = {
+  id: 'id',
+  carResponseId: 'carResponseId',
+  fileName: 'fileName',
+  fileSize: 'fileSize',
+  mimeType: 'mimeType',
+  spItemId: 'spItemId',
+  spWebUrl: 'spWebUrl',
+  spDownloadUrl: 'spDownloadUrl',
+  folderPath: 'folderPath',
+  uploadedById: 'uploadedById',
+  createdAt: 'createdAt'
+} as const
+
+export type CarAttachmentScalarFieldEnum = (typeof CarAttachmentScalarFieldEnum)[keyof typeof CarAttachmentScalarFieldEnum]
+
+
+export const CarNotificationLogScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  type: 'type',
+  sentAt: 'sentAt',
+  recipient: 'recipient'
+} as const
+
+export type CarNotificationLogScalarFieldEnum = (typeof CarNotificationLogScalarFieldEnum)[keyof typeof CarNotificationLogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -2317,6 +3152,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -2541,6 +3385,62 @@ export type EnumDocControlStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type ListEnumDocControlStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocControlStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'CarStatus'
+ */
+export type EnumCarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CarStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CarStatus[]'
+ */
+export type ListEnumCarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CarStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CarSourceType'
+ */
+export type EnumCarSourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CarSourceType'>
+    
+
+
+/**
+ * Reference to a field of type 'CarSourceType[]'
+ */
+export type ListEnumCarSourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CarSourceType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'VerificationResult'
+ */
+export type EnumVerificationResultFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerificationResult'>
+    
+
+
+/**
+ * Reference to a field of type 'VerificationResult[]'
+ */
+export type ListEnumVerificationResultFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerificationResult[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -2671,6 +3571,15 @@ export type GlobalOmitConfig = {
   documentControl?: Prisma.DocumentControlOmit
   documentCategory?: Prisma.DocumentCategoryOmit
   documentControlRevision?: Prisma.DocumentControlRevisionOmit
+  auditLog?: Prisma.AuditLogOmit
+  notificationLog?: Prisma.NotificationLogOmit
+  actionToken?: Prisma.ActionTokenOmit
+  carMaster?: Prisma.CarMasterOmit
+  carResponse?: Prisma.CarResponseOmit
+  carVerification?: Prisma.CarVerificationOmit
+  carMrSignature?: Prisma.CarMrSignatureOmit
+  carAttachment?: Prisma.CarAttachmentOmit
+  carNotificationLog?: Prisma.CarNotificationLogOmit
 }
 
 /* Types for Logging */

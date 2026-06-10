@@ -1,4 +1,6 @@
 ﻿import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
+import { AuditService } from "@/services/auditService";
 import { DarRepository } from "@/repositories/darRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { UserRepository } from "@/repositories/userRepository";
@@ -268,7 +270,7 @@ export class DarService {
     }
 
     results.forEach((r, i) => {
-      if (r.status === "rejected") console.error(`[adoptTempAttachments] Failed to move temp file #${i}:`, r.reason);
+      if (r.status === "rejected") logger.error(`[adoptTempAttachments] Failed to move temp file #${i}`, r.reason);
     });
   }
 
@@ -543,6 +545,17 @@ export class DarService {
       }
 
       await this.darRepo.update(darId, { status: nextStatus }, tx);
+
+      await AuditService.record({
+        actorUserId: userId,
+        actorRole: myStep.stepRole,
+        action: "APPROVE",
+        resourceType: "DAR",
+        resourceId: darId,
+        before: { status: dar.status },
+        after:  { status: nextStatus },
+        metadata: { step: myStep.stepRole },
+      }, tx);
     });
 
     const detail = await this.fetchDarDetail(darId);
@@ -572,6 +585,17 @@ export class DarService {
         tx
       );
       await this.darRepo.update(darId, { status: "DRAFT" as DarStatus }, tx);
+
+      await AuditService.record({
+        actorUserId: userId,
+        actorRole: myStep.stepRole,
+        action: "REJECT",
+        resourceType: "DAR",
+        resourceId: darId,
+        before: { status: dar.status },
+        after:  { status: "DRAFT" },
+        metadata: { step: myStep.stepRole, comment },
+      }, tx);
     });
 
     const detail = await this.fetchDarDetail(darId);
@@ -639,6 +663,15 @@ export class DarService {
       await this.darRepo.deleteItemsByDarId(id, tx);
       await this.darRepo.deleteDistributionsByDarId(id, tx);
       await this.darRepo.delete(id, tx);
+
+      await AuditService.record({
+        actorUserId: requesterId,
+        actorRole: isPrivileged ? "QMS" : "USER",
+        action: "DELETE",
+        resourceType: "DAR",
+        resourceId: id,
+        before: { status: dar.status, darNo: dar.darNo },
+      }, tx);
     });
   }
 
@@ -733,11 +766,11 @@ export class DarService {
         uploadedById: uploaderId,
       });
     } catch (dbErr) {
-      console.error("[DarService.uploadAttachment] DB insert failed after SP upload. Compensating by deleting SP item.", dbErr);
+      logger.error("[DarService.uploadAttachment] DB insert failed after SP upload. Compensating by deleting SP item.", dbErr);
       try {
         await deleteSpItem(sp.spItemId);
       } catch (delErr) {
-        console.error("[DarService.uploadAttachment] Compensation SP delete also failed for item:", sp.spItemId, delErr);
+        logger.error(`[DarService.uploadAttachment] Compensation SP delete also failed for item: ${sp.spItemId}`, delErr);
       }
       throw dbErr;
     }
@@ -779,7 +812,7 @@ export class DarService {
     try {
       await deleteSpItem(attachment.spItemId);
     } catch (spErr) {
-      console.error("[DarService.deleteAttachment] SharePoint delete failed (continuing):", spErr);
+      logger.error("[DarService.deleteAttachment] SharePoint delete failed (continuing)", spErr);
     }
 
     await this.darRepo.deleteAttachmentById(attachmentId);

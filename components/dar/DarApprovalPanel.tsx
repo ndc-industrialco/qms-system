@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
-import type { DarDetail, DarApprovalRow, ReviewerCandidate } from "@/types/dar";
-import type { SignatureType } from "@/types/dar";
+import type { DarDetail, DarApprovalRow, SignatureType, ReviewerCandidate } from "@/types/dar";
 import DarApprovalTimeline from "./DarApprovalTimeline";
 
 interface Props {
@@ -338,20 +338,10 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
     chkGetBackProcess: false,
     chkCopyDistribute: false,
   });
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const qmsCheckedCount = Object.values(qmsChecklist).filter(Boolean).length;
-  const canSubmit = !!sigDataUrl && !submitting;
-
-  const handleSignatureChange = useCallback((url: string | null, type: SigMode) => {
-    setSigDataUrl(url); setSigType(type);
-  }, []);
-
-  async function handleSubmit() {
-    if (!sigDataUrl) return;
-    setSubmitting(true); setError(null);
-    try {
+  const submitMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`/api/dar/${darId}/approve`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -363,9 +353,26 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
         }),
       });
       const json = await res.json();
-      if (!res.ok || json.error) { setError(getErrorMessage(json.error, t("dar.approval.errorGeneric"))); return; }
-      onDone(json.data);
-    } finally { setSubmitting(false); }
+      if (!res.ok || json.error) throw new Error(getErrorMessage(json.error, t("dar.approval.errorGeneric")));
+      return json.data;
+    },
+    onSuccess: (data) => onDone(data),
+    onError: (err) => setError(err.message),
+  });
+
+  const submitting = submitMutation.isPending;
+
+  const qmsCheckedCount = Object.values(qmsChecklist).filter(Boolean).length;
+  const canSubmit = !!sigDataUrl && !submitting;
+
+  const handleSignatureChange = useCallback((url: string | null, type: SigMode) => {
+    setSigDataUrl(url); setSigType(type);
+  }, []);
+
+  function handleSubmit() {
+    if (!sigDataUrl) return;
+    setError(null);
+    submitMutation.mutate();
   }
 
   return (
@@ -502,21 +509,28 @@ interface RejectModalProps {
 function RejectModal({ darId, stepLabel, onClose, onDone }: RejectModalProps) {
   const t = useT();
   const [reason, setReason] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit() {
-    if (!reason.trim()) return;
-    setSubmitting(true); setError(null);
-    try {
+  const submitMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`/api/dar/${darId}/reject`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: reason.trim() }),
       });
       const json = await res.json();
-      if (!res.ok || json.error) { setError(getErrorMessage(json.error, t("dar.approval.errorGeneric"))); return; }
-      onDone(json.data);
-    } finally { setSubmitting(false); }
+      if (!res.ok || json.error) throw new Error(getErrorMessage(json.error, t("dar.approval.errorGeneric")));
+      return json.data;
+    },
+    onSuccess: (data) => onDone(data),
+    onError: (err) => setError(err.message),
+  });
+
+  const submitting = submitMutation.isPending;
+
+  function handleSubmit() {
+    if (!reason.trim()) return;
+    setError(null);
+    submitMutation.mutate();
   }
 
   return (
@@ -603,25 +617,32 @@ function PreparerSignModal({ darId, savedSignatureUrl, savedSignatureType, onClo
   const [sigDataUrl, setSigDataUrl] = useState<string | null>(null);
   const [sigType, setSigType] = useState<SigMode>("DRAW");
   const [saveSignature, setSaveSignature] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignatureChange = useCallback((url: string | null, type: SigMode) => {
     setSigDataUrl(url); setSigType(type);
   }, []);
 
-  async function handleSubmit() {
-    if (!sigDataUrl) return;
-    setSubmitting(true); setError(null);
-    try {
+  const submitMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`/api/dar/${darId}/approve`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ signatureDataUrl: sigDataUrl, signatureType: sigType, saveSignature, comment: null }),
       });
       const json = await res.json();
-      if (!res.ok || json.error) { setError(getErrorMessage(json.error, t("dar.approval.errorGeneric"))); return; }
-      onDone(json.data);
-    } finally { setSubmitting(false); }
+      if (!res.ok || json.error) throw new Error(getErrorMessage(json.error, t("dar.approval.errorGeneric")));
+      return json.data;
+    },
+    onSuccess: (data) => onDone(data),
+    onError: (err) => setError(err.message),
+  });
+
+  const submitting = submitMutation.isPending;
+
+  function handleSubmit() {
+    if (!sigDataUrl) return;
+    setError(null);
+    submitMutation.mutate();
   }
 
   return (
@@ -677,38 +698,46 @@ function PreparerSignModal({ darId, savedSignatureUrl, savedSignatureType, onClo
 
 function AssignReviewerPanel({ darId, onDone }: { darId: string; onDone: (dar: DarDetail) => void }) {
   const t = useT();
-  const [candidates, setCandidates] = useState<ReviewerCandidate[] | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
   const [selected, setSelected] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadCandidates() {
-    setLoading(true);
-    try {
+  const { data: candidates = [], isLoading: loading } = useQuery({
+    queryKey: ["reviewer-candidates"],
+    queryFn: async () => {
       const res = await fetch("/api/dar/reviewer-candidates");
+      if (!res.ok) throw new Error("Failed to fetch candidates");
       const json = await res.json();
-      setCandidates(json.data ?? []);
-    } finally { setLoading(false); }
-  }
+      return (json.data ?? []) as ReviewerCandidate[];
+    },
+    enabled: isSelecting,
+  });
 
-  async function submit() {
-    if (!selected) return;
-    setSubmitting(true); setError(null);
-    try {
+  const submitMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`/api/dar/${darId}/assign-reviewer`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reviewerUserId: selected }),
       });
       const json = await res.json();
-      if (!res.ok || json.error) { setError(getErrorMessage(json.error, t("dar.approval.errorGeneric"))); return; }
-      onDone(json.data);
-    } finally { setSubmitting(false); }
+      if (!res.ok || json.error) throw new Error(getErrorMessage(json.error, t("dar.approval.errorGeneric")));
+      return json.data;
+    },
+    onSuccess: (data) => onDone(data),
+    onError: (err) => setError(err.message),
+  });
+
+  const submitting = submitMutation.isPending;
+
+  function submit() {
+    if (!selected) return;
+    setError(null);
+    submitMutation.mutate();
   }
 
-  if (!candidates) {
+  if (!isSelecting) {
     return (
-      <Button size="sm" type="button" onClick={loadCandidates} disabled={loading}>
+      <Button size="sm" type="button" onClick={() => setIsSelecting(true)} disabled={loading}>
         {loading && <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-1" />}
         {t("dar.approval.btnAssignReviewer")}
       </Button>
@@ -731,7 +760,7 @@ function AssignReviewerPanel({ darId, onDone }: { darId: string; onDone: (dar: D
           {submitting && <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-1" />}
           {t("common.confirm")}
         </Button>
-        <Button variant="ghost" size="sm" type="button" onClick={() => setCandidates(null)}>{t("common.cancel")}</Button>
+        <Button variant="ghost" size="sm" type="button" onClick={() => setIsSelecting(false)}>{t("common.cancel")}</Button>
       </div>
     </div>
   );

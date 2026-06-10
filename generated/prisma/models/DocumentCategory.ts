@@ -250,6 +250,7 @@ export type DocumentCategoryOrderByWithRelationInput = {
 
 export type DocumentCategoryWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  departmentId_name?: Prisma.DocumentCategoryDepartmentIdNameCompoundUniqueInput
   AND?: Prisma.DocumentCategoryWhereInput | Prisma.DocumentCategoryWhereInput[]
   OR?: Prisma.DocumentCategoryWhereInput[]
   NOT?: Prisma.DocumentCategoryWhereInput | Prisma.DocumentCategoryWhereInput[]
@@ -261,7 +262,7 @@ export type DocumentCategoryWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"DocumentCategory"> | Date | string
   department?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>
   documents?: Prisma.DocumentControlListRelationFilter
-}, "id">
+}, "id" | "departmentId_name">
 
 export type DocumentCategoryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -377,6 +378,11 @@ export type DocumentCategoryOrderByRelationAggregateInput = {
 export type DocumentCategoryNullableScalarRelationFilter = {
   is?: Prisma.DocumentCategoryWhereInput | null
   isNot?: Prisma.DocumentCategoryWhereInput | null
+}
+
+export type DocumentCategoryDepartmentIdNameCompoundUniqueInput = {
+  departmentId: string
+  name: string
 }
 
 export type DocumentCategoryCountOrderByAggregateInput = {

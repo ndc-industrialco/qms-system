@@ -41,6 +41,12 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Check API patterns
+        run: npm run check:api
+
+      - name: Run tests
+        run: npm test
+
       - name: Lint codebase
         run: npm run lint
 
@@ -92,7 +98,8 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=long
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -104,20 +111,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    name: Trigger Portainer Webhook Deploy
-    needs: docker-build-push
-    runs-on: ubuntu-latest
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')) && github.repository_owner != 'example-owner'
-    
-    steps:
-      - name: Call Portainer Stack Webhook
-        run: |
-          if [ -z "${{ secrets.PORTAINER_WEBHOOK_URL }}" ]; then
-            echo "Error: PORTAINER_WEBHOOK_URL secret is not set. Deployment skipped."
-            exit 1
-          fi
-          
-          echo "Triggering Portainer Webhook to pull new image and redeploy stack..."
-          curl -X POST -d '{}' "${{ secrets.PORTAINER_WEBHOOK_URL }}"
-          echo "Webhook triggered successfully!"

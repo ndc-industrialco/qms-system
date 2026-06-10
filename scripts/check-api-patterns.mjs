@@ -27,6 +27,8 @@ const API_DIR = join(ROOT, "app", "api");
 const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/auth/[...nextauth]/route.ts",
   "app/api/health/route.ts",
+  "app/api/health/live/route.ts",
+  "app/api/health/ready/route.ts",
   // Approve/reject/submit/review routes that receive no body (ID is path param)
   "app/api/dar/[id]/submit/route.ts",
   "app/api/kpi/[id]/approve/route.ts",
@@ -48,9 +50,13 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/it/users/route.ts",
   "app/api/it/users/[id]/push-to-m365/route.ts",
   // ID-only action routes (no request body)
+  "app/api/car/[id]/issue/route.ts",
+  "app/api/car/[id]/re-car/route.ts",
+  "app/api/kpi/[id]/recall/route.ts",
   "app/api/kpi/[id]/reject/route.ts",
   "app/api/kpi/[id]/review/route.ts",
   // No user-controlled query params
+  "app/api/car/next-number/route.ts",
   "app/api/qms/mr/route.ts",
   "app/api/users/assignees/route.ts",
   // FormData with inline file validation (no Zod needed)
@@ -58,8 +64,11 @@ const NO_SCHEMA_ALLOWLIST = new Set([
 ]);
 
 const NO_ERROR_HANDLER_ALLOWLIST = new Set([
+  "app/api/audit-logs/export/route.ts", // returns raw Response (Excel stream), not standard envelope
   "app/api/auth/[...nextauth]/route.ts",
   "app/api/health/route.ts",
+  "app/api/health/live/route.ts",
+  "app/api/health/ready/route.ts",
   "app/api/it/ms365-groups/route.ts",
   "app/api/sharepoint/create-folder/route.ts",
   "app/api/sharepoint/delete-item/route.ts",
@@ -111,6 +120,7 @@ function checkSchemaValidation(content, relPath) {
 
 function checkDirectDbImport(content, relPath) {
   if (relPath === "app/api/health/route.ts") return null; // infra probe allowlist
+  if (relPath === "app/api/health/ready/route.ts") return null; // infra probe allowlist
   if (content.includes('from "@/lib/db"') || content.includes("from '@/lib/db'")) {
     return "direct @/lib/db import — use a service + repository instead";
   }

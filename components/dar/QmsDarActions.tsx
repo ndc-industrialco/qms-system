@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,26 +15,24 @@ interface Props {
 export default function QmsDarActions({ darId, darNo }: Props) {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleDelete() {
-    setDeleting(true);
-    setError(null);
-    try {
+  const { mutate: deleteDar, isPending: deleting } = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`/api/dar/${darId}`, { method: "DELETE" });
       const json = await res.json() as { error: string | null };
-      if (!res.ok || json.error) {
-        setError(json.error ?? "เกิดข้อผิดพลาด");
-        return;
-      }
+      if (!res.ok || json.error) throw new Error(json.error || "เกิดข้อผิดพลาด");
+    },
+    onSuccess: () => {
       router.push("/dar");
       router.refresh();
-    } catch {
-      setError("เกิดข้อผิดพลาด กรุณาลองใหม่");
-    } finally {
-      setDeleting(false);
-    }
+    },
+    onError: (err) => setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่"),
+  });
+
+  function handleDelete() {
+    setError(null);
+    deleteDar();
   }
 
   return (

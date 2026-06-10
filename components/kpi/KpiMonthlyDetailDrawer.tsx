@@ -16,14 +16,17 @@ import {
 import {
   useKpiMonthlyById,
   useRejectMonthlyReport,
-  useReviewMonthlyReport,
   useSubmitMonthlyReport,
   useUpdateMonthlyDetail,
   useUpdateMonthlyReport,
   useUploadMonthlyAttachment,
+  useApproveMonthlyReport,
 } from "@/hooks/api/use-kpi-monthly";
 import { useAddCorrectiveAction, useDeleteCorrectiveAction } from "@/hooks/api/use-kpi-corrective";
 import type { AchievedStatus, MonthlyStatus } from "@/generated/prisma/client";
+import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
+import KpiObjectiveAssignDialog from "@/components/kpi/KpiObjectiveAssignDialog";
+import type { SignatureType } from "@/generated/prisma/client";
 
 type UserRole = "USER" | "IT" | "QMS" | "MR";
 const PRIVILEGED_ROLES: UserRole[] = ["IT", "QMS", "MR"];
@@ -35,6 +38,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userRole: UserRole;
+  userId?: string;
 }
 
 const STATUS_CONFIG: Record<MonthlyStatus, { style: string; label?: string }> = {
@@ -107,7 +111,7 @@ function DrawerSkeleton() {
   );
 }
 
-export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenChange, userRole }: Props) {
+export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenChange, userRole, userId }: Props) {
   const t = useT();
   const privileged = isPrivileged(userRole);
 
@@ -122,6 +126,10 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
   const [remarkDirty, setRemarkDirty] = useState(false);
   const [correctiveDrafts, setCorrectiveDrafts] = useState<Record<string, CorrectiveDraft>>({});
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [signatureOpen, setSignatureOpen] = useState(false);
+  const [signatureMode, setSignatureMode] = useState<"submit" | "approve">("submit");
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [pendingSignaturePayload, setPendingSignaturePayload] = useState<{ signatureDataUrl: string; signatureType: SignatureType; saveSignature: boolean } | null>(null);
 
   const updateDetailMutation    = useUpdateMonthlyDetail();
   const updateReportMutation    = useUpdateMonthlyReport();
@@ -129,20 +137,21 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
   const addCorrectiveMutation   = useAddCorrectiveAction();
   const deleteCorrectiveMutation = useDeleteCorrectiveAction();
   const submitMutation        = useSubmitMonthlyReport();
-  const reviewMutation        = useReviewMonthlyReport();
+  const approveMutation       = useApproveMonthlyReport();
   const rejectMutation        = useRejectMonthlyReport();
 
   const anyLoading =
     updateDetailMutation.isPending || updateReportMutation.isPending ||
     uploadMutation.isPending || addCorrectiveMutation.isPending ||
     deleteCorrectiveMutation.isPending ||
-    submitMutation.isPending || reviewMutation.isPending ||
+    submitMutation.isPending || approveMutation.isPending ||
     rejectMutation.isPending;
 
   const reportStatus = report?.status as MonthlyStatus | undefined;
+  const isPreparer = !report?.prepareBy || report?.prepareBy === userId;
   const isEditable = privileged
     ? reportStatus !== "APPROVED"
-    : reportStatus === "DRAFT" || reportStatus === "REJECTED";
+    : (reportStatus === "DRAFT" || reportStatus === "REJECTED") && isPreparer;
   const details = (report?.details ?? []) as DetailRow[];
   const notOkDetails = details.filter((d) => d.achievedStatus === "NOT_OK");
 
@@ -157,7 +166,7 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
       setActualInputs(init);
       setSavedInputs(init);
     }
-  }, [report?.id, report?.remark]);
+  }, [report?.id, report?.remark, report?.details]);
 
   const detailsDirty = details.some((d) => (actualInputs[d.id] ?? "") !== (savedInputs[d.id] ?? ""));
 
@@ -239,24 +248,51 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
     }
   }
 
-  async function handleSubmit() {
+  async function handleSignatureConfirm(payload: { signatureDataUrl: string; signatureType: SignatureType; saveSignature: boolean }) {
     if (!kpiId || !reportId) return;
+    if (signatureMode === "submit") {
+      setPendingSignaturePayload(payload);
+      setSignatureOpen(false);
+      setAssignOpen(true);
+      return;
+    }
+
     try {
-      await submitMutation.mutateAsync({ kpiId, reportId });
-      toast.success(t("kpi.monthly.messages.submitSuccess"));
+      await approveMutation.mutateAsync({ kpiId, reportId, data: payload });
+      toast.success(t("kpi.monthly.messages.approveSuccess" as Parameters<typeof t>[0]) || "Approved successfully");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
     }
   }
 
-  async function handleReview() {
-    if (!kpiId || !reportId) return;
+  async function handleAssignConfirm(reviewerUserId: string, _approverUserId?: string) {
+    if (!kpiId || !reportId || !pendingSignaturePayload) return;
     try {
-      await reviewMutation.mutateAsync({ kpiId, reportId });
-      toast.success(t("kpi.monthly.messages.reviewSuccess"));
+      await submitMutation.mutateAsync({ 
+        kpiId, 
+        reportId, 
+        data: { 
+          ...pendingSignaturePayload, 
+          reviewerUserId 
+        } 
+      });
+      toast.success(t("kpi.monthly.messages.submitSuccess"));
+      setAssignOpen(false);
+      setPendingSignaturePayload(null);
+      onOpenChange(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
     }
+  }
+
+  function initiateSubmit() {
+    setSignatureMode("submit");
+    setSignatureOpen(true);
+  }
+
+  function initiateApprove() {
+    setSignatureMode("approve");
+    setSignatureOpen(true);
   }
 
   async function handleReject() {
@@ -681,7 +717,7 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
                     ) : (
                       <Button
                         className="flex-1 rounded-xl bg-primary hover:bg-primary/90"
-                        onClick={handleSubmit}
+                        onClick={initiateSubmit}
                         disabled={anyLoading}
                       >
                         {t("kpi.monthly.actions.submit")}
@@ -689,12 +725,13 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
                     )
                   )}
 
-                  {/* Privileged: review → approve PENDING_REVIEW */}
-                  {privileged && (reportStatus === "PENDING_REVIEW" || reportStatus === "PENDING_APPROVAL") && (
+                  {/* Privileged OR assigned approver: approve only (PENDING_APPROVAL) */}
+                  {reportStatus === "PENDING_APPROVAL" &&
+                    (privileged || userId === report?.kpi?.approverUserId) && (
                     <>
                       <Button
                         className="flex-1 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
-                        onClick={handleReview}
+                        onClick={initiateApprove}
                         disabled={anyLoading}
                       >
                         <CheckCircle2 className="mr-1.5 h-4 w-4" />
@@ -717,6 +754,27 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
           </>
         )}
       </SheetContent>
+
+      <KpiSignatureDialog
+        open={signatureOpen}
+        title={
+          signatureMode === "approve"
+            ? t("kpi.approve.signatureTitle")
+            : t("kpi.submit.signatureTitle")
+        }
+        onOpenChange={setSignatureOpen}
+        onConfirm={async (payload) => {
+          await handleSignatureConfirm(payload);
+        }}
+      />
+
+      <KpiObjectiveAssignDialog
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        initialReviewerId={report?.kpi?.reviewerUserId || ""}
+        hideApprover={true}
+        onConfirm={handleAssignConfirm}
+      />
     </Sheet>
   );
 }

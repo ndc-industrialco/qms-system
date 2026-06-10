@@ -121,4 +121,17 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
       data: { status },
     });
   }
+
+  async clearSubmission(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).update({
+      where: { id },
+      data: {
+        reviewerUserId: null,
+        approverUserId: null,
+        prepareSignature: null,
+        submittedAt: null,
+        prepare: '',
+      },
+    });
+  }
 }

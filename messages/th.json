@@ -28,7 +28,10 @@
     "qmsDar": "จัดการ DAR",
     "sharepoint": "SharePoint Files",
     "users": "จัดการผู้ใช้",
-    "departments": "จัดการแผนก"
+    "departments": "จัดการแผนก",
+    "myWork": "งานของฉัน",
+    "itAdmin": "IT Admin",
+    "closeSidebar": "ปิดแถบด้านข้าง"
   },
   "roles": {
     "USER": "ผู้ใช้งาน",
@@ -170,7 +173,8 @@
       "sigImageSizeError": "ไฟล์ต้องมีขนาดไม่เกิน 2MB",
       "sigClear": "ล้างลายมือชื่อ",
       "sigAlt": "ลายมือชื่อ",
-      "sigSavedAlt": "ลายมือชื่อที่บันทึก"
+      "sigSavedAlt": "ลายมือชื่อที่บันทึก",
+      "sigImageAlt": "รูปลายมือชื่อ"
     },
     "review": {
       "bannerTitle": "คุณได้รับมอบหมายให้ตรวจสอบคำขอนี้",
@@ -270,6 +274,28 @@
     }
   },
   "it": {
+    "auditLog": {
+      "title": "บันทึกการตรวจสอบ",
+      "subtitle": "{count} รายการ",
+      "exportExcel": "ส่งออก Excel",
+      "exporting": "กำลังส่งออก...",
+      "colDateTime": "วันที่ / เวลา",
+      "colActor": "ผู้ดำเนินการ",
+      "colRole": "Role",
+      "colAction": "การดำเนินการ",
+      "colResourceType": "ประเภททรัพยากร",
+      "colResourceId": "ID ทรัพยากร",
+      "colDetails": "รายละเอียด",
+      "filterAction": "การดำเนินการ",
+      "filterResource": "ทรัพยากร",
+      "filterDateFrom": "ตั้งแต่",
+      "filterDateTo": "ถึง",
+      "allActions": "ทุกการดำเนินการ",
+      "allResources": "ทุกทรัพยากร",
+      "empty": "ไม่มีบันทึกการตรวจสอบ",
+      "emptyDesc": "ไม่มีรายการที่ตรงกับตัวกรองที่เลือก",
+      "navLabel": "บันทึกการตรวจสอบ"
+    },
     "users": {
       "title": "จัดการผู้ใช้",
       "sync": "ซิงค์จาก M365",
@@ -446,6 +472,7 @@
     "rolePrivilegedDesc": "มีสิทธิ์ CRUD ไม่จำกัดสำหรับรายการ KPI ทั้งหมดตลอดเวลา",
     "roleUserDesc": "คุณสามารถสร้างและแก้ไขวัตถุประสงค์ได้เฉพาะเมื่อสถานะ KPI เป็น Draft หรือ Rejected เท่านั้น การดำเนินการจะถูกล็อกเมื่ออนุมัติแล้ว",
     "roleUserApprovedDesc": "KPI นี้ได้รับการอนุมัติครบถ้วนแล้ว การ CRUD ถูกล็อกสำหรับบทบาทของคุณ",
+    "roleUserWrongDeptDesc": "คุณไม่มีสิทธิ์แก้ไข KPI นี้ แผนกของคุณไม่ตรงกับ KPI นี้",
     "reference": {
       "title": "ระบบ KPI",
       "add": "เพิ่ม KPI",
@@ -461,6 +488,26 @@
       "action": {
         "edit": "แก้ไข",
         "delete": "ลบ"
+      },
+      "departments": {
+        "title": "จัดการแผนก",
+        "add": "เพิ่มแผนก",
+        "editTitle": "แก้ไขแผนก",
+        "addTitle": "เพิ่มแผนกใหม่",
+        "labelName": "ชื่อแผนก",
+        "placeholderName": "เช่น IT, QMS, HR",
+        "confirmDeleteTitle": "ลบแผนก",
+        "confirmDeleteMsg": "ลบแผนก \"{name}\"? การกระทำนี้ไม่สามารถย้อนกลับได้",
+        "cantDelete": "ไม่สามารถลบแผนกที่มีผู้ใช้ {n} คน",
+        "addSuccess": "เพิ่มแผนกสำเร็จ",
+        "editSuccess": "อัปเดตแผนกสำเร็จ",
+        "deleteSuccess": "ลบแผนกสำเร็จ",
+        "users": "{n} คน",
+        "colUsers": "ผู้ใช้",
+        "colStatus": "สถานะ",
+        "active": "ใช้งาน",
+        "inactive": "ปิดใช้งาน",
+        "labelActive": "แผนกนี้ใช้งานอยู่"
       }
     },
     "tabs": {
@@ -512,6 +559,28 @@
       "signatureTitle": "ลายเซ็นผู้จัดทำ",
       "assignTitle": "มอบหมายผู้ตรวจสอบและผู้อนุมัติ",
       "success": "ส่งวัตถุประสงค์ KPI เพื่อตรวจสอบเรียบร้อยแล้ว"
+    },
+    "recall": {
+      "button": "เรียกคืน",
+      "confirmTitle": "เรียกคืนการส่ง",
+      "confirmMessage": "คุณแน่ใจหรือไม่ว่าต้องการเรียกคืนการส่ง KPI นี้? สถานะจะถูกรีเซ็ตเป็น Draft และลายมือชื่อที่กำหนดทั้งหมดจะถูกลบออก",
+      "success": "เรียกคืนการส่ง KPI สำเร็จ"
+    },
+    "review": {
+      "button": "ตรวจสอบและลงนาม",
+      "signatureTitle": "ลายเซ็นผู้ตรวจสอบ",
+      "success": "ตรวจสอบ KPI สำเร็จ"
+    },
+    "approve": {
+      "button": "อนุมัติและลงนาม",
+      "signatureTitle": "ลายเซ็นผู้อนุมัติ",
+      "success": "อนุมัติ KPI สำเร็จ"
+    },
+    "reject": {
+      "button": "ปฏิเสธ",
+      "confirmTitle": "ปฏิเสธ KPI",
+      "confirmMessage": "คุณแน่ใจหรือไม่ว่าต้องการปฏิเสธ KPI นี้? สถานะจะถูกเปลี่ยนเป็น Rejected และผู้จัดทำจะได้รับการแจ้งเตือน",
+      "success": "ปฏิเสธ KPI สำเร็จ"
     },
     "monthly": {
       "title": "รายงาน KPI รายเดือน",
@@ -899,6 +968,166 @@
     "heroBanner": {
       "viewDetails": "ดูรายละเอียด",
       "empty": "ยังไม่มีประกาศ"
+    }
+  },
+  "car": {
+    "page": {
+      "title": "CAR — คำขอการแก้ไข",
+      "subtitle": "Corrective Action Requests",
+      "userTitle": "CAR ของแผนก",
+      "userSubtitle": "คำขอการแก้ไขที่เกี่ยวข้องกับแผนกของคุณ"
+    },
+    "list": {
+      "empty": "ไม่พบ CAR",
+      "searchPlaceholder": "ค้นหา CAR No., รายละเอียด, แผนก...",
+      "filterStatus": "สถานะ",
+      "filterType": "ประเภท",
+      "allStatuses": "ทุกสถานะ",
+      "allTypes": "ทุกประเภท",
+      "countLabel": "รายการ",
+      "colCarNo": "เลขที่ CAR",
+      "colType": "ประเภท",
+      "colDept": "แผนก",
+      "colDetail": "รายละเอียด",
+      "colStatus": "สถานะ",
+      "colIssuedAt": "วันที่ออก",
+      "colDueAt": "ครบกำหนด",
+      "mobileDepartment": "แผนก",
+      "mobileIssuer": "ผู้ออก",
+      "mobileIssuedAt": "วันที่ออก",
+      "mobileDueAt": "ครบกำหนด"
+    },
+    "status": {
+      "DRAFT": "ฉบับร่าง",
+      "ISSUED": "ออก CAR แล้ว",
+      "RESPONDED": "ตอบกลับแล้ว",
+      "VERIFY_1": "รอการตรวจสอบรอบ 1",
+      "VERIFY_2": "รอการตรวจสอบรอบ 2",
+      "CLOSED": "ปิด CAR แล้ว",
+      "RE_CAR": "Re-CAR",
+      "CANCELLED": "ยกเลิก"
+    },
+    "source": {
+      "I": "การตรวจสอบภายใน",
+      "C": "ข้อร้องเรียนจากลูกค้า",
+      "N": "ผลิตภัณฑ์ไม่เป็นไปตามข้อกำหนด",
+      "O": "อื่นๆ"
+    },
+    "detail": {
+      "reCarBadge": "Re-CAR",
+      "refLabel": "อ้างอิง:",
+      "btnEdit": "แก้ไข",
+      "btnVerify": "บันทึกการตรวจสอบ",
+      "btnCreatingReCar": "กำลังสร้าง...",
+      "btnCreateReCar": "สร้าง Re-CAR",
+      "respondPrompt": "แผนกของคุณต้องตอบกลับ CAR นี้",
+      "btnRespond": "ตอบกลับ CAR",
+      "verifyTitle": "บันทึกการตรวจสอบ รอบที่ {round}",
+      "respondFormTitle": "ตอบกลับ CAR",
+      "verifyFormTitle": "ผลการตรวจสอบ",
+      "timelineTitle": "Timeline",
+      "responseTitle": "การตอบกลับของแผนก",
+      "labelType": "ประเภท",
+      "labelTargetDept": "แผนกเป้าหมาย",
+      "labelIssuer": "ผู้ออก CAR",
+      "labelIso": "ISO Standards",
+      "labelIssuedAt": "วันที่ออก CAR",
+      "labelDueAt": "กำหนดตอบกลับ",
+      "labelDefect": "รายละเอียดข้อบกพร่อง",
+      "labelNonConformance": "อ้างอิงข้อไม่สอดคล้อง",
+      "labelResponder": "ผู้ตอบ",
+      "labelRespondedAt": "ตอบกลับเมื่อ",
+      "labelPlannedDate": "วันที่วางแผน",
+      "labelWhyAnalysis": "5 Why Analysis",
+      "labelRootCause": "สรุปสาเหตุที่แท้จริง",
+      "labelImmediateAction": "การแก้ไขเบื้องต้น",
+      "labelPreventiveAction": "การป้องกัน"
+    },
+    "form": {
+      "createTitle": "สร้าง CAR ใหม่",
+      "editTitle": "แก้ไข CAR {carNo}",
+      "btnCreate": "+ สร้าง CAR ใหม่",
+      "section1": "ส่วนที่ 1 — ประเภทและแหล่งที่มา",
+      "section2": "ส่วนที่ 2 — ISO Standards",
+      "section3": "ส่วนที่ 3 — รายละเอียด",
+      "section4": "ส่วนที่ 4 — ผู้ออก CAR",
+      "section5": "ส่วนที่ 5 — แผนกเป้าหมาย",
+      "sourceDetailPlaceholder": "รายละเอียดเพิ่มเติม...",
+      "reCarCheckbox": "Re-CAR (อ้างอิง CAR เดิม)",
+      "reCarRefLabel": "เลขที่ CAR ที่อ้างอิง",
+      "reCarRefPlaceholder": "CAR ID...",
+      "defectLabel": "รายละเอียดข้อบกพร่อง / แนวโน้มปัญหา *",
+      "nonConformanceLabel": "ข้อไม่สอดคล้องกับข้อกำหนด *",
+      "issuerPickerLabel": "ผู้ออก CAR (เลือกจาก Microsoft 365)",
+      "issuerPickerPlaceholder": "ค้นหาชื่อพนักงาน หรืออีเมล...",
+      "issuerPositionLabel": "ตำแหน่งผู้ออก *",
+      "issuerPositionPlaceholder": "ตำแหน่ง (auto-fill จาก MS365 หรือกรอกเอง)",
+      "deptLabel": "แผนก *",
+      "deptPlaceholder": "-- เลือกแผนก --",
+      "groupPickerLabel": "Email Group (MS365 — การแจ้งเตือน)",
+      "groupPickerPlaceholder": "ค้นหากลุ่มอีเมล MS365...",
+      "groupMailHint": "จะส่งอีเมลถึง:",
+      "issuerRequired": "กรุณาเลือกผู้ออก CAR",
+      "btnSave": "บันทึกการแก้ไข",
+      "btnSaving": "กำลังบันทึก...",
+      "btnCreate2": "สร้าง CAR"
+    },
+    "issue": {
+      "btnIssue": "ออก CAR",
+      "confirmTitle": "ยืนยันการออก CAR",
+      "confirmMsg": "ต้องการออก CAR เลขที่ {carNo} ใช่หรือไม่?",
+      "confirmEmailNote": "ระบบจะส่งอีเมลแจ้งเตือนไปยังแผนกทันที",
+      "btnConfirm": "ยืนยันการออก CAR",
+      "btnConfirming": "กำลังดำเนินการ..."
+    },
+    "respond": {
+      "sectionAnalysis": "การวิเคราะห์สาเหตุ",
+      "whyLabel": "5 Why Analysis *",
+      "whyPlaceholder": "วิเคราะห์สาเหตุโดยใช้ 5 Why...",
+      "otherToolLabel": "เครื่องมืออื่น (ถ้ามี)",
+      "otherToolPlaceholder": "หากใช้เครื่องมืออื่นนอกจาก 5 Why กรุณาระบุรายละเอียด...",
+      "sectionRootCause": "Root Cause",
+      "rootCauseSummaryLabel": "สรุปสาเหตุที่แท้จริง *",
+      "sectionActions": "การดำเนินการ",
+      "immediateLabel": "การแก้ไขเบื้องต้น *",
+      "preventiveLabel": "การป้องกัน *",
+      "plannedDateLabel": "วันที่วางแผนเสร็จ *",
+      "sectionResponder": "ผู้ตอบกลับ",
+      "positionLabel": "ตำแหน่ง *",
+      "positionPlaceholder": "ตำแหน่งของคุณ",
+      "btnSubmit": "ส่งการตอบกลับ",
+      "btnSubmitting": "กำลังส่ง...",
+      "successMsg": "ส่งการตอบกลับสำเร็จ"
+    },
+    "verify": {
+      "findingsLabel": "ผลการตรวจสอบ *",
+      "findingsPlaceholder": "บันทึกผลการตรวจสอบ...",
+      "resultLabel": "ผลการตรวจสอบ *",
+      "resultPassed": "ดำเนินการแก้ไขครบถ้วนตามแผน → ปิด CAR",
+      "resultFailed1": "ไม่สามารถดำเนินการแก้ไขได้ → ติดตามรอบ 2",
+      "resultFailed2": "ไม่สามารถดำเนินการแก้ไขได้ → Re-CAR",
+      "nextDueDateLabel": "กำหนดติดตามรอบ 2 *",
+      "reCarWarning": "CAR นี้จะถูกเปลี่ยนสถานะเป็น RE_CAR และ QMS ต้องสร้าง Re-CAR ใหม่",
+      "verifierPositionLabel": "ตำแหน่งผู้ตรวจสอบ *",
+      "verifierPositionPlaceholder": "ตำแหน่งของคุณ",
+      "btnSave": "บันทึกการตรวจสอบรอบที่ {round}",
+      "btnSaving": "กำลังบันทึก...",
+      "successMsg": "บันทึกการตรวจสอบสำเร็จ"
+    },
+    "timeline": {
+      "stepIssued": "ออก CAR",
+      "stepResponded": "ตอบกลับแล้ว",
+      "stepVerify1": "ตรวจสอบรอบที่ 1",
+      "stepVerify2": "ตรวจสอบรอบที่ 2",
+      "stepMrSigned": "MR ลงนามปิด CAR",
+      "labelIssuedBy": "ออกโดย",
+      "labelNo": "เลขที่",
+      "labelPlannedDate": "วันที่วางแผน:",
+      "labelResult": "ผล:",
+      "labelPassed": "ผ่าน",
+      "labelFailed": "ไม่ผ่าน",
+      "labelNextDue": "ติดตามรอบ 2:",
+      "reCarTitle": "Re-CAR ที่เกี่ยวข้อง:"
     }
   }
 }

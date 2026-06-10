@@ -5,7 +5,7 @@ import { useT } from "@/lib/i18n";
 import { KPI_UNITS } from "@/lib/kpi-units";
 import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, Send, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,10 @@ import {
   useUpdateObjective,
   useDeleteObjective,
   useSubmitKpiObjectives,
+  useRecallKpiObjectives,
+  useReviewKpiObjectives,
+  useApproveKpiObjectives,
+  useRejectKpiObjectives,
 } from "@/hooks/api/use-kpi";
 import KpiApprovalTimeline from "@/components/kpi/KpiApprovalTimeline";
 import type { KPIObjective } from "@/generated/prisma/client";
@@ -33,6 +37,8 @@ function isPrivileged(role: UserRole): boolean {
 interface Props {
   kpiId: string;
   role: UserRole;
+  userId: string | null;
+  userDepartmentName: string | null;
 }
 
 const STATUS_CONFIG = {
@@ -42,7 +48,7 @@ const STATUS_CONFIG = {
   REJECTED:       { label: "Rejected ✕",      icon: null,          class: "bg-rose-50 text-rose-600 border-rose-200" },
 } as const;
 
-function RoleBanner({ role, kpiStatus }: { role: UserRole; kpiStatus: string }) {
+function RoleBanner({ role, kpiStatus, deptMatch }: { role: UserRole; kpiStatus: string; deptMatch: boolean }) {
   const t = useT();
   const privileged = isPrivileged(role);
   const isApproved = kpiStatus === "APPROVED";
@@ -56,6 +62,15 @@ function RoleBanner({ role, kpiStatus }: { role: UserRole; kpiStatus: string }) 
           {" — "}
           {t("kpi.rolePrivilegedDesc")}
         </p>
+      </div>
+    );
+  }
+
+  if (!deptMatch) {
+    return (
+      <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
+        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
+        <p className="text-sm text-rose-700">{t("kpi.roleUserWrongDeptDesc")}</p>
       </div>
     );
   }
@@ -77,12 +92,9 @@ function RoleBanner({ role, kpiStatus }: { role: UserRole; kpiStatus: string }) 
   );
 }
 
-export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
+export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDepartmentName }: Props) {
   const t = useT();
   const privileged = isPrivileged(role);
-
-  // IT/QMS/MR: always CRUD regardless of status
-  // USER: only CRUD when DRAFT or REJECTED
   const canAlwaysEdit = privileged;
 
   const { data: resp, isLoading } = useKpiById(kpiId);
@@ -92,7 +104,10 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
   const [editing, setEditing] = useState<KPIObjective | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [recallConfirmOpen, setRecallConfirmOpen] = useState(false);
+  const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
+  const [signatureMode, setSignatureMode] = useState<"submit" | "review" | "approve">("submit");
   const [pendingSignature, setPendingSignature] = useState<string | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
 
@@ -100,11 +115,35 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
   const updateMutation = useUpdateObjective();
   const deleteMutation = useDeleteObjective();
   const submitMutation = useSubmitKpiObjectives();
+  const recallMutation = useRecallKpiObjectives();
+  const reviewMutation = useReviewKpiObjectives();
+  const approveMutation = useApproveKpiObjectives();
+  const rejectMutation = useRejectKpiObjectives();
 
   async function handleSignatureConfirm(payload: { signatureDataUrl: string }) {
     setPendingSignature(payload.signatureDataUrl);
     setSignatureOpen(false);
-    setAssignOpen(true);
+    if (signatureMode === "submit") {
+      setAssignOpen(true);
+    } else if (signatureMode === "review") {
+      try {
+        await reviewMutation.mutateAsync({ kpiId, data: { signatureDataUrl: payload.signatureDataUrl } });
+        toast.success(t("kpi.review.success"));
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+      } finally {
+        setPendingSignature(null);
+      }
+    } else if (signatureMode === "approve") {
+      try {
+        await approveMutation.mutateAsync({ kpiId, data: { signatureDataUrl: payload.signatureDataUrl } });
+        toast.success(t("kpi.approve.success"));
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+      } finally {
+        setPendingSignature(null);
+      }
+    }
   }
 
   async function handleAssignConfirm(reviewerUserId: string, approverUserId: string) {
@@ -139,18 +178,33 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
   const statusCfg = STATUS_CONFIG[kpiStatus] ?? STATUS_CONFIG.DRAFT;
   const StatusIcon = statusCfg.icon;
 
-  // For USER: CRUD only when DRAFT or REJECTED (not approved)
   const isDraft = kpiStatus === "DRAFT" || kpiStatus === "REJECTED";
 
-  // Effective edit permission:
-  // - privileged (IT/QMS/MR): always true
-  // - USER: only when isDraft
-  const canEdit = canAlwaysEdit || isDraft;
+  const preparerSig = (kpi as typeof kpi & { approvalSignatures?: Array<{ step: string; signerUserId: string | null }> }).approvalSignatures?.find((s: { step: string; signerUserId: string | null }) => s.step === 'PREPARER');
+  const isPreparer = userId != null && preparerSig?.signerUserId === userId;
+  const canRecall = isPreparer && kpiStatus === "PENDING_REVIEW";
 
-  // Submit is available when:
-  // - privileged: always (no condition) when there are objectives
-  // - USER: only when DRAFT/REJECTED and not yet submitted
-  const canShowSubmit = (canAlwaysEdit || isDraft) && objectives.length > 0;
+  const kpiWithIds = kpi as typeof kpi & { reviewerUserId?: string | null; approverUserId?: string | null };
+  const reviewerSig = (kpi as typeof kpi & { approvalSignatures?: Array<{ step: string; signerUserId: string | null; action?: string }> }).approvalSignatures?.find((s: { step: string; signerUserId: string | null; action?: string }) => s.step === 'REVIEWER');
+  const isReviewer = userId != null && kpiWithIds.reviewerUserId === userId;
+  const isApprover = userId != null && kpiWithIds.approverUserId === userId;
+  const reviewerAlreadySigned = reviewerSig?.action === 'APPROVED';
+  const canReview = isReviewer && kpiStatus === "PENDING_REVIEW" && !reviewerAlreadySigned;
+  const canApprove = isApprover && kpiStatus === "PENDING_REVIEW" && reviewerAlreadySigned;
+  const canReject = (isReviewer || isApprover) && kpiStatus === "PENDING_REVIEW";
+
+  // USER must belong to the same department as this KPI
+  const deptMatch = privileged
+    ? true
+    : userDepartmentName != null &&
+      kpi.department.toLowerCase() === userDepartmentName.toLowerCase();
+
+  // Effective edit permission:
+  // - privileged (IT/QMS/MR): always
+  // - USER: only when isDraft AND department matches
+  const canEdit = canAlwaysEdit || (isDraft && deptMatch);
+
+  const canShowSubmit = canEdit && objectives.length > 0;
 
   return (
     <div className="space-y-6">
@@ -184,9 +238,47 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
                 <Plus className="w-4 h-4 mr-2" />{t("kpi.objective.createTitle")}
               </Button>
             )}
+            {canRecall && (
+              <Button
+                onClick={() => setRecallConfirmOpen(true)}
+                variant="outline"
+                className="rounded-xl border-amber-200 text-amber-700 hover:bg-amber-50"
+                disabled={recallMutation.isPending}
+              >
+                <Undo2 className="w-4 h-4 mr-2" />{t("kpi.recall.button")}
+              </Button>
+            )}
+            {canReject && (
+              <Button
+                onClick={() => setRejectConfirmOpen(true)}
+                variant="outline"
+                className="rounded-xl border-rose-200 text-rose-700 hover:bg-rose-50"
+                disabled={rejectMutation.isPending}
+              >
+                <ThumbsDown className="w-4 h-4 mr-2" />{t("kpi.reject.button")}
+              </Button>
+            )}
+            {canReview && (
+              <Button
+                onClick={() => { setSignatureMode("review"); setSignatureOpen(true); }}
+                className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
+                disabled={reviewMutation.isPending}
+              >
+                <Eye className="w-4 h-4 mr-2" />{t("kpi.review.button")}
+              </Button>
+            )}
+            {canApprove && (
+              <Button
+                onClick={() => { setSignatureMode("approve"); setSignatureOpen(true); }}
+                className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+                disabled={approveMutation.isPending}
+              >
+                <ThumbsUp className="w-4 h-4 mr-2" />{t("kpi.approve.button")}
+              </Button>
+            )}
             {canShowSubmit && (
               <Button
-                onClick={() => setSignatureOpen(true)}
+                onClick={() => { setSignatureMode("submit"); setSignatureOpen(true); }}
                 className="rounded-xl bg-primary hover:bg-primary/90"
                 disabled={submitMutation.isPending}
               >
@@ -197,7 +289,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
         }
       />
 
-      <RoleBanner role={role} kpiStatus={kpiStatus} />
+      <RoleBanner role={role} kpiStatus={kpiStatus} deptMatch={deptMatch} />
 
       {/* KPI Metadata Card */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5">
@@ -390,10 +482,56 @@ export default function KpiDepartmentDetailClient({ kpiId, role }: Props) {
         />
       )}
 
+      {/* Recall Confirm */}
+      {recallConfirmOpen && (
+        <ConfirmModal
+          title={t("kpi.recall.confirmTitle")}
+          message={t("kpi.recall.confirmMessage")}
+          confirmLabel={t("kpi.recall.button")}
+          cancelLabel={t("common.cancel")}
+          danger
+          loading={recallMutation.isPending}
+          onConfirm={async () => {
+            try {
+              await recallMutation.mutateAsync(kpiId);
+              toast.success(t("kpi.recall.success"));
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+            } finally {
+              setRecallConfirmOpen(false);
+            }
+          }}
+          onCancel={() => setRecallConfirmOpen(false)}
+        />
+      )}
+
+      {/* Reject Confirm */}
+      {rejectConfirmOpen && (
+        <ConfirmModal
+          title={t("kpi.reject.confirmTitle")}
+          message={t("kpi.reject.confirmMessage")}
+          confirmLabel={t("kpi.reject.button")}
+          cancelLabel={t("common.cancel")}
+          danger
+          loading={rejectMutation.isPending}
+          onConfirm={async () => {
+            try {
+              await rejectMutation.mutateAsync(kpiId);
+              toast.success(t("kpi.reject.success"));
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+            } finally {
+              setRejectConfirmOpen(false);
+            }
+          }}
+          onCancel={() => setRejectConfirmOpen(false)}
+        />
+      )}
+
       {/* Step 1: Signature */}
       <KpiSignatureDialog
         open={signatureOpen}
-        title={t("kpi.submit.signatureTitle")}
+        title={signatureMode === "review" ? t("kpi.review.signatureTitle") : signatureMode === "approve" ? t("kpi.approve.signatureTitle") : t("kpi.submit.signatureTitle")}
         onOpenChange={setSignatureOpen}
         onConfirm={handleSignatureConfirm}
       />

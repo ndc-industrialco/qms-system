@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+import { AuditService } from '@/services/auditService';
 import { DocumentControlRepository } from '@/repositories/documentControlRepository';
 import { DepartmentRepository } from '@/repositories/departmentRepository';
 import { DocumentCategoryRepository } from '@/repositories/documentCategoryRepository';
@@ -91,6 +93,15 @@ export class DocumentControlService {
       spFolderPath: docFolderPath,
     });
 
+    await AuditService.record({
+      actorUserId: userId,
+      actorRole: "QMS",
+      action: "CREATE",
+      resourceType: "DOCUMENT",
+      resourceId: doc.id,
+      after: { docNumber: doc.docNumber, docName: doc.docName, status: doc.status },
+    });
+
     return this._formatDocDetail(doc);
   }
 
@@ -140,7 +151,7 @@ export class DocumentControlService {
         });
       } catch (txErr) {
         // DB update failed after SP move succeeded — log for manual reconciliation
-        console.error(
+        logger.error(
           `[DocumentControlService.updateDocument] DB transaction failed after SP folder move. ` +
           `Document ${id} SP folder is now at ${newDocFolderPath} but DB revision paths may be stale.`,
           txErr,
@@ -256,7 +267,7 @@ export class DocumentControlService {
     } catch (txErr) {
       // Step 3: Compensation — DB transaction failed, so delete the uploaded file from SP
       // to avoid leaving an orphaned file with no corresponding DB revision.
-      console.error(
+      logger.error(
         `[DocumentControlService.addRevision] DB transaction failed after SP upload. ` +
         `Attempting to delete orphaned SP item ${spResult.spItemId}.`,
         txErr,
@@ -264,7 +275,7 @@ export class DocumentControlService {
       try {
         await deleteSpItem(spResult.spItemId);
       } catch (deleteErr) {
-        console.error(
+        logger.error(
           `[DocumentControlService.addRevision] Compensation delete of SP item ${spResult.spItemId} also failed.`,
           deleteErr,
         );
@@ -275,7 +286,7 @@ export class DocumentControlService {
     return this._formatDocDetail(updatedDoc);
   }
 
-  async deleteDocument(id: string) {
+  async deleteDocument(id: string, actorUserId?: string) {
     const doc = await this.repo.findDetailById(id);
     if (!doc) {
       throw new NotFoundError('Document');
@@ -291,7 +302,20 @@ export class DocumentControlService {
       }
     }
 
-    return this.repo.delete(id);
+    const result = await this.repo.delete(id);
+
+    if (actorUserId) {
+      await AuditService.record({
+        actorUserId,
+        actorRole: "QMS",
+        action: "DELETE",
+        resourceType: "DOCUMENT",
+        resourceId: id,
+        before: { docNumber: (doc as { docNumber?: string }).docNumber, status: (doc as { status?: string }).status },
+      });
+    }
+
+    return result;
   }
 
   private _formatDocDetail<T extends { createdAt?: Date | string | null; updatedAt?: Date | string | null; effectiveDate?: Date | string | null }>(doc: T) {

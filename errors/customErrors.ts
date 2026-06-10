@@ -39,3 +39,35 @@ export class ConflictError extends AppError {
     super(message, 409, "CONFLICT");
   }
 }
+
+export class TokenNotFoundError extends AppError {
+  constructor() {
+    super("ลิงก์ไม่ถูกต้อง / Invalid link", 404, "TOKEN_NOT_FOUND");
+  }
+}
+
+export class TokenRevokedError extends AppError {
+  constructor() {
+    super(
+      "รายการนี้ถูกยกเลิกหรือแก้ไขแล้ว กรุณาตรวจสอบ inbox สำหรับลิงก์ใหม่ / This item has been recalled or updated. Please check your inbox for a new link.",
+      410,
+      "TOKEN_REVOKED"
+    );
+  }
+}
+
+export class TokenExpiredError extends AppError {
+  constructor() {
+    super(
+      "ลิงก์หมดอายุแล้ว กรุณาเข้าเมนู Approve เพื่อดำเนินการ / This link has expired. Please use the Approve menu.",
+      410,
+      "TOKEN_EXPIRED"
+    );
+  }
+}
+
+export class TokenOwnerError extends AppError {
+  constructor() {
+    super("ลิงก์นี้ไม่ได้ออกให้คุณ / This link was not issued for you.", 403, "TOKEN_OWNER_MISMATCH");
+  }
+}

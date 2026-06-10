@@ -66,10 +66,43 @@ export type ApprovalStep = (typeof ApprovalStep)[keyof typeof ApprovalStep]
 export const ApprovalModule = {
   DAR: 'DAR',
   KPI: 'KPI',
-  KPI_MONTHLY: 'KPI_MONTHLY'
+  KPI_MONTHLY: 'KPI_MONTHLY',
+  CAR: 'CAR'
 } as const
 
 export type ApprovalModule = (typeof ApprovalModule)[keyof typeof ApprovalModule]
+
+
+export const CarStatus = {
+  DRAFT: 'DRAFT',
+  ISSUED: 'ISSUED',
+  RESPONDED: 'RESPONDED',
+  VERIFY_1: 'VERIFY_1',
+  VERIFY_2: 'VERIFY_2',
+  CLOSED: 'CLOSED',
+  RE_CAR: 'RE_CAR',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type CarStatus = (typeof CarStatus)[keyof typeof CarStatus]
+
+
+export const CarSourceType = {
+  I: 'I',
+  C: 'C',
+  N: 'N',
+  O: 'O'
+} as const
+
+export type CarSourceType = (typeof CarSourceType)[keyof typeof CarSourceType]
+
+
+export const VerificationResult = {
+  PASSED: 'PASSED',
+  FAILED: 'FAILED'
+} as const
+
+export type VerificationResult = (typeof VerificationResult)[keyof typeof VerificationResult]
 
 
 export const SignatureType = {

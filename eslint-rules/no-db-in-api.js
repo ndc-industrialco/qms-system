@@ -15,10 +15,12 @@ const BLOCKED_SOURCE = "@/lib/db";
 
 const API_ALLOWLIST = new Set([
   "app/api/health/route.ts",
+  "app/api/health/ready/route.ts", // infra readiness probe, intentionally uses $queryRaw
 ]);
 
 const SERVICES_ALLOWLIST = new Set([
-  // nothing yet — services should use repositories + pass tx
+  "services/healthService.ts",    // infrastructure readiness probe — intentionally uses $queryRaw
+  "services/auditService.ts",     // cross-cutting audit writer — must accept tx param to stay atomic
 ]);
 
 /** Normalise Windows back-slashes so regex paths work cross-platform */

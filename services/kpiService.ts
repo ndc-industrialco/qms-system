@@ -1,4 +1,9 @@
 import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
+import { AuditService } from '@/services/auditService';
+import { NotificationService } from '@/services/notificationService';
+import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail } from '@/services/email';
+import { ActionTokenService } from '@/services/actionTokenService';
+import { ApprovalModule, ApprovalStep } from '@/generated/prisma/client';
 import { db } from '@/lib/db';
 import { KpiRepository } from '@/repositories/kpiRepository';
 import { KpiObjectiveRepository } from '@/repositories/kpiObjectiveRepository';
@@ -70,7 +75,14 @@ export class KpiService {
   async createKpi(dto: CreateKpiDTO) {
     const existing = await this.kpiRepo.findByDepartmentYear(dto.department, dto.yearly);
     if (existing) throw new ConflictError(`KPI for ${dto.department} in ${dto.yearly} already exists`);
-    return this.kpiRepo.create(dto);
+    try {
+      return await this.kpiRepo.create(dto);
+    } catch (error) {
+      if ((error as { code?: string })?.code === 'P2002') {
+        throw new ConflictError(`KPI for ${dto.department} in ${dto.yearly} already exists`);
+      }
+      throw error;
+    }
   }
 
   async updateKpi(id: string, dto: UpdateKpiDTO) {
@@ -117,17 +129,25 @@ export class KpiService {
     return obj;
   }
 
-  async submitObjectives(id: string, dto: SubmitKpiObjectivesDTO, preparerUserId: string) {
+  async submitObjectives(
+    id: string,
+    dto: SubmitKpiObjectivesDTO,
+    preparerUserId: string,
+    senderEmail?: string,
+  ) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
     if (kpi.objectives.length === 0) throw new ConflictError('Cannot submit KPI with no objectives');
     const now = new Date();
 
-    const preparer = await this.userRepo.findById(preparerUserId);
+    const [preparer, reviewer] = await Promise.all([
+      this.userRepo.findById(preparerUserId),
+      this.userRepo.findById(dto.reviewerUserId),
+    ]);
     const preparerName = preparer?.name || preparer?.email || '';
 
-    return db.$transaction(async (tx) => {
-      const updated = await this.kpiRepo.submitObjectives(id, {
+    const updated = await db.$transaction(async (tx) => {
+      const result = await this.kpiRepo.submitObjectives(id, {
         prepareSignature: dto.prepareSignature,
         reviewerUserId: dto.reviewerUserId,
         approverUserId: dto.approverUserId,
@@ -160,8 +180,50 @@ export class KpiService {
         action: 'PENDING',
       }, tx);
 
-      return updated;
+      await AuditService.record({
+        actorUserId: preparerUserId,
+        actorRole: 'PREPARER',
+        action: 'SUBMIT',
+        resourceType: 'KPI',
+        resourceId: id,
+        before: { status: kpi.status },
+        after: { status: result.status },
+      }, tx);
+
+      return result;
     });
+
+    // Revoke any existing tokens, then issue fresh reviewer token
+    await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
+    const reviewerToken = reviewer?.email
+      ? await ActionTokenService.issue({
+          module: ApprovalModule.KPI,
+          documentId: id,
+          role: ApprovalStep.REVIEWER,
+          issuedTo: dto.reviewerUserId,
+        })
+      : null;
+
+    // Send notification outside transaction — idempotent via NotificationService
+    if (reviewer?.email && reviewerToken) {
+      NotificationService.sendEmailOnce(
+        `KPI:${id}:SUBMITTED:reviewer:${dto.reviewerUserId}:${reviewerToken.substring(0, 16)}`,
+        () => sendKpiObjectiveReviewerAssignedEmail({
+          reviewer: { name: reviewer.name ?? '', email: reviewer.email },
+          requesterName: preparerName,
+          departmentName: updated.department,
+          kpiId: updated.id,
+          objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
+          year: updated.yearly,
+          actionToken: reviewerToken,
+          senderEmail,
+        }),
+        reviewer.email,
+        'KPI Review Request',
+      ).catch(() => { /* logged inside NotificationService */ });
+    }
+
+    return updated;
   }
 
   async reviewObjectives(
@@ -174,8 +236,8 @@ export class KpiService {
     if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI is not pending review');
     if (kpi.reviewerUserId !== actor.userId) throw new ForbiddenError('You are not assigned as reviewer');
 
-    return db.$transaction(async (tx) => {
-      const updated = await this.kpiRepo.setStatus(id, 'PENDING_REVIEW', tx);
+    const updated = await db.$transaction(async (tx) => {
+      const result = await this.kpiRepo.setStatus(id, 'PENDING_REVIEW', tx);
       await this.approvalSignatureRepo.upsertStep({
         module: 'KPI',
         documentId: id,
@@ -193,8 +255,30 @@ export class KpiService {
         }, tx);
       }
 
-      return updated;
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorRole: actor.role,
+        action: 'REVIEW',
+        resourceType: 'KPI',
+        resourceId: id,
+        before: { status: kpi.status },
+        after: { status: result.status },
+      }, tx);
+
+      return result;
     });
+
+    // Issue approver token after reviewer signs off
+    const approverToken = kpi.approverUserId
+      ? await ActionTokenService.issue({
+          module: ApprovalModule.KPI,
+          documentId: id,
+          role: ApprovalStep.APPROVER,
+          issuedTo: kpi.approverUserId,
+        })
+      : undefined;
+
+    return { ...updated, objectives: kpi.objectives, approverToken };
   }
 
   async approveObjectives(
@@ -213,8 +297,8 @@ export class KpiService {
       throw new ConflictError('Reviewer must approve before approver can proceed');
     }
 
-    return db.$transaction(async (tx) => {
-      const updated = await this.kpiRepo.setStatus(id, 'APPROVED', tx);
+    const updated = await db.$transaction(async (tx) => {
+      const result = await this.kpiRepo.setStatus(id, 'APPROVED', tx);
       await this.approvalSignatureRepo.upsertStep({
         module: 'KPI',
         documentId: id,
@@ -238,8 +322,23 @@ export class KpiService {
         objectiveIds: kpi.objectives.map((objective) => objective.id),
       }, tx);
 
-      return updated;
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorRole: actor.role,
+        action: 'APPROVE',
+        resourceType: 'KPI',
+        resourceId: id,
+        before: { status: kpi.status },
+        after: { status: result.status },
+      }, tx);
+
+      return result;
     });
+
+    // Approved — no more actions needed, revoke any remaining tokens
+    await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
+
+    return { ...updated, objectives: kpi.objectives };
   }
 
   private async generateMonthlyReportsForApprovedKpi(
@@ -252,6 +351,65 @@ export class KpiService {
     }
   }
 
+  async recallObjectives(id: string, actor: ActorContext) {
+    const kpi = await this.kpiRepo.findByIdWithRelations(id);
+    if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
+    if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI can only be recalled when pending review');
+
+    const signatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
+    const preparerSig = signatures.find(s => s.step === 'PREPARER');
+    if (!preparerSig || preparerSig.signerUserId !== actor.userId) {
+      throw new ForbiddenError('Only the preparer can recall this KPI');
+    }
+
+    const notifyUserIds = [kpi.reviewerUserId, kpi.approverUserId].filter(Boolean) as string[];
+
+    const updated = await db.$transaction(async (tx) => {
+      const result = await this.kpiRepo.setStatus(id, 'DRAFT', tx);
+      await this.kpiRepo.clearSubmission(id, tx);
+      await this.approvalSignatureRepo.deleteByDocument('KPI', id, tx);
+
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorRole: actor.role,
+        action: 'RECALL',
+        resourceType: 'KPI',
+        resourceId: id,
+        before: { status: kpi.status },
+        after: { status: result.status },
+      }, tx);
+
+      return result;
+    });
+
+    // Revoke all tokens immediately — reviewer link in inbox is now invalid
+    await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
+
+    // Send notifications outside transaction — idempotent via NotificationService
+    if (notifyUserIds.length > 0) {
+      const users = await Promise.all(notifyUserIds.map((uid) => this.userRepo.findById(uid)));
+      const recipients = users.filter((u): u is NonNullable<typeof u> => Boolean(u?.email));
+
+      for (const u of recipients) {
+        NotificationService.sendEmailOnce(
+          `KPI:${id}:RECALLED:notify:${u.id}`,
+          () => sendKpiRecallEmail({
+            to: { name: u.name ?? '', email: u.email },
+            departmentName: kpi.department,
+            year: kpi.yearly,
+            preparerName: actor.name ?? '',
+            kpiId: id,
+            senderEmail: actor.email,
+          }),
+          u.email,
+          'KPI Recalled',
+        ).catch(() => { /* logged inside NotificationService */ });
+      }
+    }
+
+    return { ...updated, notifyUserIds };
+  }
+
   async rejectObjectives(id: string, actor: ActorContext) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
@@ -260,8 +418,8 @@ export class KpiService {
       throw new ForbiddenError('You are not assigned in this KPI workflow');
     }
     const rejectedStep = kpi.reviewerUserId === actor.userId ? 'REVIEWER' : 'APPROVER';
-    return db.$transaction(async (tx) => {
-      const updated = await this.kpiRepo.setStatus(id, 'REJECTED', tx);
+    const updated = await db.$transaction(async (tx) => {
+      const result = await this.kpiRepo.setStatus(id, 'REJECTED', tx);
       await this.approvalSignatureRepo.upsertStep({
         module: 'KPI',
         documentId: id,
@@ -270,7 +428,24 @@ export class KpiService {
         action: 'REJECTED',
         actionDate: new Date(),
       }, tx);
-      return updated;
+
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorRole: actor.role,
+        action: 'REJECT',
+        resourceType: 'KPI',
+        resourceId: id,
+        before: { status: kpi.status },
+        after: { status: result.status },
+        metadata: { step: rejectedStep },
+      }, tx);
+
+      return result;
     });
+
+    // Revoke all tokens — preparer must re-submit to get a new reviewer link
+    await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
+
+    return { ...updated, objectives: kpi.objectives };
   }
 }

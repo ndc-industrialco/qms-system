@@ -9,6 +9,9 @@
     "start:standalone": "node --enable-source-maps .next/standalone/server.js",
     "lint": "eslint",
     "check:api": "node scripts/check-api-patterns.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -30,6 +33,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
     "ioredis": "^5.11.0",
     "lucide-react": "^1.16.0",
     "next": "^15.3.2",
@@ -48,11 +52,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.8",
     "eslint": "^9",
     "eslint-config-next": "^15.3.2",
     "tailwindcss": "^4.3.0",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   },
   "overrides": {
     "next-auth": {

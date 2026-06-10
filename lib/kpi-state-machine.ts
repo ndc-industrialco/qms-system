@@ -3,10 +3,10 @@ import { ConflictError } from '@/errors/customErrors';
 
 const ALLOWED_TRANSITIONS: Record<MonthlyStatus, MonthlyStatus[]> = {
   DRAFT: ['PENDING_REVIEW'],
-  PENDING_REVIEW: ['APPROVED', 'REJECTED'],
+  PENDING_REVIEW: ['PENDING_APPROVAL', 'APPROVED', 'REJECTED'],
   PENDING_APPROVAL: ['APPROVED', 'REJECTED'],
   APPROVED: [],
-  REJECTED: ['DRAFT'],
+  REJECTED: ['DRAFT', 'PENDING_REVIEW'],
 };
 
 export function ensureMonthlyStatusTransition(from: MonthlyStatus, to: MonthlyStatus): void {

@@ -1,3 +1,4 @@
+import { NotificationService } from '@/services/notificationService';
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
@@ -20,14 +21,28 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
     if (detail.prepareBy) {
       const preparer = await userRepo.findById(detail.prepareBy);
       if (preparer?.email) {
-        sendKpiMonthlyResultEmail({
-          to: { name: preparer.name ?? '', email: preparer.email },
-          departmentName: detail.kpi.department,
-          month: detail.month,
-          year: detail.year,
-          status: 'APPROVED',
-          actorName: session.user.name ?? '',
-        }).catch((e) => console.error('[email] Failed to send monthly approved email:', e));
+        NotificationService.sendEmailOnce(
+          `KPI_MONTHLY:${reportId}:APPROVED:preparer:${preparer.id}`,
+          () => sendKpiMonthlyResultEmail({
+            to: { name: preparer.name ?? '', email: preparer.email },
+            departmentName: detail.kpi.department,
+            month: detail.month,
+            year: detail.year,
+            status: 'APPROVED',
+            actorName: session.user.name ?? '',
+            details: detail.details.map((d) => ({
+              objective: d.kpiObjective.objective,
+              target: d.kpiObjective.target,
+              unit: d.kpiObjective.unit,
+              actualResult: d.actualResult,
+              achievedStatus: d.achievedStatus,
+            })),
+            reportId: reportId,
+            senderEmail: session.user.email ?? undefined,
+          }),
+          preparer.email,
+          'Monthly KPI Approved',
+        ).catch(() => { /* logged inside NotificationService */ });
       }
     }
 

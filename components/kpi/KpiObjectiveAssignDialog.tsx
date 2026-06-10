@@ -26,6 +26,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   initialReviewerId?: string;
   initialApproverId?: string;
+  hideApprover?: boolean;
   onConfirm: (reviewerUserId: string, approverUserId: string) => Promise<void>;
 }
 
@@ -175,6 +176,7 @@ export default function KpiObjectiveAssignDialog({
   onOpenChange,
   initialReviewerId,
   initialApproverId,
+  hideApprover = false,
   onConfirm,
 }: Props) {
   const t = useT();
@@ -209,10 +211,10 @@ export default function KpiObjectiveAssignDialog({
   }, [onOpenChange]);
 
   async function submit() {
-    if (!reviewer || !approver) return;
+    if (!reviewer || (!hideApprover && !approver)) return;
     setSaving(true);
     try {
-      await onConfirm(reviewer.id, approver.id);
+      await onConfirm(reviewer.id, approver?.id || "");
       handleClose(false);
     } finally {
       setSaving(false);
@@ -232,11 +234,13 @@ export default function KpiObjectiveAssignDialog({
             value={reviewer}
             onChange={setReviewer}
           />
-          <UserPicker
-            label={t("kpi.form.approver")}
-            value={approver}
-            onChange={setApprover}
-          />
+          {!hideApprover && (
+            <UserPicker
+              label={t("kpi.form.approver")}
+              value={approver}
+              onChange={setApprover}
+            />
+          )}
         </div>
 
         <DialogFooter>
@@ -246,7 +250,7 @@ export default function KpiObjectiveAssignDialog({
           <Button
             className="rounded-xl bg-[#0F1059] hover:bg-[#161875]"
             onClick={submit}
-            disabled={saving || !reviewer || !approver}
+            disabled={saving || !reviewer || (!hideApprover && !approver)}
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
             {t("common.save")}

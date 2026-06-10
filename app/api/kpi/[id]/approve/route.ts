@@ -1,3 +1,4 @@
+import { NotificationService } from '@/services/notificationService';
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
@@ -22,18 +23,24 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
 
     const recipients = [updated.reviewerUserId, updated.approverUserId].filter(Boolean) as string[];
     if (recipients.length > 0) {
-      const users = await Promise.all(recipients.map((userId) => userRepo.findById(userId)));
-      users
-        .filter((u): u is NonNullable<typeof u> => Boolean(u?.email))
-        .forEach((u) => {
-          sendKpiResultEmail({
+      const users = await Promise.all(recipients.map((uid) => userRepo.findById(uid)));
+      for (const u of users.filter((u): u is NonNullable<typeof u> => Boolean(u?.email))) {
+        NotificationService.sendEmailOnce(
+          `KPI:${id}:APPROVED:notify:${u.id}`,
+          () => sendKpiResultEmail({
             to: { name: u.name ?? '', email: u.email },
             departmentName: updated.department,
             year: updated.yearly,
             status: 'APPROVED',
             actorName: session.user.name ?? '',
-          }).catch((e) => console.error('[email] Failed to send KPI approved email:', e));
-        });
+            kpiId: id,
+            objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
+            senderEmail: session.user.email ?? undefined,
+          }),
+          u.email,
+          'KPI Approved',
+        ).catch(() => { /* logged inside NotificationService */ });
+      }
     }
 
     return sendSuccess(updated, 'KPI approved successfully');

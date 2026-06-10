@@ -136,6 +136,39 @@ export async function fetchAllEntraGroups(): Promise<GraphGroup[]> {
 }
 
 /**
+ * Search mail-enabled Entra ID groups by displayName or mail (uses $search).
+ * Returns up to 25 results sorted by displayName.
+ */
+export async function searchEntraGroups(query: string): Promise<GraphGroup[]> {
+  if (!query.trim()) return [];
+
+  const token = await getGraphToken();
+
+  const params = new URLSearchParams({
+    $select: "id,displayName,mail,description",
+    $top: "25",
+    $search: `"displayName:${query}" OR "mail:${query}"`,
+    $filter: "mailEnabled eq true",
+    $orderby: "displayName asc",
+  });
+
+  const res = await fetch(`https://graph.microsoft.com/v1.0/groups?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ConsistencyLevel: "eventual",
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Graph API ${res.status}: ${body}`);
+  }
+
+  const json = (await res.json()) as { value: GraphGroup[] };
+  return json.value;
+}
+
+/**
  * Search Entra ID users by displayName or mail (uses $search).
  * Returns up to 25 results sorted by displayName.
  */

@@ -19,6 +19,7 @@ model Department {
   users            User[]
   docControls      DocumentControl[]
   docCategories    DocumentCategory[]
+  carMasters       CarMaster[]
 
   @@map("Department")
 }
@@ -48,6 +49,11 @@ model User {
   docControlsUpdated  DocumentControl[]         @relation("DocUpdatedBy")
   docRevisionsCreated DocumentControlRevision[] @relation("DocRevCreatedBy")
   department          Department?               @relation(fields: [departmentId], references: [id])
+  carsIssued          CarMaster[]               @relation("CarIssuer")
+  carResponses        CarResponse[]
+  carVerifications    CarVerification[]
+  carMrSignatures     CarMrSignature[]
+  carAttachments      CarAttachment[]
 
   @@index([role])
   @@index([departmentId])
@@ -258,6 +264,7 @@ model KPI {
   objectives        KPIObjective[]
   monthlyReports    KPIMonthlyReport[]
 
+  @@unique([department, yearly])
   @@map("kpis")
 }
 
@@ -382,6 +389,30 @@ enum ApprovalModule {
   DAR
   KPI
   KPI_MONTHLY
+  CAR
+}
+
+enum CarStatus {
+  DRAFT
+  ISSUED
+  RESPONDED
+  VERIFY_1
+  VERIFY_2
+  CLOSED
+  RE_CAR
+  CANCELLED
+}
+
+enum CarSourceType {
+  I
+  C
+  N
+  O
+}
+
+enum VerificationResult {
+  PASSED
+  FAILED
 }
 
 enum SignatureType {
@@ -460,6 +491,7 @@ model DocumentCategory {
   department Department        @relation(fields: [departmentId], references: [id])
   documents  DocumentControl[]
 
+  @@unique([departmentId, name])
   @@index([departmentId])
   @@map("DocumentCategory")
 }
@@ -494,4 +526,191 @@ enum DocControlStatus {
   DRAFT
   ACTIVE
   OBSOLETE
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorUserId  String   @map("actor_user_id")
+  actorRole    String   @map("actor_role")
+  action       String   // CREATE | UPDATE | DELETE | APPROVE | REJECT | RECALL | SYNC | EXPORT | ROLE_CHANGE
+  resourceType String   @map("resource_type") // KPI | DAR | USER | DOCUMENT | DOCUMENT_CATEGORY
+  resourceId   String   @map("resource_id")
+  before       Json?    // snapshot before change
+  after        Json?    // snapshot after change
+  metadata     Json?    // requestId, ip, source, etc.
+  createdAt    DateTime @default(now())
+
+  @@index([resourceType, resourceId])
+  @@index([actorUserId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model NotificationLog {
+  id             String    @id @default(uuid())
+  idempotencyKey String    @unique @map("idempotency_key")
+  channel        String    @default("EMAIL") // EMAIL | PUSH
+  status         String    @default("PENDING") // PENDING | SENT | FAILED
+  recipient      String
+  subject        String?
+  errorMessage   String?   @map("error_message")
+  attempts       Int       @default(0)
+  sentAt         DateTime? @map("sent_at")
+  createdAt      DateTime  @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("notification_logs")
+}
+
+model ActionToken {
+  id         String         @id @default(cuid())
+  token      String         @unique
+  module     ApprovalModule
+  documentId String
+  role       ApprovalStep
+  issuedTo   String
+  metadata   Json?
+  expiresAt  DateTime
+  usedAt     DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime       @default(now())
+
+  @@index([token])
+  @@index([documentId, module])
+  @@index([expiresAt])
+  @@map("action_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CAR Domain
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CarMaster {
+  id                 String               @id @default(uuid())
+  carNo              String               @unique
+  carYear            Int
+  sequenceNo         Int
+  status             CarStatus            @default(DRAFT)
+  sourceType         CarSourceType
+  sourceDetail       String?
+  isoStandards       String[]
+  defectDetail       String
+  nonConformanceRef  String
+  issuerId           String
+  issuerPosition     String
+  issuedAt           DateTime?
+  targetDepartmentId String
+  targetEmailGroup   String?
+  responseDueAt      DateTime?
+  reCar              Boolean              @default(false)
+  reCarRefId         String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  issuer             User                 @relation("CarIssuer", fields: [issuerId], references: [id])
+  targetDepartment   Department           @relation(fields: [targetDepartmentId], references: [id])
+  reCarRef           CarMaster?           @relation("ReCarRef", fields: [reCarRefId], references: [id])
+  reCarChildren      CarMaster[]          @relation("ReCarRef")
+  response           CarResponse?
+  verifications      CarVerification[]
+  mrSignature        CarMrSignature?
+  notificationLogs   CarNotificationLog[]
+
+  @@index([status])
+  @@index([issuerId])
+  @@index([targetDepartmentId])
+  @@index([carYear, sequenceNo])
+  @@map("CarMaster")
+}
+
+model CarResponse {
+  id                   String          @id @default(uuid())
+  carMasterId          String          @unique
+  responderId          String
+  responderPosition    String
+  respondedAt          DateTime        @default(now())
+  whyAnalysis          String
+  additionalToolDetail String?
+  rootCausePerson      Boolean         @default(false)
+  rootCauseMaterial    Boolean         @default(false)
+  rootCauseMachine     Boolean         @default(false)
+  rootCauseMethod      Boolean         @default(false)
+  rootCauseOther       Boolean         @default(false)
+  rootCauseOtherDetail String?
+  rootCauseSummary     String
+  immediateAction      String
+  preventiveAction     String
+  plannedCompletionDate DateTime
+
+  carMaster            CarMaster       @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
+  responder            User            @relation(fields: [responderId], references: [id])
+  attachments          CarAttachment[]
+
+  @@map("CarResponse")
+}
+
+model CarVerification {
+  id               String             @id @default(uuid())
+  carMasterId      String
+  round            Int
+  verifierId       String
+  verifierPosition String
+  verifiedAt       DateTime           @default(now())
+  findings         String
+  result           VerificationResult
+  nextDueDate      DateTime?
+
+  carMaster        CarMaster          @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
+  verifier         User               @relation(fields: [verifierId], references: [id])
+
+  @@unique([carMasterId, round])
+  @@map("CarVerification")
+}
+
+model CarMrSignature {
+  id          String    @id @default(uuid())
+  carMasterId String    @unique
+  mrUserId    String
+  signedAt    DateTime  @default(now())
+  comment     String?
+
+  carMaster   CarMaster @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
+  mrUser      User      @relation(fields: [mrUserId], references: [id])
+
+  @@map("CarMrSignature")
+}
+
+model CarAttachment {
+  id            String      @id @default(uuid())
+  carResponseId String
+  fileName      String
+  fileSize      Int
+  mimeType      String
+  spItemId      String
+  spWebUrl      String
+  spDownloadUrl String
+  folderPath    String
+  uploadedById  String
+  createdAt     DateTime    @default(now())
+
+  carResponse   CarResponse @relation(fields: [carResponseId], references: [id], onDelete: Cascade)
+  uploadedBy    User        @relation(fields: [uploadedById], references: [id])
+
+  @@index([carResponseId])
+  @@map("CarAttachment")
+}
+
+model CarNotificationLog {
+  id          String    @id @default(uuid())
+  carMasterId String
+  type        String
+  sentAt      DateTime  @default(now())
+  recipient   String
+
+  carMaster   CarMaster @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
+
+  @@index([carMasterId])
+  @@map("CarNotificationLog")
 }

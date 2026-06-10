@@ -1,8 +1,11 @@
+import { NotificationService } from '@/services/notificationService';
 import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
 import { UserRepository } from "@/repositories/userRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { sendMrApprovalRequestEmail, sendQmsApprovalRequestEmail, sendApprovalNotificationEmail } from "@/services/email";
+import { ActionTokenService } from "@/services/actionTokenService";
+import { ApprovalModule, ApprovalStep } from "@/generated/prisma/client";
 import { OBJECTIVE_LABELS, DOC_TYPE_LABELS } from "@/types/dar";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
@@ -54,7 +57,6 @@ export async function POST(req: NextRequest, { params }: Params) {
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");
 
-    // When the reviewer approves, notify MR — sender is the requester
     const reviewerApprovedThisStep = dar.approvals.some(
       (a) => a.stepRole === "REVIEWER" && a.assignedUser.id === session.user.id && a.action === "APPROVED"
     );
@@ -81,23 +83,36 @@ export async function POST(req: NextRequest, { params }: Params) {
         const mrUser = await userRepo.findById(mrConfigValue);
 
         if (mrUser?.email) {
-          sendMrApprovalRequestEmail({
-            mr: { name: mrUser.name ?? "", email: mrUser.email },
-            reviewerName: session.user.name ?? "",
-            requesterName: dar.requester.name ?? "",
-            requesterDepartment: dar.requester.department?.name ?? null,
-            darNo: dar.darNo,
-            darId: dar.id,
-            requestDate: dar.requestDate,
-            objective: OBJECTIVE_LABELS[dar.objective],
-            docType: dar.docTypeOther
-              ? `${DOC_TYPE_LABELS[dar.docType]} — ${dar.docTypeOther}`
-              : DOC_TYPE_LABELS[dar.docType],
-            reason: dar.reason,
-            items: dar.items,
-            attachments: dar.attachments.map((a) => ({ fileName: a.fileName, spWebUrl: a.spWebUrl })),
-            senderEmail: requesterUser?.email ?? undefined,
-          }).catch((e) => console.error("[email] Failed to send MR approval request email:", e));
+          const mrToken = await ActionTokenService.issue({
+            module: ApprovalModule.DAR,
+            documentId: id,
+            role: ApprovalStep.APPROVER_MR,
+            issuedTo: mrUser.id,
+          });
+
+          NotificationService.sendEmailOnce(
+            `DAR:${dar.id}:REVIEWER_APPROVED:mr:${mrUser.id}:${mrToken.substring(0, 16)}`,
+            () => sendMrApprovalRequestEmail({
+              mr: { name: mrUser.name ?? "", email: mrUser.email },
+              reviewerName: session.user.name ?? "",
+              requesterName: dar.requester.name ?? "",
+              requesterDepartment: dar.requester.department?.name ?? null,
+              darNo: dar.darNo!,
+              darId: dar.id,
+              requestDate: dar.requestDate,
+              objective: OBJECTIVE_LABELS[dar.objective],
+              docType: dar.docTypeOther
+                ? `${DOC_TYPE_LABELS[dar.docType]} — ${dar.docTypeOther}`
+                : DOC_TYPE_LABELS[dar.docType],
+              reason: dar.reason,
+              items: dar.items,
+              attachments: dar.attachments.map((a) => ({ fileName: a.fileName, spWebUrl: a.spWebUrl })),
+              actionToken: mrToken,
+              senderEmail: requesterUser?.email ?? undefined,
+            }),
+            mrUser.email,
+            'DAR MR Approval Request',
+          ).catch(() => { /* logged inside NotificationService */ });
         }
       }
     }
@@ -113,27 +128,48 @@ export async function POST(req: NextRequest, { params }: Params) {
         : await userRepo.findFirstByRole("QMS");
 
       if (qmsUser?.email) {
-        sendQmsApprovalRequestEmail({
-          qms: { name: qmsUser.name ?? "", email: qmsUser.email },
-          requesterName: dar.requester.name ?? "",
-          darNo: dar.darNo,
-          darId: dar.id,
-          senderEmail: requesterUser?.email ?? undefined,
-        }).catch((e) => console.error("[email] Failed to send QMS approval request email:", e));
+        const qmsToken = await ActionTokenService.issue({
+          module: ApprovalModule.DAR,
+          documentId: id,
+          role: ApprovalStep.QMS_PROCESSOR,
+          issuedTo: qmsUser.id,
+        });
+
+        NotificationService.sendEmailOnce(
+          `DAR:${dar.id}:MR_APPROVED:qms:${qmsUser.id}:${qmsToken.substring(0, 16)}`,
+          () => sendQmsApprovalRequestEmail({
+            qms: { name: qmsUser.name ?? "", email: qmsUser.email },
+            requesterName: dar.requester.name ?? "",
+            darNo: dar.darNo!,
+            darId: dar.id,
+            actionToken: qmsToken,
+            senderEmail: requesterUser?.email ?? undefined,
+          }),
+          qmsUser.email,
+          'DAR QMS Processing Request',
+        ).catch(() => { /* logged inside NotificationService */ });
       }
     }
 
     if (qmsApprovedThisStep && dar.darNo) {
+      // All steps done — revoke any remaining DAR tokens
+      await ActionTokenService.revokeByDocument(ApprovalModule.DAR, id);
+
       const requesterUser = await userRepo.findById(dar.requester.id);
       if (requesterUser?.email) {
-        sendApprovalNotificationEmail({
-          to: { name: requesterUser.name ?? "", email: requesterUser.email },
-          darNo: dar.darNo,
-          darId: dar.id,
-          approverName: session.user.name ?? "QMS",
-          stepLabel: "QMS",
-          nextStepLabel: "Completed",
-        }).catch((e) => console.error("[email] Failed to send DAR completion email:", e));
+        NotificationService.sendEmailOnce(
+          `DAR:${dar.id}:COMPLETED:requester:${requesterUser.id}`,
+          () => sendApprovalNotificationEmail({
+            to: { name: requesterUser.name ?? "", email: requesterUser.email },
+            darNo: dar.darNo!,
+            darId: dar.id,
+            approverName: session.user.name ?? "QMS",
+            stepLabel: "QMS",
+            nextStepLabel: "Completed",
+          }),
+          requesterUser.email,
+          'DAR Completed',
+        ).catch(() => { /* logged inside NotificationService */ });
       }
     }
 

@@ -7,15 +7,10 @@ type Props = {
   page: number;
   totalPages: number;
   total: number;
-  /** Noun appended to the count, e.g. "items" → "1 / 3 (45 items)" */
   countLabel?: string;
   onPageChange: (page: number) => void;
 };
 
-/**
- * Standard pagination bar — matches KPI design.
- * Shows "page / totalPages (total items)" on the left, Prev/Next on the right.
- */
 export default function Pagination({ page, totalPages, total, countLabel = "items", onPageChange }: Props) {
   if (totalPages <= 1) return null;
 

@@ -1,0 +1,23 @@
+# Task Log
+
+- [x] Analyze current repository and build AI-optimized documentation system.
+- [x] Document KPI state across the documentation system.
+- [x] Implement Option B: DB Action Token for secure email links (`ActionTokenService`), integrated into KPI and DAR flows.
+- [x] Fix Email Idempotency issue for KPI Recall/Re-submit (append token slice to idempotency key).
+- [x] Implement KPI Approval workflow with standard signature handling (prepare sign to reviewer sign, via `ApprovalSignature`).
+- [x] Standardize KPI Monthly Report Approval workflow (Added Reviewer assign dialog, signatures, tokens, and fixed 409 state transition).
+- [x] Split repository workflow guidance out of `AGENTS.md` into dedicated `rules/agent-*.md` files and reduced `AGENTS.md` to an entrypoint.
+- [x] Fixed Email Action Token redirect routing for KPI Monthly `REVIEWER` role.
+- [x] Added reusable cross-project templates in `portable/AGENTS.template.md` and `portable/rules/agent-*.template.md` with placeholders for project-specific values.
+- [x] Converted `ui-rule-example` design guidance into dedicated shared UI rules under `rules/ui-*.md` and aligned `docs/standards/ui.md`.
+- [x] Implement CAR domain — Phase 1 (Prisma schema: 6 models, 3 enums, `CAR` added to `ApprovalModule`). DB pushed via `prisma db push`.
+- [x] Implement CAR domain — Phase 2 (backend: `carSequenceRepository.ts`, `carRepository.ts`, `carService.ts`, `carEmailService.ts`, `lib/validations/car.ts`). Extended `AuditService` action/resource types for CAR.
+- [x] Implement CAR domain — Phase 3 (API routes: GET/POST `/api/car`, CRUD `/api/car/[id]`, issue/respond/verify/close/re-car/next-number).
+- [x] Implement CAR domain — Phase 4–5 (frontend: `CarStatusBadge`, `CarListTable`, `CarFormDrawer`, `CarIssueDialog`, `CarRespondForm`, `CarVerifyForm`, `CarTimeline`, `CarAttachmentUpload`, `CarMrSignDialog`, `CarDetailClient`, `CarFormDrawerTrigger`; pages: `/qms/car`, `/qms/car/[id]`, `/(user)/car`, `/(user)/car/[id]`, `/approve/car/[id]/mr`; sidebar links added).
+- [x] Add MS Graph group search — `searchEntraGroups` in `ms-graph.ts`, new `GET /api/ms-graph/groups/search` route.
+- [x] Implement `GraphUserPicker` and `GraphGroupPicker` reusable components in `components/shared/`. Used in `CarFormDrawer` for issuer (auto-fills position from MS365 job title) and email group selection.
+- [x] Added practical concern routing to `AGENTS.md` for API/UI rule selection and audited KPI module against the updated rules.
+- [x] Audited CAR module against the updated API and UI rules; identified service-layer Prisma usage, enterprise table gaps, and MR sign UI standard gaps.
+- [x] Rebaselined `plan/QMS Plan.csv` into an Agile SDLC backlog using the actual repository state for CAR, announcements, document control, audit modules, and next-month AI RAG work.
+- [x] Implemented CAR hardening from audit: paginated/searchable/filterable `/api/car`, enterprise CAR list UI with mobile cards, repository-owned CAR write paths, and Vitest coverage for CAR service list/issue flows.
+- [x] Materialized `portable/` in-repo and moved generic reusable rules into `portable/rules/*.template.md` with a reusable `portable/AGENTS.template.md` entrypoint.

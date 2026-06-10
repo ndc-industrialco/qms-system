@@ -15,10 +15,10 @@ const userService = new UserService();
  */
 export async function POST() {
   try {
-    await requireRole("IT");
+    const session = await requireRole("IT");
 
     const entraUsers = await fetchAllEntraUsers();
-    const result = await userService.syncEntraUsers(entraUsers);
+    const result = await userService.syncEntraUsers(entraUsers, session.user.id);
 
     return sendSuccess(result, "Users synchronized successfully");
   } catch (err) {

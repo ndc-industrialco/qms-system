@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import ConfirmModal from "@/components/common/ConfirmModal";
 import type { DarAttachmentRow, TempAttachmentInput } from "@/types/dar";
 
 const ALLOWED_EXT = ".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp";
@@ -426,8 +427,8 @@ export default function DarAttachmentUpload(props: Props) {
     props.mode === "saved" ? props.initialAttachments : [],
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [tempItems, setTempItems] = useState<TempItem[]>([]);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<PreviewTarget | null>(null);
 
@@ -443,6 +444,36 @@ export default function DarAttachmentUpload(props: Props) {
     }
   }, [tempItems, props.mode]);
 
+  const uploadMutation = useMutation({
+    mutationFn: async (files: FileList) => {
+      const results = [];
+      for (const file of Array.from(files)) {
+        const form = new FormData();
+        form.append("file", file);
+        if (props.mode === "saved") {
+          const res = await fetch(`/api/dar/${props.darId}/attachments`, { method: "POST", body: form });
+          const json = await res.json();
+          if (!res.ok || json.error) throw new Error(json.error || "อัปโหลดล้มเหลว");
+          results.push({ kind: "saved" as const, data: json.data as DarAttachmentRow });
+        } else {
+          const res = await fetch(`/api/dar/attachments/temp?tempId=${props.tempId}`, { method: "POST", body: form });
+          const json = await res.json();
+          if (!res.ok || json.error) throw new Error(json.error || "อัปโหลดล้มเหลว");
+          const item: TempItem = { ...json.data as TempAttachmentInput, _localId: crypto.randomUUID() };
+          results.push({ kind: "temp" as const, data: item });
+        }
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      results.forEach((r) => {
+        if (r.kind === "saved") setSavedItems((prev) => [...prev, r.data as DarAttachmentRow]);
+        else setTempItems((prev) => [...prev, r.data as TempItem]);
+      });
+    },
+    onError: (err) => setError(err.message),
+  });
+
   async function handleFiles(files: FileList) {
     setError(null);
     for (const file of Array.from(files)) {
@@ -451,41 +482,27 @@ export default function DarAttachmentUpload(props: Props) {
         return;
       }
     }
-    setUploading(true);
-    try {
-      for (const file of Array.from(files)) {
-        const form = new FormData();
-        form.append("file", file);
-        if (props.mode === "saved") {
-          const res = await fetch(`/api/dar/${props.darId}/attachments`, { method: "POST", body: form });
-          const json = await res.json();
-          if (!res.ok || json.error) { setError(json.error ?? "อัปโหลดล้มเหลว"); return; }
-          setSavedItems((prev) => [...prev, json.data as DarAttachmentRow]);
-        } else {
-          const res = await fetch(`/api/dar/attachments/temp?tempId=${props.tempId}`, { method: "POST", body: form });
-          const json = await res.json();
-          if (!res.ok || json.error) { setError(json.error ?? "อัปโหลดล้มเหลว"); return; }
-          const item: TempItem = { ...json.data as TempAttachmentInput, _localId: crypto.randomUUID() };
-          setTempItems((prev) => [...prev, item]);
-        }
-      }
-    } finally {
-      setUploading(false);
-    }
+    uploadMutation.mutate(files);
   }
 
-  async function handleDeleteSaved(id: string) {
-    if (props.mode !== "saved") return;
-    if (!confirm("ยืนยันลบไฟล์นี้?")) return;
-    setDeletingId(id);
-    try {
-      const res = await fetch(`/api/dar/${props.darId}/attachments/${id}`, { method: "DELETE" });
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const darId = props.mode === "saved" ? props.darId : "";
+      const res = await fetch(`/api/dar/${darId}/attachments/${id}`, { method: "DELETE" });
       const json = await res.json();
-      if (!res.ok || json.error) { setError(json.error ?? "ลบไม่สำเร็จ"); return; }
-      setSavedItems((prev) => prev.filter((a) => a.id !== id));
-    } finally {
-      setDeletingId(null);
-    }
+      if (!res.ok || json.error) throw new Error(json.error || "ลบไม่สำเร็จ");
+      return id;
+    },
+    onSuccess: (id) => setSavedItems((prev) => prev.filter((a) => a.id !== id)),
+    onError: (err) => setError(err.message),
+    onSettled: () => setDeletingId(null),
+  });
+
+  function executeDeleteSaved(id: string) {
+    if (props.mode !== "saved") return;
+    setConfirmDeleteId(null);
+    setDeletingId(id);
+    deleteMutation.mutate(id);
   }
 
   function handleDeleteTemp(localId: string) {
@@ -504,7 +521,7 @@ export default function DarAttachmentUpload(props: Props) {
   return (
     <>
       <div className="flex flex-col gap-3">
-        {canEdit && <DropZone uploading={uploading} onFiles={handleFiles} />}
+        {canEdit && <DropZone uploading={uploadMutation.isPending} onFiles={handleFiles} />}
 
         {error && (
           <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-md py-2 px-3 text-[13px]">
@@ -533,7 +550,7 @@ export default function DarAttachmentUpload(props: Props) {
                     fileName={a.fileName} fileSize={a.fileSize} mimeType={a.mimeType}
                     spWebUrl={a.spWebUrl} spDownloadUrl={a.spDownloadUrl} folderPath={a.folderPath}
                     onPreview={() => setPreview({ fileName: a.fileName, mimeType: a.mimeType, spItemId: a.spItemId, spWebUrl: a.spWebUrl, spDownloadUrl: a.spDownloadUrl })}
-                    onDelete={props.mode === "saved" && props.canEdit ? () => handleDeleteSaved(a.id) : undefined}
+                    onDelete={props.mode === "saved" && props.canEdit ? () => setConfirmDeleteId(a.id) : undefined}
                     deleting={deletingId === a.id}
                   />
                 );
@@ -555,6 +572,19 @@ export default function DarAttachmentUpload(props: Props) {
       </div>
 
       {preview && <PreviewModal target={preview} onClose={() => setPreview(null)} />}
+
+      {confirmDeleteId && (
+        <ConfirmModal
+          title="ลบไฟล์แนบ"
+          message="ยืนยันลบไฟล์นี้? ไฟล์จะถูกลบออกจากระบบและ SharePoint"
+          confirmLabel="ลบ"
+          cancelLabel="ยกเลิก"
+          loading={deletingId === confirmDeleteId}
+          danger
+          onConfirm={() => executeDeleteSaved(confirmDeleteId)}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
     </>
   );
 }

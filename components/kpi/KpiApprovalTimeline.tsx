@@ -28,17 +28,25 @@ const KPI_STEPS: StepConfig[] = [
   { step: "APPROVER", labelKey: "dar.approval.stepApproverMr" },
 ];
 
+export const KPI_MONTHLY_STEPS: StepConfig[] = [
+  { step: "PREPARER", labelKey: "dar.approval.stepPreparer" },
+  { step: "REVIEWER", labelKey: "dar.approval.stepReviewer" },
+];
+
 interface Props {
   signatures: KpiApprovalSignature[];
   preparerName?: string | null;
   /** "horizontal" (default in detail page) or "vertical" (sidebar panel) */
   layout?: "horizontal" | "vertical";
+  /** Override the default 3-step config. Pass KPI_MONTHLY_STEPS for monthly reports. */
+  steps?: StepConfig[];
 }
 
 export default function KpiApprovalTimeline({
   signatures,
   preparerName,
   layout = "vertical",
+  steps = KPI_STEPS,
 }: Props) {
   const t = useT();
   const locale = useLocale();
@@ -84,7 +92,7 @@ export default function KpiApprovalTimeline({
   if (layout === "horizontal") {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
-        {KPI_STEPS.map(({ step, labelKey }, idx) => {
+        {steps.map(({ step, labelKey }, idx) => {
           const sig = byStep[step];
           const label = t(labelKey as never) ?? step;
           const action: ApprovalAction = sig?.action ?? "PENDING";
@@ -155,7 +163,7 @@ export default function KpiApprovalTimeline({
   /* ── VERTICAL layout (sidebar / approve panel) ─────────────── */
   return (
     <div className="flex flex-col">
-      {KPI_STEPS.map(({ step, labelKey }, idx) => {
+      {steps.map(({ step, labelKey }, idx) => {
         const sig = byStep[step];
         const isLast = idx === KPI_STEPS.length - 1;
         const label = t(labelKey as never) ?? step;

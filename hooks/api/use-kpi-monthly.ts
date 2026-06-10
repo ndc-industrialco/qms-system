@@ -130,8 +130,12 @@ export function useUploadMonthlyAttachment() {
 export function useSubmitMonthlyReport() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ kpiId, reportId }: { kpiId: string; reportId: string }) => {
-      const res = await fetch(`/api/kpi/${kpiId}/monthly/${reportId}/submit`, { method: "POST" });
+    mutationFn: async ({ kpiId, reportId, data }: { kpiId: string; reportId: string; data?: { signatureDataUrl?: string; signatureType?: string; saveSignature?: boolean; reviewerUserId?: string; approverUserId?: string } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/monthly/${reportId}/submit`, {
+        method: "POST",
+        headers: data ? { "Content-Type": "application/json" } : undefined,
+        body: data ? JSON.stringify(data) : undefined,
+      });
       if (!res.ok) throw new Error(await extractError(res));
       return res.json();
     },
@@ -145,8 +149,12 @@ export function useSubmitMonthlyReport() {
 export function useReviewMonthlyReport() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ kpiId, reportId }: { kpiId: string; reportId: string }) => {
-      const res = await fetch(`/api/kpi/${kpiId}/monthly/${reportId}/review`, { method: "POST" });
+    mutationFn: async ({ kpiId, reportId, data }: { kpiId: string; reportId: string; data?: { signatureDataUrl?: string; signatureType?: string; saveSignature?: boolean } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/monthly/${reportId}/review`, {
+        method: "POST",
+        headers: data ? { "Content-Type": "application/json" } : undefined,
+        body: data ? JSON.stringify(data) : undefined,
+      });
       if (!res.ok) throw new Error(await extractError(res));
       return res.json();
     },
@@ -160,8 +168,12 @@ export function useReviewMonthlyReport() {
 export function useApproveMonthlyReport() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ kpiId, reportId }: { kpiId: string; reportId: string }) => {
-      const res = await fetch(`/api/kpi/${kpiId}/monthly/${reportId}/approve`, { method: "POST" });
+    mutationFn: async ({ kpiId, reportId, data }: { kpiId: string; reportId: string; data?: { signatureDataUrl?: string; signatureType?: string; saveSignature?: boolean } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/monthly/${reportId}/approve`, {
+        method: "POST",
+        headers: data ? { "Content-Type": "application/json" } : undefined,
+        body: data ? JSON.stringify(data) : undefined,
+      });
       if (!res.ok) throw new Error(await extractError(res));
       return res.json();
     },

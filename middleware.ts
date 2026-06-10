@@ -99,14 +99,14 @@ export default auth(async (req) => {
   if (!session?.user) {
     logRequest(req.method, path, 401, ip, requestId);
     const url = new URL("/auth/login", req.url);
-    url.searchParams.set("callbackUrl", path);
+    url.searchParams.set("callbackUrl", path + nextUrl.search);
     return withRequestId(NextResponse.redirect(url), requestId);
   }
 
   const jti = session.user.jti;
   if (jti && (await isJwtBlocked(jti))) {
     const url = new URL("/auth/login", req.url);
-    url.searchParams.set("callbackUrl", path);
+    url.searchParams.set("callbackUrl", path + nextUrl.search);
     url.searchParams.set("reason", "session_revoked");
     return withRequestId(NextResponse.redirect(url), requestId);
   }

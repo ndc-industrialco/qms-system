@@ -1,3 +1,4 @@
+import { NotificationService } from '@/services/notificationService';
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
@@ -21,15 +22,29 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (detail.prepareBy) {
       const preparer = await userRepo.findById(detail.prepareBy);
       if (preparer?.email) {
-        sendKpiMonthlyResultEmail({
-          to: { name: preparer.name ?? '', email: preparer.email },
-          departmentName: detail.kpi.department,
-          month: detail.month,
-          year: detail.year,
-          status: 'REJECTED',
-          actorName: session.user.name ?? '',
-          reason,
-        }).catch((e) => console.error('[email] Failed to send monthly rejected email:', e));
+        NotificationService.sendEmailOnce(
+          `KPI_MONTHLY:${reportId}:REJECTED:preparer:${preparer.id}`,
+          () => sendKpiMonthlyResultEmail({
+            to: { name: preparer.name ?? '', email: preparer.email },
+            departmentName: detail.kpi.department,
+            month: detail.month,
+            year: detail.year,
+            status: 'REJECTED',
+            actorName: session.user.name ?? '',
+            reason,
+            details: detail.details.map((d) => ({
+              objective: d.kpiObjective.objective,
+              target: d.kpiObjective.target,
+              unit: d.kpiObjective.unit,
+              actualResult: d.actualResult,
+              achievedStatus: d.achievedStatus,
+            })),
+            reportId: reportId,
+            senderEmail: session.user.email ?? undefined,
+          }),
+          preparer.email,
+          'Monthly KPI Rejected',
+        ).catch(() => { /* logged inside NotificationService */ });
       }
     }
 

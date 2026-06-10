@@ -70,7 +70,16 @@ export const ModelName = {
   KPICorrectiveAction: 'KPICorrectiveAction',
   DocumentControl: 'DocumentControl',
   DocumentCategory: 'DocumentCategory',
-  DocumentControlRevision: 'DocumentControlRevision'
+  DocumentControlRevision: 'DocumentControlRevision',
+  AuditLog: 'AuditLog',
+  NotificationLog: 'NotificationLog',
+  ActionToken: 'ActionToken',
+  CarMaster: 'CarMaster',
+  CarResponse: 'CarResponse',
+  CarVerification: 'CarVerification',
+  CarMrSignature: 'CarMrSignature',
+  CarAttachment: 'CarAttachment',
+  CarNotificationLog: 'CarNotificationLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -442,12 +451,172 @@ export const DocumentControlRevisionScalarFieldEnum = {
 export type DocumentControlRevisionScalarFieldEnum = (typeof DocumentControlRevisionScalarFieldEnum)[keyof typeof DocumentControlRevisionScalarFieldEnum]
 
 
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  actorUserId: 'actorUserId',
+  actorRole: 'actorRole',
+  action: 'action',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  before: 'before',
+  after: 'after',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const NotificationLogScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  channel: 'channel',
+  status: 'status',
+  recipient: 'recipient',
+  subject: 'subject',
+  errorMessage: 'errorMessage',
+  attempts: 'attempts',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationLogScalarFieldEnum = (typeof NotificationLogScalarFieldEnum)[keyof typeof NotificationLogScalarFieldEnum]
+
+
+export const ActionTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  module: 'module',
+  documentId: 'documentId',
+  role: 'role',
+  issuedTo: 'issuedTo',
+  metadata: 'metadata',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ActionTokenScalarFieldEnum = (typeof ActionTokenScalarFieldEnum)[keyof typeof ActionTokenScalarFieldEnum]
+
+
+export const CarMasterScalarFieldEnum = {
+  id: 'id',
+  carNo: 'carNo',
+  carYear: 'carYear',
+  sequenceNo: 'sequenceNo',
+  status: 'status',
+  sourceType: 'sourceType',
+  sourceDetail: 'sourceDetail',
+  isoStandards: 'isoStandards',
+  defectDetail: 'defectDetail',
+  nonConformanceRef: 'nonConformanceRef',
+  issuerId: 'issuerId',
+  issuerPosition: 'issuerPosition',
+  issuedAt: 'issuedAt',
+  targetDepartmentId: 'targetDepartmentId',
+  targetEmailGroup: 'targetEmailGroup',
+  responseDueAt: 'responseDueAt',
+  reCar: 'reCar',
+  reCarRefId: 'reCarRefId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarMasterScalarFieldEnum = (typeof CarMasterScalarFieldEnum)[keyof typeof CarMasterScalarFieldEnum]
+
+
+export const CarResponseScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  responderId: 'responderId',
+  responderPosition: 'responderPosition',
+  respondedAt: 'respondedAt',
+  whyAnalysis: 'whyAnalysis',
+  additionalToolDetail: 'additionalToolDetail',
+  rootCausePerson: 'rootCausePerson',
+  rootCauseMaterial: 'rootCauseMaterial',
+  rootCauseMachine: 'rootCauseMachine',
+  rootCauseMethod: 'rootCauseMethod',
+  rootCauseOther: 'rootCauseOther',
+  rootCauseOtherDetail: 'rootCauseOtherDetail',
+  rootCauseSummary: 'rootCauseSummary',
+  immediateAction: 'immediateAction',
+  preventiveAction: 'preventiveAction',
+  plannedCompletionDate: 'plannedCompletionDate'
+} as const
+
+export type CarResponseScalarFieldEnum = (typeof CarResponseScalarFieldEnum)[keyof typeof CarResponseScalarFieldEnum]
+
+
+export const CarVerificationScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  round: 'round',
+  verifierId: 'verifierId',
+  verifierPosition: 'verifierPosition',
+  verifiedAt: 'verifiedAt',
+  findings: 'findings',
+  result: 'result',
+  nextDueDate: 'nextDueDate'
+} as const
+
+export type CarVerificationScalarFieldEnum = (typeof CarVerificationScalarFieldEnum)[keyof typeof CarVerificationScalarFieldEnum]
+
+
+export const CarMrSignatureScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  mrUserId: 'mrUserId',
+  signedAt: 'signedAt',
+  comment: 'comment'
+} as const
+
+export type CarMrSignatureScalarFieldEnum = (typeof CarMrSignatureScalarFieldEnum)[keyof typeof CarMrSignatureScalarFieldEnum]
+
+
+export const CarAttachmentScalarFieldEnum = {
+  id: 'id',
+  carResponseId: 'carResponseId',
+  fileName: 'fileName',
+  fileSize: 'fileSize',
+  mimeType: 'mimeType',
+  spItemId: 'spItemId',
+  spWebUrl: 'spWebUrl',
+  spDownloadUrl: 'spDownloadUrl',
+  folderPath: 'folderPath',
+  uploadedById: 'uploadedById',
+  createdAt: 'createdAt'
+} as const
+
+export type CarAttachmentScalarFieldEnum = (typeof CarAttachmentScalarFieldEnum)[keyof typeof CarAttachmentScalarFieldEnum]
+
+
+export const CarNotificationLogScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  type: 'type',
+  sentAt: 'sentAt',
+  recipient: 'recipient'
+} as const
+
+export type CarNotificationLogScalarFieldEnum = (typeof CarNotificationLogScalarFieldEnum)[keyof typeof CarNotificationLogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -464,4 +633,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

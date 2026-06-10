@@ -2,6 +2,7 @@ import { UserRepository } from "@/repositories/userRepository";
 import { DepartmentRepository } from "@/repositories/departmentRepository";
 import { NotFoundError, ValidationError } from "@/lib/errors";
 import { pushUserToEntra } from "@/services/ms-graph";
+import { AuditService } from "@/services/auditService";
 import type { UserWithDept } from "@/types/user";
 import type { GraphUser } from "@/services/ms-graph";
 import { Prisma, type UserRole } from "@/generated/prisma/client";
@@ -33,7 +34,7 @@ export class UserService {
     }));
   }
 
-  async syncEntraUsers(entraUsers: GraphUser[]) {
+  async syncEntraUsers(entraUsers: GraphUser[], actorUserId?: string) {
     const result = {
       total: entraUsers.length,
       created: 0,
@@ -91,6 +92,17 @@ export class UserService {
         result.skipped++;
         result.errors.push({ email, message: err instanceof Error ? err.message : "Unknown error" });
       }
+    }
+
+    if (actorUserId) {
+      await AuditService.record({
+        actorUserId,
+        actorRole: "IT",
+        action: "SYNC",
+        resourceType: "USER",
+        resourceId: "M365_SYNC",
+        after: { created: result.created, updated: result.updated, skipped: result.skipped },
+      });
     }
 
     return result;

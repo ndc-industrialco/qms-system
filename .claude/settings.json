@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Select-String -Pattern \"LoginClient|login/page\")",
+      "Bash(findstr /i \"KpiMonthlyDetailDrawer\")",
+      "Bash(Select-String \"KpiMonthly\")",
+      "Bash(cd \"d:/NDC_042/NextJS/qms-system\" && sed -i \"s/senderEmail: session.user.email ?? ''/senderEmail: session.user.email ?? undefined/g\" app/api/kpi/[id]/approve/route.ts app/api/kpi/[id]/monthly/[reportId]/approve/route.ts app/api/kpi/[id]/monthly/[reportId]/reject/route.ts app/api/kpi/[id]/monthly/[reportId]/submit/route.ts app/api/kpi/[id]/recall/route.ts app/api/kpi/[id]/reject/route.ts app/api/kpi/[id]/review/route.ts app/api/kpi/[id]/submit/route.ts)",
+      "Bash(Get-Content \"d:\\\\NDC_042\\\\NextJS\\\\qms-system\\\\plan\\\\QMS Plan.csv\" -Encoding UTF8)"
+    ],
+    "additionalDirectories": [
+      "D:\\NDC_042\\NextJS\\qms-system\\app\\api\\kpi\\[id]\\approve"
+    ]
+  }
+}

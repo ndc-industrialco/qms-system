@@ -195,6 +195,7 @@ export type DepartmentWhereInput = {
   users?: Prisma.UserListRelationFilter
   docControls?: Prisma.DocumentControlListRelationFilter
   docCategories?: Prisma.DocumentCategoryListRelationFilter
+  carMasters?: Prisma.CarMasterListRelationFilter
 }
 
 export type DepartmentOrderByWithRelationInput = {
@@ -209,6 +210,7 @@ export type DepartmentOrderByWithRelationInput = {
   users?: Prisma.UserOrderByRelationAggregateInput
   docControls?: Prisma.DocumentControlOrderByRelationAggregateInput
   docCategories?: Prisma.DocumentCategoryOrderByRelationAggregateInput
+  carMasters?: Prisma.CarMasterOrderByRelationAggregateInput
 }
 
 export type DepartmentWhereUniqueInput = Prisma.AtLeast<{
@@ -226,6 +228,7 @@ export type DepartmentWhereUniqueInput = Prisma.AtLeast<{
   users?: Prisma.UserListRelationFilter
   docControls?: Prisma.DocumentControlListRelationFilter
   docCategories?: Prisma.DocumentCategoryListRelationFilter
+  carMasters?: Prisma.CarMasterListRelationFilter
 }, "id" | "name">
 
 export type DepartmentOrderByWithAggregationInput = {
@@ -264,6 +267,7 @@ export type DepartmentCreateInput = {
   users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentUncheckedCreateInput = {
@@ -278,6 +282,7 @@ export type DepartmentUncheckedCreateInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryUncheckedCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterUncheckedCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentUpdateInput = {
@@ -292,6 +297,7 @@ export type DepartmentUpdateInput = {
   users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateInput = {
@@ -306,6 +312,7 @@ export type DepartmentUncheckedUpdateInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUncheckedUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUncheckedUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUncheckedUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentCreateManyInput = {
@@ -462,6 +469,20 @@ export type DepartmentUpdateOneRequiredWithoutDocCategoriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DepartmentUpdateToOneWithWhereWithoutDocCategoriesInput, Prisma.DepartmentUpdateWithoutDocCategoriesInput>, Prisma.DepartmentUncheckedUpdateWithoutDocCategoriesInput>
 }
 
+export type DepartmentCreateNestedOneWithoutCarMastersInput = {
+  create?: Prisma.XOR<Prisma.DepartmentCreateWithoutCarMastersInput, Prisma.DepartmentUncheckedCreateWithoutCarMastersInput>
+  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutCarMastersInput
+  connect?: Prisma.DepartmentWhereUniqueInput
+}
+
+export type DepartmentUpdateOneRequiredWithoutCarMastersNestedInput = {
+  create?: Prisma.XOR<Prisma.DepartmentCreateWithoutCarMastersInput, Prisma.DepartmentUncheckedCreateWithoutCarMastersInput>
+  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutCarMastersInput
+  upsert?: Prisma.DepartmentUpsertWithoutCarMastersInput
+  connect?: Prisma.DepartmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DepartmentUpdateToOneWithWhereWithoutCarMastersInput, Prisma.DepartmentUpdateWithoutCarMastersInput>, Prisma.DepartmentUncheckedUpdateWithoutCarMastersInput>
+}
+
 export type DepartmentCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -473,6 +494,7 @@ export type DepartmentCreateWithoutUsersInput = {
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentUncheckedCreateWithoutUsersInput = {
@@ -486,6 +508,7 @@ export type DepartmentUncheckedCreateWithoutUsersInput = {
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryUncheckedCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterUncheckedCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentCreateOrConnectWithoutUsersInput = {
@@ -515,6 +538,7 @@ export type DepartmentUpdateWithoutUsersInput = {
   darMasters?: Prisma.DarMasterUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateWithoutUsersInput = {
@@ -528,6 +552,7 @@ export type DepartmentUncheckedUpdateWithoutUsersInput = {
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUncheckedUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUncheckedUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUncheckedUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentCreateWithoutDarMastersInput = {
@@ -541,6 +566,7 @@ export type DepartmentCreateWithoutDarMastersInput = {
   users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentUncheckedCreateWithoutDarMastersInput = {
@@ -554,6 +580,7 @@ export type DepartmentUncheckedCreateWithoutDarMastersInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryUncheckedCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterUncheckedCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentCreateOrConnectWithoutDarMastersInput = {
@@ -583,6 +610,7 @@ export type DepartmentUpdateWithoutDarMastersInput = {
   users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateWithoutDarMastersInput = {
@@ -596,6 +624,7 @@ export type DepartmentUncheckedUpdateWithoutDarMastersInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUncheckedUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUncheckedUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUncheckedUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentCreateWithoutDarDistributionsInput = {
@@ -609,6 +638,7 @@ export type DepartmentCreateWithoutDarDistributionsInput = {
   users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentUncheckedCreateWithoutDarDistributionsInput = {
@@ -622,6 +652,7 @@ export type DepartmentUncheckedCreateWithoutDarDistributionsInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryUncheckedCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterUncheckedCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentCreateOrConnectWithoutDarDistributionsInput = {
@@ -651,6 +682,7 @@ export type DepartmentUpdateWithoutDarDistributionsInput = {
   users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateWithoutDarDistributionsInput = {
@@ -664,6 +696,7 @@ export type DepartmentUncheckedUpdateWithoutDarDistributionsInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUncheckedUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUncheckedUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUncheckedUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentCreateWithoutDocControlsInput = {
@@ -677,6 +710,7 @@ export type DepartmentCreateWithoutDocControlsInput = {
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutDepartmentInput
   users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentUncheckedCreateWithoutDocControlsInput = {
@@ -690,6 +724,7 @@ export type DepartmentUncheckedCreateWithoutDocControlsInput = {
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutDepartmentInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
   docCategories?: Prisma.DocumentCategoryUncheckedCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterUncheckedCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentCreateOrConnectWithoutDocControlsInput = {
@@ -719,6 +754,7 @@ export type DepartmentUpdateWithoutDocControlsInput = {
   darMasters?: Prisma.DarMasterUpdateManyWithoutDepartmentNestedInput
   users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateWithoutDocControlsInput = {
@@ -732,6 +768,7 @@ export type DepartmentUncheckedUpdateWithoutDocControlsInput = {
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutDepartmentNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
   docCategories?: Prisma.DocumentCategoryUncheckedUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUncheckedUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentCreateWithoutDocCategoriesInput = {
@@ -745,6 +782,7 @@ export type DepartmentCreateWithoutDocCategoriesInput = {
   darMasters?: Prisma.DarMasterCreateNestedManyWithoutDepartmentInput
   users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentUncheckedCreateWithoutDocCategoriesInput = {
@@ -758,6 +796,7 @@ export type DepartmentUncheckedCreateWithoutDocCategoriesInput = {
   darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutDepartmentInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
   docControls?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutDepartmentInput
+  carMasters?: Prisma.CarMasterUncheckedCreateNestedManyWithoutTargetDepartmentInput
 }
 
 export type DepartmentCreateOrConnectWithoutDocCategoriesInput = {
@@ -787,6 +826,7 @@ export type DepartmentUpdateWithoutDocCategoriesInput = {
   darMasters?: Prisma.DarMasterUpdateManyWithoutDepartmentNestedInput
   users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUpdateManyWithoutTargetDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateWithoutDocCategoriesInput = {
@@ -800,6 +840,79 @@ export type DepartmentUncheckedUpdateWithoutDocCategoriesInput = {
   darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutDepartmentNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
   docControls?: Prisma.DocumentControlUncheckedUpdateManyWithoutDepartmentNestedInput
+  carMasters?: Prisma.CarMasterUncheckedUpdateManyWithoutTargetDepartmentNestedInput
+}
+
+export type DepartmentCreateWithoutCarMastersInput = {
+  id?: string
+  name: string
+  emailGroup?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  darDistributions?: Prisma.DarDistributionCreateNestedManyWithoutDepartmentInput
+  darMasters?: Prisma.DarMasterCreateNestedManyWithoutDepartmentInput
+  users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
+  docControls?: Prisma.DocumentControlCreateNestedManyWithoutDepartmentInput
+  docCategories?: Prisma.DocumentCategoryCreateNestedManyWithoutDepartmentInput
+}
+
+export type DepartmentUncheckedCreateWithoutCarMastersInput = {
+  id?: string
+  name: string
+  emailGroup?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  darDistributions?: Prisma.DarDistributionUncheckedCreateNestedManyWithoutDepartmentInput
+  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutDepartmentInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
+  docControls?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutDepartmentInput
+  docCategories?: Prisma.DocumentCategoryUncheckedCreateNestedManyWithoutDepartmentInput
+}
+
+export type DepartmentCreateOrConnectWithoutCarMastersInput = {
+  where: Prisma.DepartmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.DepartmentCreateWithoutCarMastersInput, Prisma.DepartmentUncheckedCreateWithoutCarMastersInput>
+}
+
+export type DepartmentUpsertWithoutCarMastersInput = {
+  update: Prisma.XOR<Prisma.DepartmentUpdateWithoutCarMastersInput, Prisma.DepartmentUncheckedUpdateWithoutCarMastersInput>
+  create: Prisma.XOR<Prisma.DepartmentCreateWithoutCarMastersInput, Prisma.DepartmentUncheckedCreateWithoutCarMastersInput>
+  where?: Prisma.DepartmentWhereInput
+}
+
+export type DepartmentUpdateToOneWithWhereWithoutCarMastersInput = {
+  where?: Prisma.DepartmentWhereInput
+  data: Prisma.XOR<Prisma.DepartmentUpdateWithoutCarMastersInput, Prisma.DepartmentUncheckedUpdateWithoutCarMastersInput>
+}
+
+export type DepartmentUpdateWithoutCarMastersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  emailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  darDistributions?: Prisma.DarDistributionUpdateManyWithoutDepartmentNestedInput
+  darMasters?: Prisma.DarMasterUpdateManyWithoutDepartmentNestedInput
+  users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
+  docControls?: Prisma.DocumentControlUpdateManyWithoutDepartmentNestedInput
+  docCategories?: Prisma.DocumentCategoryUpdateManyWithoutDepartmentNestedInput
+}
+
+export type DepartmentUncheckedUpdateWithoutCarMastersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  emailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  darDistributions?: Prisma.DarDistributionUncheckedUpdateManyWithoutDepartmentNestedInput
+  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutDepartmentNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
+  docControls?: Prisma.DocumentControlUncheckedUpdateManyWithoutDepartmentNestedInput
+  docCategories?: Prisma.DocumentCategoryUncheckedUpdateManyWithoutDepartmentNestedInput
 }
 
 
@@ -813,6 +926,7 @@ export type DepartmentCountOutputType = {
   users: number
   docControls: number
   docCategories: number
+  carMasters: number
 }
 
 export type DepartmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -821,6 +935,7 @@ export type DepartmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extens
   users?: boolean | DepartmentCountOutputTypeCountUsersArgs
   docControls?: boolean | DepartmentCountOutputTypeCountDocControlsArgs
   docCategories?: boolean | DepartmentCountOutputTypeCountDocCategoriesArgs
+  carMasters?: boolean | DepartmentCountOutputTypeCountCarMastersArgs
 }
 
 /**
@@ -868,6 +983,13 @@ export type DepartmentCountOutputTypeCountDocCategoriesArgs<ExtArgs extends runt
   where?: Prisma.DocumentCategoryWhereInput
 }
 
+/**
+ * DepartmentCountOutputType without action
+ */
+export type DepartmentCountOutputTypeCountCarMastersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarMasterWhereInput
+}
+
 
 export type DepartmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -881,6 +1003,7 @@ export type DepartmentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   users?: boolean | Prisma.Department$usersArgs<ExtArgs>
   docControls?: boolean | Prisma.Department$docControlsArgs<ExtArgs>
   docCategories?: boolean | Prisma.Department$docCategoriesArgs<ExtArgs>
+  carMasters?: boolean | Prisma.Department$carMastersArgs<ExtArgs>
   _count?: boolean | Prisma.DepartmentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["department"]>
 
@@ -918,6 +1041,7 @@ export type DepartmentInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   users?: boolean | Prisma.Department$usersArgs<ExtArgs>
   docControls?: boolean | Prisma.Department$docControlsArgs<ExtArgs>
   docCategories?: boolean | Prisma.Department$docCategoriesArgs<ExtArgs>
+  carMasters?: boolean | Prisma.Department$carMastersArgs<ExtArgs>
   _count?: boolean | Prisma.DepartmentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DepartmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -931,6 +1055,7 @@ export type $DepartmentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     users: Prisma.$UserPayload<ExtArgs>[]
     docControls: Prisma.$DocumentControlPayload<ExtArgs>[]
     docCategories: Prisma.$DocumentCategoryPayload<ExtArgs>[]
+    carMasters: Prisma.$CarMasterPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1338,6 +1463,7 @@ export interface Prisma__DepartmentClient<T, Null = never, ExtArgs extends runti
   users<T extends Prisma.Department$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   docControls<T extends Prisma.Department$docControlsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$docControlsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentControlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   docCategories<T extends Prisma.Department$docCategoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$docCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  carMasters<T extends Prisma.Department$carMastersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$carMastersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarMasterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1883,6 +2009,30 @@ export type Department$docCategoriesArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.DocumentCategoryScalarFieldEnum | Prisma.DocumentCategoryScalarFieldEnum[]
+}
+
+/**
+ * Department.carMasters
+ */
+export type Department$carMastersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarMaster
+   */
+  select?: Prisma.CarMasterSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarMaster
+   */
+  omit?: Prisma.CarMasterOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarMasterInclude<ExtArgs> | null
+  where?: Prisma.CarMasterWhereInput
+  orderBy?: Prisma.CarMasterOrderByWithRelationInput | Prisma.CarMasterOrderByWithRelationInput[]
+  cursor?: Prisma.CarMasterWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarMasterScalarFieldEnum | Prisma.CarMasterScalarFieldEnum[]
 }
 
 /**

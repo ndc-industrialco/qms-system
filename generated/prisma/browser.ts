@@ -117,3 +117,48 @@ export type DocumentCategory = Prisma.DocumentCategoryModel
  * 
  */
 export type DocumentControlRevision = Prisma.DocumentControlRevisionModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model NotificationLog
+ * 
+ */
+export type NotificationLog = Prisma.NotificationLogModel
+/**
+ * Model ActionToken
+ * 
+ */
+export type ActionToken = Prisma.ActionTokenModel
+/**
+ * Model CarMaster
+ * 
+ */
+export type CarMaster = Prisma.CarMasterModel
+/**
+ * Model CarResponse
+ * 
+ */
+export type CarResponse = Prisma.CarResponseModel
+/**
+ * Model CarVerification
+ * 
+ */
+export type CarVerification = Prisma.CarVerificationModel
+/**
+ * Model CarMrSignature
+ * 
+ */
+export type CarMrSignature = Prisma.CarMrSignatureModel
+/**
+ * Model CarAttachment
+ * 
+ */
+export type CarAttachment = Prisma.CarAttachmentModel
+/**
+ * Model CarNotificationLog
+ * 
+ */
+export type CarNotificationLog = Prisma.CarNotificationLogModel

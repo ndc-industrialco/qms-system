@@ -1,8 +1,10 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
+import { sendSuccess } from "@/lib/apiResponse";
 import { UserService } from "@/services/userService";
+import { AuditService } from "@/services/auditService";
 import { ValidationError } from "@/lib/errors";
 
 const bodySchema = z.object({
@@ -17,13 +19,13 @@ const userService = new UserService();
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
-    await requireRole("IT");
+    const session = await requireRole("IT");
     const { id } = await params;
 
     const body = await req.json();
     const parsed = bodySchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ data: null, error: parsed.error.issues[0]?.message ?? "Invalid body" }, { status: 400 });
+      throw new ValidationError(parsed.error.issues[0]?.message ?? "Invalid body");
     }
 
     const { role, departmentId, employeeId } = parsed.data;
@@ -37,7 +39,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(employeeId !== undefined ? { employeeId: employeeId || null } : {}),
     });
 
-    return NextResponse.json({ data: updated, error: null });
+    await AuditService.record({
+      actorUserId: session.user.id,
+      actorRole: session.user.role,
+      action: "ROLE_CHANGE",
+      resourceType: "USER",
+      resourceId: id,
+      after: { role, departmentId, employeeId },
+    });
+
+    return sendSuccess(updated, "User attributes updated successfully");
   } catch (err) {
     return handleApiError(err);
   }

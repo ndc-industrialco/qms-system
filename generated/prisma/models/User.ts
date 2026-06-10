@@ -264,6 +264,11 @@ export type UserWhereInput = {
   docControlsUpdated?: Prisma.DocumentControlListRelationFilter
   docRevisionsCreated?: Prisma.DocumentControlRevisionListRelationFilter
   department?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
+  carsIssued?: Prisma.CarMasterListRelationFilter
+  carResponses?: Prisma.CarResponseListRelationFilter
+  carVerifications?: Prisma.CarVerificationListRelationFilter
+  carMrSignatures?: Prisma.CarMrSignatureListRelationFilter
+  carAttachments?: Prisma.CarAttachmentListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -291,6 +296,11 @@ export type UserOrderByWithRelationInput = {
   docControlsUpdated?: Prisma.DocumentControlOrderByRelationAggregateInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionOrderByRelationAggregateInput
   department?: Prisma.DepartmentOrderByWithRelationInput
+  carsIssued?: Prisma.CarMasterOrderByRelationAggregateInput
+  carResponses?: Prisma.CarResponseOrderByRelationAggregateInput
+  carVerifications?: Prisma.CarVerificationOrderByRelationAggregateInput
+  carMrSignatures?: Prisma.CarMrSignatureOrderByRelationAggregateInput
+  carAttachments?: Prisma.CarAttachmentOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -321,6 +331,11 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   docControlsUpdated?: Prisma.DocumentControlListRelationFilter
   docRevisionsCreated?: Prisma.DocumentControlRevisionListRelationFilter
   department?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
+  carsIssued?: Prisma.CarMasterListRelationFilter
+  carResponses?: Prisma.CarResponseListRelationFilter
+  carVerifications?: Prisma.CarVerificationListRelationFilter
+  carMrSignatures?: Prisma.CarMrSignatureListRelationFilter
+  carAttachments?: Prisma.CarAttachmentListRelationFilter
 }, "id" | "employeeId" | "msUserId" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -387,6 +402,11 @@ export type UserCreateInput = {
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -413,6 +433,11 @@ export type UserUncheckedCreateInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUpdateInput = {
@@ -439,6 +464,11 @@ export type UserUpdateInput = {
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -465,6 +495,11 @@ export type UserUncheckedUpdateInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -770,6 +805,76 @@ export type UserUpdateOneRequiredWithoutDocRevisionsCreatedNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDocRevisionsCreatedInput, Prisma.UserUpdateWithoutDocRevisionsCreatedInput>, Prisma.UserUncheckedUpdateWithoutDocRevisionsCreatedInput>
 }
 
+export type UserCreateNestedOneWithoutCarsIssuedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarsIssuedInput, Prisma.UserUncheckedCreateWithoutCarsIssuedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarsIssuedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCarsIssuedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarsIssuedInput, Prisma.UserUncheckedCreateWithoutCarsIssuedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarsIssuedInput
+  upsert?: Prisma.UserUpsertWithoutCarsIssuedInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCarsIssuedInput, Prisma.UserUpdateWithoutCarsIssuedInput>, Prisma.UserUncheckedUpdateWithoutCarsIssuedInput>
+}
+
+export type UserCreateNestedOneWithoutCarResponsesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarResponsesInput, Prisma.UserUncheckedCreateWithoutCarResponsesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarResponsesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCarResponsesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarResponsesInput, Prisma.UserUncheckedCreateWithoutCarResponsesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarResponsesInput
+  upsert?: Prisma.UserUpsertWithoutCarResponsesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCarResponsesInput, Prisma.UserUpdateWithoutCarResponsesInput>, Prisma.UserUncheckedUpdateWithoutCarResponsesInput>
+}
+
+export type UserCreateNestedOneWithoutCarVerificationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarVerificationsInput, Prisma.UserUncheckedCreateWithoutCarVerificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarVerificationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCarVerificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarVerificationsInput, Prisma.UserUncheckedCreateWithoutCarVerificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarVerificationsInput
+  upsert?: Prisma.UserUpsertWithoutCarVerificationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCarVerificationsInput, Prisma.UserUpdateWithoutCarVerificationsInput>, Prisma.UserUncheckedUpdateWithoutCarVerificationsInput>
+}
+
+export type UserCreateNestedOneWithoutCarMrSignaturesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarMrSignaturesInput, Prisma.UserUncheckedCreateWithoutCarMrSignaturesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarMrSignaturesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCarMrSignaturesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarMrSignaturesInput, Prisma.UserUncheckedCreateWithoutCarMrSignaturesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarMrSignaturesInput
+  upsert?: Prisma.UserUpsertWithoutCarMrSignaturesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCarMrSignaturesInput, Prisma.UserUpdateWithoutCarMrSignaturesInput>, Prisma.UserUncheckedUpdateWithoutCarMrSignaturesInput>
+}
+
+export type UserCreateNestedOneWithoutCarAttachmentsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarAttachmentsInput, Prisma.UserUncheckedCreateWithoutCarAttachmentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarAttachmentsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCarAttachmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarAttachmentsInput, Prisma.UserUncheckedCreateWithoutCarAttachmentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarAttachmentsInput
+  upsert?: Prisma.UserUpsertWithoutCarAttachmentsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCarAttachmentsInput, Prisma.UserUpdateWithoutCarAttachmentsInput>, Prisma.UserUncheckedUpdateWithoutCarAttachmentsInput>
+}
+
 export type UserCreateWithoutDepartmentInput = {
   id?: string
   employeeId?: string | null
@@ -793,6 +898,11 @@ export type UserCreateWithoutDepartmentInput = {
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -818,6 +928,11 @@ export type UserUncheckedCreateWithoutDepartmentInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -889,6 +1004,11 @@ export type UserCreateWithoutAnnouncementsInput = {
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutAnnouncementsInput = {
@@ -914,6 +1034,11 @@ export type UserUncheckedCreateWithoutAnnouncementsInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutAnnouncementsInput = {
@@ -955,6 +1080,11 @@ export type UserUpdateWithoutAnnouncementsInput = {
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAnnouncementsInput = {
@@ -980,6 +1110,11 @@ export type UserUncheckedUpdateWithoutAnnouncementsInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserCreateWithoutDarMastersInput = {
@@ -1005,6 +1140,11 @@ export type UserCreateWithoutDarMastersInput = {
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutDarMastersInput = {
@@ -1030,6 +1170,11 @@ export type UserUncheckedCreateWithoutDarMastersInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutDarMastersInput = {
@@ -1071,6 +1216,11 @@ export type UserUpdateWithoutDarMastersInput = {
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDarMastersInput = {
@@ -1096,6 +1246,11 @@ export type UserUncheckedUpdateWithoutDarMastersInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserCreateWithoutDarAttachmentsInput = {
@@ -1121,6 +1276,11 @@ export type UserCreateWithoutDarAttachmentsInput = {
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutDarAttachmentsInput = {
@@ -1146,6 +1306,11 @@ export type UserUncheckedCreateWithoutDarAttachmentsInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutDarAttachmentsInput = {
@@ -1187,6 +1352,11 @@ export type UserUpdateWithoutDarAttachmentsInput = {
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDarAttachmentsInput = {
@@ -1212,6 +1382,11 @@ export type UserUncheckedUpdateWithoutDarAttachmentsInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserCreateWithoutDarApprovalsInput = {
@@ -1237,6 +1412,11 @@ export type UserCreateWithoutDarApprovalsInput = {
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutDarApprovalsInput = {
@@ -1262,6 +1442,11 @@ export type UserUncheckedCreateWithoutDarApprovalsInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutDarApprovalsInput = {
@@ -1303,6 +1488,11 @@ export type UserUpdateWithoutDarApprovalsInput = {
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDarApprovalsInput = {
@@ -1328,6 +1518,11 @@ export type UserUncheckedUpdateWithoutDarApprovalsInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserCreateWithoutApprovalSignaturesInput = {
@@ -1353,6 +1548,11 @@ export type UserCreateWithoutApprovalSignaturesInput = {
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutApprovalSignaturesInput = {
@@ -1378,6 +1578,11 @@ export type UserUncheckedCreateWithoutApprovalSignaturesInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutApprovalSignaturesInput = {
@@ -1419,6 +1624,11 @@ export type UserUpdateWithoutApprovalSignaturesInput = {
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalSignaturesInput = {
@@ -1444,6 +1654,11 @@ export type UserUncheckedUpdateWithoutApprovalSignaturesInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserCreateWithoutQmsProcessingsInput = {
@@ -1469,6 +1684,11 @@ export type UserCreateWithoutQmsProcessingsInput = {
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutQmsProcessingsInput = {
@@ -1494,6 +1714,11 @@ export type UserUncheckedCreateWithoutQmsProcessingsInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutQmsProcessingsInput = {
@@ -1535,6 +1760,11 @@ export type UserUpdateWithoutQmsProcessingsInput = {
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutQmsProcessingsInput = {
@@ -1560,6 +1790,11 @@ export type UserUncheckedUpdateWithoutQmsProcessingsInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserCreateWithoutDocControlsCreatedInput = {
@@ -1585,6 +1820,11 @@ export type UserCreateWithoutDocControlsCreatedInput = {
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutDocControlsCreatedInput = {
@@ -1610,6 +1850,11 @@ export type UserUncheckedCreateWithoutDocControlsCreatedInput = {
   approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutDocControlsCreatedInput = {
@@ -1640,6 +1885,11 @@ export type UserCreateWithoutDocControlsUpdatedInput = {
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutDocControlsUpdatedInput = {
@@ -1665,6 +1915,11 @@ export type UserUncheckedCreateWithoutDocControlsUpdatedInput = {
   approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutDocControlsUpdatedInput = {
@@ -1706,6 +1961,11 @@ export type UserUpdateWithoutDocControlsCreatedInput = {
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDocControlsCreatedInput = {
@@ -1731,6 +1991,11 @@ export type UserUncheckedUpdateWithoutDocControlsCreatedInput = {
   approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUpsertWithoutDocControlsUpdatedInput = {
@@ -1767,6 +2032,11 @@ export type UserUpdateWithoutDocControlsUpdatedInput = {
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDocControlsUpdatedInput = {
@@ -1792,6 +2062,11 @@ export type UserUncheckedUpdateWithoutDocControlsUpdatedInput = {
   approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserCreateWithoutDocRevisionsCreatedInput = {
@@ -1817,6 +2092,11 @@ export type UserCreateWithoutDocRevisionsCreatedInput = {
   docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
   department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserUncheckedCreateWithoutDocRevisionsCreatedInput = {
@@ -1842,6 +2122,11 @@ export type UserUncheckedCreateWithoutDocRevisionsCreatedInput = {
   approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
   docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
 export type UserCreateOrConnectWithoutDocRevisionsCreatedInput = {
@@ -1883,6 +2168,11 @@ export type UserUpdateWithoutDocRevisionsCreatedInput = {
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDocRevisionsCreatedInput = {
@@ -1908,6 +2198,691 @@ export type UserUncheckedUpdateWithoutDocRevisionsCreatedInput = {
   approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserCreateWithoutCarsIssuedInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
+  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserUncheckedCreateWithoutCarsIssuedInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  departmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserCreateOrConnectWithoutCarsIssuedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarsIssuedInput, Prisma.UserUncheckedCreateWithoutCarsIssuedInput>
+}
+
+export type UserUpsertWithoutCarsIssuedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCarsIssuedInput, Prisma.UserUncheckedUpdateWithoutCarsIssuedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarsIssuedInput, Prisma.UserUncheckedCreateWithoutCarsIssuedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCarsIssuedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCarsIssuedInput, Prisma.UserUncheckedUpdateWithoutCarsIssuedInput>
+}
+
+export type UserUpdateWithoutCarsIssuedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
+  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCarsIssuedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserCreateWithoutCarResponsesInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
+  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserUncheckedCreateWithoutCarResponsesInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  departmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserCreateOrConnectWithoutCarResponsesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarResponsesInput, Prisma.UserUncheckedCreateWithoutCarResponsesInput>
+}
+
+export type UserUpsertWithoutCarResponsesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCarResponsesInput, Prisma.UserUncheckedUpdateWithoutCarResponsesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarResponsesInput, Prisma.UserUncheckedCreateWithoutCarResponsesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCarResponsesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCarResponsesInput, Prisma.UserUncheckedUpdateWithoutCarResponsesInput>
+}
+
+export type UserUpdateWithoutCarResponsesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
+  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCarResponsesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserCreateWithoutCarVerificationsInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
+  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserUncheckedCreateWithoutCarVerificationsInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  departmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserCreateOrConnectWithoutCarVerificationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarVerificationsInput, Prisma.UserUncheckedCreateWithoutCarVerificationsInput>
+}
+
+export type UserUpsertWithoutCarVerificationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCarVerificationsInput, Prisma.UserUncheckedUpdateWithoutCarVerificationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarVerificationsInput, Prisma.UserUncheckedCreateWithoutCarVerificationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCarVerificationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCarVerificationsInput, Prisma.UserUncheckedUpdateWithoutCarVerificationsInput>
+}
+
+export type UserUpdateWithoutCarVerificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
+  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCarVerificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserCreateWithoutCarMrSignaturesInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
+  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserUncheckedCreateWithoutCarMrSignaturesInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  departmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserCreateOrConnectWithoutCarMrSignaturesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarMrSignaturesInput, Prisma.UserUncheckedCreateWithoutCarMrSignaturesInput>
+}
+
+export type UserUpsertWithoutCarMrSignaturesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCarMrSignaturesInput, Prisma.UserUncheckedUpdateWithoutCarMrSignaturesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarMrSignaturesInput, Prisma.UserUncheckedCreateWithoutCarMrSignaturesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCarMrSignaturesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCarMrSignaturesInput, Prisma.UserUncheckedUpdateWithoutCarMrSignaturesInput>
+}
+
+export type UserUpdateWithoutCarMrSignaturesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
+  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCarMrSignaturesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserCreateWithoutCarAttachmentsInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
+  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+}
+
+export type UserUncheckedCreateWithoutCarAttachmentsInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  departmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+}
+
+export type UserCreateOrConnectWithoutCarAttachmentsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarAttachmentsInput, Prisma.UserUncheckedCreateWithoutCarAttachmentsInput>
+}
+
+export type UserUpsertWithoutCarAttachmentsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCarAttachmentsInput, Prisma.UserUncheckedUpdateWithoutCarAttachmentsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarAttachmentsInput, Prisma.UserUncheckedCreateWithoutCarAttachmentsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCarAttachmentsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCarAttachmentsInput, Prisma.UserUncheckedUpdateWithoutCarAttachmentsInput>
+}
+
+export type UserUpdateWithoutCarAttachmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
+  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCarAttachmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
 }
 
 export type UserCreateManyDepartmentInput = {
@@ -1949,6 +2924,11 @@ export type UserUpdateWithoutDepartmentInput = {
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -1974,6 +2954,11 @@ export type UserUncheckedUpdateWithoutDepartmentInput = {
   docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -2007,6 +2992,11 @@ export type UserCountOutputType = {
   docControlsCreated: number
   docControlsUpdated: number
   docRevisionsCreated: number
+  carsIssued: number
+  carResponses: number
+  carVerifications: number
+  carMrSignatures: number
+  carAttachments: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2019,6 +3009,11 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   docControlsCreated?: boolean | UserCountOutputTypeCountDocControlsCreatedArgs
   docControlsUpdated?: boolean | UserCountOutputTypeCountDocControlsUpdatedArgs
   docRevisionsCreated?: boolean | UserCountOutputTypeCountDocRevisionsCreatedArgs
+  carsIssued?: boolean | UserCountOutputTypeCountCarsIssuedArgs
+  carResponses?: boolean | UserCountOutputTypeCountCarResponsesArgs
+  carVerifications?: boolean | UserCountOutputTypeCountCarVerificationsArgs
+  carMrSignatures?: boolean | UserCountOutputTypeCountCarMrSignaturesArgs
+  carAttachments?: boolean | UserCountOutputTypeCountCarAttachmentsArgs
 }
 
 /**
@@ -2094,6 +3089,41 @@ export type UserCountOutputTypeCountDocRevisionsCreatedArgs<ExtArgs extends runt
   where?: Prisma.DocumentControlRevisionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCarsIssuedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarMasterWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCarResponsesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarResponseWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCarVerificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarVerificationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCarMrSignaturesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarMrSignatureWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCarAttachmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarAttachmentWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2120,6 +3150,11 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   docControlsUpdated?: boolean | Prisma.User$docControlsUpdatedArgs<ExtArgs>
   docRevisionsCreated?: boolean | Prisma.User$docRevisionsCreatedArgs<ExtArgs>
   department?: boolean | Prisma.User$departmentArgs<ExtArgs>
+  carsIssued?: boolean | Prisma.User$carsIssuedArgs<ExtArgs>
+  carResponses?: boolean | Prisma.User$carResponsesArgs<ExtArgs>
+  carVerifications?: boolean | Prisma.User$carVerificationsArgs<ExtArgs>
+  carMrSignatures?: boolean | Prisma.User$carMrSignaturesArgs<ExtArgs>
+  carAttachments?: boolean | Prisma.User$carAttachmentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2188,6 +3223,11 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   docControlsUpdated?: boolean | Prisma.User$docControlsUpdatedArgs<ExtArgs>
   docRevisionsCreated?: boolean | Prisma.User$docRevisionsCreatedArgs<ExtArgs>
   department?: boolean | Prisma.User$departmentArgs<ExtArgs>
+  carsIssued?: boolean | Prisma.User$carsIssuedArgs<ExtArgs>
+  carResponses?: boolean | Prisma.User$carResponsesArgs<ExtArgs>
+  carVerifications?: boolean | Prisma.User$carVerificationsArgs<ExtArgs>
+  carMrSignatures?: boolean | Prisma.User$carMrSignaturesArgs<ExtArgs>
+  carAttachments?: boolean | Prisma.User$carAttachmentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2210,6 +3250,11 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     docControlsUpdated: Prisma.$DocumentControlPayload<ExtArgs>[]
     docRevisionsCreated: Prisma.$DocumentControlRevisionPayload<ExtArgs>[]
     department: Prisma.$DepartmentPayload<ExtArgs> | null
+    carsIssued: Prisma.$CarMasterPayload<ExtArgs>[]
+    carResponses: Prisma.$CarResponsePayload<ExtArgs>[]
+    carVerifications: Prisma.$CarVerificationPayload<ExtArgs>[]
+    carMrSignatures: Prisma.$CarMrSignaturePayload<ExtArgs>[]
+    carAttachments: Prisma.$CarAttachmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2630,6 +3675,11 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   docControlsUpdated<T extends Prisma.User$docControlsUpdatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$docControlsUpdatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentControlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   docRevisionsCreated<T extends Prisma.User$docRevisionsCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$docRevisionsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentControlRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   department<T extends Prisma.User$departmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$departmentArgs<ExtArgs>>): Prisma.Prisma__DepartmentClient<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  carsIssued<T extends Prisma.User$carsIssuedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carsIssuedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarMasterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  carResponses<T extends Prisma.User$carResponsesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carResponsesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarResponsePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  carVerifications<T extends Prisma.User$carVerificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carVerificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarVerificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  carMrSignatures<T extends Prisma.User$carMrSignaturesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carMrSignaturesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarMrSignaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  carAttachments<T extends Prisma.User$carAttachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carAttachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3306,6 +4356,126 @@ export type User$departmentArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   include?: Prisma.DepartmentInclude<ExtArgs> | null
   where?: Prisma.DepartmentWhereInput
+}
+
+/**
+ * User.carsIssued
+ */
+export type User$carsIssuedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarMaster
+   */
+  select?: Prisma.CarMasterSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarMaster
+   */
+  omit?: Prisma.CarMasterOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarMasterInclude<ExtArgs> | null
+  where?: Prisma.CarMasterWhereInput
+  orderBy?: Prisma.CarMasterOrderByWithRelationInput | Prisma.CarMasterOrderByWithRelationInput[]
+  cursor?: Prisma.CarMasterWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarMasterScalarFieldEnum | Prisma.CarMasterScalarFieldEnum[]
+}
+
+/**
+ * User.carResponses
+ */
+export type User$carResponsesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarResponse
+   */
+  select?: Prisma.CarResponseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarResponse
+   */
+  omit?: Prisma.CarResponseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarResponseInclude<ExtArgs> | null
+  where?: Prisma.CarResponseWhereInput
+  orderBy?: Prisma.CarResponseOrderByWithRelationInput | Prisma.CarResponseOrderByWithRelationInput[]
+  cursor?: Prisma.CarResponseWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarResponseScalarFieldEnum | Prisma.CarResponseScalarFieldEnum[]
+}
+
+/**
+ * User.carVerifications
+ */
+export type User$carVerificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarVerification
+   */
+  select?: Prisma.CarVerificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarVerification
+   */
+  omit?: Prisma.CarVerificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarVerificationInclude<ExtArgs> | null
+  where?: Prisma.CarVerificationWhereInput
+  orderBy?: Prisma.CarVerificationOrderByWithRelationInput | Prisma.CarVerificationOrderByWithRelationInput[]
+  cursor?: Prisma.CarVerificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarVerificationScalarFieldEnum | Prisma.CarVerificationScalarFieldEnum[]
+}
+
+/**
+ * User.carMrSignatures
+ */
+export type User$carMrSignaturesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarMrSignature
+   */
+  select?: Prisma.CarMrSignatureSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarMrSignature
+   */
+  omit?: Prisma.CarMrSignatureOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarMrSignatureInclude<ExtArgs> | null
+  where?: Prisma.CarMrSignatureWhereInput
+  orderBy?: Prisma.CarMrSignatureOrderByWithRelationInput | Prisma.CarMrSignatureOrderByWithRelationInput[]
+  cursor?: Prisma.CarMrSignatureWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarMrSignatureScalarFieldEnum | Prisma.CarMrSignatureScalarFieldEnum[]
+}
+
+/**
+ * User.carAttachments
+ */
+export type User$carAttachmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarAttachment
+   */
+  select?: Prisma.CarAttachmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarAttachment
+   */
+  omit?: Prisma.CarAttachmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarAttachmentInclude<ExtArgs> | null
+  where?: Prisma.CarAttachmentWhereInput
+  orderBy?: Prisma.CarAttachmentOrderByWithRelationInput | Prisma.CarAttachmentOrderByWithRelationInput[]
+  cursor?: Prisma.CarAttachmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarAttachmentScalarFieldEnum | Prisma.CarAttachmentScalarFieldEnum[]
 }
 
 /**

@@ -27,6 +27,7 @@ function isPrivileged(role: UserRole): boolean {
 
 interface Props {
   userRole: UserRole;
+  userId?: string;
 }
 
 type KpiDepartmentRow = {
@@ -208,7 +209,7 @@ function KpiDepartmentList({
   );
 }
 
-export default function KpiMonthlyClient({ userRole }: Props) {
+export default function KpiMonthlyClient({ userRole, userId }: Props) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const privileged = isPrivileged(userRole);
@@ -360,6 +361,7 @@ export default function KpiMonthlyClient({ userRole }: Props) {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         userRole={userRole}
+        userId={userId}
       />
 
     </div>

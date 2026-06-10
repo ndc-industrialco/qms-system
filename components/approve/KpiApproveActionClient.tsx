@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
-import KpiApprovalTimeline, { type KpiApprovalSignature } from "@/components/kpi/KpiApprovalTimeline";
+import KpiApprovalTimeline, { KPI_MONTHLY_STEPS, type KpiApprovalSignature } from "@/components/kpi/KpiApprovalTimeline";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -34,11 +34,21 @@ type KpiObjective = {
   referenceDocuments?: string | null;
 };
 
+type MonthlyCorrectiveAction = {
+  id: string;
+  times: number;
+  rootCause: string;
+  guidelines: string;
+  responsiblePerson: string;
+  dueDate: string | Date;
+};
+
 type MonthlyDetail = {
   id: string;
   kpiObjective: { objective: string };
   achievedStatus: string;
   actualResult: number | null;
+  correctiveActions?: MonthlyCorrectiveAction[];
 };
 
 const STATUS_STYLES: Record<string, string> = {
@@ -160,7 +170,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
   const statusLabel = t(`kpi.monthly.status.${status}` as never) ?? status;
   const objectives: KpiObjective[] = type === "kpi" ? (kpi.objectives ?? []) : [];
   const monthlyDetails: MonthlyDetail[] = type === "kpi-monthly" ? (kpi.details ?? []) : [];
-  const approvalSignatures: KpiApprovalSignature[] = type === "kpi" ? (kpi.approvalSignatures ?? []) : [];
+  const approvalSignatures: KpiApprovalSignature[] = kpi.approvalSignatures ?? [];
 
   const reviewerName = type === "kpi"
     ? (kpi.reviewerUser?.name ?? kpi.reviewer ?? "-")
@@ -171,12 +181,15 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
   const preparerName = type === "kpi"
     ? (kpi.prepare ?? "-")
     : (kpi.kpi?.prepare ?? "-");
-  const submittedAt: string | null = type === "kpi" ? (kpi.submittedAt ?? null) : null;
+  const submittedAt: string | null = kpi.submittedAt ?? null;
+  const remark: string | null = type === "kpi-monthly" ? (kpi.remark ?? null) : null;
+  const attachmentFileName: string | null = type === "kpi-monthly" ? (kpi.attachmentFileName ?? null) : null;
+  const attachmentWebUrl: string | null = type === "kpi-monthly" ? (kpi.attachmentWebUrl ?? null) : null;
 
   const ActionPanel = (
     <div className="rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
       {/* Timeline section */}
-      {type === "kpi" && approvalSignatures.length > 0 && (
+      {approvalSignatures.length > 0 && (
         <div className="p-5 border-b border-slate-100">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
             {t("dar.approval.title")}
@@ -184,6 +197,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
           <KpiApprovalTimeline
             signatures={approvalSignatures}
             preparerName={preparerName}
+            steps={type === "kpi-monthly" ? KPI_MONTHLY_STEPS : undefined}
           />
         </div>
       )}
@@ -244,6 +258,33 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
             />
           )}
         </div>
+
+        {remark && (
+          <div className="border-t border-slate-100 pt-4">
+            <p className="text-xs text-slate-400 mb-1">{t("kpi.monthly.field.remark")}</p>
+            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{remark}</p>
+          </div>
+        )}
+
+        {attachmentFileName && (
+          <div className="border-t border-slate-100 pt-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+            </svg>
+            {attachmentWebUrl ? (
+              <a
+                href={attachmentWebUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline truncate"
+              >
+                {attachmentFileName}
+              </a>
+            ) : (
+              <span className="text-sm text-slate-600 truncate">{attachmentFileName}</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Objectives */}
@@ -400,7 +441,7 @@ function ObjectivesSection({ objectives, t }: { objectives: KpiObjective[]; t: T
   function toggle(id: string) {
     setExpanded((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   }
@@ -478,46 +519,57 @@ function MonthlyDetailsSection({ details, t }: { details: MonthlyDetail[]; t: Tr
         <span className="ml-2 text-xs font-normal text-slate-400">({details.length})</span>
       </h3>
 
-      {/* Desktop table */}
-      <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-100">
-              <th className="pb-2 text-left text-xs font-semibold text-slate-400 pr-4">{t("kpi.objective.table.objective")}</th>
-              <th className="pb-2 text-right text-xs font-semibold text-slate-400 pr-4 whitespace-nowrap">{t("kpi.monthly.drawer.actualValue")}</th>
-              <th className="pb-2 text-left text-xs font-semibold text-slate-400 whitespace-nowrap">{t("approve.status")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {details.map((d) => (
-              <tr key={d.id}>
-                <td className="py-3 pr-4 text-slate-800 font-medium leading-snug">{d.kpiObjective.objective}</td>
-                <td className="py-3 pr-4 text-right text-slate-600">{d.actualResult ?? "-"}</td>
-                <td className="py-3">
-                  <span className={`inline-flex items-center rounded-lg border px-2 py-0.5 text-xs font-semibold ${ACHIEVED_STYLES[d.achievedStatus] ?? "bg-slate-100 text-slate-600 border-slate-200"}`}>
-                    {t(`kpi.monthly.achieved.${d.achievedStatus}` as never) ?? d.achievedStatus}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="sm:hidden space-y-3">
+      <div className="space-y-3">
         {details.map((d) => (
-          <div key={d.id} className="rounded-xl border border-slate-100 p-3 space-y-1.5">
-            <p className="text-sm font-medium text-slate-800 leading-snug">{d.kpiObjective.objective}</p>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-500">{t("approve.actual")}: {d.actualResult ?? "-"}</span>
-              <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-xs font-semibold ${ACHIEVED_STYLES[d.achievedStatus] ?? "bg-slate-100 text-slate-600 border-slate-200"}`}>
-                {t(`kpi.monthly.achieved.${d.achievedStatus}` as never) ?? d.achievedStatus}
-              </span>
+          <div key={d.id} className="rounded-xl border border-slate-100 overflow-hidden">
+            {/* Header row */}
+            <div className="flex items-start justify-between gap-3 p-4">
+              <p className="text-sm font-medium text-slate-800 leading-snug flex-1">{d.kpiObjective.objective}</p>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-slate-500">{d.actualResult ?? "-"}</span>
+                <span className={`inline-flex items-center rounded-lg border px-2 py-0.5 text-xs font-semibold ${ACHIEVED_STYLES[d.achievedStatus] ?? "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                  {t(`kpi.monthly.achieved.${d.achievedStatus}` as never) ?? d.achievedStatus}
+                </span>
+              </div>
             </div>
+
+            {/* Corrective actions */}
+            {d.correctiveActions && d.correctiveActions.length > 0 && (
+              <div className="border-t border-rose-50 bg-rose-50/40 px-4 pb-4 pt-3 space-y-3">
+                <p className="text-xs font-semibold text-rose-600 uppercase tracking-wider">
+                  {t("kpi.monthly.section.correctiveActions")}
+                </p>
+                {d.correctiveActions.map((ca) => (
+                  <div key={ca.id} className="rounded-xl bg-white border border-rose-100 p-3 space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t("kpi.monthly.correctiveAction.times")}</span>
+                      <span className="text-xs font-bold text-slate-700">#{ca.times}</span>
+                    </div>
+                    <CorrectiveField label={t("kpi.monthly.correctiveAction.rootCause")} value={ca.rootCause} />
+                    <CorrectiveField label={t("kpi.monthly.correctiveAction.guidelines")} value={ca.guidelines} />
+                    <div className="grid grid-cols-2 gap-2">
+                      <CorrectiveField label={t("kpi.monthly.correctiveAction.responsible")} value={ca.responsiblePerson} />
+                      <CorrectiveField
+                        label={t("kpi.monthly.correctiveAction.dueDate")}
+                        value={new Date(ca.dueDate).toLocaleDateString()}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function CorrectiveField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-0.5">
+      <p className="text-xs font-medium text-slate-400">{label}</p>
+      <p className="text-sm text-slate-700 leading-relaxed">{value}</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useT } from "@/lib/i18n";
 import type { AnnouncementRow } from "@/services/announcementService";
 
@@ -13,7 +14,16 @@ type Props = {
 
 export default function AnnouncementDeleteModal({ item, open, onClose, onDeleted }: Props) {
   const t = useT();
-  const [loading, setLoading] = useState(false);
+  const { mutate: deleteItem, isPending: loading } = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/announcements/${id}`, { method: "DELETE" });
+      const json = await res.json() as { data: unknown; error: string | null };
+      if (!res.ok || json.error) throw new Error(json.error || "Failed to delete");
+      return json.data;
+    },
+    onSuccess: () => onDeleted(true),
+    onError: (err) => onDeleted(false, err.message),
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -29,19 +39,9 @@ export default function AnnouncementDeleteModal({ item, open, onClose, onDeleted
 
   if (!open) return null;
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!item) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/announcements/${item.id}`, { method: "DELETE" });
-      const json = await res.json() as { data: unknown; error: string | null };
-      if (!res.ok || json.error) { onDeleted(false, json.error ?? undefined); return; }
-      onDeleted(true);
-    } catch {
-      onDeleted(false);
-    } finally {
-      setLoading(false);
-    }
+    deleteItem(item.id);
   }
 
   return (

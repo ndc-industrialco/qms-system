@@ -196,6 +196,74 @@ export function useDeleteObjective() {
   });
 }
 
+export function useRecallKpiObjectives() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (kpiId: string) => {
+      const res = await fetch(`/api/kpi/${kpiId}/recall`, { method: "POST" });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, kpiId) => {
+      qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpi"] });
+    },
+  });
+}
+
+export function useReviewKpiObjectives() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ kpiId, data }: { kpiId: string; data: { signatureDataUrl?: string; signatureType?: string; saveSignature?: boolean } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, { kpiId }) => {
+      qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpi"] });
+    },
+  });
+}
+
+export function useApproveKpiObjectives() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ kpiId, data }: { kpiId: string; data: { signatureDataUrl?: string; signatureType?: string; saveSignature?: boolean } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, { kpiId }) => {
+      qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpi"] });
+    },
+  });
+}
+
+export function useRejectKpiObjectives() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (kpiId: string) => {
+      const res = await fetch(`/api/kpi/${kpiId}/reject`, { method: "POST" });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, kpiId) => {
+      qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpi"] });
+    },
+  });
+}
+
 export function useSubmitKpiObjectives() {
   const qc = useQueryClient();
   return useMutation({

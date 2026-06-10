@@ -3,6 +3,8 @@
  */
 
 import { getGraphToken } from "@/lib/graph-token";
+import { graphFetch } from "@/lib/graphFetch";
+import { logger } from "@/lib/logger";
 
 export interface MailRecipient {
   name: string;
@@ -13,15 +15,16 @@ interface SendMailOptions {
   to: MailRecipient[];
   subject: string;
   bodyHtml: string;
-  senderEmail?: string;
+  senderEmail: string | undefined;
 }
 
 async function sendMail(opts: SendMailOptions): Promise<void> {
-  const sender = opts.senderEmail || process.env.MAIL_SENDER_ADDRESS;
+  const sender = opts.senderEmail;
   if (!sender) {
-    console.warn("[email] No sender address - skipping mail send");
+    logger.warn("[email] No sender address - mail skipped", { subject: opts.subject });
     return;
   }
+  logger.info("[email] Sending mail", { from: sender, to: opts.to.map(r => r.email), subject: opts.subject });
 
   const token = await getGraphToken();
 
@@ -36,7 +39,7 @@ async function sendMail(opts: SendMailOptions): Promise<void> {
     saveToSentItems: false,
   };
 
-  const res = await fetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(sender)}/sendMail`, {
+  const res = await graphFetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(sender)}/sendMail`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -73,6 +76,7 @@ function makeBilingualMail(opts: {
   facts: Array<{ labelTh: string; labelEn: string; value: string }>;
   detailTh?: string;
   detailEn?: string;
+  extraHtml?: string;
   actionLabelTh?: string;
   actionLabelEn?: string;
   actionUrl?: string;
@@ -113,6 +117,7 @@ function makeBilingualMail(opts: {
       <div style="padding:20px 22px">
         <table style="width:100%;border-collapse:collapse">${factsHtml}</table>
         ${opts.detailTh || opts.detailEn ? `<div style="margin-top:14px;padding:12px;background:#f8fafc"><div style="font-size:12px;font-weight:700;color:#0f172a">รายละเอียด / Details</div><div style="font-size:13px;color:#334155;margin-top:6px;white-space:pre-wrap">${esc(opts.detailTh ?? "")}${opts.detailEn ? `\n${esc(opts.detailEn)}` : ""}</div></div>` : ""}
+        ${opts.extraHtml ?? ""}
         ${actionHtml}
       </div>
       <div style="padding:12px 22px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b">
@@ -120,6 +125,92 @@ function makeBilingualMail(opts: {
       </div>
     </div>
   </div>`;
+}
+
+export interface KpiObjectiveRow {
+  objective: string;
+  target: number;
+  unit: string | null;
+}
+
+export interface KpiMonthlyDetailRow {
+  objective: string;
+  target: number;
+  unit: string | null;
+  actualResult: number | null;
+  achievedStatus: string | null;
+}
+
+function makeObjectivesTable(objectives: KpiObjectiveRow[]): string {
+  if (objectives.length === 0) return "";
+  const rows = objectives
+    .map(
+      (o, i) => `
+      <tr style="background:${i % 2 === 0 ? "#fff" : "#f8fafc"}">
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:center;color:#64748b;font-size:12px">${i + 1}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#0f172a">${esc(o.objective)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#0f172a;text-align:right;font-weight:600">${o.target.toLocaleString()}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#64748b">${esc(o.unit ?? "-")}</td>
+      </tr>`
+    )
+    .join("");
+  return `
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px">รายการตัวชี้วัด KPI / KPI Objectives (${objectives.length} รายการ)</div>
+      <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden">
+        <thead>
+          <tr style="background:#0f1059">
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:center;width:32px">#</th>
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:left">ตัวชี้วัด / Objective</th>
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:right">เป้าหมาย / Target</th>
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:left">หน่วย / Unit</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function makeMonthlyDetailsTable(details: KpiMonthlyDetailRow[]): string {
+  if (details.length === 0) return "";
+  const statusColor = (s: string | null) => {
+    if (s === "ACHIEVED") return "#16a34a";
+    if (s === "NOT_ACHIEVED") return "#dc2626";
+    return "#64748b";
+  };
+  const statusLabel = (s: string | null) => {
+    if (s === "ACHIEVED") return "บรรลุ / Achieved";
+    if (s === "NOT_ACHIEVED") return "ไม่บรรลุ / Not Achieved";
+    return "รอผล / Pending";
+  };
+  const rows = details
+    .map(
+      (d, i) => `
+      <tr style="background:${i % 2 === 0 ? "#fff" : "#f8fafc"}">
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:center;color:#64748b;font-size:12px">${i + 1}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#0f172a">${esc(d.objective)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#334155;text-align:right">${d.target.toLocaleString()}${d.unit ? ` ${esc(d.unit)}` : ""}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:600;text-align:right;color:#0f172a">${d.actualResult !== null ? `${d.actualResult.toLocaleString()}${d.unit ? ` ${esc(d.unit)}` : ""}` : "-"}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:700;color:${statusColor(d.achievedStatus)}">${statusLabel(d.achievedStatus)}</td>
+      </tr>`
+    )
+    .join("");
+  return `
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px">ผลการดำเนินงาน KPI / KPI Results (${details.length} รายการ)</div>
+      <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden">
+        <thead>
+          <tr style="background:#0f1059">
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:center;width:32px">#</th>
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:left">ตัวชี้วัด / Objective</th>
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:right">เป้าหมาย / Target</th>
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:right">ผลจริง / Actual</th>
+            <th style="padding:8px 10px;color:#fff;font-size:11px;text-align:left">สถานะ / Status</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
 }
 
 export interface DarEmailItem {
@@ -146,9 +237,10 @@ export async function sendReviewerAssignedEmail(opts: {
   reason: string;
   items: DarEmailItem[];
   attachments: DarEmailAttachment[];
+  actionToken: string;
   senderEmail?: string;
 }): Promise<void> {
-  const url = getAppUrl(`/dar/${opts.darId}`);
+  const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.reviewer],
     senderEmail: opts.senderEmail,
@@ -166,8 +258,8 @@ export async function sendReviewerAssignedEmail(opts: {
       ],
       detailTh: `เหตุผล: ${opts.reason}`,
       detailEn: `Reason: ${opts.reason}`,
-      actionLabelTh: "เปิดคำขอ DAR",
-      actionLabelEn: "Open DAR",
+      actionLabelTh: "ตรวจสอบ DAR",
+      actionLabelEn: "Review DAR",
       actionUrl: url,
     }),
   });
@@ -186,9 +278,10 @@ export async function sendMrApprovalRequestEmail(opts: {
   reason: string;
   items: DarEmailItem[];
   attachments: DarEmailAttachment[];
+  actionToken: string;
   senderEmail?: string;
 }): Promise<void> {
-  const url = getAppUrl(`/dar/${opts.darId}`);
+  const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.mr],
     senderEmail: opts.senderEmail,
@@ -202,8 +295,8 @@ export async function sendMrApprovalRequestEmail(opts: {
         { labelTh: "วัตถุประสงค์", labelEn: "Objective", value: opts.objective },
         { labelTh: "จำนวนรายการ", labelEn: "Item Count", value: String(opts.items.length) },
       ],
-      actionLabelTh: "เปิดคำขอ DAR",
-      actionLabelEn: "Open DAR",
+      actionLabelTh: "อนุมัติ DAR",
+      actionLabelEn: "Approve DAR",
       actionUrl: url,
     }),
   });
@@ -214,9 +307,10 @@ export async function sendQmsApprovalRequestEmail(opts: {
   requesterName: string;
   darNo: string;
   darId: string;
+  actionToken: string;
   senderEmail?: string;
 }): Promise<void> {
-  const url = getAppUrl(`/dar/${opts.darId}`);
+  const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.qms],
     senderEmail: opts.senderEmail,
@@ -228,8 +322,8 @@ export async function sendQmsApprovalRequestEmail(opts: {
         { labelTh: "ผู้ร้องขอ", labelEn: "Requester", value: opts.requesterName },
         { labelTh: "สถานะ", labelEn: "Status", value: "MR อนุมัติแล้ว รอ QMS อนุมัติขั้นสุดท้าย / MR approved, awaiting final QMS approval" },
       ],
-      actionLabelTh: "เปิดคำขอ DAR",
-      actionLabelEn: "Open DAR",
+      actionLabelTh: "ดำเนินการ DAR",
+      actionLabelEn: "Process DAR",
       actionUrl: url,
     }),
   });
@@ -242,10 +336,12 @@ export async function sendApprovalNotificationEmail(opts: {
   approverName: string;
   stepLabel: string;
   nextStepLabel: string;
+  senderEmail?: string;
 }): Promise<void> {
   const url = getAppUrl(`/dar/${opts.darId}`);
   await sendMail({
     to: [opts.to],
+    senderEmail: opts.senderEmail,
     subject: `[DAR] ${opts.darNo} - ${opts.stepLabel} Approved`,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอ DAR ${opts.darNo} อนุมัติแล้ว`,
@@ -268,10 +364,12 @@ export async function sendRejectionEmail(opts: {
   darId: string;
   rejectorName: string;
   reason: string;
+  senderEmail?: string;
 }): Promise<void> {
   const url = getAppUrl(`/dar/${opts.darId}`);
   await sendMail({
     to: [opts.to],
+    senderEmail: opts.senderEmail,
     subject: `[DAR] ${opts.darNo} - Rejected`,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอ DAR ${opts.darNo} ถูกปฏิเสธ`,
@@ -291,13 +389,17 @@ export async function sendKpiObjectiveReviewerAssignedEmail(opts: {
   reviewer: MailRecipient;
   requesterName: string;
   departmentName: string;
-  objectiveId: string;
-  objective: string;
+  kpiId: string;
+  objectiveId?: string;
+  objectives: KpiObjectiveRow[];
   year: number;
+  actionToken: string;
+  senderEmail: string | undefined;
 }) {
-  const url = getAppUrl(`/approve/${opts.objectiveId}/reviewer?type=kpi`);
+  const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.reviewer],
+    senderEmail: opts.senderEmail,
     subject: `[KPI] Review Required - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI ${opts.departmentName} ปี ${opts.year} รอตรวจสอบ`,
@@ -307,9 +409,11 @@ export async function sendKpiObjectiveReviewerAssignedEmail(opts: {
         { labelTh: "ผู้มอบหมาย", labelEn: "Assigned By", value: opts.requesterName },
         { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
+        { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(opts.objectives.length) },
       ],
-      actionLabelTh: "เปิด KPI",
-      actionLabelEn: "Open KPI",
+      extraHtml: makeObjectivesTable(opts.objectives),
+      actionLabelTh: "ตรวจสอบ KPI",
+      actionLabelEn: "Review KPI",
       actionUrl: url,
     }),
   });
@@ -319,12 +423,15 @@ export async function sendKpiObjectiveApproverRequestEmail(opts: {
   approver: MailRecipient;
   reviewerName: string;
   departmentName: string;
-  objective: string;
+  objectives?: KpiObjectiveRow[];
   year: number;
+  actionToken: string;
+  senderEmail?: string;
 }) {
-  const url = getAppUrl(`/qms/kpi`);
+  const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.approver],
+    senderEmail: opts.senderEmail,
     subject: `[KPI] Approval Required - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI ${opts.departmentName} ปี ${opts.year} รออนุมัติ`,
@@ -333,9 +440,11 @@ export async function sendKpiObjectiveApproverRequestEmail(opts: {
         { labelTh: "ผู้ตรวจสอบแล้ว", labelEn: "Reviewed By", value: opts.reviewerName },
         { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
+        ...(opts.objectives ? [{ labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(opts.objectives.length) }] : []),
       ],
-      actionLabelTh: "เปิด KPI",
-      actionLabelEn: "Open KPI",
+      extraHtml: opts.objectives ? makeObjectivesTable(opts.objectives) : undefined,
+      actionLabelTh: "อนุมัติ KPI",
+      actionLabelEn: "Approve KPI",
       actionUrl: url,
     }),
   });
@@ -346,10 +455,14 @@ export async function sendKpiApprovalRequestEmail(opts: {
   departmentName: string;
   year: number;
   reviewerName?: string;
+  objectives?: KpiObjectiveRow[];
+  actionToken: string;
+  senderEmail: string | undefined;
 }) {
-  const url = getAppUrl(`/qms/kpi`);
+  const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.approver],
+    senderEmail: opts.senderEmail,
     subject: `[KPI] Approval Required - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI ${opts.departmentName} ปี ${opts.year} รออนุมัติ`,
@@ -358,9 +471,11 @@ export async function sendKpiApprovalRequestEmail(opts: {
         { labelTh: "ผู้ตรวจสอบแล้ว", labelEn: "Reviewed By", value: opts.reviewerName ?? "-" },
         { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
+        ...(opts.objectives ? [{ labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(opts.objectives.length) }] : []),
       ],
-      actionLabelTh: "เปิด KPI",
-      actionLabelEn: "Open KPI",
+      extraHtml: opts.objectives ? makeObjectivesTable(opts.objectives) : undefined,
+      actionLabelTh: "อนุมัติ KPI",
+      actionLabelEn: "Approve KPI",
       actionUrl: url,
     }),
   });
@@ -372,22 +487,89 @@ export async function sendKpiResultEmail(opts: {
   year: number;
   status: "APPROVED" | "REJECTED";
   actorName: string;
+  kpiId?: string;
+  objectives?: KpiObjectiveRow[];
+  senderEmail: string | undefined;
 }) {
-  const url = getAppUrl(`/qms/kpi`);
+  const url = getAppUrl(opts.kpiId ? `/qms/kpi/${opts.kpiId}` : `/qms/kpi`);
+  const statusTh = opts.status === "APPROVED" ? "อนุมัติแล้ว" : "ถูกปฏิเสธ";
   await sendMail({
     to: [opts.to],
+    senderEmail: opts.senderEmail,
     subject: `[KPI] ${opts.status} - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `ผลการอนุมัติ KPI ${opts.departmentName} ปี ${opts.year}`,
       titleEn: `KPI ${opts.departmentName} ${opts.year} Approval Result`,
       facts: [
-        { labelTh: "สถานะ", labelEn: "Status", value: opts.status },
+        { labelTh: "สถานะ", labelEn: "Status", value: `${statusTh} / ${opts.status}` },
         { labelTh: "ดำเนินการโดย", labelEn: "Action By", value: opts.actorName },
         { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
+        ...(opts.objectives ? [{ labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(opts.objectives.length) }] : []),
+      ],
+      extraHtml: opts.objectives ? makeObjectivesTable(opts.objectives) : undefined,
+      actionLabelTh: "เปิด KPI",
+      actionLabelEn: "Open KPI",
+      actionUrl: url,
+    }),
+  });
+}
+
+export async function sendKpiRecallEmail(opts: {
+  to: MailRecipient;
+  departmentName: string;
+  year: number;
+  preparerName: string;
+  kpiId: string;
+  senderEmail: string | undefined;
+}) {
+  const url = getAppUrl(`/qms/kpi/${opts.kpiId}`);
+  await sendMail({
+    to: [opts.to],
+    senderEmail: opts.senderEmail,
+    subject: `[KPI] Recalled - ${opts.departmentName} / ${opts.year}`,
+    bodyHtml: makeBilingualMail({
+      titleTh: `KPI ${opts.departmentName} ปี ${opts.year} ถูกเรียกคืนแล้ว`,
+      titleEn: `KPI ${opts.departmentName} ${opts.year} Recalled`,
+      facts: [
+        { labelTh: "เรียกคืนโดย", labelEn: "Recalled By", value: opts.preparerName },
+        { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
+        { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
+        { labelTh: "หมายเหตุ", labelEn: "Note", value: "KPI ถูกเรียกคืนกลับเป็นแบบร่าง งานที่มอบหมายถูกยกเลิก / KPI has been recalled to Draft. Your assignment has been cancelled." },
       ],
       actionLabelTh: "เปิด KPI",
       actionLabelEn: "Open KPI",
+      actionUrl: url,
+    }),
+  });
+}
+
+export async function sendKpiRejectedPreparerEmail(opts: {
+  to: MailRecipient;
+  departmentName: string;
+  year: number;
+  actorName: string;
+  kpiId: string;
+  objectives?: KpiObjectiveRow[];
+  senderEmail: string | undefined;
+}) {
+  const url = getAppUrl(`/qms/kpi/${opts.kpiId}`);
+  await sendMail({
+    to: [opts.to],
+    senderEmail: opts.senderEmail,
+    subject: `[KPI] Rejected - ${opts.departmentName} / ${opts.year}`,
+    bodyHtml: makeBilingualMail({
+      titleTh: `KPI ${opts.departmentName} ปี ${opts.year} ถูกปฏิเสธ`,
+      titleEn: `KPI ${opts.departmentName} ${opts.year} Rejected`,
+      facts: [
+        { labelTh: "ปฏิเสธโดย", labelEn: "Rejected By", value: opts.actorName },
+        { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
+        { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
+        { labelTh: "หมายเหตุ", labelEn: "Note", value: "กรุณาแก้ไขและส่งตรวจสอบใหม่ / Please revise and resubmit." },
+      ],
+      extraHtml: opts.objectives ? makeObjectivesTable(opts.objectives) : undefined,
+      actionLabelTh: "แก้ไข KPI",
+      actionLabelEn: "Edit KPI",
       actionUrl: url,
     }),
   });
@@ -399,10 +581,14 @@ export async function sendKpiMonthlyApprovalRequestEmail(opts: {
   month: string;
   year: number;
   preparerName?: string;
+  details?: KpiMonthlyDetailRow[];
+  actionToken: string;
+  senderEmail: string | undefined;
 }) {
-  const url = getAppUrl(`/qms/kpi/monthly`);
+  const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.approver],
+    senderEmail: opts.senderEmail,
     subject: `[KPI Monthly] Approval Required - ${opts.departmentName} / ${opts.month} ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI รายเดือน ${opts.departmentName} รออนุมัติ`,
@@ -411,9 +597,11 @@ export async function sendKpiMonthlyApprovalRequestEmail(opts: {
         { labelTh: "รอบเดือน", labelEn: "Period", value: `${opts.month} ${opts.year}` },
         { labelTh: "ผู้จัดเตรียม", labelEn: "Prepared By", value: opts.preparerName ?? "-" },
         { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
+        ...(opts.details ? [{ labelTh: "จำนวนตัวชี้วัด", labelEn: "KPI Count", value: String(opts.details.length) }] : []),
       ],
-      actionLabelTh: "เปิด KPI รายเดือน",
-      actionLabelEn: "Open Monthly KPI",
+      extraHtml: opts.details ? makeMonthlyDetailsTable(opts.details) : undefined,
+      actionLabelTh: "อนุมัติ KPI รายเดือน",
+      actionLabelEn: "Approve Monthly KPI",
       actionUrl: url,
     }),
   });
@@ -427,20 +615,27 @@ export async function sendKpiMonthlyResultEmail(opts: {
   status: "APPROVED" | "REJECTED";
   actorName: string;
   reason?: string;
+  details?: KpiMonthlyDetailRow[];
+  reportId?: string;
+  senderEmail: string | undefined;
 }) {
-  const url = getAppUrl(`/qms/kpi/monthly`);
+  const url = getAppUrl(opts.reportId ? `/qms/kpi/monthly/${opts.reportId}` : `/qms/kpi/monthly`);
+  const statusTh = opts.status === "APPROVED" ? "อนุมัติแล้ว" : "ถูกปฏิเสธ";
   await sendMail({
     to: [opts.to],
+    senderEmail: opts.senderEmail,
     subject: `[KPI Monthly] ${opts.status} - ${opts.departmentName} / ${opts.month} ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `ผลการอนุมัติ KPI รายเดือน ${opts.departmentName}`,
       titleEn: `Monthly KPI ${opts.departmentName} Approval Result`,
       facts: [
         { labelTh: "รอบเดือน", labelEn: "Period", value: `${opts.month} ${opts.year}` },
-        { labelTh: "สถานะ", labelEn: "Status", value: opts.status },
+        { labelTh: "สถานะ", labelEn: "Status", value: `${statusTh} / ${opts.status}` },
         { labelTh: "ดำเนินการโดย", labelEn: "Action By", value: opts.actorName },
-        { labelTh: "เหตุผล", labelEn: "Reason", value: opts.reason ?? "-" },
+        ...(opts.reason ? [{ labelTh: "เหตุผล", labelEn: "Reason", value: opts.reason }] : []),
+        ...(opts.details ? [{ labelTh: "จำนวนตัวชี้วัด", labelEn: "KPI Count", value: String(opts.details.length) }] : []),
       ],
+      extraHtml: opts.details ? makeMonthlyDetailsTable(opts.details) : undefined,
       actionLabelTh: "เปิด KPI รายเดือน",
       actionLabelEn: "Open Monthly KPI",
       actionUrl: url,
