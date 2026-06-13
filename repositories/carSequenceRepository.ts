@@ -5,26 +5,21 @@ export class CarSequenceRepository {
   async nextSequence(year: number, tx?: Prisma.TransactionClient): Promise<number> {
     const client = tx ?? db;
 
-    // Use upsert on SystemConfig with a transaction to prevent race conditions.
-    // Key format: CAR_COUNTER_{year}
     const counterKey = `CAR_COUNTER_${year}`;
+    const description = `CAR counter for ${year}`;
 
-    // Lock row by upserting — PostgreSQL serializes concurrent upserts on unique key.
-    // We read the current value, increment, and write back inside the same tx.
-    const existing = await client.systemConfig.findUnique({
-      where: { configKey: counterKey },
-      select: { configValue: true },
-    });
+    // Atomic: INSERT ... ON CONFLICT DO UPDATE increments the counter in a single
+    // statement — no separate read-then-write gap for concurrent requests to race through.
+    const result = await client.$queryRaw<[{ configValue: string }]>`
+      INSERT INTO "SystemConfig" ("configKey", "configValue", "description", "updatedAt")
+      VALUES (${counterKey}, '1', ${description}, NOW())
+      ON CONFLICT ("configKey") DO UPDATE
+        SET "configValue" = (CAST("SystemConfig"."configValue" AS INTEGER) + 1)::TEXT,
+            "updatedAt"   = NOW()
+      RETURNING "configValue"
+    `;
 
-    const nextSeq = existing ? parseInt(existing.configValue, 10) + 1 : 1;
-
-    await client.systemConfig.upsert({
-      where: { configKey: counterKey },
-      create: { configKey: counterKey, configValue: String(nextSeq), description: `CAR counter for ${year}` },
-      update: { configValue: String(nextSeq) },
-    });
-
-    return nextSeq;
+    return parseInt(result[0].configValue, 10);
   }
 
   async previewNext(year: number): Promise<number> {

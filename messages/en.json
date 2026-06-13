@@ -1117,6 +1117,7 @@
     "timeline": {
       "stepIssued": "CAR Issued",
       "stepResponded": "Department Responded",
+      "stepMrReview": "MR Review Action Plan",
       "stepVerify1": "Verification Round 1",
       "stepVerify2": "Verification Round 2",
       "stepMrSigned": "MR Signed (Closed)",

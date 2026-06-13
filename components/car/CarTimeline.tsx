@@ -59,6 +59,22 @@ export default function CarTimeline({ car }: Props) {
         }
       />
       <Step
+        done={!!car.mrResponseReview}
+        label={t("car.timeline.stepMrReview")}
+        meta={
+          car.mrResponseReview ? (
+            <>
+              {fmt(car.mrResponseReview.reviewedAt)} · {car.mrResponseReview.mrUser.name}
+              {" · "}
+              <span className={car.mrResponseReview.action === "APPROVED" ? "text-emerald-600 font-semibold" : "text-rose-600 font-semibold"}>
+                {car.mrResponseReview.action === "APPROVED" ? "อนุมัติ" : "ปฏิเสธ"}
+              </span>
+              {car.mrResponseReview.comment ? <> · &quot;{car.mrResponseReview.comment}&quot;</> : null}
+            </>
+          ) : undefined
+        }
+      />
+      <Step
         done={!!verify1}
         label={t("car.timeline.stepVerify1")}
         meta={

@@ -20,8 +20,18 @@ export type UserModel = runtime.Types.Result.DefaultSelection<Prisma.$UserPayloa
 
 export type AggregateUser = {
   _count: UserCountAggregateOutputType | null
+  _avg: UserAvgAggregateOutputType | null
+  _sum: UserSumAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
+}
+
+export type UserAvgAggregateOutputType = {
+  failedLoginCount: number | null
+}
+
+export type UserSumAggregateOutputType = {
+  failedLoginCount: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -37,6 +47,8 @@ export type UserMinAggregateOutputType = {
   savedSignatureUrl: string | null
   signatureType: $Enums.SignatureType | null
   departmentId: string | null
+  localAuthEnabled: boolean | null
+  failedLoginCount: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -54,6 +66,8 @@ export type UserMaxAggregateOutputType = {
   savedSignatureUrl: string | null
   signatureType: $Enums.SignatureType | null
   departmentId: string | null
+  localAuthEnabled: boolean | null
+  failedLoginCount: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -71,11 +85,21 @@ export type UserCountAggregateOutputType = {
   savedSignatureUrl: number
   signatureType: number
   departmentId: number
+  localAuthEnabled: number
+  failedLoginCount: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type UserAvgAggregateInputType = {
+  failedLoginCount?: true
+}
+
+export type UserSumAggregateInputType = {
+  failedLoginCount?: true
+}
 
 export type UserMinAggregateInputType = {
   id?: true
@@ -90,6 +114,8 @@ export type UserMinAggregateInputType = {
   savedSignatureUrl?: true
   signatureType?: true
   departmentId?: true
+  localAuthEnabled?: true
+  failedLoginCount?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -107,6 +133,8 @@ export type UserMaxAggregateInputType = {
   savedSignatureUrl?: true
   signatureType?: true
   departmentId?: true
+  localAuthEnabled?: true
+  failedLoginCount?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +152,8 @@ export type UserCountAggregateInputType = {
   savedSignatureUrl?: true
   signatureType?: true
   departmentId?: true
+  localAuthEnabled?: true
+  failedLoginCount?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -167,6 +197,18 @@ export type UserAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: UserAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: UserSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: UserMinAggregateInputType
@@ -197,6 +239,8 @@ export type UserGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   _count?: UserCountAggregateInputType | true
+  _avg?: UserAvgAggregateInputType
+  _sum?: UserSumAggregateInputType
   _min?: UserMinAggregateInputType
   _max?: UserMaxAggregateInputType
 }
@@ -214,9 +258,13 @@ export type UserGroupByOutputType = {
   savedSignatureUrl: string | null
   signatureType: $Enums.SignatureType | null
   departmentId: string | null
+  localAuthEnabled: boolean
+  failedLoginCount: number
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
+  _avg: UserAvgAggregateOutputType | null
+  _sum: UserSumAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
 }
@@ -252,6 +300,8 @@ export type UserWhereInput = {
   savedSignatureUrl?: Prisma.StringNullableFilter<"User"> | string | null
   signatureType?: Prisma.EnumSignatureTypeNullableFilter<"User"> | $Enums.SignatureType | null
   departmentId?: Prisma.StringNullableFilter<"User"> | string | null
+  localAuthEnabled?: Prisma.BoolFilter<"User"> | boolean
+  failedLoginCount?: Prisma.IntFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   announcements?: Prisma.AnnouncementListRelationFilter
@@ -268,6 +318,7 @@ export type UserWhereInput = {
   carResponses?: Prisma.CarResponseListRelationFilter
   carVerifications?: Prisma.CarVerificationListRelationFilter
   carMrSignatures?: Prisma.CarMrSignatureListRelationFilter
+  carMrResponseReviews?: Prisma.CarMrResponseReviewListRelationFilter
   carAttachments?: Prisma.CarAttachmentListRelationFilter
 }
 
@@ -284,6 +335,8 @@ export type UserOrderByWithRelationInput = {
   savedSignatureUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   signatureType?: Prisma.SortOrderInput | Prisma.SortOrder
   departmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  localAuthEnabled?: Prisma.SortOrder
+  failedLoginCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   announcements?: Prisma.AnnouncementOrderByRelationAggregateInput
@@ -300,6 +353,7 @@ export type UserOrderByWithRelationInput = {
   carResponses?: Prisma.CarResponseOrderByRelationAggregateInput
   carVerifications?: Prisma.CarVerificationOrderByRelationAggregateInput
   carMrSignatures?: Prisma.CarMrSignatureOrderByRelationAggregateInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewOrderByRelationAggregateInput
   carAttachments?: Prisma.CarAttachmentOrderByRelationAggregateInput
 }
 
@@ -319,6 +373,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   savedSignatureUrl?: Prisma.StringNullableFilter<"User"> | string | null
   signatureType?: Prisma.EnumSignatureTypeNullableFilter<"User"> | $Enums.SignatureType | null
   departmentId?: Prisma.StringNullableFilter<"User"> | string | null
+  localAuthEnabled?: Prisma.BoolFilter<"User"> | boolean
+  failedLoginCount?: Prisma.IntFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   announcements?: Prisma.AnnouncementListRelationFilter
@@ -335,6 +391,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   carResponses?: Prisma.CarResponseListRelationFilter
   carVerifications?: Prisma.CarVerificationListRelationFilter
   carMrSignatures?: Prisma.CarMrSignatureListRelationFilter
+  carMrResponseReviews?: Prisma.CarMrResponseReviewListRelationFilter
   carAttachments?: Prisma.CarAttachmentListRelationFilter
 }, "id" | "employeeId" | "msUserId" | "email">
 
@@ -351,11 +408,15 @@ export type UserOrderByWithAggregationInput = {
   savedSignatureUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   signatureType?: Prisma.SortOrderInput | Prisma.SortOrder
   departmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  localAuthEnabled?: Prisma.SortOrder
+  failedLoginCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
+  _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
+  _sum?: Prisma.UserSumOrderByAggregateInput
 }
 
 export type UserScalarWhereWithAggregatesInput = {
@@ -374,6 +435,8 @@ export type UserScalarWhereWithAggregatesInput = {
   savedSignatureUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   signatureType?: Prisma.EnumSignatureTypeNullableWithAggregatesFilter<"User"> | $Enums.SignatureType | null
   departmentId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  localAuthEnabled?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  failedLoginCount?: Prisma.IntWithAggregatesFilter<"User"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -390,6 +453,8 @@ export type UserCreateInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -406,6 +471,7 @@ export type UserCreateInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -422,6 +488,8 @@ export type UserUncheckedCreateInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -437,6 +505,7 @@ export type UserUncheckedCreateInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -452,6 +521,8 @@ export type UserUpdateInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -468,6 +539,7 @@ export type UserUpdateInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -484,6 +556,8 @@ export type UserUncheckedUpdateInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -499,6 +573,7 @@ export type UserUncheckedUpdateInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -515,6 +590,8 @@ export type UserCreateManyInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -531,6 +608,8 @@ export type UserUpdateManyMutationInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -548,6 +627,8 @@ export type UserUncheckedUpdateManyInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -575,8 +656,14 @@ export type UserCountOrderByAggregateInput = {
   savedSignatureUrl?: Prisma.SortOrder
   signatureType?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  localAuthEnabled?: Prisma.SortOrder
+  failedLoginCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type UserAvgOrderByAggregateInput = {
+  failedLoginCount?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -592,6 +679,8 @@ export type UserMaxOrderByAggregateInput = {
   savedSignatureUrl?: Prisma.SortOrder
   signatureType?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  localAuthEnabled?: Prisma.SortOrder
+  failedLoginCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -609,8 +698,14 @@ export type UserMinOrderByAggregateInput = {
   savedSignatureUrl?: Prisma.SortOrder
   signatureType?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  localAuthEnabled?: Prisma.SortOrder
+  failedLoginCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type UserSumOrderByAggregateInput = {
+  failedLoginCount?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -675,6 +770,14 @@ export type EnumUserRoleFieldUpdateOperationsInput = {
 
 export type NullableEnumSignatureTypeFieldUpdateOperationsInput = {
   set?: $Enums.SignatureType | null
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type UserCreateNestedOneWithoutAnnouncementsInput = {
@@ -875,6 +978,20 @@ export type UserUpdateOneRequiredWithoutCarAttachmentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCarAttachmentsInput, Prisma.UserUpdateWithoutCarAttachmentsInput>, Prisma.UserUncheckedUpdateWithoutCarAttachmentsInput>
 }
 
+export type UserCreateNestedOneWithoutCarMrResponseReviewsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarMrResponseReviewsInput, Prisma.UserUncheckedCreateWithoutCarMrResponseReviewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarMrResponseReviewsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCarMrResponseReviewsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCarMrResponseReviewsInput, Prisma.UserUncheckedCreateWithoutCarMrResponseReviewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCarMrResponseReviewsInput
+  upsert?: Prisma.UserUpsertWithoutCarMrResponseReviewsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCarMrResponseReviewsInput, Prisma.UserUpdateWithoutCarMrResponseReviewsInput>, Prisma.UserUncheckedUpdateWithoutCarMrResponseReviewsInput>
+}
+
 export type UserCreateWithoutDepartmentInput = {
   id?: string
   employeeId?: string | null
@@ -887,6 +1004,8 @@ export type UserCreateWithoutDepartmentInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -902,6 +1021,7 @@ export type UserCreateWithoutDepartmentInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -917,6 +1037,8 @@ export type UserUncheckedCreateWithoutDepartmentInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -932,6 +1054,7 @@ export type UserUncheckedCreateWithoutDepartmentInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -977,6 +1100,8 @@ export type UserScalarWhereInput = {
   savedSignatureUrl?: Prisma.StringNullableFilter<"User"> | string | null
   signatureType?: Prisma.EnumSignatureTypeNullableFilter<"User"> | $Enums.SignatureType | null
   departmentId?: Prisma.StringNullableFilter<"User"> | string | null
+  localAuthEnabled?: Prisma.BoolFilter<"User"> | boolean
+  failedLoginCount?: Prisma.IntFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
 }
@@ -993,6 +1118,8 @@ export type UserCreateWithoutAnnouncementsInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
@@ -1008,6 +1135,7 @@ export type UserCreateWithoutAnnouncementsInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1024,6 +1152,8 @@ export type UserUncheckedCreateWithoutAnnouncementsInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
@@ -1038,6 +1168,7 @@ export type UserUncheckedCreateWithoutAnnouncementsInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1069,6 +1200,8 @@ export type UserUpdateWithoutAnnouncementsInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
@@ -1084,6 +1217,7 @@ export type UserUpdateWithoutAnnouncementsInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1100,6 +1234,8 @@ export type UserUncheckedUpdateWithoutAnnouncementsInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
@@ -1114,6 +1250,7 @@ export type UserUncheckedUpdateWithoutAnnouncementsInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1129,6 +1266,8 @@ export type UserCreateWithoutDarMastersInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -1144,6 +1283,7 @@ export type UserCreateWithoutDarMastersInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1160,6 +1300,8 @@ export type UserUncheckedCreateWithoutDarMastersInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1174,6 +1316,7 @@ export type UserUncheckedCreateWithoutDarMastersInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1205,6 +1348,8 @@ export type UserUpdateWithoutDarMastersInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -1220,6 +1365,7 @@ export type UserUpdateWithoutDarMastersInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1236,6 +1382,8 @@ export type UserUncheckedUpdateWithoutDarMastersInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1250,6 +1398,7 @@ export type UserUncheckedUpdateWithoutDarMastersInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1265,6 +1414,8 @@ export type UserCreateWithoutDarAttachmentsInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -1280,6 +1431,7 @@ export type UserCreateWithoutDarAttachmentsInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1296,6 +1448,8 @@ export type UserUncheckedCreateWithoutDarAttachmentsInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1310,6 +1464,7 @@ export type UserUncheckedCreateWithoutDarAttachmentsInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1341,6 +1496,8 @@ export type UserUpdateWithoutDarAttachmentsInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -1356,6 +1513,7 @@ export type UserUpdateWithoutDarAttachmentsInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1372,6 +1530,8 @@ export type UserUncheckedUpdateWithoutDarAttachmentsInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1386,6 +1546,7 @@ export type UserUncheckedUpdateWithoutDarAttachmentsInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1401,6 +1562,8 @@ export type UserCreateWithoutDarApprovalsInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -1416,6 +1579,7 @@ export type UserCreateWithoutDarApprovalsInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1432,6 +1596,8 @@ export type UserUncheckedCreateWithoutDarApprovalsInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1446,6 +1612,7 @@ export type UserUncheckedCreateWithoutDarApprovalsInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1477,6 +1644,8 @@ export type UserUpdateWithoutDarApprovalsInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -1492,6 +1661,7 @@ export type UserUpdateWithoutDarApprovalsInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1508,6 +1678,8 @@ export type UserUncheckedUpdateWithoutDarApprovalsInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1522,6 +1694,7 @@ export type UserUncheckedUpdateWithoutDarApprovalsInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1537,6 +1710,8 @@ export type UserCreateWithoutApprovalSignaturesInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -1552,6 +1727,7 @@ export type UserCreateWithoutApprovalSignaturesInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1568,6 +1744,8 @@ export type UserUncheckedCreateWithoutApprovalSignaturesInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1582,6 +1760,7 @@ export type UserUncheckedCreateWithoutApprovalSignaturesInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1613,6 +1792,8 @@ export type UserUpdateWithoutApprovalSignaturesInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -1628,6 +1809,7 @@ export type UserUpdateWithoutApprovalSignaturesInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1644,6 +1826,8 @@ export type UserUncheckedUpdateWithoutApprovalSignaturesInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1658,6 +1842,7 @@ export type UserUncheckedUpdateWithoutApprovalSignaturesInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1673,6 +1858,8 @@ export type UserCreateWithoutQmsProcessingsInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -1688,6 +1875,7 @@ export type UserCreateWithoutQmsProcessingsInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1704,6 +1892,8 @@ export type UserUncheckedCreateWithoutQmsProcessingsInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1718,6 +1908,7 @@ export type UserUncheckedCreateWithoutQmsProcessingsInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1749,6 +1940,8 @@ export type UserUpdateWithoutQmsProcessingsInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -1764,6 +1957,7 @@ export type UserUpdateWithoutQmsProcessingsInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1780,6 +1974,8 @@ export type UserUncheckedUpdateWithoutQmsProcessingsInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1794,6 +1990,7 @@ export type UserUncheckedUpdateWithoutQmsProcessingsInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1809,6 +2006,8 @@ export type UserCreateWithoutDocControlsCreatedInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -1824,6 +2023,7 @@ export type UserCreateWithoutDocControlsCreatedInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1840,6 +2040,8 @@ export type UserUncheckedCreateWithoutDocControlsCreatedInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1854,6 +2056,7 @@ export type UserUncheckedCreateWithoutDocControlsCreatedInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1874,6 +2077,8 @@ export type UserCreateWithoutDocControlsUpdatedInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -1889,6 +2094,7 @@ export type UserCreateWithoutDocControlsUpdatedInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1905,6 +2111,8 @@ export type UserUncheckedCreateWithoutDocControlsUpdatedInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -1919,6 +2127,7 @@ export type UserUncheckedCreateWithoutDocControlsUpdatedInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -1950,6 +2159,8 @@ export type UserUpdateWithoutDocControlsCreatedInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -1965,6 +2176,7 @@ export type UserUpdateWithoutDocControlsCreatedInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -1981,6 +2193,8 @@ export type UserUncheckedUpdateWithoutDocControlsCreatedInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -1995,6 +2209,7 @@ export type UserUncheckedUpdateWithoutDocControlsCreatedInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2021,6 +2236,8 @@ export type UserUpdateWithoutDocControlsUpdatedInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -2036,6 +2253,7 @@ export type UserUpdateWithoutDocControlsUpdatedInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2052,6 +2270,8 @@ export type UserUncheckedUpdateWithoutDocControlsUpdatedInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2066,6 +2286,7 @@ export type UserUncheckedUpdateWithoutDocControlsUpdatedInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2081,6 +2302,8 @@ export type UserCreateWithoutDocRevisionsCreatedInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -2096,6 +2319,7 @@ export type UserCreateWithoutDocRevisionsCreatedInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2112,6 +2336,8 @@ export type UserUncheckedCreateWithoutDocRevisionsCreatedInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2126,6 +2352,7 @@ export type UserUncheckedCreateWithoutDocRevisionsCreatedInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2157,6 +2384,8 @@ export type UserUpdateWithoutDocRevisionsCreatedInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -2172,6 +2401,7 @@ export type UserUpdateWithoutDocRevisionsCreatedInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2188,6 +2418,8 @@ export type UserUncheckedUpdateWithoutDocRevisionsCreatedInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2202,6 +2434,7 @@ export type UserUncheckedUpdateWithoutDocRevisionsCreatedInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2217,6 +2450,8 @@ export type UserCreateWithoutCarsIssuedInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -2232,6 +2467,7 @@ export type UserCreateWithoutCarsIssuedInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2248,6 +2484,8 @@ export type UserUncheckedCreateWithoutCarsIssuedInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2262,6 +2500,7 @@ export type UserUncheckedCreateWithoutCarsIssuedInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2293,6 +2532,8 @@ export type UserUpdateWithoutCarsIssuedInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -2308,6 +2549,7 @@ export type UserUpdateWithoutCarsIssuedInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2324,6 +2566,8 @@ export type UserUncheckedUpdateWithoutCarsIssuedInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2338,6 +2582,7 @@ export type UserUncheckedUpdateWithoutCarsIssuedInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2353,6 +2598,8 @@ export type UserCreateWithoutCarResponsesInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -2368,6 +2615,7 @@ export type UserCreateWithoutCarResponsesInput = {
   carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2384,6 +2632,8 @@ export type UserUncheckedCreateWithoutCarResponsesInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2398,6 +2648,7 @@ export type UserUncheckedCreateWithoutCarResponsesInput = {
   carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2429,6 +2680,8 @@ export type UserUpdateWithoutCarResponsesInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -2444,6 +2697,7 @@ export type UserUpdateWithoutCarResponsesInput = {
   carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2460,6 +2714,8 @@ export type UserUncheckedUpdateWithoutCarResponsesInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2474,6 +2730,7 @@ export type UserUncheckedUpdateWithoutCarResponsesInput = {
   carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2489,6 +2746,8 @@ export type UserCreateWithoutCarVerificationsInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -2504,6 +2763,7 @@ export type UserCreateWithoutCarVerificationsInput = {
   carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2520,6 +2780,8 @@ export type UserUncheckedCreateWithoutCarVerificationsInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2534,6 +2796,7 @@ export type UserUncheckedCreateWithoutCarVerificationsInput = {
   carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2565,6 +2828,8 @@ export type UserUpdateWithoutCarVerificationsInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -2580,6 +2845,7 @@ export type UserUpdateWithoutCarVerificationsInput = {
   carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2596,6 +2862,8 @@ export type UserUncheckedUpdateWithoutCarVerificationsInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2610,6 +2878,7 @@ export type UserUncheckedUpdateWithoutCarVerificationsInput = {
   carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2625,6 +2894,8 @@ export type UserCreateWithoutCarMrSignaturesInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -2640,6 +2911,7 @@ export type UserCreateWithoutCarMrSignaturesInput = {
   carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2656,6 +2928,8 @@ export type UserUncheckedCreateWithoutCarMrSignaturesInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2670,6 +2944,7 @@ export type UserUncheckedCreateWithoutCarMrSignaturesInput = {
   carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
   carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
 }
 
@@ -2701,6 +2976,8 @@ export type UserUpdateWithoutCarMrSignaturesInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -2716,6 +2993,7 @@ export type UserUpdateWithoutCarMrSignaturesInput = {
   carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2732,6 +3010,8 @@ export type UserUncheckedUpdateWithoutCarMrSignaturesInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2746,6 +3026,7 @@ export type UserUncheckedUpdateWithoutCarMrSignaturesInput = {
   carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
@@ -2761,6 +3042,8 @@ export type UserCreateWithoutCarAttachmentsInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
@@ -2777,6 +3060,7 @@ export type UserCreateWithoutCarAttachmentsInput = {
   carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewCreateNestedManyWithoutMrUserInput
 }
 
 export type UserUncheckedCreateWithoutCarAttachmentsInput = {
@@ -2792,6 +3076,8 @@ export type UserUncheckedCreateWithoutCarAttachmentsInput = {
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
   departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
@@ -2807,6 +3093,7 @@ export type UserUncheckedCreateWithoutCarAttachmentsInput = {
   carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
   carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedCreateNestedManyWithoutMrUserInput
 }
 
 export type UserCreateOrConnectWithoutCarAttachmentsInput = {
@@ -2837,6 +3124,8 @@ export type UserUpdateWithoutCarAttachmentsInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -2853,6 +3142,7 @@ export type UserUpdateWithoutCarAttachmentsInput = {
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCarAttachmentsInput = {
@@ -2868,6 +3158,8 @@ export type UserUncheckedUpdateWithoutCarAttachmentsInput = {
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2883,9 +3175,10 @@ export type UserUncheckedUpdateWithoutCarAttachmentsInput = {
   carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
   carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
 }
 
-export type UserCreateManyDepartmentInput = {
+export type UserCreateWithoutCarMrResponseReviewsInput = {
   id?: string
   employeeId?: string | null
   msUserId?: string | null
@@ -2897,11 +3190,77 @@ export type UserCreateManyDepartmentInput = {
   position?: string | null
   savedSignatureUrl?: string | null
   signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionCreateNestedManyWithoutCreatedByInput
+  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  carsIssued?: Prisma.CarMasterCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentCreateNestedManyWithoutUploadedByInput
 }
 
-export type UserUpdateWithoutDepartmentInput = {
+export type UserUncheckedCreateWithoutCarMrResponseReviewsInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  departmentId?: string | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutCreatedByInput
+  darApprovals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput
+  darAttachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+  darMasters?: Prisma.DarMasterUncheckedCreateNestedManyWithoutRequesterInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedCreateNestedManyWithoutQmsUserInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutCreatedByInput
+  carsIssued?: Prisma.CarMasterUncheckedCreateNestedManyWithoutIssuerInput
+  carResponses?: Prisma.CarResponseUncheckedCreateNestedManyWithoutResponderInput
+  carVerifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutVerifierInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput
+  carAttachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserCreateOrConnectWithoutCarMrResponseReviewsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarMrResponseReviewsInput, Prisma.UserUncheckedCreateWithoutCarMrResponseReviewsInput>
+}
+
+export type UserUpsertWithoutCarMrResponseReviewsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCarMrResponseReviewsInput, Prisma.UserUncheckedUpdateWithoutCarMrResponseReviewsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCarMrResponseReviewsInput, Prisma.UserUncheckedCreateWithoutCarMrResponseReviewsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCarMrResponseReviewsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCarMrResponseReviewsInput, Prisma.UserUncheckedUpdateWithoutCarMrResponseReviewsInput>
+}
+
+export type UserUpdateWithoutCarMrResponseReviewsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2913,6 +3272,8 @@ export type UserUpdateWithoutDepartmentInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
@@ -2924,6 +3285,7 @@ export type UserUpdateWithoutDepartmentInput = {
   docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
   docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
   docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
+  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
   carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
   carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
   carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
@@ -2931,7 +3293,7 @@ export type UserUpdateWithoutDepartmentInput = {
   carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
 }
 
-export type UserUncheckedUpdateWithoutDepartmentInput = {
+export type UserUncheckedUpdateWithoutCarMrResponseReviewsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2943,6 +3305,9 @@ export type UserUncheckedUpdateWithoutDepartmentInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -2961,6 +3326,90 @@ export type UserUncheckedUpdateWithoutDepartmentInput = {
   carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
 }
 
+export type UserCreateManyDepartmentInput = {
+  id?: string
+  employeeId?: string | null
+  msUserId?: string | null
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  position?: string | null
+  savedSignatureUrl?: string | null
+  signatureType?: $Enums.SignatureType | null
+  localAuthEnabled?: boolean
+  failedLoginCount?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type UserUpdateWithoutDepartmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutDepartmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  msUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutCreatedByNestedInput
+  darApprovals?: Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput
+  darAttachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+  darMasters?: Prisma.DarMasterUncheckedUpdateManyWithoutRequesterNestedInput
+  qmsProcessings?: Prisma.QmsProcessingUncheckedUpdateManyWithoutQmsUserNestedInput
+  approvalSignatures?: Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput
+  docControlsCreated?: Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput
+  docControlsUpdated?: Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput
+  docRevisionsCreated?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutCreatedByNestedInput
+  carsIssued?: Prisma.CarMasterUncheckedUpdateManyWithoutIssuerNestedInput
+  carResponses?: Prisma.CarResponseUncheckedUpdateManyWithoutResponderNestedInput
+  carVerifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutVerifierNestedInput
+  carMrSignatures?: Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput
+  carMrResponseReviews?: Prisma.CarMrResponseReviewUncheckedUpdateManyWithoutMrUserNestedInput
+  carAttachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput
+}
+
 export type UserUncheckedUpdateManyWithoutDepartmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2973,6 +3422,8 @@ export type UserUncheckedUpdateManyWithoutDepartmentInput = {
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   savedSignatureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureType?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  localAuthEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2996,6 +3447,7 @@ export type UserCountOutputType = {
   carResponses: number
   carVerifications: number
   carMrSignatures: number
+  carMrResponseReviews: number
   carAttachments: number
 }
 
@@ -3013,6 +3465,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   carResponses?: boolean | UserCountOutputTypeCountCarResponsesArgs
   carVerifications?: boolean | UserCountOutputTypeCountCarVerificationsArgs
   carMrSignatures?: boolean | UserCountOutputTypeCountCarMrSignaturesArgs
+  carMrResponseReviews?: boolean | UserCountOutputTypeCountCarMrResponseReviewsArgs
   carAttachments?: boolean | UserCountOutputTypeCountCarAttachmentsArgs
 }
 
@@ -3120,6 +3573,13 @@ export type UserCountOutputTypeCountCarMrSignaturesArgs<ExtArgs extends runtime.
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountCarMrResponseReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarMrResponseReviewWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountCarAttachmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.CarAttachmentWhereInput
 }
@@ -3138,6 +3598,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   savedSignatureUrl?: boolean
   signatureType?: boolean
   departmentId?: boolean
+  localAuthEnabled?: boolean
+  failedLoginCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   announcements?: boolean | Prisma.User$announcementsArgs<ExtArgs>
@@ -3154,6 +3616,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   carResponses?: boolean | Prisma.User$carResponsesArgs<ExtArgs>
   carVerifications?: boolean | Prisma.User$carVerificationsArgs<ExtArgs>
   carMrSignatures?: boolean | Prisma.User$carMrSignaturesArgs<ExtArgs>
+  carMrResponseReviews?: boolean | Prisma.User$carMrResponseReviewsArgs<ExtArgs>
   carAttachments?: boolean | Prisma.User$carAttachmentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -3171,6 +3634,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   savedSignatureUrl?: boolean
   signatureType?: boolean
   departmentId?: boolean
+  localAuthEnabled?: boolean
+  failedLoginCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   department?: boolean | Prisma.User$departmentArgs<ExtArgs>
@@ -3189,6 +3654,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   savedSignatureUrl?: boolean
   signatureType?: boolean
   departmentId?: boolean
+  localAuthEnabled?: boolean
+  failedLoginCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   department?: boolean | Prisma.User$departmentArgs<ExtArgs>
@@ -3207,11 +3674,13 @@ export type UserSelectScalar = {
   savedSignatureUrl?: boolean
   signatureType?: boolean
   departmentId?: boolean
+  localAuthEnabled?: boolean
+  failedLoginCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "employeeId" | "msUserId" | "name" | "email" | "emailVerified" | "image" | "role" | "position" | "savedSignatureUrl" | "signatureType" | "departmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "employeeId" | "msUserId" | "name" | "email" | "emailVerified" | "image" | "role" | "position" | "savedSignatureUrl" | "signatureType" | "departmentId" | "localAuthEnabled" | "failedLoginCount" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   announcements?: boolean | Prisma.User$announcementsArgs<ExtArgs>
   darApprovals?: boolean | Prisma.User$darApprovalsArgs<ExtArgs>
@@ -3227,6 +3696,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   carResponses?: boolean | Prisma.User$carResponsesArgs<ExtArgs>
   carVerifications?: boolean | Prisma.User$carVerificationsArgs<ExtArgs>
   carMrSignatures?: boolean | Prisma.User$carMrSignaturesArgs<ExtArgs>
+  carMrResponseReviews?: boolean | Prisma.User$carMrResponseReviewsArgs<ExtArgs>
   carAttachments?: boolean | Prisma.User$carAttachmentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -3254,6 +3724,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     carResponses: Prisma.$CarResponsePayload<ExtArgs>[]
     carVerifications: Prisma.$CarVerificationPayload<ExtArgs>[]
     carMrSignatures: Prisma.$CarMrSignaturePayload<ExtArgs>[]
+    carMrResponseReviews: Prisma.$CarMrResponseReviewPayload<ExtArgs>[]
     carAttachments: Prisma.$CarAttachmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -3269,6 +3740,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     savedSignatureUrl: string | null
     signatureType: $Enums.SignatureType | null
     departmentId: string | null
+    localAuthEnabled: boolean
+    failedLoginCount: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -3679,6 +4152,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   carResponses<T extends Prisma.User$carResponsesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carResponsesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarResponsePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   carVerifications<T extends Prisma.User$carVerificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carVerificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarVerificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   carMrSignatures<T extends Prisma.User$carMrSignaturesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carMrSignaturesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarMrSignaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  carMrResponseReviews<T extends Prisma.User$carMrResponseReviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carMrResponseReviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarMrResponseReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   carAttachments<T extends Prisma.User$carAttachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$carAttachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3721,6 +4195,8 @@ export interface UserFieldRefs {
   readonly savedSignatureUrl: Prisma.FieldRef<"User", 'String'>
   readonly signatureType: Prisma.FieldRef<"User", 'SignatureType'>
   readonly departmentId: Prisma.FieldRef<"User", 'String'>
+  readonly localAuthEnabled: Prisma.FieldRef<"User", 'Boolean'>
+  readonly failedLoginCount: Prisma.FieldRef<"User", 'Int'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }
@@ -4452,6 +4928,30 @@ export type User$carMrSignaturesArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.CarMrSignatureScalarFieldEnum | Prisma.CarMrSignatureScalarFieldEnum[]
+}
+
+/**
+ * User.carMrResponseReviews
+ */
+export type User$carMrResponseReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarMrResponseReview
+   */
+  select?: Prisma.CarMrResponseReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarMrResponseReview
+   */
+  omit?: Prisma.CarMrResponseReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarMrResponseReviewInclude<ExtArgs> | null
+  where?: Prisma.CarMrResponseReviewWhereInput
+  orderBy?: Prisma.CarMrResponseReviewOrderByWithRelationInput | Prisma.CarMrResponseReviewOrderByWithRelationInput[]
+  cursor?: Prisma.CarMrResponseReviewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarMrResponseReviewScalarFieldEnum | Prisma.CarMrResponseReviewScalarFieldEnum[]
 }
 
 /**

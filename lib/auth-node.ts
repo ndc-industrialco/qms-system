@@ -3,6 +3,48 @@ import { UserRepository } from "@/repositories/userRepository";
 import { DepartmentRepository } from "@/repositories/departmentRepository";
 import { authConfig } from "@/lib/auth.config";
 import { randomUUID } from "crypto";
+import { logger } from "@/lib/logger";
+
+/** Refresh the MS Graph delegated access token using the stored refresh_token. */
+async function refreshMsAccessToken(refreshToken: string): Promise<{
+  access_token: string;
+  expires_at: number;
+  refresh_token?: string;
+} | null> {
+  try {
+    const res = await fetch(
+      `https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID}/oauth2/v2.0/token`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: refreshToken,
+          client_id: process.env.AZURE_AD_CLIENT_ID!,
+          client_secret: process.env.AZURE_AD_CLIENT_SECRET!,
+          scope: "openid profile email offline_access https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.Send",
+        }).toString(),
+      }
+    );
+
+    if (!res.ok) {
+      logger.warn("[auth-node] Token refresh request failed", { status: res.status });
+      return null;
+    }
+
+    const data = await res.json() as { access_token: string; expires_in: number; refresh_token?: string };
+    return {
+      access_token: data.access_token,
+      expires_at: Date.now() + data.expires_in * 1000,
+      refresh_token: data.refresh_token,
+    };
+  } catch (err) {
+    logger.warn("[auth-node] Token refresh threw", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
+}
 
 const userRepo = new UserRepository();
 const deptRepo = new DepartmentRepository();
@@ -40,8 +82,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               msDepartment = data.department ?? null;
               msEmployeeId = data.employeeId ?? null;
             }
-          } catch {
-            // Graph unavailable — synced on next login
+          } catch (err) {
+            // Graph unavailable — department/employeeId will be null; synced on next login
+            logger.warn("[auth-node] MS Graph /me fetch failed — department sync skipped", {
+              userEmail: user.email,
+              error: err instanceof Error ? err.message : String(err),
+            });
           }
         }
 
@@ -67,7 +113,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined;
         // Unique session ID for blocklist-based force logout
         token.jti = randomUUID();
+        return token;
       }
+
+      // Subsequent requests — refresh access token if expired or expiring within 5 minutes.
+      const expiresAt = token.accessTokenExpires as number | undefined;
+      if (expiresAt && Date.now() > expiresAt - 5 * 60 * 1000 && token.refreshToken) {
+        const refreshed = await refreshMsAccessToken(token.refreshToken as string);
+        if (refreshed) {
+          token.accessToken = refreshed.access_token;
+          token.accessTokenExpires = refreshed.expires_at;
+          if (refreshed.refresh_token) token.refreshToken = refreshed.refresh_token;
+        }
+        // If refresh failed, keep the expired token — next request will retry.
+      }
+
       return token;
     },
   },

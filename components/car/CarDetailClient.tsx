@@ -79,7 +79,7 @@ export default function CarDetailClient({
     userDepartmentId === car.targetDepartment.id;
 
   const canVerify =
-    (car.status === "RESPONDED" || car.status === "VERIFY_2") &&
+    (car.status === "VERIFY_1" || car.status === "VERIFY_2") &&
     (userRole === "QMS" || userRole === "IT");
 
   const canIssue =

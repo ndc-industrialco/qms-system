@@ -2,6 +2,7 @@ import { BaseRepository, PaginatedResult } from "./baseRepository";
 import { CarMaster, Prisma, type CarStatus } from "@/generated/prisma/client";
 import type { CarCreateInput, CarRespondInput, CarUpdateInput, CarVerifyInput } from "@/lib/validations/car";
 import type { CarListQuery } from "@/types/car";
+import { ConflictError } from "@/errors/customErrors";
 
 export class CarRepository extends BaseRepository<CarMaster> {
   constructor() {
@@ -31,6 +32,9 @@ export class CarRepository extends BaseRepository<CarMaster> {
           include: { verifier: { select: { id: true, name: true, employeeId: true } } },
         },
         mrSignature: {
+          include: { mrUser: { select: { id: true, name: true, employeeId: true } } },
+        },
+        mrResponseReview: {
           include: { mrUser: { select: { id: true, name: true, employeeId: true } } },
         },
         notificationLogs: { orderBy: { sentAt: "desc" } },
@@ -143,6 +147,50 @@ export class CarRepository extends BaseRepository<CarMaster> {
       where: { id },
       select: { id: true, status: true, carNo: true },
     });
+  }
+
+  async findForReviewResponse(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({
+      where: { id },
+      select: {
+        id: true, status: true, carNo: true,
+        targetEmailGroup: true,
+        targetDepartment: { select: { emailGroup: true } },
+        response: { select: { plannedCompletionDate: true } },
+      },
+    });
+  }
+
+  async createMrResponseReviewAndUseToken(
+    carId: string,
+    token: string,
+    mrUserId: string,
+    action: "APPROVED" | "REJECTED",
+    comment: string | null | undefined,
+    nextStatus: import("@/generated/prisma/client").CarStatus,
+    tx?: Prisma.TransactionClient
+  ) {
+    const client = this.getClient(tx);
+
+    await client.carMrResponseReview.create({
+      data: {
+        carMasterId: carId,
+        mrUserId,
+        action,
+        comment: comment ?? null,
+      },
+    });
+
+    await this.updateStatus(carId, nextStatus, tx);
+
+    const result = await client.actionToken.updateMany({
+      where: { token, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+
+    if (result.count === 0) {
+      throw new (await import("@/errors/customErrors")).ConflictError("This approval link has already been used by a concurrent request.");
+    }
   }
 
   async createNotificationLog(
@@ -281,10 +329,15 @@ export class CarRepository extends BaseRepository<CarMaster> {
       },
     });
 
-    return client.actionToken.update({
-      where: { token },
+    // Atomic: only mark used if not already used — prevents double-use under concurrent requests.
+    const result = await client.actionToken.updateMany({
+      where: { token, usedAt: null },
       data: { usedAt: new Date() },
     });
+
+    if (result.count === 0) {
+      throw new ConflictError("This approval link has already been used by a concurrent request.");
+    }
   }
 
   async createReCarFromOriginal(

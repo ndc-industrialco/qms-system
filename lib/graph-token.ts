@@ -11,6 +11,7 @@
  */
 
 import { redis } from "@/lib/redis";
+import { logger } from "@/lib/logger";
 
 const CACHE_KEY = "graph:app_token";
 /** Safety margin subtracted from expires_in so the cached token never expires mid-request. */
@@ -99,20 +100,42 @@ export async function getGraphToken(): Promise<string> {
       const waitCached = await redis.get(CACHE_KEY);
       if (waitCached) return waitCached;
     }
+
+    // Wait timed out. Do a final cache check — the lock holder may have just written it.
+    const lastCheck = await redis.get(CACHE_KEY);
+    if (lastCheck) return lastCheck;
+
+    // Try to take over the refresh ourselves (lock may have expired or holder crashed).
+    const takeover = await redis.set(LOCK_KEY, "1", "EX", LOCK_TTL_SEC, "NX");
+    if (takeover === "OK") {
+      try {
+        const { token, cacheTtlSec } = await fetchFreshToken();
+        await redis.set(CACHE_KEY, token, "EX", cacheTtlSec);
+        return token;
+      } finally {
+        await redis.del(LOCK_KEY).catch(() => null);
+      }
+    }
+
+    // Lock is still held by another instance — fetch without caching as last resort
+    // for this single request only. Prevents all waiting instances from hitting Azure AD.
+    logger.warn("[graph-token] Token refresh lock contention after wait — fetching without cache");
+    const { token } = await fetchFreshToken();
+    return token;
+
   } catch (err) {
     // Redis unavailable — fall through to fetch fresh token
-    console.warn("[graph-token] Redis unavailable, fetching fresh token:", err);
+    logger.warn("[graph-token] Redis unavailable, fetching fresh token", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
-  // Redis fallback path: fetch and attempt to cache, but don't fail on cache errors.
+  // Redis completely unavailable path: fetch and attempt to cache, but don't fail on cache errors.
   const { token, cacheTtlSec } = await fetchFreshToken();
-
   try {
     await redis.set(CACHE_KEY, token, "EX", cacheTtlSec);
-  } catch (err) {
+  } catch {
     // Cache write failure is non-fatal
-    console.warn("[graph-token] Failed to cache token:", err);
   }
-
   return token;
 }

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const carCreateSchema = z.object({
+const carBaseSchema = z.object({
   sourceType: z.enum(["I", "C", "N", "O"]),
   sourceDetail: z.string().optional(),
   isoStandards: z.array(z.string()).min(1, "เลือก ISO Standard อย่างน้อย 1 ข้อ"),
@@ -14,7 +14,17 @@ export const carCreateSchema = z.object({
   reCarRefId: z.string().optional(),
 });
 
-export const carUpdateSchema = carCreateSchema.partial();
+export const carCreateSchema = carBaseSchema.superRefine((data, ctx) => {
+  if (data.reCar && !data.reCarRefId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reCarRefId"],
+      message: "กรุณาระบุ CAR ที่อ้างอิงเมื่อเป็น Re-CAR",
+    });
+  }
+});
+
+export const carUpdateSchema = carBaseSchema.partial();
 
 export const carRespondSchema = z.object({
   responderPosition: z.string().min(1, "กรุณากรอกตำแหน่ง"),
@@ -44,7 +54,14 @@ export const carVerifySchema = z.object({
 );
 
 export const carCloseSchema = z.object({
-  token: z.string().min(1),
+  // Token must be exactly 64 hex chars (32 random bytes from crypto.randomBytes)
+  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format"),
+  comment: z.string().optional(),
+});
+
+export const carReviewResponseSchema = z.object({
+  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format"),
+  action: z.enum(["APPROVED", "REJECTED"]),
   comment: z.string().optional(),
 });
 
@@ -61,4 +78,5 @@ export type CarUpdateInput = z.infer<typeof carUpdateSchema>;
 export type CarRespondInput = z.infer<typeof carRespondSchema>;
 export type CarVerifyInput = z.infer<typeof carVerifySchema>;
 export type CarCloseInput = z.infer<typeof carCloseSchema>;
+export type CarReviewResponseInput = z.infer<typeof carReviewResponseSchema>;
 export type CarListQuery = z.infer<typeof carListQuerySchema>;

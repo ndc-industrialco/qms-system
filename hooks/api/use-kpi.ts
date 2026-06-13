@@ -62,7 +62,9 @@ function buildParams(q: KpiQuery): string {
 
 export function useKpiList(query: KpiQuery) {
   return useQuery<KpiListResponse>({
-    queryKey: ["kpi", query],
+    // "kpi-list" is separate from "kpi" (detail) so status-changing mutations can
+    // invalidate only the list without triggering refetches on all other detail queries.
+    queryKey: ["kpi-list", query],
     queryFn: async () => {
       const res = await fetch(`/api/kpi?${buildParams(query)}`);
       if (!res.ok) throw new Error(await extractError(res));
@@ -96,7 +98,7 @@ export function useCreateKpi() {
       if (!res.ok) throw new Error(await extractError(res));
       return res.json();
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["kpi"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["kpi-list"] }),
   });
 }
 
@@ -113,8 +115,8 @@ export function useUpdateKpi() {
       return res.json();
     },
     onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: ["kpi"] });
       qc.invalidateQueries({ queryKey: ["kpi", id] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
     },
   });
 }
@@ -127,7 +129,7 @@ export function useDeleteKpi() {
       if (!res.ok) throw new Error(await extractError(res));
       return res.json();
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["kpi"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["kpi-list"] }),
   });
 }
 
@@ -206,7 +208,7 @@ export function useRecallKpiObjectives() {
     },
     onSuccess: (_, kpiId) => {
       qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
-      qc.invalidateQueries({ queryKey: ["kpi"] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
     },
   });
 }
@@ -225,7 +227,7 @@ export function useReviewKpiObjectives() {
     },
     onSuccess: (_, { kpiId }) => {
       qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
-      qc.invalidateQueries({ queryKey: ["kpi"] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
     },
   });
 }
@@ -244,7 +246,7 @@ export function useApproveKpiObjectives() {
     },
     onSuccess: (_, { kpiId }) => {
       qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
-      qc.invalidateQueries({ queryKey: ["kpi"] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
     },
   });
 }
@@ -259,7 +261,7 @@ export function useRejectKpiObjectives() {
     },
     onSuccess: (_, kpiId) => {
       qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
-      qc.invalidateQueries({ queryKey: ["kpi"] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
     },
   });
 }
@@ -278,7 +280,7 @@ export function useSubmitKpiObjectives() {
     },
     onSuccess: (_, { kpiId }) => {
       qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
-      qc.invalidateQueries({ queryKey: ["kpi"] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
     },
   });
 }

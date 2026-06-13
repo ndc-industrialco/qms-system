@@ -94,6 +94,15 @@ export type CarMrSignatureDetail = {
   mrUser: { id: string; name: string | null; employeeId: string | null };
 };
 
+export type CarMrResponseReviewDetail = {
+  id: string;
+  mrUserId: string;
+  reviewedAt: string;
+  action: "APPROVED" | "REJECTED";
+  comment: string | null;
+  mrUser: { id: string; name: string | null; employeeId: string | null };
+};
+
 export type CarDetail = {
   id: string;
   carNo: string;
@@ -120,6 +129,7 @@ export type CarDetail = {
   response: CarResponseDetail | null;
   verifications: CarVerificationDetail[];
   mrSignature: CarMrSignatureDetail | null;
+  mrResponseReview: CarMrResponseReviewDetail | null;
 };
 
 export type CarSummary = {

@@ -37,6 +37,8 @@ model User {
   savedSignatureUrl     String?
   signatureType         SignatureType?
   departmentId          String?
+  localAuthEnabled      Boolean                   @default(false)
+  failedLoginCount      Int                       @default(0)
   createdAt             DateTime                  @default(now())
   updatedAt             DateTime                  @updatedAt
   announcements       Announcement[]
@@ -49,11 +51,12 @@ model User {
   docControlsUpdated  DocumentControl[]         @relation("DocUpdatedBy")
   docRevisionsCreated DocumentControlRevision[] @relation("DocRevCreatedBy")
   department          Department?               @relation(fields: [departmentId], references: [id])
-  carsIssued          CarMaster[]               @relation("CarIssuer")
-  carResponses        CarResponse[]
-  carVerifications    CarVerification[]
-  carMrSignatures     CarMrSignature[]
-  carAttachments      CarAttachment[]
+  carsIssued              CarMaster[]               @relation("CarIssuer")
+  carResponses            CarResponse[]
+  carVerifications        CarVerification[]
+  carMrSignatures         CarMrSignature[]
+  carMrResponseReviews    CarMrResponseReview[]
+  carAttachments          CarAttachment[]
 
   @@index([role])
   @@index([departmentId])
@@ -613,10 +616,11 @@ model CarMaster {
   targetDepartment   Department           @relation(fields: [targetDepartmentId], references: [id])
   reCarRef           CarMaster?           @relation("ReCarRef", fields: [reCarRefId], references: [id])
   reCarChildren      CarMaster[]          @relation("ReCarRef")
-  response           CarResponse?
-  verifications      CarVerification[]
-  mrSignature        CarMrSignature?
-  notificationLogs   CarNotificationLog[]
+  response             CarResponse?
+  verifications        CarVerification[]
+  mrSignature          CarMrSignature?
+  mrResponseReview     CarMrResponseReview?
+  notificationLogs     CarNotificationLog[]
 
   @@index([status])
   @@index([issuerId])
@@ -700,6 +704,20 @@ model CarAttachment {
 
   @@index([carResponseId])
   @@map("CarAttachment")
+}
+
+model CarMrResponseReview {
+  id          String    @id @default(uuid())
+  carMasterId String    @unique
+  mrUserId    String
+  reviewedAt  DateTime  @default(now())
+  action      String    // "APPROVED" | "REJECTED"
+  comment     String?
+
+  carMaster   CarMaster @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
+  mrUser      User      @relation(fields: [mrUserId], references: [id])
+
+  @@map("CarMrResponseReview")
 }
 
 model CarNotificationLog {

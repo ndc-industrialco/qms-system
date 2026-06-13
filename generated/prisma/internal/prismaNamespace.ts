@@ -412,6 +412,7 @@ export const ModelName = {
   CarVerification: 'CarVerification',
   CarMrSignature: 'CarMrSignature',
   CarAttachment: 'CarAttachment',
+  CarMrResponseReview: 'CarMrResponseReview',
   CarNotificationLog: 'CarNotificationLog'
 } as const
 
@@ -428,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "department" | "user" | "systemConfig" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carNotificationLog"
+    modelProps: "department" | "user" | "systemConfig" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2504,6 +2505,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CarMrResponseReview: {
+      payload: Prisma.$CarMrResponseReviewPayload<ExtArgs>
+      fields: Prisma.CarMrResponseReviewFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarMrResponseReviewFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarMrResponseReviewFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>
+        }
+        findFirst: {
+          args: Prisma.CarMrResponseReviewFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarMrResponseReviewFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>
+        }
+        findMany: {
+          args: Prisma.CarMrResponseReviewFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>[]
+        }
+        create: {
+          args: Prisma.CarMrResponseReviewCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>
+        }
+        createMany: {
+          args: Prisma.CarMrResponseReviewCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarMrResponseReviewCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>[]
+        }
+        delete: {
+          args: Prisma.CarMrResponseReviewDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>
+        }
+        update: {
+          args: Prisma.CarMrResponseReviewUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>
+        }
+        deleteMany: {
+          args: Prisma.CarMrResponseReviewDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarMrResponseReviewUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarMrResponseReviewUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>[]
+        }
+        upsert: {
+          args: Prisma.CarMrResponseReviewUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarMrResponseReviewPayload>
+        }
+        aggregate: {
+          args: Prisma.CarMrResponseReviewAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarMrResponseReview>
+        }
+        groupBy: {
+          args: Prisma.CarMrResponseReviewGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarMrResponseReviewGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarMrResponseReviewCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarMrResponseReviewCountAggregateOutputType> | number
+        }
+      }
+    }
     CarNotificationLog: {
       payload: Prisma.$CarNotificationLogPayload<ExtArgs>
       fields: Prisma.CarNotificationLogFieldRefs
@@ -2642,6 +2717,8 @@ export const UserScalarFieldEnum = {
   savedSignatureUrl: 'savedSignatureUrl',
   signatureType: 'signatureType',
   departmentId: 'departmentId',
+  localAuthEnabled: 'localAuthEnabled',
+  failedLoginCount: 'failedLoginCount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3111,6 +3188,18 @@ export const CarAttachmentScalarFieldEnum = {
 export type CarAttachmentScalarFieldEnum = (typeof CarAttachmentScalarFieldEnum)[keyof typeof CarAttachmentScalarFieldEnum]
 
 
+export const CarMrResponseReviewScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  mrUserId: 'mrUserId',
+  reviewedAt: 'reviewedAt',
+  action: 'action',
+  comment: 'comment'
+} as const
+
+export type CarMrResponseReviewScalarFieldEnum = (typeof CarMrResponseReviewScalarFieldEnum)[keyof typeof CarMrResponseReviewScalarFieldEnum]
+
+
 export const CarNotificationLogScalarFieldEnum = {
   id: 'id',
   carMasterId: 'carMasterId',
@@ -3233,6 +3322,20 @@ export type ListEnumSignatureTypeFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
  * Reference to a field of type 'DisplayType'
  */
 export type EnumDisplayTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DisplayType'>
@@ -3257,20 +3360,6 @@ export type EnumDarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'DarStatus[]'
  */
 export type ListEnumDarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DarStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -3579,6 +3668,7 @@ export type GlobalOmitConfig = {
   carVerification?: Prisma.CarVerificationOmit
   carMrSignature?: Prisma.CarMrSignatureOmit
   carAttachment?: Prisma.CarAttachmentOmit
+  carMrResponseReview?: Prisma.CarMrResponseReviewOmit
   carNotificationLog?: Prisma.CarNotificationLogOmit
 }
 

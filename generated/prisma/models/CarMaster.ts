@@ -343,6 +343,7 @@ export type CarMasterWhereInput = {
   response?: Prisma.XOR<Prisma.CarResponseNullableScalarRelationFilter, Prisma.CarResponseWhereInput> | null
   verifications?: Prisma.CarVerificationListRelationFilter
   mrSignature?: Prisma.XOR<Prisma.CarMrSignatureNullableScalarRelationFilter, Prisma.CarMrSignatureWhereInput> | null
+  mrResponseReview?: Prisma.XOR<Prisma.CarMrResponseReviewNullableScalarRelationFilter, Prisma.CarMrResponseReviewWhereInput> | null
   notificationLogs?: Prisma.CarNotificationLogListRelationFilter
 }
 
@@ -374,6 +375,7 @@ export type CarMasterOrderByWithRelationInput = {
   response?: Prisma.CarResponseOrderByWithRelationInput
   verifications?: Prisma.CarVerificationOrderByRelationAggregateInput
   mrSignature?: Prisma.CarMrSignatureOrderByWithRelationInput
+  mrResponseReview?: Prisma.CarMrResponseReviewOrderByWithRelationInput
   notificationLogs?: Prisma.CarNotificationLogOrderByRelationAggregateInput
 }
 
@@ -408,6 +410,7 @@ export type CarMasterWhereUniqueInput = Prisma.AtLeast<{
   response?: Prisma.XOR<Prisma.CarResponseNullableScalarRelationFilter, Prisma.CarResponseWhereInput> | null
   verifications?: Prisma.CarVerificationListRelationFilter
   mrSignature?: Prisma.XOR<Prisma.CarMrSignatureNullableScalarRelationFilter, Prisma.CarMrSignatureWhereInput> | null
+  mrResponseReview?: Prisma.XOR<Prisma.CarMrResponseReviewNullableScalarRelationFilter, Prisma.CarMrResponseReviewWhereInput> | null
   notificationLogs?: Prisma.CarNotificationLogListRelationFilter
 }, "id" | "carNo">
 
@@ -490,6 +493,7 @@ export type CarMasterCreateInput = {
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
 }
 
@@ -518,6 +522,7 @@ export type CarMasterUncheckedCreateInput = {
   response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
 }
 
@@ -546,6 +551,7 @@ export type CarMasterUpdateInput = {
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -574,6 +580,7 @@ export type CarMasterUncheckedUpdateInput = {
   response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -949,6 +956,20 @@ export type CarMasterUpdateOneRequiredWithoutMrSignatureNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CarMasterUpdateToOneWithWhereWithoutMrSignatureInput, Prisma.CarMasterUpdateWithoutMrSignatureInput>, Prisma.CarMasterUncheckedUpdateWithoutMrSignatureInput>
 }
 
+export type CarMasterCreateNestedOneWithoutMrResponseReviewInput = {
+  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutMrResponseReviewInput, Prisma.CarMasterUncheckedCreateWithoutMrResponseReviewInput>
+  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutMrResponseReviewInput
+  connect?: Prisma.CarMasterWhereUniqueInput
+}
+
+export type CarMasterUpdateOneRequiredWithoutMrResponseReviewNestedInput = {
+  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutMrResponseReviewInput, Prisma.CarMasterUncheckedCreateWithoutMrResponseReviewInput>
+  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutMrResponseReviewInput
+  upsert?: Prisma.CarMasterUpsertWithoutMrResponseReviewInput
+  connect?: Prisma.CarMasterWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CarMasterUpdateToOneWithWhereWithoutMrResponseReviewInput, Prisma.CarMasterUpdateWithoutMrResponseReviewInput>, Prisma.CarMasterUncheckedUpdateWithoutMrResponseReviewInput>
+}
+
 export type CarMasterCreateNestedOneWithoutNotificationLogsInput = {
   create?: Prisma.XOR<Prisma.CarMasterCreateWithoutNotificationLogsInput, Prisma.CarMasterUncheckedCreateWithoutNotificationLogsInput>
   connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutNotificationLogsInput
@@ -987,6 +1008,7 @@ export type CarMasterCreateWithoutTargetDepartmentInput = {
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1014,6 +1036,7 @@ export type CarMasterUncheckedCreateWithoutTargetDepartmentInput = {
   response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1093,6 +1116,7 @@ export type CarMasterCreateWithoutIssuerInput = {
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1120,6 +1144,7 @@ export type CarMasterUncheckedCreateWithoutIssuerInput = {
   response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1173,6 +1198,7 @@ export type CarMasterCreateWithoutReCarChildrenInput = {
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1200,6 +1226,7 @@ export type CarMasterUncheckedCreateWithoutReCarChildrenInput = {
   response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1232,6 +1259,7 @@ export type CarMasterCreateWithoutReCarRefInput = {
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1259,6 +1287,7 @@ export type CarMasterUncheckedCreateWithoutReCarRefInput = {
   response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1307,6 +1336,7 @@ export type CarMasterUpdateWithoutReCarChildrenInput = {
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1334,6 +1364,7 @@ export type CarMasterUncheckedUpdateWithoutReCarChildrenInput = {
   response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1377,6 +1408,7 @@ export type CarMasterCreateWithoutResponseInput = {
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1404,6 +1436,7 @@ export type CarMasterUncheckedCreateWithoutResponseInput = {
   reCarChildren?: Prisma.CarMasterUncheckedCreateNestedManyWithoutReCarRefInput
   verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1447,6 +1480,7 @@ export type CarMasterUpdateWithoutResponseInput = {
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1474,6 +1508,7 @@ export type CarMasterUncheckedUpdateWithoutResponseInput = {
   reCarChildren?: Prisma.CarMasterUncheckedUpdateManyWithoutReCarRefNestedInput
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1501,6 +1536,7 @@ export type CarMasterCreateWithoutVerificationsInput = {
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1528,6 +1564,7 @@ export type CarMasterUncheckedCreateWithoutVerificationsInput = {
   reCarChildren?: Prisma.CarMasterUncheckedCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1571,6 +1608,7 @@ export type CarMasterUpdateWithoutVerificationsInput = {
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1598,6 +1636,7 @@ export type CarMasterUncheckedUpdateWithoutVerificationsInput = {
   reCarChildren?: Prisma.CarMasterUncheckedUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1625,6 +1664,7 @@ export type CarMasterCreateWithoutMrSignatureInput = {
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1652,6 +1692,7 @@ export type CarMasterUncheckedCreateWithoutMrSignatureInput = {
   reCarChildren?: Prisma.CarMasterUncheckedCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
 }
 
@@ -1695,6 +1736,7 @@ export type CarMasterUpdateWithoutMrSignatureInput = {
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1722,6 +1764,135 @@ export type CarMasterUncheckedUpdateWithoutMrSignatureInput = {
   reCarChildren?: Prisma.CarMasterUncheckedUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
+  notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
+}
+
+export type CarMasterCreateWithoutMrResponseReviewInput = {
+  id?: string
+  carNo: string
+  carYear: number
+  sequenceNo: number
+  status?: $Enums.CarStatus
+  sourceType: $Enums.CarSourceType
+  sourceDetail?: string | null
+  isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
+  defectDetail: string
+  nonConformanceRef: string
+  issuerPosition: string
+  issuedAt?: Date | string | null
+  targetEmailGroup?: string | null
+  responseDueAt?: Date | string | null
+  reCar?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
+  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
+  reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
+  reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
+  response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
+  verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
+  mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
+}
+
+export type CarMasterUncheckedCreateWithoutMrResponseReviewInput = {
+  id?: string
+  carNo: string
+  carYear: number
+  sequenceNo: number
+  status?: $Enums.CarStatus
+  sourceType: $Enums.CarSourceType
+  sourceDetail?: string | null
+  isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
+  defectDetail: string
+  nonConformanceRef: string
+  issuerId: string
+  issuerPosition: string
+  issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetEmailGroup?: string | null
+  responseDueAt?: Date | string | null
+  reCar?: boolean
+  reCarRefId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reCarChildren?: Prisma.CarMasterUncheckedCreateNestedManyWithoutReCarRefInput
+  response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
+  verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
+  mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
+}
+
+export type CarMasterCreateOrConnectWithoutMrResponseReviewInput = {
+  where: Prisma.CarMasterWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarMasterCreateWithoutMrResponseReviewInput, Prisma.CarMasterUncheckedCreateWithoutMrResponseReviewInput>
+}
+
+export type CarMasterUpsertWithoutMrResponseReviewInput = {
+  update: Prisma.XOR<Prisma.CarMasterUpdateWithoutMrResponseReviewInput, Prisma.CarMasterUncheckedUpdateWithoutMrResponseReviewInput>
+  create: Prisma.XOR<Prisma.CarMasterCreateWithoutMrResponseReviewInput, Prisma.CarMasterUncheckedCreateWithoutMrResponseReviewInput>
+  where?: Prisma.CarMasterWhereInput
+}
+
+export type CarMasterUpdateToOneWithWhereWithoutMrResponseReviewInput = {
+  where?: Prisma.CarMasterWhereInput
+  data: Prisma.XOR<Prisma.CarMasterUpdateWithoutMrResponseReviewInput, Prisma.CarMasterUncheckedUpdateWithoutMrResponseReviewInput>
+}
+
+export type CarMasterUpdateWithoutMrResponseReviewInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  carNo?: Prisma.StringFieldUpdateOperationsInput | string
+  carYear?: Prisma.IntFieldUpdateOperationsInput | number
+  sequenceNo?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
+  sourceType?: Prisma.EnumCarSourceTypeFieldUpdateOperationsInput | $Enums.CarSourceType
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
+  defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
+  nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
+  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
+  reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
+  reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
+  response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
+  verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
+  mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
+}
+
+export type CarMasterUncheckedUpdateWithoutMrResponseReviewInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  carNo?: Prisma.StringFieldUpdateOperationsInput | string
+  carYear?: Prisma.IntFieldUpdateOperationsInput | number
+  sequenceNo?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
+  sourceType?: Prisma.EnumCarSourceTypeFieldUpdateOperationsInput | $Enums.CarSourceType
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
+  defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
+  nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reCarChildren?: Prisma.CarMasterUncheckedUpdateManyWithoutReCarRefNestedInput
+  response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
+  verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
+  mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1750,6 +1921,7 @@ export type CarMasterCreateWithoutNotificationLogsInput = {
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
 }
 
 export type CarMasterUncheckedCreateWithoutNotificationLogsInput = {
@@ -1777,6 +1949,7 @@ export type CarMasterUncheckedCreateWithoutNotificationLogsInput = {
   response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
   mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
 }
 
 export type CarMasterCreateOrConnectWithoutNotificationLogsInput = {
@@ -1820,6 +1993,7 @@ export type CarMasterUpdateWithoutNotificationLogsInput = {
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
 }
 
 export type CarMasterUncheckedUpdateWithoutNotificationLogsInput = {
@@ -1847,6 +2021,7 @@ export type CarMasterUncheckedUpdateWithoutNotificationLogsInput = {
   response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
 }
 
 export type CarMasterCreateManyTargetDepartmentInput = {
@@ -1895,6 +2070,7 @@ export type CarMasterUpdateWithoutTargetDepartmentInput = {
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1922,6 +2098,7 @@ export type CarMasterUncheckedUpdateWithoutTargetDepartmentInput = {
   response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -1993,6 +2170,7 @@ export type CarMasterUpdateWithoutIssuerInput = {
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -2020,6 +2198,7 @@ export type CarMasterUncheckedUpdateWithoutIssuerInput = {
   response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -2091,6 +2270,7 @@ export type CarMasterUpdateWithoutReCarRefInput = {
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -2118,6 +2298,7 @@ export type CarMasterUncheckedUpdateWithoutReCarRefInput = {
   response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
+  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
   notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
 }
 
@@ -2220,6 +2401,7 @@ export type CarMasterSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   response?: boolean | Prisma.CarMaster$responseArgs<ExtArgs>
   verifications?: boolean | Prisma.CarMaster$verificationsArgs<ExtArgs>
   mrSignature?: boolean | Prisma.CarMaster$mrSignatureArgs<ExtArgs>
+  mrResponseReview?: boolean | Prisma.CarMaster$mrResponseReviewArgs<ExtArgs>
   notificationLogs?: boolean | Prisma.CarMaster$notificationLogsArgs<ExtArgs>
   _count?: boolean | Prisma.CarMasterCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carMaster"]>
@@ -2308,6 +2490,7 @@ export type CarMasterInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   response?: boolean | Prisma.CarMaster$responseArgs<ExtArgs>
   verifications?: boolean | Prisma.CarMaster$verificationsArgs<ExtArgs>
   mrSignature?: boolean | Prisma.CarMaster$mrSignatureArgs<ExtArgs>
+  mrResponseReview?: boolean | Prisma.CarMaster$mrResponseReviewArgs<ExtArgs>
   notificationLogs?: boolean | Prisma.CarMaster$notificationLogsArgs<ExtArgs>
   _count?: boolean | Prisma.CarMasterCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -2332,6 +2515,7 @@ export type $CarMasterPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     response: Prisma.$CarResponsePayload<ExtArgs> | null
     verifications: Prisma.$CarVerificationPayload<ExtArgs>[]
     mrSignature: Prisma.$CarMrSignaturePayload<ExtArgs> | null
+    mrResponseReview: Prisma.$CarMrResponseReviewPayload<ExtArgs> | null
     notificationLogs: Prisma.$CarNotificationLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -2756,6 +2940,7 @@ export interface Prisma__CarMasterClient<T, Null = never, ExtArgs extends runtim
   response<T extends Prisma.CarMaster$responseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMaster$responseArgs<ExtArgs>>): Prisma.Prisma__CarResponseClient<runtime.Types.Result.GetResult<Prisma.$CarResponsePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   verifications<T extends Prisma.CarMaster$verificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMaster$verificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarVerificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   mrSignature<T extends Prisma.CarMaster$mrSignatureArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMaster$mrSignatureArgs<ExtArgs>>): Prisma.Prisma__CarMrSignatureClient<runtime.Types.Result.GetResult<Prisma.$CarMrSignaturePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  mrResponseReview<T extends Prisma.CarMaster$mrResponseReviewArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMaster$mrResponseReviewArgs<ExtArgs>>): Prisma.Prisma__CarMrResponseReviewClient<runtime.Types.Result.GetResult<Prisma.$CarMrResponseReviewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   notificationLogs<T extends Prisma.CarMaster$notificationLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMaster$notificationLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarNotificationLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3309,6 +3494,25 @@ export type CarMaster$mrSignatureArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   include?: Prisma.CarMrSignatureInclude<ExtArgs> | null
   where?: Prisma.CarMrSignatureWhereInput
+}
+
+/**
+ * CarMaster.mrResponseReview
+ */
+export type CarMaster$mrResponseReviewArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarMrResponseReview
+   */
+  select?: Prisma.CarMrResponseReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarMrResponseReview
+   */
+  omit?: Prisma.CarMrResponseReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarMrResponseReviewInclude<ExtArgs> | null
+  where?: Prisma.CarMrResponseReviewWhereInput
 }
 
 /**

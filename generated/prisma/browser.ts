@@ -158,6 +158,11 @@ export type CarMrSignature = Prisma.CarMrSignatureModel
  */
 export type CarAttachment = Prisma.CarAttachmentModel
 /**
+ * Model CarMrResponseReview
+ * 
+ */
+export type CarMrResponseReview = Prisma.CarMrResponseReviewModel
+/**
  * Model CarNotificationLog
  * 
  */

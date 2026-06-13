@@ -79,6 +79,7 @@ export const ModelName = {
   CarVerification: 'CarVerification',
   CarMrSignature: 'CarMrSignature',
   CarAttachment: 'CarAttachment',
+  CarMrResponseReview: 'CarMrResponseReview',
   CarNotificationLog: 'CarNotificationLog'
 } as const
 
@@ -123,6 +124,8 @@ export const UserScalarFieldEnum = {
   savedSignatureUrl: 'savedSignatureUrl',
   signatureType: 'signatureType',
   departmentId: 'departmentId',
+  localAuthEnabled: 'localAuthEnabled',
+  failedLoginCount: 'failedLoginCount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -590,6 +593,18 @@ export const CarAttachmentScalarFieldEnum = {
 } as const
 
 export type CarAttachmentScalarFieldEnum = (typeof CarAttachmentScalarFieldEnum)[keyof typeof CarAttachmentScalarFieldEnum]
+
+
+export const CarMrResponseReviewScalarFieldEnum = {
+  id: 'id',
+  carMasterId: 'carMasterId',
+  mrUserId: 'mrUserId',
+  reviewedAt: 'reviewedAt',
+  action: 'action',
+  comment: 'comment'
+} as const
+
+export type CarMrResponseReviewScalarFieldEnum = (typeof CarMrResponseReviewScalarFieldEnum)[keyof typeof CarMrResponseReviewScalarFieldEnum]
 
 
 export const CarNotificationLogScalarFieldEnum = {

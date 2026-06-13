@@ -1117,6 +1117,7 @@
     "timeline": {
       "stepIssued": "ออก CAR",
       "stepResponded": "ตอบกลับแล้ว",
+      "stepMrReview": "MR ตรวจสอบแผนแก้ไข",
       "stepVerify1": "ตรวจสอบรอบที่ 1",
       "stepVerify2": "ตรวจสอบรอบที่ 2",
       "stepMrSigned": "MR ลงนามปิด CAR",

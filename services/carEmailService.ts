@@ -179,6 +179,80 @@ export async function sendCarVerify2NotifyEmail(opts: {
   await sendMail({ to: opts.targetEmail, subject: `[CAR] กำหนดการติดตามครั้งที่ 2 สำหรับ ${opts.carNo}`, bodyHtml: html });
 }
 
+export async function sendCarMrReviewRequestEmail(opts: {
+  carId: string;
+  carNo: string;
+  mrEmail: string;
+  token: string;
+  plannedCompletionDate: string;
+}): Promise<void> {
+  const approveUrl = getAppUrl(`/approve/car/${opts.carId}/mr-response?token=${opts.token}&action=APPROVED`);
+  const rejectUrl = getAppUrl(`/approve/car/${opts.carId}/mr-response?token=${opts.token}&action=REJECTED`);
+  const viewUrl = getAppUrl(`/qms/car/${opts.carId}`);
+  const html = makeCarMailBody({
+    titleTh: "แจ้งเตือน: ขอให้ MR ตรวจสอบแผนแก้ไข CAR",
+    titleEn: "Action Required: Please Review CAR Corrective Action Plan",
+    carNo: opts.carNo,
+    bodyLines: [
+      `CAR หมายเลข ${opts.carNo} ได้รับการตอบกลับจากแผนกแล้ว`,
+      `กำหนดเสร็จสิ้นตามแผน: ${opts.plannedCompletionDate}`,
+      `กรุณาตรวจสอบแผนการแก้ไขและอนุมัติหรือปฏิเสธ`,
+      `CAR ${opts.carNo} has received a corrective action plan. Please review and approve or reject.`,
+    ],
+    actionLabel: "ดูรายละเอียดแผน / View Plan",
+    actionUrl: viewUrl,
+  });
+  const approveBtn = `<div style="margin-top:10px"><a href="${approveUrl}" style="display:inline-block;padding:10px 18px;background:#16a34a;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700;margin-right:8px">อนุมัติแผน / Approve</a><a href="${rejectUrl}" style="display:inline-block;padding:10px 18px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">ปฏิเสธแผน / Reject</a></div>`;
+  const fullHtml = html.replace("</div>\n    <div", approveBtn + "\n    </div>\n    <div");
+  await sendMail({ to: opts.mrEmail, subject: `[CAR] ขอให้ตรวจสอบแผนแก้ไข ${opts.carNo}`, bodyHtml: fullHtml });
+}
+
+export async function sendCarPlanApprovedEmail(opts: {
+  carId: string;
+  carNo: string;
+  recipients: string[];
+}): Promise<void> {
+  const url = getAppUrl(`/car/${opts.carId}`);
+  const html = makeCarMailBody({
+    titleTh: "แจ้งเตือน: แผนการแก้ไข CAR ได้รับการอนุมัติแล้ว",
+    titleEn: "Notice: CAR Corrective Action Plan Approved",
+    carNo: opts.carNo,
+    bodyLines: [
+      `แผนการแก้ไข CAR หมายเลข ${opts.carNo} ได้รับการอนุมัติจาก MR แล้ว`,
+      `กรุณาดำเนินการตามแผนที่กำหนดไว้`,
+      `The corrective action plan for CAR ${opts.carNo} has been approved by MR. Please proceed as planned.`,
+    ],
+    actionLabel: "ดูรายละเอียด CAR / View CAR",
+    actionUrl: url,
+  });
+  for (const to of opts.recipients) {
+    await sendMail({ to, subject: `[CAR] แผนการแก้ไข ${opts.carNo} ได้รับการอนุมัติแล้ว`, bodyHtml: html });
+  }
+}
+
+export async function sendCarPlanRejectedEmail(opts: {
+  carId: string;
+  carNo: string;
+  targetEmail: string;
+  comment?: string;
+}): Promise<void> {
+  const url = getAppUrl(`/car/${opts.carId}`);
+  const html = makeCarMailBody({
+    titleTh: "แจ้งเตือน: แผนการแก้ไข CAR ถูกปฏิเสธ — กรุณาแก้ไขและตอบกลับใหม่",
+    titleEn: "Notice: CAR Corrective Action Plan Rejected — Please Revise and Resubmit",
+    carNo: opts.carNo,
+    bodyLines: [
+      `แผนการแก้ไข CAR หมายเลข ${opts.carNo} ไม่ผ่านการพิจารณาจาก MR`,
+      ...(opts.comment ? [`เหตุผล: ${opts.comment}`] : []),
+      `กรุณาแก้ไขแผนและตอบกลับใหม่ภายใน 7 วัน`,
+      `The corrective action plan for CAR ${opts.carNo} was rejected by MR. Please revise and resubmit within 7 days.`,
+    ],
+    actionLabel: "แก้ไขและตอบกลับ / Revise & Resubmit",
+    actionUrl: url,
+  });
+  await sendMail({ to: opts.targetEmail, subject: `[CAR] แผนการแก้ไข ${opts.carNo} ถูกปฏิเสธ — กรุณาแก้ไขใหม่`, bodyHtml: html });
+}
+
 export async function sendCarReCarEmail(opts: {
   carId: string;
   carNo: string;

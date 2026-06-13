@@ -42,7 +42,12 @@ export class ConflictError extends AppError {
 
 export class TokenNotFoundError extends AppError {
   constructor() {
-    super("ลิงก์ไม่ถูกต้อง / Invalid link", 404, "TOKEN_NOT_FOUND");
+    // Token may have been deleted by cleanup after expiry — give the same guidance as TokenExpiredError.
+    super(
+      "ลิงก์ไม่ถูกต้องหรืออาจหมดอายุแล้ว กรุณาเข้าเมนู Approve เพื่อดำเนินการ / Link is invalid or may have expired. Please use the Approve menu.",
+      404,
+      "TOKEN_NOT_FOUND"
+    );
   }
 }
 
