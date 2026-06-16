@@ -28,6 +28,9 @@ export type CarMrSignatureMinAggregateOutputType = {
   id: string | null
   carMasterId: string | null
   mrUserId: string | null
+  mrAuthUserId: string | null
+  mrUserName: string | null
+  mrEmployeeId: string | null
   signedAt: Date | null
   comment: string | null
 }
@@ -36,6 +39,9 @@ export type CarMrSignatureMaxAggregateOutputType = {
   id: string | null
   carMasterId: string | null
   mrUserId: string | null
+  mrAuthUserId: string | null
+  mrUserName: string | null
+  mrEmployeeId: string | null
   signedAt: Date | null
   comment: string | null
 }
@@ -44,6 +50,9 @@ export type CarMrSignatureCountAggregateOutputType = {
   id: number
   carMasterId: number
   mrUserId: number
+  mrAuthUserId: number
+  mrUserName: number
+  mrEmployeeId: number
   signedAt: number
   comment: number
   _all: number
@@ -54,6 +63,9 @@ export type CarMrSignatureMinAggregateInputType = {
   id?: true
   carMasterId?: true
   mrUserId?: true
+  mrAuthUserId?: true
+  mrUserName?: true
+  mrEmployeeId?: true
   signedAt?: true
   comment?: true
 }
@@ -62,6 +74,9 @@ export type CarMrSignatureMaxAggregateInputType = {
   id?: true
   carMasterId?: true
   mrUserId?: true
+  mrAuthUserId?: true
+  mrUserName?: true
+  mrEmployeeId?: true
   signedAt?: true
   comment?: true
 }
@@ -70,6 +85,9 @@ export type CarMrSignatureCountAggregateInputType = {
   id?: true
   carMasterId?: true
   mrUserId?: true
+  mrAuthUserId?: true
+  mrUserName?: true
+  mrEmployeeId?: true
   signedAt?: true
   comment?: true
   _all?: true
@@ -151,6 +169,9 @@ export type CarMrSignatureGroupByOutputType = {
   id: string
   carMasterId: string
   mrUserId: string
+  mrAuthUserId: string | null
+  mrUserName: string | null
+  mrEmployeeId: string | null
   signedAt: Date
   comment: string | null
   _count: CarMrSignatureCountAggregateOutputType | null
@@ -180,20 +201,24 @@ export type CarMrSignatureWhereInput = {
   id?: Prisma.StringFilter<"CarMrSignature"> | string
   carMasterId?: Prisma.StringFilter<"CarMrSignature"> | string
   mrUserId?: Prisma.StringFilter<"CarMrSignature"> | string
+  mrAuthUserId?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
+  mrUserName?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
+  mrEmployeeId?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
   signedAt?: Prisma.DateTimeFilter<"CarMrSignature"> | Date | string
   comment?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
   carMaster?: Prisma.XOR<Prisma.CarMasterScalarRelationFilter, Prisma.CarMasterWhereInput>
-  mrUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type CarMrSignatureOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   mrUserId?: Prisma.SortOrder
+  mrAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  mrUserName?: Prisma.SortOrderInput | Prisma.SortOrder
+  mrEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   signedAt?: Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
   carMaster?: Prisma.CarMasterOrderByWithRelationInput
-  mrUser?: Prisma.UserOrderByWithRelationInput
 }
 
 export type CarMrSignatureWhereUniqueInput = Prisma.AtLeast<{
@@ -203,16 +228,21 @@ export type CarMrSignatureWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.CarMrSignatureWhereInput[]
   NOT?: Prisma.CarMrSignatureWhereInput | Prisma.CarMrSignatureWhereInput[]
   mrUserId?: Prisma.StringFilter<"CarMrSignature"> | string
+  mrAuthUserId?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
+  mrUserName?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
+  mrEmployeeId?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
   signedAt?: Prisma.DateTimeFilter<"CarMrSignature"> | Date | string
   comment?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
   carMaster?: Prisma.XOR<Prisma.CarMasterScalarRelationFilter, Prisma.CarMasterWhereInput>
-  mrUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "carMasterId">
 
 export type CarMrSignatureOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   mrUserId?: Prisma.SortOrder
+  mrAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  mrUserName?: Prisma.SortOrderInput | Prisma.SortOrder
+  mrEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   signedAt?: Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.CarMrSignatureCountOrderByAggregateInput
@@ -227,38 +257,53 @@ export type CarMrSignatureScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"CarMrSignature"> | string
   carMasterId?: Prisma.StringWithAggregatesFilter<"CarMrSignature"> | string
   mrUserId?: Prisma.StringWithAggregatesFilter<"CarMrSignature"> | string
+  mrAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"CarMrSignature"> | string | null
+  mrUserName?: Prisma.StringNullableWithAggregatesFilter<"CarMrSignature"> | string | null
+  mrEmployeeId?: Prisma.StringNullableWithAggregatesFilter<"CarMrSignature"> | string | null
   signedAt?: Prisma.DateTimeWithAggregatesFilter<"CarMrSignature"> | Date | string
   comment?: Prisma.StringNullableWithAggregatesFilter<"CarMrSignature"> | string | null
 }
 
 export type CarMrSignatureCreateInput = {
   id?: string
+  mrUserId: string
+  mrAuthUserId?: string | null
+  mrUserName?: string | null
+  mrEmployeeId?: string | null
   signedAt?: Date | string
   comment?: string | null
   carMaster: Prisma.CarMasterCreateNestedOneWithoutMrSignatureInput
-  mrUser: Prisma.UserCreateNestedOneWithoutCarMrSignaturesInput
 }
 
 export type CarMrSignatureUncheckedCreateInput = {
   id?: string
   carMasterId: string
   mrUserId: string
+  mrAuthUserId?: string | null
+  mrUserName?: string | null
+  mrEmployeeId?: string | null
   signedAt?: Date | string
   comment?: string | null
 }
 
 export type CarMrSignatureUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  mrUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  mrAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   carMaster?: Prisma.CarMasterUpdateOneRequiredWithoutMrSignatureNestedInput
-  mrUser?: Prisma.UserUpdateOneRequiredWithoutCarMrSignaturesNestedInput
 }
 
 export type CarMrSignatureUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   mrUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  mrAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -267,12 +312,19 @@ export type CarMrSignatureCreateManyInput = {
   id?: string
   carMasterId: string
   mrUserId: string
+  mrAuthUserId?: string | null
+  mrUserName?: string | null
+  mrEmployeeId?: string | null
   signedAt?: Date | string
   comment?: string | null
 }
 
 export type CarMrSignatureUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  mrUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  mrAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -281,18 +333,11 @@ export type CarMrSignatureUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   mrUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  mrAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type CarMrSignatureListRelationFilter = {
-  every?: Prisma.CarMrSignatureWhereInput
-  some?: Prisma.CarMrSignatureWhereInput
-  none?: Prisma.CarMrSignatureWhereInput
-}
-
-export type CarMrSignatureOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
 }
 
 export type CarMrSignatureNullableScalarRelationFilter = {
@@ -304,6 +349,9 @@ export type CarMrSignatureCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   mrUserId?: Prisma.SortOrder
+  mrAuthUserId?: Prisma.SortOrder
+  mrUserName?: Prisma.SortOrder
+  mrEmployeeId?: Prisma.SortOrder
   signedAt?: Prisma.SortOrder
   comment?: Prisma.SortOrder
 }
@@ -312,6 +360,9 @@ export type CarMrSignatureMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   mrUserId?: Prisma.SortOrder
+  mrAuthUserId?: Prisma.SortOrder
+  mrUserName?: Prisma.SortOrder
+  mrEmployeeId?: Prisma.SortOrder
   signedAt?: Prisma.SortOrder
   comment?: Prisma.SortOrder
 }
@@ -320,50 +371,11 @@ export type CarMrSignatureMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   mrUserId?: Prisma.SortOrder
+  mrAuthUserId?: Prisma.SortOrder
+  mrUserName?: Prisma.SortOrder
+  mrEmployeeId?: Prisma.SortOrder
   signedAt?: Prisma.SortOrder
   comment?: Prisma.SortOrder
-}
-
-export type CarMrSignatureCreateNestedManyWithoutMrUserInput = {
-  create?: Prisma.XOR<Prisma.CarMrSignatureCreateWithoutMrUserInput, Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput> | Prisma.CarMrSignatureCreateWithoutMrUserInput[] | Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput[]
-  connectOrCreate?: Prisma.CarMrSignatureCreateOrConnectWithoutMrUserInput | Prisma.CarMrSignatureCreateOrConnectWithoutMrUserInput[]
-  createMany?: Prisma.CarMrSignatureCreateManyMrUserInputEnvelope
-  connect?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-}
-
-export type CarMrSignatureUncheckedCreateNestedManyWithoutMrUserInput = {
-  create?: Prisma.XOR<Prisma.CarMrSignatureCreateWithoutMrUserInput, Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput> | Prisma.CarMrSignatureCreateWithoutMrUserInput[] | Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput[]
-  connectOrCreate?: Prisma.CarMrSignatureCreateOrConnectWithoutMrUserInput | Prisma.CarMrSignatureCreateOrConnectWithoutMrUserInput[]
-  createMany?: Prisma.CarMrSignatureCreateManyMrUserInputEnvelope
-  connect?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-}
-
-export type CarMrSignatureUpdateManyWithoutMrUserNestedInput = {
-  create?: Prisma.XOR<Prisma.CarMrSignatureCreateWithoutMrUserInput, Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput> | Prisma.CarMrSignatureCreateWithoutMrUserInput[] | Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput[]
-  connectOrCreate?: Prisma.CarMrSignatureCreateOrConnectWithoutMrUserInput | Prisma.CarMrSignatureCreateOrConnectWithoutMrUserInput[]
-  upsert?: Prisma.CarMrSignatureUpsertWithWhereUniqueWithoutMrUserInput | Prisma.CarMrSignatureUpsertWithWhereUniqueWithoutMrUserInput[]
-  createMany?: Prisma.CarMrSignatureCreateManyMrUserInputEnvelope
-  set?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-  disconnect?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-  delete?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-  connect?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-  update?: Prisma.CarMrSignatureUpdateWithWhereUniqueWithoutMrUserInput | Prisma.CarMrSignatureUpdateWithWhereUniqueWithoutMrUserInput[]
-  updateMany?: Prisma.CarMrSignatureUpdateManyWithWhereWithoutMrUserInput | Prisma.CarMrSignatureUpdateManyWithWhereWithoutMrUserInput[]
-  deleteMany?: Prisma.CarMrSignatureScalarWhereInput | Prisma.CarMrSignatureScalarWhereInput[]
-}
-
-export type CarMrSignatureUncheckedUpdateManyWithoutMrUserNestedInput = {
-  create?: Prisma.XOR<Prisma.CarMrSignatureCreateWithoutMrUserInput, Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput> | Prisma.CarMrSignatureCreateWithoutMrUserInput[] | Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput[]
-  connectOrCreate?: Prisma.CarMrSignatureCreateOrConnectWithoutMrUserInput | Prisma.CarMrSignatureCreateOrConnectWithoutMrUserInput[]
-  upsert?: Prisma.CarMrSignatureUpsertWithWhereUniqueWithoutMrUserInput | Prisma.CarMrSignatureUpsertWithWhereUniqueWithoutMrUserInput[]
-  createMany?: Prisma.CarMrSignatureCreateManyMrUserInputEnvelope
-  set?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-  disconnect?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-  delete?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-  connect?: Prisma.CarMrSignatureWhereUniqueInput | Prisma.CarMrSignatureWhereUniqueInput[]
-  update?: Prisma.CarMrSignatureUpdateWithWhereUniqueWithoutMrUserInput | Prisma.CarMrSignatureUpdateWithWhereUniqueWithoutMrUserInput[]
-  updateMany?: Prisma.CarMrSignatureUpdateManyWithWhereWithoutMrUserInput | Prisma.CarMrSignatureUpdateManyWithWhereWithoutMrUserInput[]
-  deleteMany?: Prisma.CarMrSignatureScalarWhereInput | Prisma.CarMrSignatureScalarWhereInput[]
 }
 
 export type CarMrSignatureCreateNestedOneWithoutCarMasterInput = {
@@ -398,67 +410,22 @@ export type CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CarMrSignatureUpdateToOneWithWhereWithoutCarMasterInput, Prisma.CarMrSignatureUpdateWithoutCarMasterInput>, Prisma.CarMrSignatureUncheckedUpdateWithoutCarMasterInput>
 }
 
-export type CarMrSignatureCreateWithoutMrUserInput = {
-  id?: string
-  signedAt?: Date | string
-  comment?: string | null
-  carMaster: Prisma.CarMasterCreateNestedOneWithoutMrSignatureInput
-}
-
-export type CarMrSignatureUncheckedCreateWithoutMrUserInput = {
-  id?: string
-  carMasterId: string
-  signedAt?: Date | string
-  comment?: string | null
-}
-
-export type CarMrSignatureCreateOrConnectWithoutMrUserInput = {
-  where: Prisma.CarMrSignatureWhereUniqueInput
-  create: Prisma.XOR<Prisma.CarMrSignatureCreateWithoutMrUserInput, Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput>
-}
-
-export type CarMrSignatureCreateManyMrUserInputEnvelope = {
-  data: Prisma.CarMrSignatureCreateManyMrUserInput | Prisma.CarMrSignatureCreateManyMrUserInput[]
-  skipDuplicates?: boolean
-}
-
-export type CarMrSignatureUpsertWithWhereUniqueWithoutMrUserInput = {
-  where: Prisma.CarMrSignatureWhereUniqueInput
-  update: Prisma.XOR<Prisma.CarMrSignatureUpdateWithoutMrUserInput, Prisma.CarMrSignatureUncheckedUpdateWithoutMrUserInput>
-  create: Prisma.XOR<Prisma.CarMrSignatureCreateWithoutMrUserInput, Prisma.CarMrSignatureUncheckedCreateWithoutMrUserInput>
-}
-
-export type CarMrSignatureUpdateWithWhereUniqueWithoutMrUserInput = {
-  where: Prisma.CarMrSignatureWhereUniqueInput
-  data: Prisma.XOR<Prisma.CarMrSignatureUpdateWithoutMrUserInput, Prisma.CarMrSignatureUncheckedUpdateWithoutMrUserInput>
-}
-
-export type CarMrSignatureUpdateManyWithWhereWithoutMrUserInput = {
-  where: Prisma.CarMrSignatureScalarWhereInput
-  data: Prisma.XOR<Prisma.CarMrSignatureUpdateManyMutationInput, Prisma.CarMrSignatureUncheckedUpdateManyWithoutMrUserInput>
-}
-
-export type CarMrSignatureScalarWhereInput = {
-  AND?: Prisma.CarMrSignatureScalarWhereInput | Prisma.CarMrSignatureScalarWhereInput[]
-  OR?: Prisma.CarMrSignatureScalarWhereInput[]
-  NOT?: Prisma.CarMrSignatureScalarWhereInput | Prisma.CarMrSignatureScalarWhereInput[]
-  id?: Prisma.StringFilter<"CarMrSignature"> | string
-  carMasterId?: Prisma.StringFilter<"CarMrSignature"> | string
-  mrUserId?: Prisma.StringFilter<"CarMrSignature"> | string
-  signedAt?: Prisma.DateTimeFilter<"CarMrSignature"> | Date | string
-  comment?: Prisma.StringNullableFilter<"CarMrSignature"> | string | null
-}
-
 export type CarMrSignatureCreateWithoutCarMasterInput = {
   id?: string
+  mrUserId: string
+  mrAuthUserId?: string | null
+  mrUserName?: string | null
+  mrEmployeeId?: string | null
   signedAt?: Date | string
   comment?: string | null
-  mrUser: Prisma.UserCreateNestedOneWithoutCarMrSignaturesInput
 }
 
 export type CarMrSignatureUncheckedCreateWithoutCarMasterInput = {
   id?: string
   mrUserId: string
+  mrAuthUserId?: string | null
+  mrUserName?: string | null
+  mrEmployeeId?: string | null
   signedAt?: Date | string
   comment?: string | null
 }
@@ -481,42 +448,20 @@ export type CarMrSignatureUpdateToOneWithWhereWithoutCarMasterInput = {
 
 export type CarMrSignatureUpdateWithoutCarMasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  mrUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  mrAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  mrUser?: Prisma.UserUpdateOneRequiredWithoutCarMrSignaturesNestedInput
 }
 
 export type CarMrSignatureUncheckedUpdateWithoutCarMasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mrUserId?: Prisma.StringFieldUpdateOperationsInput | string
-  signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type CarMrSignatureCreateManyMrUserInput = {
-  id?: string
-  carMasterId: string
-  signedAt?: Date | string
-  comment?: string | null
-}
-
-export type CarMrSignatureUpdateWithoutMrUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  carMaster?: Prisma.CarMasterUpdateOneRequiredWithoutMrSignatureNestedInput
-}
-
-export type CarMrSignatureUncheckedUpdateWithoutMrUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
-  signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type CarMrSignatureUncheckedUpdateManyWithoutMrUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
+  mrAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mrEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -527,64 +472,72 @@ export type CarMrSignatureSelect<ExtArgs extends runtime.Types.Extensions.Intern
   id?: boolean
   carMasterId?: boolean
   mrUserId?: boolean
+  mrAuthUserId?: boolean
+  mrUserName?: boolean
+  mrEmployeeId?: boolean
   signedAt?: boolean
   comment?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  mrUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carMrSignature"]>
 
 export type CarMrSignatureSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   carMasterId?: boolean
   mrUserId?: boolean
+  mrAuthUserId?: boolean
+  mrUserName?: boolean
+  mrEmployeeId?: boolean
   signedAt?: boolean
   comment?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  mrUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carMrSignature"]>
 
 export type CarMrSignatureSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   carMasterId?: boolean
   mrUserId?: boolean
+  mrAuthUserId?: boolean
+  mrUserName?: boolean
+  mrEmployeeId?: boolean
   signedAt?: boolean
   comment?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  mrUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carMrSignature"]>
 
 export type CarMrSignatureSelectScalar = {
   id?: boolean
   carMasterId?: boolean
   mrUserId?: boolean
+  mrAuthUserId?: boolean
+  mrUserName?: boolean
+  mrEmployeeId?: boolean
   signedAt?: boolean
   comment?: boolean
 }
 
-export type CarMrSignatureOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "mrUserId" | "signedAt" | "comment", ExtArgs["result"]["carMrSignature"]>
+export type CarMrSignatureOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "mrUserId" | "mrAuthUserId" | "mrUserName" | "mrEmployeeId" | "signedAt" | "comment", ExtArgs["result"]["carMrSignature"]>
 export type CarMrSignatureInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  mrUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type CarMrSignatureIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  mrUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type CarMrSignatureIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  mrUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $CarMrSignaturePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CarMrSignature"
   objects: {
     carMaster: Prisma.$CarMasterPayload<ExtArgs>
-    mrUser: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     carMasterId: string
     mrUserId: string
+    mrAuthUserId: string | null
+    mrUserName: string | null
+    mrEmployeeId: string | null
     signedAt: Date
     comment: string | null
   }, ExtArgs["result"]["carMrSignature"]>
@@ -982,7 +935,6 @@ readonly fields: CarMrSignatureFieldRefs;
 export interface Prisma__CarMrSignatureClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   carMaster<T extends Prisma.CarMasterDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMasterDefaultArgs<ExtArgs>>): Prisma.Prisma__CarMasterClient<runtime.Types.Result.GetResult<Prisma.$CarMasterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  mrUser<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1015,6 +967,9 @@ export interface CarMrSignatureFieldRefs {
   readonly id: Prisma.FieldRef<"CarMrSignature", 'String'>
   readonly carMasterId: Prisma.FieldRef<"CarMrSignature", 'String'>
   readonly mrUserId: Prisma.FieldRef<"CarMrSignature", 'String'>
+  readonly mrAuthUserId: Prisma.FieldRef<"CarMrSignature", 'String'>
+  readonly mrUserName: Prisma.FieldRef<"CarMrSignature", 'String'>
+  readonly mrEmployeeId: Prisma.FieldRef<"CarMrSignature", 'String'>
   readonly signedAt: Prisma.FieldRef<"CarMrSignature", 'DateTime'>
   readonly comment: Prisma.FieldRef<"CarMrSignature", 'String'>
 }

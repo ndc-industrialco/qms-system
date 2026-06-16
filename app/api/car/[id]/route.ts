@@ -18,8 +18,13 @@ export async function GET(
     const car = await carService.getCarById(id);
 
     const isPrivileged = session.user.role === "QMS" || session.user.role === "IT" || session.user.role === "MR";
-    if (!isPrivileged && car.targetDepartment.id !== session.user.departmentId) {
-      throw new ForbiddenError("คุณไม่มีสิทธิ์ดู CAR นี้");
+    if (!isPrivileged) {
+      const carAuthDeptId = (car as Record<string, unknown>).targetAuthDepartmentId as string | null | undefined;
+      const userAuthDeptId = session.user.authDepartmentId;
+      const inDept = (userAuthDeptId && carAuthDeptId)
+        ? carAuthDeptId === userAuthDeptId
+        : car.targetDepartment.id === session.user.departmentId;
+      if (!inDept) throw new ForbiddenError("คุณไม่มีสิทธิ์ดู CAR นี้");
     }
 
     return sendSuccess(car, "CAR retrieved successfully");
@@ -59,7 +64,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    await carService.cancelCar(id, session.user.id);
+    await carService.cancelCar(id, session.user.id, session.user.authUserId);
     return sendSuccess(null, "CAR cancelled successfully");
   } catch (err) {
     return handleApiError(err);

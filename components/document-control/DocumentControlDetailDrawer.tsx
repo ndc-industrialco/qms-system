@@ -7,13 +7,6 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -87,32 +80,26 @@ export function DocumentControlDetailDrawer({
 
   return (
     <>
-      <Sheet open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-        <SheetContent side="right" className="flex flex-col p-0 w-full sm:max-w-2xl">
+      <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+        <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
           {/* Header */}
-          <SheetHeader className="px-6 pt-6 pb-4 border-b border-slate-100 shrink-0">
-            <SheetTitle className="sr-only">
-              {document?.docName || t('documentControl.viewTitle')}
-            </SheetTitle>
-            {isLoading ? (
-              <>
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+            <DialogTitle className="text-[#0F1059] font-bold text-xl leading-tight pr-8">
+              {isLoading ? (
                 <Skeleton className="h-6 w-48 rounded-lg" />
-                <Skeleton className="h-4 w-32 rounded-lg mt-1" />
-              </>
+              ) : (
+                document?.docName || t('documentControl.viewTitle')
+              )}
+            </DialogTitle>
+            {isLoading ? (
+              <Skeleton className="h-4 w-32 rounded-lg mt-1" />
             ) : document ? (
-              <>
-                <SheetTitle className="text-[#0F1059] font-bold text-xl leading-tight">
-                  {document.docName}
-                </SheetTitle>
-                <SheetDescription className="font-mono text-slate-500 text-sm">
-                  {document.docNumber}
-                  {document.revision && ` · REV: ${document.revision}`}
-                </SheetDescription>
-              </>
-            ) : (
-              <SheetTitle>{t('documentControl.viewTitle')}</SheetTitle>
-            )}
-          </SheetHeader>
+              <DialogDescription className="font-mono text-slate-500 text-sm">
+                {document.docNumber}
+                {document.revision && ` · REV: ${document.revision}`}
+              </DialogDescription>
+            ) : null}
+          </DialogHeader>
 
           {/* Scrollable Body */}
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
@@ -365,8 +352,8 @@ export function DocumentControlDetailDrawer({
               </>
             ) : null}
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Drawer (stacks on top) */}
       {document && (

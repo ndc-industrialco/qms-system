@@ -47,9 +47,14 @@ export type CarMasterMinAggregateOutputType = {
   defectDetail: string | null
   nonConformanceRef: string | null
   issuerId: string | null
+  issuerAuthUserId: string | null
+  issuerName: string | null
+  issuerEmployeeId: string | null
   issuerPosition: string | null
   issuedAt: Date | null
   targetDepartmentId: string | null
+  targetAuthDepartmentId: string | null
+  targetDepartmentName: string | null
   targetEmailGroup: string | null
   responseDueAt: Date | null
   reCar: boolean | null
@@ -69,9 +74,14 @@ export type CarMasterMaxAggregateOutputType = {
   defectDetail: string | null
   nonConformanceRef: string | null
   issuerId: string | null
+  issuerAuthUserId: string | null
+  issuerName: string | null
+  issuerEmployeeId: string | null
   issuerPosition: string | null
   issuedAt: Date | null
   targetDepartmentId: string | null
+  targetAuthDepartmentId: string | null
+  targetDepartmentName: string | null
   targetEmailGroup: string | null
   responseDueAt: Date | null
   reCar: boolean | null
@@ -92,9 +102,14 @@ export type CarMasterCountAggregateOutputType = {
   defectDetail: number
   nonConformanceRef: number
   issuerId: number
+  issuerAuthUserId: number
+  issuerName: number
+  issuerEmployeeId: number
   issuerPosition: number
   issuedAt: number
   targetDepartmentId: number
+  targetAuthDepartmentId: number
+  targetDepartmentName: number
   targetEmailGroup: number
   responseDueAt: number
   reCar: number
@@ -126,9 +141,14 @@ export type CarMasterMinAggregateInputType = {
   defectDetail?: true
   nonConformanceRef?: true
   issuerId?: true
+  issuerAuthUserId?: true
+  issuerName?: true
+  issuerEmployeeId?: true
   issuerPosition?: true
   issuedAt?: true
   targetDepartmentId?: true
+  targetAuthDepartmentId?: true
+  targetDepartmentName?: true
   targetEmailGroup?: true
   responseDueAt?: true
   reCar?: true
@@ -148,9 +168,14 @@ export type CarMasterMaxAggregateInputType = {
   defectDetail?: true
   nonConformanceRef?: true
   issuerId?: true
+  issuerAuthUserId?: true
+  issuerName?: true
+  issuerEmployeeId?: true
   issuerPosition?: true
   issuedAt?: true
   targetDepartmentId?: true
+  targetAuthDepartmentId?: true
+  targetDepartmentName?: true
   targetEmailGroup?: true
   responseDueAt?: true
   reCar?: true
@@ -171,9 +196,14 @@ export type CarMasterCountAggregateInputType = {
   defectDetail?: true
   nonConformanceRef?: true
   issuerId?: true
+  issuerAuthUserId?: true
+  issuerName?: true
+  issuerEmployeeId?: true
   issuerPosition?: true
   issuedAt?: true
   targetDepartmentId?: true
+  targetAuthDepartmentId?: true
+  targetDepartmentName?: true
   targetEmailGroup?: true
   responseDueAt?: true
   reCar?: true
@@ -281,9 +311,14 @@ export type CarMasterGroupByOutputType = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId: string | null
+  issuerName: string | null
+  issuerEmployeeId: string | null
   issuerPosition: string
   issuedAt: Date | null
   targetDepartmentId: string
+  targetAuthDepartmentId: string | null
+  targetDepartmentName: string | null
   targetEmailGroup: string | null
   responseDueAt: Date | null
   reCar: boolean
@@ -327,17 +362,20 @@ export type CarMasterWhereInput = {
   defectDetail?: Prisma.StringFilter<"CarMaster"> | string
   nonConformanceRef?: Prisma.StringFilter<"CarMaster"> | string
   issuerId?: Prisma.StringFilter<"CarMaster"> | string
+  issuerAuthUserId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  issuerName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  issuerEmployeeId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   issuerPosition?: Prisma.StringFilter<"CarMaster"> | string
   issuedAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
   targetDepartmentId?: Prisma.StringFilter<"CarMaster"> | string
+  targetAuthDepartmentId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  targetDepartmentName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   targetEmailGroup?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   responseDueAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
   reCar?: Prisma.BoolFilter<"CarMaster"> | boolean
   reCarRefId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CarMaster"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CarMaster"> | Date | string
-  issuer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  targetDepartment?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>
   reCarRef?: Prisma.XOR<Prisma.CarMasterNullableScalarRelationFilter, Prisma.CarMasterWhereInput> | null
   reCarChildren?: Prisma.CarMasterListRelationFilter
   response?: Prisma.XOR<Prisma.CarResponseNullableScalarRelationFilter, Prisma.CarResponseWhereInput> | null
@@ -359,17 +397,20 @@ export type CarMasterOrderByWithRelationInput = {
   defectDetail?: Prisma.SortOrder
   nonConformanceRef?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
+  issuerAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  issuerName?: Prisma.SortOrderInput | Prisma.SortOrder
+  issuerEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   issuerPosition?: Prisma.SortOrder
   issuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   targetDepartmentId?: Prisma.SortOrder
+  targetAuthDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetDepartmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   targetEmailGroup?: Prisma.SortOrderInput | Prisma.SortOrder
   responseDueAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reCar?: Prisma.SortOrder
   reCarRefId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  issuer?: Prisma.UserOrderByWithRelationInput
-  targetDepartment?: Prisma.DepartmentOrderByWithRelationInput
   reCarRef?: Prisma.CarMasterOrderByWithRelationInput
   reCarChildren?: Prisma.CarMasterOrderByRelationAggregateInput
   response?: Prisma.CarResponseOrderByWithRelationInput
@@ -394,17 +435,20 @@ export type CarMasterWhereUniqueInput = Prisma.AtLeast<{
   defectDetail?: Prisma.StringFilter<"CarMaster"> | string
   nonConformanceRef?: Prisma.StringFilter<"CarMaster"> | string
   issuerId?: Prisma.StringFilter<"CarMaster"> | string
+  issuerAuthUserId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  issuerName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  issuerEmployeeId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   issuerPosition?: Prisma.StringFilter<"CarMaster"> | string
   issuedAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
   targetDepartmentId?: Prisma.StringFilter<"CarMaster"> | string
+  targetAuthDepartmentId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  targetDepartmentName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   targetEmailGroup?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   responseDueAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
   reCar?: Prisma.BoolFilter<"CarMaster"> | boolean
   reCarRefId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CarMaster"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CarMaster"> | Date | string
-  issuer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  targetDepartment?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>
   reCarRef?: Prisma.XOR<Prisma.CarMasterNullableScalarRelationFilter, Prisma.CarMasterWhereInput> | null
   reCarChildren?: Prisma.CarMasterListRelationFilter
   response?: Prisma.XOR<Prisma.CarResponseNullableScalarRelationFilter, Prisma.CarResponseWhereInput> | null
@@ -426,9 +470,14 @@ export type CarMasterOrderByWithAggregationInput = {
   defectDetail?: Prisma.SortOrder
   nonConformanceRef?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
+  issuerAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  issuerName?: Prisma.SortOrderInput | Prisma.SortOrder
+  issuerEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   issuerPosition?: Prisma.SortOrder
   issuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   targetDepartmentId?: Prisma.SortOrder
+  targetAuthDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetDepartmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   targetEmailGroup?: Prisma.SortOrderInput | Prisma.SortOrder
   responseDueAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reCar?: Prisma.SortOrder
@@ -457,9 +506,14 @@ export type CarMasterScalarWhereWithAggregatesInput = {
   defectDetail?: Prisma.StringWithAggregatesFilter<"CarMaster"> | string
   nonConformanceRef?: Prisma.StringWithAggregatesFilter<"CarMaster"> | string
   issuerId?: Prisma.StringWithAggregatesFilter<"CarMaster"> | string
+  issuerAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
+  issuerName?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
+  issuerEmployeeId?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
   issuerPosition?: Prisma.StringWithAggregatesFilter<"CarMaster"> | string
   issuedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CarMaster"> | Date | string | null
   targetDepartmentId?: Prisma.StringWithAggregatesFilter<"CarMaster"> | string
+  targetAuthDepartmentId?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
+  targetDepartmentName?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
   targetEmailGroup?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
   responseDueAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CarMaster"> | Date | string | null
   reCar?: Prisma.BoolWithAggregatesFilter<"CarMaster"> | boolean
@@ -479,15 +533,20 @@ export type CarMasterCreateInput = {
   isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
   defectDetail: string
   nonConformanceRef: string
+  issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
   reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
@@ -509,9 +568,14 @@ export type CarMasterUncheckedCreateInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -537,15 +601,20 @@ export type CarMasterUpdateInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
   reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
@@ -567,9 +636,14 @@ export type CarMasterUncheckedUpdateInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -596,9 +670,14 @@ export type CarMasterCreateManyInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -618,8 +697,15 @@ export type CarMasterUpdateManyMutationInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -639,25 +725,20 @@ export type CarMasterUncheckedUpdateManyInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type CarMasterListRelationFilter = {
-  every?: Prisma.CarMasterWhereInput
-  some?: Prisma.CarMasterWhereInput
-  none?: Prisma.CarMasterWhereInput
-}
-
-export type CarMasterOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
 }
 
 export type StringNullableListFilter<$PrismaModel = never> = {
@@ -673,6 +754,16 @@ export type CarMasterNullableScalarRelationFilter = {
   isNot?: Prisma.CarMasterWhereInput | null
 }
 
+export type CarMasterListRelationFilter = {
+  every?: Prisma.CarMasterWhereInput
+  some?: Prisma.CarMasterWhereInput
+  none?: Prisma.CarMasterWhereInput
+}
+
+export type CarMasterOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
 export type CarMasterCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carNo?: Prisma.SortOrder
@@ -685,9 +776,14 @@ export type CarMasterCountOrderByAggregateInput = {
   defectDetail?: Prisma.SortOrder
   nonConformanceRef?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
+  issuerAuthUserId?: Prisma.SortOrder
+  issuerName?: Prisma.SortOrder
+  issuerEmployeeId?: Prisma.SortOrder
   issuerPosition?: Prisma.SortOrder
   issuedAt?: Prisma.SortOrder
   targetDepartmentId?: Prisma.SortOrder
+  targetAuthDepartmentId?: Prisma.SortOrder
+  targetDepartmentName?: Prisma.SortOrder
   targetEmailGroup?: Prisma.SortOrder
   responseDueAt?: Prisma.SortOrder
   reCar?: Prisma.SortOrder
@@ -712,9 +808,14 @@ export type CarMasterMaxOrderByAggregateInput = {
   defectDetail?: Prisma.SortOrder
   nonConformanceRef?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
+  issuerAuthUserId?: Prisma.SortOrder
+  issuerName?: Prisma.SortOrder
+  issuerEmployeeId?: Prisma.SortOrder
   issuerPosition?: Prisma.SortOrder
   issuedAt?: Prisma.SortOrder
   targetDepartmentId?: Prisma.SortOrder
+  targetAuthDepartmentId?: Prisma.SortOrder
+  targetDepartmentName?: Prisma.SortOrder
   targetEmailGroup?: Prisma.SortOrder
   responseDueAt?: Prisma.SortOrder
   reCar?: Prisma.SortOrder
@@ -734,9 +835,14 @@ export type CarMasterMinOrderByAggregateInput = {
   defectDetail?: Prisma.SortOrder
   nonConformanceRef?: Prisma.SortOrder
   issuerId?: Prisma.SortOrder
+  issuerAuthUserId?: Prisma.SortOrder
+  issuerName?: Prisma.SortOrder
+  issuerEmployeeId?: Prisma.SortOrder
   issuerPosition?: Prisma.SortOrder
   issuedAt?: Prisma.SortOrder
   targetDepartmentId?: Prisma.SortOrder
+  targetAuthDepartmentId?: Prisma.SortOrder
+  targetDepartmentName?: Prisma.SortOrder
   targetEmailGroup?: Prisma.SortOrder
   responseDueAt?: Prisma.SortOrder
   reCar?: Prisma.SortOrder
@@ -753,90 +859,6 @@ export type CarMasterSumOrderByAggregateInput = {
 export type CarMasterScalarRelationFilter = {
   is?: Prisma.CarMasterWhereInput
   isNot?: Prisma.CarMasterWhereInput
-}
-
-export type CarMasterCreateNestedManyWithoutTargetDepartmentInput = {
-  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutTargetDepartmentInput, Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput> | Prisma.CarMasterCreateWithoutTargetDepartmentInput[] | Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput[]
-  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutTargetDepartmentInput | Prisma.CarMasterCreateOrConnectWithoutTargetDepartmentInput[]
-  createMany?: Prisma.CarMasterCreateManyTargetDepartmentInputEnvelope
-  connect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-}
-
-export type CarMasterUncheckedCreateNestedManyWithoutTargetDepartmentInput = {
-  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutTargetDepartmentInput, Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput> | Prisma.CarMasterCreateWithoutTargetDepartmentInput[] | Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput[]
-  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutTargetDepartmentInput | Prisma.CarMasterCreateOrConnectWithoutTargetDepartmentInput[]
-  createMany?: Prisma.CarMasterCreateManyTargetDepartmentInputEnvelope
-  connect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-}
-
-export type CarMasterUpdateManyWithoutTargetDepartmentNestedInput = {
-  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutTargetDepartmentInput, Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput> | Prisma.CarMasterCreateWithoutTargetDepartmentInput[] | Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput[]
-  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutTargetDepartmentInput | Prisma.CarMasterCreateOrConnectWithoutTargetDepartmentInput[]
-  upsert?: Prisma.CarMasterUpsertWithWhereUniqueWithoutTargetDepartmentInput | Prisma.CarMasterUpsertWithWhereUniqueWithoutTargetDepartmentInput[]
-  createMany?: Prisma.CarMasterCreateManyTargetDepartmentInputEnvelope
-  set?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  disconnect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  delete?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  connect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  update?: Prisma.CarMasterUpdateWithWhereUniqueWithoutTargetDepartmentInput | Prisma.CarMasterUpdateWithWhereUniqueWithoutTargetDepartmentInput[]
-  updateMany?: Prisma.CarMasterUpdateManyWithWhereWithoutTargetDepartmentInput | Prisma.CarMasterUpdateManyWithWhereWithoutTargetDepartmentInput[]
-  deleteMany?: Prisma.CarMasterScalarWhereInput | Prisma.CarMasterScalarWhereInput[]
-}
-
-export type CarMasterUncheckedUpdateManyWithoutTargetDepartmentNestedInput = {
-  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutTargetDepartmentInput, Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput> | Prisma.CarMasterCreateWithoutTargetDepartmentInput[] | Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput[]
-  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutTargetDepartmentInput | Prisma.CarMasterCreateOrConnectWithoutTargetDepartmentInput[]
-  upsert?: Prisma.CarMasterUpsertWithWhereUniqueWithoutTargetDepartmentInput | Prisma.CarMasterUpsertWithWhereUniqueWithoutTargetDepartmentInput[]
-  createMany?: Prisma.CarMasterCreateManyTargetDepartmentInputEnvelope
-  set?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  disconnect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  delete?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  connect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  update?: Prisma.CarMasterUpdateWithWhereUniqueWithoutTargetDepartmentInput | Prisma.CarMasterUpdateWithWhereUniqueWithoutTargetDepartmentInput[]
-  updateMany?: Prisma.CarMasterUpdateManyWithWhereWithoutTargetDepartmentInput | Prisma.CarMasterUpdateManyWithWhereWithoutTargetDepartmentInput[]
-  deleteMany?: Prisma.CarMasterScalarWhereInput | Prisma.CarMasterScalarWhereInput[]
-}
-
-export type CarMasterCreateNestedManyWithoutIssuerInput = {
-  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutIssuerInput, Prisma.CarMasterUncheckedCreateWithoutIssuerInput> | Prisma.CarMasterCreateWithoutIssuerInput[] | Prisma.CarMasterUncheckedCreateWithoutIssuerInput[]
-  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutIssuerInput | Prisma.CarMasterCreateOrConnectWithoutIssuerInput[]
-  createMany?: Prisma.CarMasterCreateManyIssuerInputEnvelope
-  connect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-}
-
-export type CarMasterUncheckedCreateNestedManyWithoutIssuerInput = {
-  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutIssuerInput, Prisma.CarMasterUncheckedCreateWithoutIssuerInput> | Prisma.CarMasterCreateWithoutIssuerInput[] | Prisma.CarMasterUncheckedCreateWithoutIssuerInput[]
-  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutIssuerInput | Prisma.CarMasterCreateOrConnectWithoutIssuerInput[]
-  createMany?: Prisma.CarMasterCreateManyIssuerInputEnvelope
-  connect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-}
-
-export type CarMasterUpdateManyWithoutIssuerNestedInput = {
-  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutIssuerInput, Prisma.CarMasterUncheckedCreateWithoutIssuerInput> | Prisma.CarMasterCreateWithoutIssuerInput[] | Prisma.CarMasterUncheckedCreateWithoutIssuerInput[]
-  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutIssuerInput | Prisma.CarMasterCreateOrConnectWithoutIssuerInput[]
-  upsert?: Prisma.CarMasterUpsertWithWhereUniqueWithoutIssuerInput | Prisma.CarMasterUpsertWithWhereUniqueWithoutIssuerInput[]
-  createMany?: Prisma.CarMasterCreateManyIssuerInputEnvelope
-  set?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  disconnect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  delete?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  connect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  update?: Prisma.CarMasterUpdateWithWhereUniqueWithoutIssuerInput | Prisma.CarMasterUpdateWithWhereUniqueWithoutIssuerInput[]
-  updateMany?: Prisma.CarMasterUpdateManyWithWhereWithoutIssuerInput | Prisma.CarMasterUpdateManyWithWhereWithoutIssuerInput[]
-  deleteMany?: Prisma.CarMasterScalarWhereInput | Prisma.CarMasterScalarWhereInput[]
-}
-
-export type CarMasterUncheckedUpdateManyWithoutIssuerNestedInput = {
-  create?: Prisma.XOR<Prisma.CarMasterCreateWithoutIssuerInput, Prisma.CarMasterUncheckedCreateWithoutIssuerInput> | Prisma.CarMasterCreateWithoutIssuerInput[] | Prisma.CarMasterUncheckedCreateWithoutIssuerInput[]
-  connectOrCreate?: Prisma.CarMasterCreateOrConnectWithoutIssuerInput | Prisma.CarMasterCreateOrConnectWithoutIssuerInput[]
-  upsert?: Prisma.CarMasterUpsertWithWhereUniqueWithoutIssuerInput | Prisma.CarMasterUpsertWithWhereUniqueWithoutIssuerInput[]
-  createMany?: Prisma.CarMasterCreateManyIssuerInputEnvelope
-  set?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  disconnect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  delete?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  connect?: Prisma.CarMasterWhereUniqueInput | Prisma.CarMasterWhereUniqueInput[]
-  update?: Prisma.CarMasterUpdateWithWhereUniqueWithoutIssuerInput | Prisma.CarMasterUpdateWithWhereUniqueWithoutIssuerInput[]
-  updateMany?: Prisma.CarMasterUpdateManyWithWhereWithoutIssuerInput | Prisma.CarMasterUpdateManyWithWhereWithoutIssuerInput[]
-  deleteMany?: Prisma.CarMasterScalarWhereInput | Prisma.CarMasterScalarWhereInput[]
 }
 
 export type CarMasterCreateisoStandardsInput = {
@@ -984,196 +1006,6 @@ export type CarMasterUpdateOneRequiredWithoutNotificationLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CarMasterUpdateToOneWithWhereWithoutNotificationLogsInput, Prisma.CarMasterUpdateWithoutNotificationLogsInput>, Prisma.CarMasterUncheckedUpdateWithoutNotificationLogsInput>
 }
 
-export type CarMasterCreateWithoutTargetDepartmentInput = {
-  id?: string
-  carNo: string
-  carYear: number
-  sequenceNo: number
-  status?: $Enums.CarStatus
-  sourceType: $Enums.CarSourceType
-  sourceDetail?: string | null
-  isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
-  defectDetail: string
-  nonConformanceRef: string
-  issuerPosition: string
-  issuedAt?: Date | string | null
-  targetEmailGroup?: string | null
-  responseDueAt?: Date | string | null
-  reCar?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
-  reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
-  response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
-  verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
-  mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
-  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
-  notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
-}
-
-export type CarMasterUncheckedCreateWithoutTargetDepartmentInput = {
-  id?: string
-  carNo: string
-  carYear: number
-  sequenceNo: number
-  status?: $Enums.CarStatus
-  sourceType: $Enums.CarSourceType
-  sourceDetail?: string | null
-  isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
-  defectDetail: string
-  nonConformanceRef: string
-  issuerId: string
-  issuerPosition: string
-  issuedAt?: Date | string | null
-  targetEmailGroup?: string | null
-  responseDueAt?: Date | string | null
-  reCar?: boolean
-  reCarRefId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  reCarChildren?: Prisma.CarMasterUncheckedCreateNestedManyWithoutReCarRefInput
-  response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
-  verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
-  mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
-  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
-  notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
-}
-
-export type CarMasterCreateOrConnectWithoutTargetDepartmentInput = {
-  where: Prisma.CarMasterWhereUniqueInput
-  create: Prisma.XOR<Prisma.CarMasterCreateWithoutTargetDepartmentInput, Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput>
-}
-
-export type CarMasterCreateManyTargetDepartmentInputEnvelope = {
-  data: Prisma.CarMasterCreateManyTargetDepartmentInput | Prisma.CarMasterCreateManyTargetDepartmentInput[]
-  skipDuplicates?: boolean
-}
-
-export type CarMasterUpsertWithWhereUniqueWithoutTargetDepartmentInput = {
-  where: Prisma.CarMasterWhereUniqueInput
-  update: Prisma.XOR<Prisma.CarMasterUpdateWithoutTargetDepartmentInput, Prisma.CarMasterUncheckedUpdateWithoutTargetDepartmentInput>
-  create: Prisma.XOR<Prisma.CarMasterCreateWithoutTargetDepartmentInput, Prisma.CarMasterUncheckedCreateWithoutTargetDepartmentInput>
-}
-
-export type CarMasterUpdateWithWhereUniqueWithoutTargetDepartmentInput = {
-  where: Prisma.CarMasterWhereUniqueInput
-  data: Prisma.XOR<Prisma.CarMasterUpdateWithoutTargetDepartmentInput, Prisma.CarMasterUncheckedUpdateWithoutTargetDepartmentInput>
-}
-
-export type CarMasterUpdateManyWithWhereWithoutTargetDepartmentInput = {
-  where: Prisma.CarMasterScalarWhereInput
-  data: Prisma.XOR<Prisma.CarMasterUpdateManyMutationInput, Prisma.CarMasterUncheckedUpdateManyWithoutTargetDepartmentInput>
-}
-
-export type CarMasterScalarWhereInput = {
-  AND?: Prisma.CarMasterScalarWhereInput | Prisma.CarMasterScalarWhereInput[]
-  OR?: Prisma.CarMasterScalarWhereInput[]
-  NOT?: Prisma.CarMasterScalarWhereInput | Prisma.CarMasterScalarWhereInput[]
-  id?: Prisma.StringFilter<"CarMaster"> | string
-  carNo?: Prisma.StringFilter<"CarMaster"> | string
-  carYear?: Prisma.IntFilter<"CarMaster"> | number
-  sequenceNo?: Prisma.IntFilter<"CarMaster"> | number
-  status?: Prisma.EnumCarStatusFilter<"CarMaster"> | $Enums.CarStatus
-  sourceType?: Prisma.EnumCarSourceTypeFilter<"CarMaster"> | $Enums.CarSourceType
-  sourceDetail?: Prisma.StringNullableFilter<"CarMaster"> | string | null
-  isoStandards?: Prisma.StringNullableListFilter<"CarMaster">
-  defectDetail?: Prisma.StringFilter<"CarMaster"> | string
-  nonConformanceRef?: Prisma.StringFilter<"CarMaster"> | string
-  issuerId?: Prisma.StringFilter<"CarMaster"> | string
-  issuerPosition?: Prisma.StringFilter<"CarMaster"> | string
-  issuedAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
-  targetDepartmentId?: Prisma.StringFilter<"CarMaster"> | string
-  targetEmailGroup?: Prisma.StringNullableFilter<"CarMaster"> | string | null
-  responseDueAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
-  reCar?: Prisma.BoolFilter<"CarMaster"> | boolean
-  reCarRefId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"CarMaster"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"CarMaster"> | Date | string
-}
-
-export type CarMasterCreateWithoutIssuerInput = {
-  id?: string
-  carNo: string
-  carYear: number
-  sequenceNo: number
-  status?: $Enums.CarStatus
-  sourceType: $Enums.CarSourceType
-  sourceDetail?: string | null
-  isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
-  defectDetail: string
-  nonConformanceRef: string
-  issuerPosition: string
-  issuedAt?: Date | string | null
-  targetEmailGroup?: string | null
-  responseDueAt?: Date | string | null
-  reCar?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
-  reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
-  reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
-  response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
-  verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
-  mrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutCarMasterInput
-  mrResponseReview?: Prisma.CarMrResponseReviewCreateNestedOneWithoutCarMasterInput
-  notificationLogs?: Prisma.CarNotificationLogCreateNestedManyWithoutCarMasterInput
-}
-
-export type CarMasterUncheckedCreateWithoutIssuerInput = {
-  id?: string
-  carNo: string
-  carYear: number
-  sequenceNo: number
-  status?: $Enums.CarStatus
-  sourceType: $Enums.CarSourceType
-  sourceDetail?: string | null
-  isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
-  defectDetail: string
-  nonConformanceRef: string
-  issuerPosition: string
-  issuedAt?: Date | string | null
-  targetDepartmentId: string
-  targetEmailGroup?: string | null
-  responseDueAt?: Date | string | null
-  reCar?: boolean
-  reCarRefId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  reCarChildren?: Prisma.CarMasterUncheckedCreateNestedManyWithoutReCarRefInput
-  response?: Prisma.CarResponseUncheckedCreateNestedOneWithoutCarMasterInput
-  verifications?: Prisma.CarVerificationUncheckedCreateNestedManyWithoutCarMasterInput
-  mrSignature?: Prisma.CarMrSignatureUncheckedCreateNestedOneWithoutCarMasterInput
-  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedCreateNestedOneWithoutCarMasterInput
-  notificationLogs?: Prisma.CarNotificationLogUncheckedCreateNestedManyWithoutCarMasterInput
-}
-
-export type CarMasterCreateOrConnectWithoutIssuerInput = {
-  where: Prisma.CarMasterWhereUniqueInput
-  create: Prisma.XOR<Prisma.CarMasterCreateWithoutIssuerInput, Prisma.CarMasterUncheckedCreateWithoutIssuerInput>
-}
-
-export type CarMasterCreateManyIssuerInputEnvelope = {
-  data: Prisma.CarMasterCreateManyIssuerInput | Prisma.CarMasterCreateManyIssuerInput[]
-  skipDuplicates?: boolean
-}
-
-export type CarMasterUpsertWithWhereUniqueWithoutIssuerInput = {
-  where: Prisma.CarMasterWhereUniqueInput
-  update: Prisma.XOR<Prisma.CarMasterUpdateWithoutIssuerInput, Prisma.CarMasterUncheckedUpdateWithoutIssuerInput>
-  create: Prisma.XOR<Prisma.CarMasterCreateWithoutIssuerInput, Prisma.CarMasterUncheckedCreateWithoutIssuerInput>
-}
-
-export type CarMasterUpdateWithWhereUniqueWithoutIssuerInput = {
-  where: Prisma.CarMasterWhereUniqueInput
-  data: Prisma.XOR<Prisma.CarMasterUpdateWithoutIssuerInput, Prisma.CarMasterUncheckedUpdateWithoutIssuerInput>
-}
-
-export type CarMasterUpdateManyWithWhereWithoutIssuerInput = {
-  where: Prisma.CarMasterScalarWhereInput
-  data: Prisma.XOR<Prisma.CarMasterUpdateManyMutationInput, Prisma.CarMasterUncheckedUpdateManyWithoutIssuerInput>
-}
-
 export type CarMasterCreateWithoutReCarChildrenInput = {
   id?: string
   carNo: string
@@ -1185,15 +1017,20 @@ export type CarMasterCreateWithoutReCarChildrenInput = {
   isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
   defectDetail: string
   nonConformanceRef: string
+  issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
   reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
@@ -1214,9 +1051,14 @@ export type CarMasterUncheckedCreateWithoutReCarChildrenInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -1246,15 +1088,20 @@ export type CarMasterCreateWithoutReCarRefInput = {
   isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
   defectDetail: string
   nonConformanceRef: string
+  issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
@@ -1275,9 +1122,14 @@ export type CarMasterUncheckedCreateWithoutReCarRefInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -1323,15 +1175,20 @@ export type CarMasterUpdateWithoutReCarChildrenInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
   reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
@@ -1352,9 +1209,14 @@ export type CarMasterUncheckedUpdateWithoutReCarChildrenInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1384,6 +1246,37 @@ export type CarMasterUpdateManyWithWhereWithoutReCarRefInput = {
   data: Prisma.XOR<Prisma.CarMasterUpdateManyMutationInput, Prisma.CarMasterUncheckedUpdateManyWithoutReCarRefInput>
 }
 
+export type CarMasterScalarWhereInput = {
+  AND?: Prisma.CarMasterScalarWhereInput | Prisma.CarMasterScalarWhereInput[]
+  OR?: Prisma.CarMasterScalarWhereInput[]
+  NOT?: Prisma.CarMasterScalarWhereInput | Prisma.CarMasterScalarWhereInput[]
+  id?: Prisma.StringFilter<"CarMaster"> | string
+  carNo?: Prisma.StringFilter<"CarMaster"> | string
+  carYear?: Prisma.IntFilter<"CarMaster"> | number
+  sequenceNo?: Prisma.IntFilter<"CarMaster"> | number
+  status?: Prisma.EnumCarStatusFilter<"CarMaster"> | $Enums.CarStatus
+  sourceType?: Prisma.EnumCarSourceTypeFilter<"CarMaster"> | $Enums.CarSourceType
+  sourceDetail?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  isoStandards?: Prisma.StringNullableListFilter<"CarMaster">
+  defectDetail?: Prisma.StringFilter<"CarMaster"> | string
+  nonConformanceRef?: Prisma.StringFilter<"CarMaster"> | string
+  issuerId?: Prisma.StringFilter<"CarMaster"> | string
+  issuerAuthUserId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  issuerName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  issuerEmployeeId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  issuerPosition?: Prisma.StringFilter<"CarMaster"> | string
+  issuedAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
+  targetDepartmentId?: Prisma.StringFilter<"CarMaster"> | string
+  targetAuthDepartmentId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  targetDepartmentName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  targetEmailGroup?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  responseDueAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
+  reCar?: Prisma.BoolFilter<"CarMaster"> | boolean
+  reCarRefId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"CarMaster"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"CarMaster"> | Date | string
+}
+
 export type CarMasterCreateWithoutResponseInput = {
   id?: string
   carNo: string
@@ -1395,15 +1288,20 @@ export type CarMasterCreateWithoutResponseInput = {
   isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
   defectDetail: string
   nonConformanceRef: string
+  issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
   reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   verifications?: Prisma.CarVerificationCreateNestedManyWithoutCarMasterInput
@@ -1424,9 +1322,14 @@ export type CarMasterUncheckedCreateWithoutResponseInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -1467,15 +1370,20 @@ export type CarMasterUpdateWithoutResponseInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
   reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
@@ -1496,9 +1404,14 @@ export type CarMasterUncheckedUpdateWithoutResponseInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1523,15 +1436,20 @@ export type CarMasterCreateWithoutVerificationsInput = {
   isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
   defectDetail: string
   nonConformanceRef: string
+  issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
   reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
@@ -1552,9 +1470,14 @@ export type CarMasterUncheckedCreateWithoutVerificationsInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -1595,15 +1518,20 @@ export type CarMasterUpdateWithoutVerificationsInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
   reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
@@ -1624,9 +1552,14 @@ export type CarMasterUncheckedUpdateWithoutVerificationsInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1651,15 +1584,20 @@ export type CarMasterCreateWithoutMrSignatureInput = {
   isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
   defectDetail: string
   nonConformanceRef: string
+  issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
   reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
@@ -1680,9 +1618,14 @@ export type CarMasterUncheckedCreateWithoutMrSignatureInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -1723,15 +1666,20 @@ export type CarMasterUpdateWithoutMrSignatureInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
   reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
@@ -1752,9 +1700,14 @@ export type CarMasterUncheckedUpdateWithoutMrSignatureInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1779,15 +1732,20 @@ export type CarMasterCreateWithoutMrResponseReviewInput = {
   isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
   defectDetail: string
   nonConformanceRef: string
+  issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
   reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
@@ -1808,9 +1766,14 @@ export type CarMasterUncheckedCreateWithoutMrResponseReviewInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -1851,15 +1814,20 @@ export type CarMasterUpdateWithoutMrResponseReviewInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
   reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
@@ -1880,9 +1848,14 @@ export type CarMasterUncheckedUpdateWithoutMrResponseReviewInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1907,15 +1880,20 @@ export type CarMasterCreateWithoutNotificationLogsInput = {
   isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
   defectDetail: string
   nonConformanceRef: string
+  issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
+  targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  issuer: Prisma.UserCreateNestedOneWithoutCarsIssuedInput
-  targetDepartment: Prisma.DepartmentCreateNestedOneWithoutCarMastersInput
   reCarRef?: Prisma.CarMasterCreateNestedOneWithoutReCarChildrenInput
   reCarChildren?: Prisma.CarMasterCreateNestedManyWithoutReCarRefInput
   response?: Prisma.CarResponseCreateNestedOneWithoutCarMasterInput
@@ -1936,9 +1914,14 @@ export type CarMasterUncheckedCreateWithoutNotificationLogsInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -1979,15 +1962,20 @@ export type CarMasterUpdateWithoutNotificationLogsInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
   reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
@@ -2008,9 +1996,14 @@ export type CarMasterUncheckedUpdateWithoutNotificationLogsInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2022,206 +2015,6 @@ export type CarMasterUncheckedUpdateWithoutNotificationLogsInput = {
   verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
   mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
   mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
-}
-
-export type CarMasterCreateManyTargetDepartmentInput = {
-  id?: string
-  carNo: string
-  carYear: number
-  sequenceNo: number
-  status?: $Enums.CarStatus
-  sourceType: $Enums.CarSourceType
-  sourceDetail?: string | null
-  isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
-  defectDetail: string
-  nonConformanceRef: string
-  issuerId: string
-  issuerPosition: string
-  issuedAt?: Date | string | null
-  targetEmailGroup?: string | null
-  responseDueAt?: Date | string | null
-  reCar?: boolean
-  reCarRefId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type CarMasterUpdateWithoutTargetDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carNo?: Prisma.StringFieldUpdateOperationsInput | string
-  carYear?: Prisma.IntFieldUpdateOperationsInput | number
-  sequenceNo?: Prisma.IntFieldUpdateOperationsInput | number
-  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
-  sourceType?: Prisma.EnumCarSourceTypeFieldUpdateOperationsInput | $Enums.CarSourceType
-  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
-  defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
-  nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
-  issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
-  reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
-  response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
-  verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
-  mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
-  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
-  notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
-}
-
-export type CarMasterUncheckedUpdateWithoutTargetDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carNo?: Prisma.StringFieldUpdateOperationsInput | string
-  carYear?: Prisma.IntFieldUpdateOperationsInput | number
-  sequenceNo?: Prisma.IntFieldUpdateOperationsInput | number
-  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
-  sourceType?: Prisma.EnumCarSourceTypeFieldUpdateOperationsInput | $Enums.CarSourceType
-  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
-  defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
-  nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
-  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
-  issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reCarChildren?: Prisma.CarMasterUncheckedUpdateManyWithoutReCarRefNestedInput
-  response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
-  verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
-  mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
-  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
-  notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
-}
-
-export type CarMasterUncheckedUpdateManyWithoutTargetDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carNo?: Prisma.StringFieldUpdateOperationsInput | string
-  carYear?: Prisma.IntFieldUpdateOperationsInput | number
-  sequenceNo?: Prisma.IntFieldUpdateOperationsInput | number
-  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
-  sourceType?: Prisma.EnumCarSourceTypeFieldUpdateOperationsInput | $Enums.CarSourceType
-  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
-  defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
-  nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
-  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
-  issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type CarMasterCreateManyIssuerInput = {
-  id?: string
-  carNo: string
-  carYear: number
-  sequenceNo: number
-  status?: $Enums.CarStatus
-  sourceType: $Enums.CarSourceType
-  sourceDetail?: string | null
-  isoStandards?: Prisma.CarMasterCreateisoStandardsInput | string[]
-  defectDetail: string
-  nonConformanceRef: string
-  issuerPosition: string
-  issuedAt?: Date | string | null
-  targetDepartmentId: string
-  targetEmailGroup?: string | null
-  responseDueAt?: Date | string | null
-  reCar?: boolean
-  reCarRefId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type CarMasterUpdateWithoutIssuerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carNo?: Prisma.StringFieldUpdateOperationsInput | string
-  carYear?: Prisma.IntFieldUpdateOperationsInput | number
-  sequenceNo?: Prisma.IntFieldUpdateOperationsInput | number
-  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
-  sourceType?: Prisma.EnumCarSourceTypeFieldUpdateOperationsInput | $Enums.CarSourceType
-  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
-  defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
-  nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
-  issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
-  reCarRef?: Prisma.CarMasterUpdateOneWithoutReCarChildrenNestedInput
-  reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
-  response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
-  verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
-  mrSignature?: Prisma.CarMrSignatureUpdateOneWithoutCarMasterNestedInput
-  mrResponseReview?: Prisma.CarMrResponseReviewUpdateOneWithoutCarMasterNestedInput
-  notificationLogs?: Prisma.CarNotificationLogUpdateManyWithoutCarMasterNestedInput
-}
-
-export type CarMasterUncheckedUpdateWithoutIssuerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carNo?: Prisma.StringFieldUpdateOperationsInput | string
-  carYear?: Prisma.IntFieldUpdateOperationsInput | number
-  sequenceNo?: Prisma.IntFieldUpdateOperationsInput | number
-  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
-  sourceType?: Prisma.EnumCarSourceTypeFieldUpdateOperationsInput | $Enums.CarSourceType
-  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
-  defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
-  nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
-  issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  reCarChildren?: Prisma.CarMasterUncheckedUpdateManyWithoutReCarRefNestedInput
-  response?: Prisma.CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput
-  verifications?: Prisma.CarVerificationUncheckedUpdateManyWithoutCarMasterNestedInput
-  mrSignature?: Prisma.CarMrSignatureUncheckedUpdateOneWithoutCarMasterNestedInput
-  mrResponseReview?: Prisma.CarMrResponseReviewUncheckedUpdateOneWithoutCarMasterNestedInput
-  notificationLogs?: Prisma.CarNotificationLogUncheckedUpdateManyWithoutCarMasterNestedInput
-}
-
-export type CarMasterUncheckedUpdateManyWithoutIssuerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carNo?: Prisma.StringFieldUpdateOperationsInput | string
-  carYear?: Prisma.IntFieldUpdateOperationsInput | number
-  sequenceNo?: Prisma.IntFieldUpdateOperationsInput | number
-  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
-  sourceType?: Prisma.EnumCarSourceTypeFieldUpdateOperationsInput | $Enums.CarSourceType
-  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
-  defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
-  nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
-  issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CarMasterCreateManyReCarRefInput = {
@@ -2236,9 +2029,14 @@ export type CarMasterCreateManyReCarRefInput = {
   defectDetail: string
   nonConformanceRef: string
   issuerId: string
+  issuerAuthUserId?: string | null
+  issuerName?: string | null
+  issuerEmployeeId?: string | null
   issuerPosition: string
   issuedAt?: Date | string | null
   targetDepartmentId: string
+  targetAuthDepartmentId?: string | null
+  targetDepartmentName?: string | null
   targetEmailGroup?: string | null
   responseDueAt?: Date | string | null
   reCar?: boolean
@@ -2257,15 +2055,20 @@ export type CarMasterUpdateWithoutReCarRefInput = {
   isoStandards?: Prisma.CarMasterUpdateisoStandardsInput | string[]
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issuer?: Prisma.UserUpdateOneRequiredWithoutCarsIssuedNestedInput
-  targetDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutCarMastersNestedInput
   reCarChildren?: Prisma.CarMasterUpdateManyWithoutReCarRefNestedInput
   response?: Prisma.CarResponseUpdateOneWithoutCarMasterNestedInput
   verifications?: Prisma.CarVerificationUpdateManyWithoutCarMasterNestedInput
@@ -2286,9 +2089,14 @@ export type CarMasterUncheckedUpdateWithoutReCarRefInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2314,9 +2122,14 @@ export type CarMasterUncheckedUpdateManyWithoutReCarRefInput = {
   defectDetail?: Prisma.StringFieldUpdateOperationsInput | string
   nonConformanceRef?: Prisma.StringFieldUpdateOperationsInput | string
   issuerId?: Prisma.StringFieldUpdateOperationsInput | string
+  issuerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  issuerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   issuerPosition?: Prisma.StringFieldUpdateOperationsInput | string
   issuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2385,17 +2198,20 @@ export type CarMasterSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   defectDetail?: boolean
   nonConformanceRef?: boolean
   issuerId?: boolean
+  issuerAuthUserId?: boolean
+  issuerName?: boolean
+  issuerEmployeeId?: boolean
   issuerPosition?: boolean
   issuedAt?: boolean
   targetDepartmentId?: boolean
+  targetAuthDepartmentId?: boolean
+  targetDepartmentName?: boolean
   targetEmailGroup?: boolean
   responseDueAt?: boolean
   reCar?: boolean
   reCarRefId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  issuer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  targetDepartment?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   reCarRef?: boolean | Prisma.CarMaster$reCarRefArgs<ExtArgs>
   reCarChildren?: boolean | Prisma.CarMaster$reCarChildrenArgs<ExtArgs>
   response?: boolean | Prisma.CarMaster$responseArgs<ExtArgs>
@@ -2418,17 +2234,20 @@ export type CarMasterSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   defectDetail?: boolean
   nonConformanceRef?: boolean
   issuerId?: boolean
+  issuerAuthUserId?: boolean
+  issuerName?: boolean
+  issuerEmployeeId?: boolean
   issuerPosition?: boolean
   issuedAt?: boolean
   targetDepartmentId?: boolean
+  targetAuthDepartmentId?: boolean
+  targetDepartmentName?: boolean
   targetEmailGroup?: boolean
   responseDueAt?: boolean
   reCar?: boolean
   reCarRefId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  issuer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  targetDepartment?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   reCarRef?: boolean | Prisma.CarMaster$reCarRefArgs<ExtArgs>
 }, ExtArgs["result"]["carMaster"]>
 
@@ -2444,17 +2263,20 @@ export type CarMasterSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   defectDetail?: boolean
   nonConformanceRef?: boolean
   issuerId?: boolean
+  issuerAuthUserId?: boolean
+  issuerName?: boolean
+  issuerEmployeeId?: boolean
   issuerPosition?: boolean
   issuedAt?: boolean
   targetDepartmentId?: boolean
+  targetAuthDepartmentId?: boolean
+  targetDepartmentName?: boolean
   targetEmailGroup?: boolean
   responseDueAt?: boolean
   reCar?: boolean
   reCarRefId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  issuer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  targetDepartment?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   reCarRef?: boolean | Prisma.CarMaster$reCarRefArgs<ExtArgs>
 }, ExtArgs["result"]["carMaster"]>
 
@@ -2470,9 +2292,14 @@ export type CarMasterSelectScalar = {
   defectDetail?: boolean
   nonConformanceRef?: boolean
   issuerId?: boolean
+  issuerAuthUserId?: boolean
+  issuerName?: boolean
+  issuerEmployeeId?: boolean
   issuerPosition?: boolean
   issuedAt?: boolean
   targetDepartmentId?: boolean
+  targetAuthDepartmentId?: boolean
+  targetDepartmentName?: boolean
   targetEmailGroup?: boolean
   responseDueAt?: boolean
   reCar?: boolean
@@ -2481,10 +2308,8 @@ export type CarMasterSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CarMasterOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carNo" | "carYear" | "sequenceNo" | "status" | "sourceType" | "sourceDetail" | "isoStandards" | "defectDetail" | "nonConformanceRef" | "issuerId" | "issuerPosition" | "issuedAt" | "targetDepartmentId" | "targetEmailGroup" | "responseDueAt" | "reCar" | "reCarRefId" | "createdAt" | "updatedAt", ExtArgs["result"]["carMaster"]>
+export type CarMasterOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carNo" | "carYear" | "sequenceNo" | "status" | "sourceType" | "sourceDetail" | "isoStandards" | "defectDetail" | "nonConformanceRef" | "issuerId" | "issuerAuthUserId" | "issuerName" | "issuerEmployeeId" | "issuerPosition" | "issuedAt" | "targetDepartmentId" | "targetAuthDepartmentId" | "targetDepartmentName" | "targetEmailGroup" | "responseDueAt" | "reCar" | "reCarRefId" | "createdAt" | "updatedAt", ExtArgs["result"]["carMaster"]>
 export type CarMasterInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  issuer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  targetDepartment?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   reCarRef?: boolean | Prisma.CarMaster$reCarRefArgs<ExtArgs>
   reCarChildren?: boolean | Prisma.CarMaster$reCarChildrenArgs<ExtArgs>
   response?: boolean | Prisma.CarMaster$responseArgs<ExtArgs>
@@ -2495,21 +2320,15 @@ export type CarMasterInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   _count?: boolean | Prisma.CarMasterCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CarMasterIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  issuer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  targetDepartment?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   reCarRef?: boolean | Prisma.CarMaster$reCarRefArgs<ExtArgs>
 }
 export type CarMasterIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  issuer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  targetDepartment?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   reCarRef?: boolean | Prisma.CarMaster$reCarRefArgs<ExtArgs>
 }
 
 export type $CarMasterPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CarMaster"
   objects: {
-    issuer: Prisma.$UserPayload<ExtArgs>
-    targetDepartment: Prisma.$DepartmentPayload<ExtArgs>
     reCarRef: Prisma.$CarMasterPayload<ExtArgs> | null
     reCarChildren: Prisma.$CarMasterPayload<ExtArgs>[]
     response: Prisma.$CarResponsePayload<ExtArgs> | null
@@ -2530,9 +2349,14 @@ export type $CarMasterPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     defectDetail: string
     nonConformanceRef: string
     issuerId: string
+    issuerAuthUserId: string | null
+    issuerName: string | null
+    issuerEmployeeId: string | null
     issuerPosition: string
     issuedAt: Date | null
     targetDepartmentId: string
+    targetAuthDepartmentId: string | null
+    targetDepartmentName: string | null
     targetEmailGroup: string | null
     responseDueAt: Date | null
     reCar: boolean
@@ -2933,8 +2757,6 @@ readonly fields: CarMasterFieldRefs;
  */
 export interface Prisma__CarMasterClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  issuer<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  targetDepartment<T extends Prisma.DepartmentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DepartmentDefaultArgs<ExtArgs>>): Prisma.Prisma__DepartmentClient<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   reCarRef<T extends Prisma.CarMaster$reCarRefArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMaster$reCarRefArgs<ExtArgs>>): Prisma.Prisma__CarMasterClient<runtime.Types.Result.GetResult<Prisma.$CarMasterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reCarChildren<T extends Prisma.CarMaster$reCarChildrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMaster$reCarChildrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarMasterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   response<T extends Prisma.CarMaster$responseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMaster$responseArgs<ExtArgs>>): Prisma.Prisma__CarResponseClient<runtime.Types.Result.GetResult<Prisma.$CarResponsePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2982,9 +2804,14 @@ export interface CarMasterFieldRefs {
   readonly defectDetail: Prisma.FieldRef<"CarMaster", 'String'>
   readonly nonConformanceRef: Prisma.FieldRef<"CarMaster", 'String'>
   readonly issuerId: Prisma.FieldRef<"CarMaster", 'String'>
+  readonly issuerAuthUserId: Prisma.FieldRef<"CarMaster", 'String'>
+  readonly issuerName: Prisma.FieldRef<"CarMaster", 'String'>
+  readonly issuerEmployeeId: Prisma.FieldRef<"CarMaster", 'String'>
   readonly issuerPosition: Prisma.FieldRef<"CarMaster", 'String'>
   readonly issuedAt: Prisma.FieldRef<"CarMaster", 'DateTime'>
   readonly targetDepartmentId: Prisma.FieldRef<"CarMaster", 'String'>
+  readonly targetAuthDepartmentId: Prisma.FieldRef<"CarMaster", 'String'>
+  readonly targetDepartmentName: Prisma.FieldRef<"CarMaster", 'String'>
   readonly targetEmailGroup: Prisma.FieldRef<"CarMaster", 'String'>
   readonly responseDueAt: Prisma.FieldRef<"CarMaster", 'DateTime'>
   readonly reCar: Prisma.FieldRef<"CarMaster", 'Boolean'>

@@ -68,8 +68,10 @@ export type DarAttachmentRow = {
 
 export type DarRequester = {
   id: string;
+  authUserId?: string | null;
   name: string | null;
   employeeId: string | null;
+  email?: string | null;
   department: { id: string; name: string } | null;
 };
 
@@ -88,6 +90,7 @@ export type DarApprovalRow = {
   comment: string | null;
   assignedUser: {
     id: string;
+    authUserId?: string | null;
     name: string | null;
     employeeId: string | null;
     department: { id: string; name: string } | null;
@@ -128,6 +131,9 @@ export type DarDetail = {
     comments: string | null;
     processDate: string | null;
     qmsUserId: string;
+    qmsAuthUserId?: string | null;
+    qmsUserName?: string | null;
+    qmsUserEmployeeId?: string | null;
   } | null;
 };
 

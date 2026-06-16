@@ -1,152 +1,59 @@
-import { UserRepository } from "@/repositories/userRepository";
-import { DepartmentRepository } from "@/repositories/departmentRepository";
-import { NotFoundError, ValidationError } from "@/lib/errors";
-import { pushUserToEntra } from "@/services/ms-graph";
-import { AuditService } from "@/services/auditService";
+import { listAuthCenterUsers } from "@/lib/auth-center-admin-client";
 import type { UserWithDept } from "@/types/user";
-import type { GraphUser } from "@/services/ms-graph";
-import { Prisma, type UserRole } from "@/generated/prisma/client";
+import type { UserRole } from "@/generated/prisma/client";
 
 export class UserService {
-  private userRepo = new UserRepository();
-  private deptRepo = new DepartmentRepository();
-
-  async getAllUsers(): Promise<UserWithDept[]> {
-    const rows = await this.userRepo.findManyWithDept();
-    return (rows as Array<{
-      id: string;
-      name: string | null;
-      email: string;
-      employeeId: string | null;
-      role: UserRole;
-      msUserId: string | null;
-      department: { id: string; name: string } | null;
-      createdAt: Date;
-    }>).map((u) => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      employeeId: u.employeeId,
-      role: u.role,
-      msUserId: u.msUserId,
-      department: u.department ?? null,
-      createdAt: u.createdAt.toISOString(),
-    }));
+  /**
+   * Return all users from Auth Center.
+   * No local User table — identity comes entirely from Auth Center.
+   */
+  async getAllUsers(accessToken?: string | null): Promise<UserWithDept[]> {
+    const authUsers = await listAuthCenterUsers({ accessToken });
+    return authUsers
+      .filter((u) => u.id)
+      .map((u) => ({
+        id: u.id,
+        authUserId: u.id,
+        name: u.displayName ?? null,
+        email: u.email ?? null,
+        employeeId: u.employeeId ?? null,
+        position: u.jobTitle ?? null,
+        role: "USER" as UserRole,
+        msUserId: null,
+        department: u.department
+          ? { id: u.department, name: u.department, authDepartmentId: u.department }
+          : null,
+        createdAt: new Date().toISOString(),
+      }));
   }
 
-  async syncEntraUsers(entraUsers: GraphUser[], actorUserId?: string) {
-    const result = {
-      total: entraUsers.length,
-      created: 0,
-      updated: 0,
-      skipped: 0,
-      errors: [] as { email: string; message: string }[]
-    };
-
-    const deptNames = [...new Set(entraUsers.map((u) => u.department?.trim()).filter(Boolean) as string[])];
-    const deptMap = new Map<string, string>();
-
-    if (deptNames.length > 0) {
-      await Promise.all(
-        deptNames.map(async (name) => {
-          const dept = await this.deptRepo.upsertDepartment(name);
-          deptMap.set(name, dept.id);
-        })
-      );
-    }
-
-    for (const entraUser of entraUsers) {
-      const email = (entraUser.mail ?? entraUser.userPrincipalName)?.toLowerCase().trim();
-
-      if (!email) {
-        result.skipped++;
-        result.errors.push({ email: entraUser.userPrincipalName, message: "No email address" });
-        continue;
-      }
-
-      const departmentId = entraUser.department?.trim() ? (deptMap.get(entraUser.department.trim()) ?? null) : null;
-
-      try {
-        const existing = await this.userRepo.findByEmail(email);
-
-        if (existing) {
-          await this.userRepo.update(existing.id, {
-            name: entraUser.displayName,
-            msUserId: entraUser.id,
-            employeeId: entraUser.employeeId ?? null,
-            departmentId,
-          });
-          result.updated++;
-        } else {
-          await this.userRepo.create({
-            email,
-            name: entraUser.displayName,
-            msUserId: entraUser.id,
-            employeeId: entraUser.employeeId ?? null,
-            role: "USER",
-            departmentId,
-          });
-          result.created++;
-        }
-      } catch (err) {
-        result.skipped++;
-        result.errors.push({ email, message: err instanceof Error ? err.message : "Unknown error" });
-      }
-    }
-
-    if (actorUserId) {
-      await AuditService.record({
-        actorUserId,
-        actorRole: "IT",
-        action: "SYNC",
-        resourceType: "USER",
-        resourceId: "M365_SYNC",
-        after: { created: result.created, updated: result.updated, skipped: result.skipped },
-      });
-    }
-
-    return result;
+  /**
+   * Verify a user exists — now a no-op since identity is Auth Center's responsibility.
+   * Kept for API compatibility (block-session route calls it).
+   */
+  async verifyUserExists(_id: string): Promise<void> {
+    // Auth Center is authoritative — we cannot verify locally.
+    // Callers should use Auth Center APIs if verification is needed.
   }
 
-  async verifyUserExists(id: string): Promise<void> {
-    const user = await this.userRepo.findById(id);
-    if (!user) throw new NotFoundError("ไม่พบผู้ใช้");
-  }
-
+  /**
+   * Update local user attributes — no-op now that the User table is removed.
+   * Identity fields should be updated through Auth Center.
+   */
   async updateUserAttributes(
-    id: string,
-    data: { role?: UserRole; departmentId?: string | null; employeeId?: string | null }
+    _id: string,
+    _data: { departmentId?: string | null; employeeId?: string | null },
   ): Promise<{ id: string; role: string }> {
-    const existing = await this.userRepo.findById(id);
-    if (!existing) throw new NotFoundError("ไม่พบผู้ใช้");
-
-    if (Object.keys(data).length === 0) throw new ValidationError("Nothing to update");
-
-    const updateData: Prisma.UserUpdateInput = {
-      ...(data.role !== undefined ? { role: data.role } : {}),
-      ...(data.departmentId !== undefined
-        ? { department: data.departmentId ? { connect: { id: data.departmentId } } : { disconnect: true } }
-        : {}),
-      ...(data.employeeId !== undefined ? { employeeId: data.employeeId } : {}),
-    };
-
-    const updated = await this.userRepo.updateAttributes(id, updateData);
-    return { id: updated.id, role: updated.role };
+    // No local User table — return a placeholder.
+    // Attribute updates should go through Auth Center M2M APIs.
+    return { id: _id, role: "USER" };
   }
 
-  async pushUserToM365(id: string): Promise<void> {
-    const user = await this.userRepo.findForM365Push(id);
-    if (!user) throw new NotFoundError("ไม่พบผู้ใช้");
-    if (!user.msUserId) throw new ValidationError("ผู้ใช้นี้ยังไม่เชื่อมกับ Microsoft 365");
-
-    await pushUserToEntra(user.msUserId, {
-      displayName: user.name ?? undefined,
-      department: user.department?.name ?? null,
-      employeeId: user.employeeId ?? null,
-    });
-  }
-
-  async findByMsUserIds(msUserIds: string[]) {
-    return this.userRepo.findByMsUserIds(msUserIds);
+  /**
+   * Push user to M365 — no longer possible without local User table.
+   * This should be handled by Auth Center directly.
+   */
+  async pushUserToM365(_id: string): Promise<void> {
+    throw new Error("M365 push is now handled by Auth Center. Local User table has been removed.");
   }
 }

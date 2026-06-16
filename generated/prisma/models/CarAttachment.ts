@@ -45,6 +45,8 @@ export type CarAttachmentMinAggregateOutputType = {
   spDownloadUrl: string | null
   folderPath: string | null
   uploadedById: string | null
+  uploadedByAuthUserId: string | null
+  uploadedByName: string | null
   createdAt: Date | null
 }
 
@@ -59,6 +61,8 @@ export type CarAttachmentMaxAggregateOutputType = {
   spDownloadUrl: string | null
   folderPath: string | null
   uploadedById: string | null
+  uploadedByAuthUserId: string | null
+  uploadedByName: string | null
   createdAt: Date | null
 }
 
@@ -73,6 +77,8 @@ export type CarAttachmentCountAggregateOutputType = {
   spDownloadUrl: number
   folderPath: number
   uploadedById: number
+  uploadedByAuthUserId: number
+  uploadedByName: number
   createdAt: number
   _all: number
 }
@@ -97,6 +103,8 @@ export type CarAttachmentMinAggregateInputType = {
   spDownloadUrl?: true
   folderPath?: true
   uploadedById?: true
+  uploadedByAuthUserId?: true
+  uploadedByName?: true
   createdAt?: true
 }
 
@@ -111,6 +119,8 @@ export type CarAttachmentMaxAggregateInputType = {
   spDownloadUrl?: true
   folderPath?: true
   uploadedById?: true
+  uploadedByAuthUserId?: true
+  uploadedByName?: true
   createdAt?: true
 }
 
@@ -125,6 +135,8 @@ export type CarAttachmentCountAggregateInputType = {
   spDownloadUrl?: true
   folderPath?: true
   uploadedById?: true
+  uploadedByAuthUserId?: true
+  uploadedByName?: true
   createdAt?: true
   _all?: true
 }
@@ -226,6 +238,8 @@ export type CarAttachmentGroupByOutputType = {
   spDownloadUrl: string
   folderPath: string
   uploadedById: string
+  uploadedByAuthUserId: string | null
+  uploadedByName: string | null
   createdAt: Date
   _count: CarAttachmentCountAggregateOutputType | null
   _avg: CarAttachmentAvgAggregateOutputType | null
@@ -263,9 +277,10 @@ export type CarAttachmentWhereInput = {
   spDownloadUrl?: Prisma.StringFilter<"CarAttachment"> | string
   folderPath?: Prisma.StringFilter<"CarAttachment"> | string
   uploadedById?: Prisma.StringFilter<"CarAttachment"> | string
+  uploadedByAuthUserId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  uploadedByName?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CarAttachment"> | Date | string
   carResponse?: Prisma.XOR<Prisma.CarResponseScalarRelationFilter, Prisma.CarResponseWhereInput>
-  uploadedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type CarAttachmentOrderByWithRelationInput = {
@@ -279,9 +294,10 @@ export type CarAttachmentOrderByWithRelationInput = {
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
+  uploadedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  uploadedByName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   carResponse?: Prisma.CarResponseOrderByWithRelationInput
-  uploadedBy?: Prisma.UserOrderByWithRelationInput
 }
 
 export type CarAttachmentWhereUniqueInput = Prisma.AtLeast<{
@@ -298,9 +314,10 @@ export type CarAttachmentWhereUniqueInput = Prisma.AtLeast<{
   spDownloadUrl?: Prisma.StringFilter<"CarAttachment"> | string
   folderPath?: Prisma.StringFilter<"CarAttachment"> | string
   uploadedById?: Prisma.StringFilter<"CarAttachment"> | string
+  uploadedByAuthUserId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  uploadedByName?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CarAttachment"> | Date | string
   carResponse?: Prisma.XOR<Prisma.CarResponseScalarRelationFilter, Prisma.CarResponseWhereInput>
-  uploadedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
 
 export type CarAttachmentOrderByWithAggregationInput = {
@@ -314,6 +331,8 @@ export type CarAttachmentOrderByWithAggregationInput = {
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
+  uploadedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  uploadedByName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.CarAttachmentCountOrderByAggregateInput
   _avg?: Prisma.CarAttachmentAvgOrderByAggregateInput
@@ -336,6 +355,8 @@ export type CarAttachmentScalarWhereWithAggregatesInput = {
   spDownloadUrl?: Prisma.StringWithAggregatesFilter<"CarAttachment"> | string
   folderPath?: Prisma.StringWithAggregatesFilter<"CarAttachment"> | string
   uploadedById?: Prisma.StringWithAggregatesFilter<"CarAttachment"> | string
+  uploadedByAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"CarAttachment"> | string | null
+  uploadedByName?: Prisma.StringNullableWithAggregatesFilter<"CarAttachment"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CarAttachment"> | Date | string
 }
 
@@ -348,9 +369,11 @@ export type CarAttachmentCreateInput = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
   createdAt?: Date | string
   carResponse: Prisma.CarResponseCreateNestedOneWithoutAttachmentsInput
-  uploadedBy: Prisma.UserCreateNestedOneWithoutCarAttachmentsInput
 }
 
 export type CarAttachmentUncheckedCreateInput = {
@@ -364,6 +387,8 @@ export type CarAttachmentUncheckedCreateInput = {
   spDownloadUrl: string
   folderPath: string
   uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
   createdAt?: Date | string
 }
 
@@ -376,9 +401,11 @@ export type CarAttachmentUpdateInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carResponse?: Prisma.CarResponseUpdateOneRequiredWithoutAttachmentsNestedInput
-  uploadedBy?: Prisma.UserUpdateOneRequiredWithoutCarAttachmentsNestedInput
 }
 
 export type CarAttachmentUncheckedUpdateInput = {
@@ -392,6 +419,8 @@ export type CarAttachmentUncheckedUpdateInput = {
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -406,6 +435,8 @@ export type CarAttachmentCreateManyInput = {
   spDownloadUrl: string
   folderPath: string
   uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
   createdAt?: Date | string
 }
 
@@ -418,6 +449,9 @@ export type CarAttachmentUpdateManyMutationInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -432,6 +466,8 @@ export type CarAttachmentUncheckedUpdateManyInput = {
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -456,6 +492,8 @@ export type CarAttachmentCountOrderByAggregateInput = {
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
+  uploadedByAuthUserId?: Prisma.SortOrder
+  uploadedByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -474,6 +512,8 @@ export type CarAttachmentMaxOrderByAggregateInput = {
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
+  uploadedByAuthUserId?: Prisma.SortOrder
+  uploadedByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -488,53 +528,13 @@ export type CarAttachmentMinOrderByAggregateInput = {
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
+  uploadedByAuthUserId?: Prisma.SortOrder
+  uploadedByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type CarAttachmentSumOrderByAggregateInput = {
   fileSize?: Prisma.SortOrder
-}
-
-export type CarAttachmentCreateNestedManyWithoutUploadedByInput = {
-  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutUploadedByInput, Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput> | Prisma.CarAttachmentCreateWithoutUploadedByInput[] | Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput[]
-  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutUploadedByInput | Prisma.CarAttachmentCreateOrConnectWithoutUploadedByInput[]
-  createMany?: Prisma.CarAttachmentCreateManyUploadedByInputEnvelope
-  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-}
-
-export type CarAttachmentUncheckedCreateNestedManyWithoutUploadedByInput = {
-  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutUploadedByInput, Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput> | Prisma.CarAttachmentCreateWithoutUploadedByInput[] | Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput[]
-  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutUploadedByInput | Prisma.CarAttachmentCreateOrConnectWithoutUploadedByInput[]
-  createMany?: Prisma.CarAttachmentCreateManyUploadedByInputEnvelope
-  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-}
-
-export type CarAttachmentUpdateManyWithoutUploadedByNestedInput = {
-  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutUploadedByInput, Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput> | Prisma.CarAttachmentCreateWithoutUploadedByInput[] | Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput[]
-  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutUploadedByInput | Prisma.CarAttachmentCreateOrConnectWithoutUploadedByInput[]
-  upsert?: Prisma.CarAttachmentUpsertWithWhereUniqueWithoutUploadedByInput | Prisma.CarAttachmentUpsertWithWhereUniqueWithoutUploadedByInput[]
-  createMany?: Prisma.CarAttachmentCreateManyUploadedByInputEnvelope
-  set?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-  disconnect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-  delete?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-  update?: Prisma.CarAttachmentUpdateWithWhereUniqueWithoutUploadedByInput | Prisma.CarAttachmentUpdateWithWhereUniqueWithoutUploadedByInput[]
-  updateMany?: Prisma.CarAttachmentUpdateManyWithWhereWithoutUploadedByInput | Prisma.CarAttachmentUpdateManyWithWhereWithoutUploadedByInput[]
-  deleteMany?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
-}
-
-export type CarAttachmentUncheckedUpdateManyWithoutUploadedByNestedInput = {
-  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutUploadedByInput, Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput> | Prisma.CarAttachmentCreateWithoutUploadedByInput[] | Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput[]
-  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutUploadedByInput | Prisma.CarAttachmentCreateOrConnectWithoutUploadedByInput[]
-  upsert?: Prisma.CarAttachmentUpsertWithWhereUniqueWithoutUploadedByInput | Prisma.CarAttachmentUpsertWithWhereUniqueWithoutUploadedByInput[]
-  createMany?: Prisma.CarAttachmentCreateManyUploadedByInputEnvelope
-  set?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-  disconnect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-  delete?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
-  update?: Prisma.CarAttachmentUpdateWithWhereUniqueWithoutUploadedByInput | Prisma.CarAttachmentUpdateWithWhereUniqueWithoutUploadedByInput[]
-  updateMany?: Prisma.CarAttachmentUpdateManyWithWhereWithoutUploadedByInput | Prisma.CarAttachmentUpdateManyWithWhereWithoutUploadedByInput[]
-  deleteMany?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
 }
 
 export type CarAttachmentCreateNestedManyWithoutCarResponseInput = {
@@ -579,75 +579,6 @@ export type CarAttachmentUncheckedUpdateManyWithoutCarResponseNestedInput = {
   deleteMany?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
 }
 
-export type CarAttachmentCreateWithoutUploadedByInput = {
-  id?: string
-  fileName: string
-  fileSize: number
-  mimeType: string
-  spItemId: string
-  spWebUrl: string
-  spDownloadUrl: string
-  folderPath: string
-  createdAt?: Date | string
-  carResponse: Prisma.CarResponseCreateNestedOneWithoutAttachmentsInput
-}
-
-export type CarAttachmentUncheckedCreateWithoutUploadedByInput = {
-  id?: string
-  carResponseId: string
-  fileName: string
-  fileSize: number
-  mimeType: string
-  spItemId: string
-  spWebUrl: string
-  spDownloadUrl: string
-  folderPath: string
-  createdAt?: Date | string
-}
-
-export type CarAttachmentCreateOrConnectWithoutUploadedByInput = {
-  where: Prisma.CarAttachmentWhereUniqueInput
-  create: Prisma.XOR<Prisma.CarAttachmentCreateWithoutUploadedByInput, Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput>
-}
-
-export type CarAttachmentCreateManyUploadedByInputEnvelope = {
-  data: Prisma.CarAttachmentCreateManyUploadedByInput | Prisma.CarAttachmentCreateManyUploadedByInput[]
-  skipDuplicates?: boolean
-}
-
-export type CarAttachmentUpsertWithWhereUniqueWithoutUploadedByInput = {
-  where: Prisma.CarAttachmentWhereUniqueInput
-  update: Prisma.XOR<Prisma.CarAttachmentUpdateWithoutUploadedByInput, Prisma.CarAttachmentUncheckedUpdateWithoutUploadedByInput>
-  create: Prisma.XOR<Prisma.CarAttachmentCreateWithoutUploadedByInput, Prisma.CarAttachmentUncheckedCreateWithoutUploadedByInput>
-}
-
-export type CarAttachmentUpdateWithWhereUniqueWithoutUploadedByInput = {
-  where: Prisma.CarAttachmentWhereUniqueInput
-  data: Prisma.XOR<Prisma.CarAttachmentUpdateWithoutUploadedByInput, Prisma.CarAttachmentUncheckedUpdateWithoutUploadedByInput>
-}
-
-export type CarAttachmentUpdateManyWithWhereWithoutUploadedByInput = {
-  where: Prisma.CarAttachmentScalarWhereInput
-  data: Prisma.XOR<Prisma.CarAttachmentUpdateManyMutationInput, Prisma.CarAttachmentUncheckedUpdateManyWithoutUploadedByInput>
-}
-
-export type CarAttachmentScalarWhereInput = {
-  AND?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
-  OR?: Prisma.CarAttachmentScalarWhereInput[]
-  NOT?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
-  id?: Prisma.StringFilter<"CarAttachment"> | string
-  carResponseId?: Prisma.StringFilter<"CarAttachment"> | string
-  fileName?: Prisma.StringFilter<"CarAttachment"> | string
-  fileSize?: Prisma.IntFilter<"CarAttachment"> | number
-  mimeType?: Prisma.StringFilter<"CarAttachment"> | string
-  spItemId?: Prisma.StringFilter<"CarAttachment"> | string
-  spWebUrl?: Prisma.StringFilter<"CarAttachment"> | string
-  spDownloadUrl?: Prisma.StringFilter<"CarAttachment"> | string
-  folderPath?: Prisma.StringFilter<"CarAttachment"> | string
-  uploadedById?: Prisma.StringFilter<"CarAttachment"> | string
-  createdAt?: Prisma.DateTimeFilter<"CarAttachment"> | Date | string
-}
-
 export type CarAttachmentCreateWithoutCarResponseInput = {
   id?: string
   fileName: string
@@ -657,8 +588,10 @@ export type CarAttachmentCreateWithoutCarResponseInput = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
   createdAt?: Date | string
-  uploadedBy: Prisma.UserCreateNestedOneWithoutCarAttachmentsInput
 }
 
 export type CarAttachmentUncheckedCreateWithoutCarResponseInput = {
@@ -671,6 +604,8 @@ export type CarAttachmentUncheckedCreateWithoutCarResponseInput = {
   spDownloadUrl: string
   folderPath: string
   uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
   createdAt?: Date | string
 }
 
@@ -700,56 +635,23 @@ export type CarAttachmentUpdateManyWithWhereWithoutCarResponseInput = {
   data: Prisma.XOR<Prisma.CarAttachmentUpdateManyMutationInput, Prisma.CarAttachmentUncheckedUpdateManyWithoutCarResponseInput>
 }
 
-export type CarAttachmentCreateManyUploadedByInput = {
-  id?: string
-  carResponseId: string
-  fileName: string
-  fileSize: number
-  mimeType: string
-  spItemId: string
-  spWebUrl: string
-  spDownloadUrl: string
-  folderPath: string
-  createdAt?: Date | string
-}
-
-export type CarAttachmentUpdateWithoutUploadedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  fileName?: Prisma.StringFieldUpdateOperationsInput | string
-  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
-  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
-  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
-  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
-  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
-  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  carResponse?: Prisma.CarResponseUpdateOneRequiredWithoutAttachmentsNestedInput
-}
-
-export type CarAttachmentUncheckedUpdateWithoutUploadedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carResponseId?: Prisma.StringFieldUpdateOperationsInput | string
-  fileName?: Prisma.StringFieldUpdateOperationsInput | string
-  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
-  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
-  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
-  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
-  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
-  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type CarAttachmentUncheckedUpdateManyWithoutUploadedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carResponseId?: Prisma.StringFieldUpdateOperationsInput | string
-  fileName?: Prisma.StringFieldUpdateOperationsInput | string
-  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
-  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
-  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
-  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
-  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
-  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+export type CarAttachmentScalarWhereInput = {
+  AND?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
+  OR?: Prisma.CarAttachmentScalarWhereInput[]
+  NOT?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
+  id?: Prisma.StringFilter<"CarAttachment"> | string
+  carResponseId?: Prisma.StringFilter<"CarAttachment"> | string
+  fileName?: Prisma.StringFilter<"CarAttachment"> | string
+  fileSize?: Prisma.IntFilter<"CarAttachment"> | number
+  mimeType?: Prisma.StringFilter<"CarAttachment"> | string
+  spItemId?: Prisma.StringFilter<"CarAttachment"> | string
+  spWebUrl?: Prisma.StringFilter<"CarAttachment"> | string
+  spDownloadUrl?: Prisma.StringFilter<"CarAttachment"> | string
+  folderPath?: Prisma.StringFilter<"CarAttachment"> | string
+  uploadedById?: Prisma.StringFilter<"CarAttachment"> | string
+  uploadedByAuthUserId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  uploadedByName?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"CarAttachment"> | Date | string
 }
 
 export type CarAttachmentCreateManyCarResponseInput = {
@@ -762,6 +664,8 @@ export type CarAttachmentCreateManyCarResponseInput = {
   spDownloadUrl: string
   folderPath: string
   uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
   createdAt?: Date | string
 }
 
@@ -774,8 +678,10 @@ export type CarAttachmentUpdateWithoutCarResponseInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  uploadedBy?: Prisma.UserUpdateOneRequiredWithoutCarAttachmentsNestedInput
 }
 
 export type CarAttachmentUncheckedUpdateWithoutCarResponseInput = {
@@ -788,6 +694,8 @@ export type CarAttachmentUncheckedUpdateWithoutCarResponseInput = {
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -801,6 +709,8 @@ export type CarAttachmentUncheckedUpdateManyWithoutCarResponseInput = {
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -817,9 +727,10 @@ export type CarAttachmentSelect<ExtArgs extends runtime.Types.Extensions.Interna
   spDownloadUrl?: boolean
   folderPath?: boolean
   uploadedById?: boolean
+  uploadedByAuthUserId?: boolean
+  uploadedByName?: boolean
   createdAt?: boolean
   carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
-  uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carAttachment"]>
 
 export type CarAttachmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -833,9 +744,10 @@ export type CarAttachmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   spDownloadUrl?: boolean
   folderPath?: boolean
   uploadedById?: boolean
+  uploadedByAuthUserId?: boolean
+  uploadedByName?: boolean
   createdAt?: boolean
   carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
-  uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carAttachment"]>
 
 export type CarAttachmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -849,9 +761,10 @@ export type CarAttachmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   spDownloadUrl?: boolean
   folderPath?: boolean
   uploadedById?: boolean
+  uploadedByAuthUserId?: boolean
+  uploadedByName?: boolean
   createdAt?: boolean
   carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
-  uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carAttachment"]>
 
 export type CarAttachmentSelectScalar = {
@@ -865,28 +778,26 @@ export type CarAttachmentSelectScalar = {
   spDownloadUrl?: boolean
   folderPath?: boolean
   uploadedById?: boolean
+  uploadedByAuthUserId?: boolean
+  uploadedByName?: boolean
   createdAt?: boolean
 }
 
-export type CarAttachmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carResponseId" | "fileName" | "fileSize" | "mimeType" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "folderPath" | "uploadedById" | "createdAt", ExtArgs["result"]["carAttachment"]>
+export type CarAttachmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carResponseId" | "fileName" | "fileSize" | "mimeType" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "folderPath" | "uploadedById" | "uploadedByAuthUserId" | "uploadedByName" | "createdAt", ExtArgs["result"]["carAttachment"]>
 export type CarAttachmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
-  uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type CarAttachmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
-  uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type CarAttachmentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
-  uploadedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $CarAttachmentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CarAttachment"
   objects: {
     carResponse: Prisma.$CarResponsePayload<ExtArgs>
-    uploadedBy: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -899,6 +810,8 @@ export type $CarAttachmentPayload<ExtArgs extends runtime.Types.Extensions.Inter
     spDownloadUrl: string
     folderPath: string
     uploadedById: string
+    uploadedByAuthUserId: string | null
+    uploadedByName: string | null
     createdAt: Date
   }, ExtArgs["result"]["carAttachment"]>
   composites: {}
@@ -1295,7 +1208,6 @@ readonly fields: CarAttachmentFieldRefs;
 export interface Prisma__CarAttachmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   carResponse<T extends Prisma.CarResponseDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarResponseDefaultArgs<ExtArgs>>): Prisma.Prisma__CarResponseClient<runtime.Types.Result.GetResult<Prisma.$CarResponsePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  uploadedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1335,6 +1247,8 @@ export interface CarAttachmentFieldRefs {
   readonly spDownloadUrl: Prisma.FieldRef<"CarAttachment", 'String'>
   readonly folderPath: Prisma.FieldRef<"CarAttachment", 'String'>
   readonly uploadedById: Prisma.FieldRef<"CarAttachment", 'String'>
+  readonly uploadedByAuthUserId: Prisma.FieldRef<"CarAttachment", 'String'>
+  readonly uploadedByName: Prisma.FieldRef<"CarAttachment", 'String'>
   readonly createdAt: Prisma.FieldRef<"CarAttachment", 'DateTime'>
 }
     

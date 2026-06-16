@@ -57,6 +57,7 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
     queryKey: ["dars", "user"],
     queryFn: async () => {
       const res = await fetch("/api/dar");
+      if (!res.ok) throw new Error(`Failed to fetch DARs: ${res.status}`);
       const json = await res.json();
       return (json.data ?? []) as DarSummary[];
     },

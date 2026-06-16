@@ -7,7 +7,7 @@ import { z } from "zod";
 import { createKpiObjectiveSchema } from "@/schemas/kpiSchema";
 import { useT } from "@/lib/i18n";
 import { KPI_UNITS, isPresetUnit } from "@/lib/kpi-units";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -73,13 +73,13 @@ export default function KpiObjectiveFormDrawer({ open, onOpenChange, objective, 
   }, [open, objective, reset]);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-xl flex flex-col p-0 gap-0">
-        <SheetHeader className="px-6 py-4 border-b border-slate-100 shrink-0">
-          <SheetTitle className="text-base font-semibold text-slate-800">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogHeader className="px-6 py-4 border-b border-slate-100">
+          <DialogTitle className="text-base font-semibold text-slate-800">
             {isEdit ? t("kpi.objective.editTitle") : t("kpi.objective.createTitle")}
-          </SheetTitle>
-        </SheetHeader>
+          </DialogTitle>
+        </DialogHeader>
 
         <form id="kpi-objective-form" className="flex-1 overflow-y-auto px-6 py-6 space-y-5"
           onSubmit={handleSubmit(async (values) => {
@@ -195,15 +195,15 @@ export default function KpiObjectiveFormDrawer({ open, onOpenChange, objective, 
           </div>
         </form>
 
-        <div className="px-6 py-4 border-t border-slate-100 shrink-0 flex justify-end gap-2">
+        <DialogFooter className="px-6 py-4 border-t border-slate-100">
           <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             {t("common.cancel")}
           </Button>
           <Button type="submit" form="kpi-objective-form" className="rounded-xl bg-primary hover:bg-[#161875]" disabled={isSubmitting}>
             {isSubmitting ? t("common.loading") : t("common.save")}
           </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

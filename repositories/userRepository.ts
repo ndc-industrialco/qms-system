@@ -1,151 +1,181 @@
+/**
+ * UserRepository stub — the local User table has been removed (Phase D).
+ * Identity comes entirely from Auth Center.
+ *
+ * This file is kept as a stub so that callers not yet migrated (e.g. kpiService)
+ * continue to compile. All methods return null / empty results.
+ * Callers should be migrated to use Auth Center APIs or userSnapshotCache.
+ */
+
 import { BaseRepository } from "./baseRepository";
-import { User, Prisma, SignatureType, UserRole } from "@/generated/prisma/client";
+import type { SignatureType, Prisma } from "@/generated/prisma/client";
+import type { AnyQmsRole } from "@/lib/qms-roles";
 
-export class UserRepository extends BaseRepository<User> {
+// Minimal shape that callers expect
+type UserStub = {
+  id: string;
+  authUserId: string | null;
+  employeeId: string | null;
+  msUserId: string | null;
+  name: string | null;
+  email: string;
+  emailVerified: Date | null;
+  image: string | null;
+  role: string;
+  position: string | null;
+  savedSignatureUrl: string | null;
+  signatureType: SignatureType | null;
+  departmentId: string | null;
+  departmentName: string | null;
+  isActive: boolean;
+  source: string | null;
+  lastSyncedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type IdentitySnapshotStub = {
+  id: string;
+  authUserId: string | null;
+  name: string | null;
+  email: string | null;
+  employeeId: string | null;
+  position: string | null;
+  departmentId: string | null;
+  departmentName: string | null;
+};
+
+export class UserRepository extends BaseRepository<UserStub> {
   constructor() {
-    super("user");
+    // Pass a dummy model name — the model no longer exists
+    super("userPreference" as never);
   }
 
-  private delegate(tx?: Prisma.TransactionClient) {
-    return this.getClient(tx).user;
+  async findByEmail(_email: string, _tx?: Prisma.TransactionClient): Promise<UserStub | null> {
+    return null;
   }
 
-  async findByEmail(email: string, tx?: Prisma.TransactionClient): Promise<User | null> {
-    return this.delegate(tx).findUnique({ where: { email } });
+  async findByEmployeeId(_employeeId: string, _tx?: Prisma.TransactionClient): Promise<UserStub | null> {
+    return null;
   }
 
-  async findAssignees(tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findMany({
-      where: { role: { in: ['QMS', 'MR', 'IT'] } },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, email: true, role: true },
-    });
+  async findByAuthUserId(_authUserId: string, _tx?: Prisma.TransactionClient): Promise<UserStub | null> {
+    return null;
   }
 
-  async findFirstByRole(role: 'USER' | 'IT' | 'QMS' | 'MR', tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findFirst({
-      where: { role },
-      orderBy: { createdAt: 'asc' },
-    });
+  async findIdentitySnapshotById(_id: string, _tx?: Prisma.TransactionClient): Promise<IdentitySnapshotStub | null> {
+    return null;
   }
 
-  async findManyWithDept(tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        employeeId: true,
-        role: true,
-        msUserId: true,
-        createdAt: true,
-        department: { select: { id: true, name: true } },
-      },
-    });
+  async findIdentitySnapshotByAuthUserId(_authUserId: string, _tx?: Prisma.TransactionClient): Promise<IdentitySnapshotStub | null> {
+    return null;
+  }
+
+  async upsertByAuthUserId(
+    _authUserId: string,
+    _data: { email: string; name?: string | null; employeeId?: string | null },
+    _tx?: Prisma.TransactionClient,
+  ): Promise<UserStub> {
+    throw new Error("User table removed. Use Auth Center APIs.");
+  }
+
+  async findAssignees(_tx?: Prisma.TransactionClient) {
+    return [];
+  }
+
+  async findFirstByRole(_role: AnyQmsRole, _tx?: Prisma.TransactionClient) {
+    return null;
+  }
+
+  async findManyWithDept(_tx?: Prisma.TransactionClient) {
+    return [];
   }
 
   async updateProfile(
-    id: string,
-    data: { name?: string; position?: string | null; savedSignatureUrl?: string | null; signatureType?: SignatureType | null },
-    tx?: Prisma.TransactionClient
-  ): Promise<User> {
-    return this.delegate(tx).update({ where: { id }, data });
+    _id: string,
+    _data: {
+      name?: string;
+      employeeId?: string | null;
+      position?: string | null;
+      savedSignatureUrl?: string | null;
+      signatureType?: SignatureType | null;
+    },
+    _tx?: Prisma.TransactionClient
+  ): Promise<UserStub> {
+    throw new Error("User table removed. Use Auth Center APIs.");
+  }
+
+  async updateProfileByAuthUserId(
+    _authUserId: string,
+    _data: {
+      name?: string;
+      employeeId?: string | null;
+      position?: string | null;
+      savedSignatureUrl?: string | null;
+      signatureType?: SignatureType | null;
+    },
+    _tx?: Prisma.TransactionClient
+  ): Promise<UserStub> {
+    throw new Error("User table removed. Use Auth Center APIs.");
   }
 
   async findByIds(
-    ids: string[],
-    select: Prisma.UserSelect = { id: true, name: true, email: true },
-    tx?: Prisma.TransactionClient
-  ) {
-    return this.delegate(tx).findMany({ where: { id: { in: ids } }, select });
+    _ids: string[],
+    _select?: Record<string, boolean>,
+    _tx?: Prisma.TransactionClient
+  ): Promise<Array<{ id: string; name: string | null; email: string | null }>> {
+    return [];
   }
 
-  async findByRole(role: UserRole, tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findMany({
-      where: { role },
-      orderBy: { name: 'asc' },
-    });
+  async findByRole(_role: AnyQmsRole, _tx?: Prisma.TransactionClient) {
+    return [];
   }
 
-  async findByDepartment(departmentId: string, tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findMany({
-      where: { departmentId },
-      orderBy: { name: 'asc' },
-    });
+  async findByDepartment(_departmentId: string, _tx?: Prisma.TransactionClient) {
+    return [];
   }
 
-  async updateRole(id: string, role: UserRole, tx?: Prisma.TransactionClient): Promise<User> {
-    return this.delegate(tx).update({ where: { id }, data: { role } });
+  async updateRole(_id: string, _role: AnyQmsRole, _tx?: Prisma.TransactionClient): Promise<UserStub> {
+    throw new Error("User table removed. Use Auth Center APIs.");
   }
 
   async saveSignature(
-    id: string,
-    data: { savedSignatureUrl: string; signatureType: SignatureType },
-    tx?: Prisma.TransactionClient
-  ): Promise<User> {
-    return this.delegate(tx).update({ where: { id }, data });
+    _id: string,
+    _data: { savedSignatureUrl: string; signatureType: SignatureType },
+    _tx?: Prisma.TransactionClient
+  ): Promise<UserStub> {
+    throw new Error("User table removed. Use Auth Center APIs.");
   }
 
   async upsertUser(
-    email: string,
-    data: Prisma.UserUncheckedCreateInput,
-    tx?: Prisma.TransactionClient
-  ): Promise<User> {
-    return this.delegate(tx).upsert({
-      where: { email },
-      update: {
-        name: data.name,
-        msUserId: data.msUserId,
-        employeeId: data.employeeId,
-        departmentId: data.departmentId,
-        image: data.image,
-      },
-      create: data,
-    });
+    _email: string,
+    _data: Record<string, unknown>,
+    _tx?: Prisma.TransactionClient
+  ): Promise<UserStub> {
+    throw new Error("User table removed. Use Auth Center APIs.");
   }
 
-  async findByMsUserIds(msUserIds: string[], tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findMany({
-      where: { msUserId: { in: msUserIds } },
-      select: { id: true, msUserId: true },
-    });
+  async findByMsUserIds(_msUserIds: string[], _tx?: Prisma.TransactionClient) {
+    return [];
   }
 
-  async findForM365Push(id: string, tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findUnique({
-      where: { id },
-      select: {
-        msUserId: true,
-        name: true,
-        employeeId: true,
-        department: { select: { name: true } },
-      },
-    });
+  async findForM365Push(_id: string, _tx?: Prisma.TransactionClient) {
+    return null;
   }
 
-  async findAllForApprovalConfig(tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        department: { select: { id: true, name: true } },
-      },
-      orderBy: [{ role: "asc" }, { name: "asc" }, { email: "asc" }],
-    });
+  async findAllForApprovalConfig(_tx?: Prisma.TransactionClient) {
+    return [];
   }
 
-  async countByIds(ids: string[], tx?: Prisma.TransactionClient): Promise<number> {
-    return this.delegate(tx).count({ where: { id: { in: ids } } });
+  async countByIds(_ids: string[], _tx?: Prisma.TransactionClient): Promise<number> {
+    return 0;
   }
 
   async updateAttributes(
-    id: string,
-    data: Prisma.UserUpdateInput,
-    tx?: Prisma.TransactionClient
-  ): Promise<User> {
-    return this.delegate(tx).update({ where: { id }, data });
+    _id: string,
+    _data: Record<string, unknown>,
+    _tx?: Prisma.TransactionClient
+  ): Promise<UserStub> {
+    throw new Error("User table removed. Use Auth Center APIs.");
   }
 }

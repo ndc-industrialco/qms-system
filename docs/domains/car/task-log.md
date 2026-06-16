@@ -81,3 +81,4 @@
 - [x] Audited CAR module against the updated API and UI rules; identified service-layer Prisma usage, enterprise table gaps, and MR sign UI standard gaps.
 
 - [x] Implemented CAR hardening from audit: GET /api/car pagination/search/filter contract, CarListTable URL-bound enterprise list UI with mobile cards, repository-owned CAR write paths, and Vitest coverage for CAR service list/issue flows.
+- [x] Updated CAR detail page access props to prefer `authDepartmentId` over local `departmentId`, aligning USER department checks with Auth Center-scoped department IDs after identity decoupling.

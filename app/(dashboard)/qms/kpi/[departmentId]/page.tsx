@@ -18,9 +18,11 @@ export default async function KpiDepartmentPage({ params }: Props) {
 
   // Resolve user's department name for USER-level access gating
   let userDepartmentName: string | null = null;
-  if (session?.user?.departmentId) {
-    const depts = await deptService.getActiveDepartments();
-    userDepartmentName = depts.find(d => d.id === session.user.departmentId)?.name ?? null;
+  if (session?.user?.authDepartmentId || session?.user?.departmentId) {
+    const depts = await deptService.getActiveDepartments(session.user.accessToken);
+    userDepartmentName =
+      depts.find((d) => d.id === (session.user.authDepartmentId ?? session.user.departmentId ?? ""))?.name
+      ?? null;
   }
 
   return (

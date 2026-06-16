@@ -13,8 +13,12 @@ export default async function UserCarListPage() {
   const session = await auth();
   if (!session) redirect("/login");
 
+  const authDepartmentId = session.user.authDepartmentId;
   const departmentId = session.user.departmentId;
-  const cars = departmentId ? await carService.listCars({ page: 1, limit: 20 }, { departmentId }) : undefined;
+  const hasScope = !!(authDepartmentId || departmentId);
+  const cars = hasScope
+    ? await carService.listCars({ page: 1, limit: 20 }, { departmentId, authDepartmentId })
+    : undefined;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -22,7 +26,7 @@ export default async function UserCarListPage() {
         title="CAR ของแผนก"
         subtitle="Corrective Action Requests สำหรับแผนกของคุณ"
       />
-      {!departmentId ? (
+      {!hasScope ? (
         <p className="text-sm text-gray-500">บัญชีของคุณยังไม่ได้ผูกกับแผนก</p>
       ) : (
         <CarListTable initialData={cars} isPrivileged={false} />

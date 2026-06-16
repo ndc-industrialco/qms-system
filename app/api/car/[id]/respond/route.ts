@@ -21,7 +21,9 @@ export async function POST(
       id,
       session.user.id,
       session.user.departmentId,
-      input
+      input,
+      session.user.authUserId,
+      session.user.authDepartmentId,
     );
     return sendSuccess(car, "CAR response submitted successfully");
   } catch (err) {

@@ -27,6 +27,7 @@ export type AggregateAuditLog = {
 export type AuditLogMinAggregateOutputType = {
   id: string | null
   actorUserId: string | null
+  actorAuthUserId: string | null
   actorRole: string | null
   action: string | null
   resourceType: string | null
@@ -37,6 +38,7 @@ export type AuditLogMinAggregateOutputType = {
 export type AuditLogMaxAggregateOutputType = {
   id: string | null
   actorUserId: string | null
+  actorAuthUserId: string | null
   actorRole: string | null
   action: string | null
   resourceType: string | null
@@ -47,6 +49,7 @@ export type AuditLogMaxAggregateOutputType = {
 export type AuditLogCountAggregateOutputType = {
   id: number
   actorUserId: number
+  actorAuthUserId: number
   actorRole: number
   action: number
   resourceType: number
@@ -62,6 +65,7 @@ export type AuditLogCountAggregateOutputType = {
 export type AuditLogMinAggregateInputType = {
   id?: true
   actorUserId?: true
+  actorAuthUserId?: true
   actorRole?: true
   action?: true
   resourceType?: true
@@ -72,6 +76,7 @@ export type AuditLogMinAggregateInputType = {
 export type AuditLogMaxAggregateInputType = {
   id?: true
   actorUserId?: true
+  actorAuthUserId?: true
   actorRole?: true
   action?: true
   resourceType?: true
@@ -82,6 +87,7 @@ export type AuditLogMaxAggregateInputType = {
 export type AuditLogCountAggregateInputType = {
   id?: true
   actorUserId?: true
+  actorAuthUserId?: true
   actorRole?: true
   action?: true
   resourceType?: true
@@ -168,6 +174,7 @@ export type AuditLogGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type AuditLogGroupByOutputType = {
   id: string
   actorUserId: string
+  actorAuthUserId: string | null
   actorRole: string
   action: string
   resourceType: string
@@ -202,6 +209,7 @@ export type AuditLogWhereInput = {
   NOT?: Prisma.AuditLogWhereInput | Prisma.AuditLogWhereInput[]
   id?: Prisma.StringFilter<"AuditLog"> | string
   actorUserId?: Prisma.StringFilter<"AuditLog"> | string
+  actorAuthUserId?: Prisma.StringNullableFilter<"AuditLog"> | string | null
   actorRole?: Prisma.StringFilter<"AuditLog"> | string
   action?: Prisma.StringFilter<"AuditLog"> | string
   resourceType?: Prisma.StringFilter<"AuditLog"> | string
@@ -215,6 +223,7 @@ export type AuditLogWhereInput = {
 export type AuditLogOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   actorUserId?: Prisma.SortOrder
+  actorAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   actorRole?: Prisma.SortOrder
   action?: Prisma.SortOrder
   resourceType?: Prisma.SortOrder
@@ -231,6 +240,7 @@ export type AuditLogWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.AuditLogWhereInput[]
   NOT?: Prisma.AuditLogWhereInput | Prisma.AuditLogWhereInput[]
   actorUserId?: Prisma.StringFilter<"AuditLog"> | string
+  actorAuthUserId?: Prisma.StringNullableFilter<"AuditLog"> | string | null
   actorRole?: Prisma.StringFilter<"AuditLog"> | string
   action?: Prisma.StringFilter<"AuditLog"> | string
   resourceType?: Prisma.StringFilter<"AuditLog"> | string
@@ -244,6 +254,7 @@ export type AuditLogWhereUniqueInput = Prisma.AtLeast<{
 export type AuditLogOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   actorUserId?: Prisma.SortOrder
+  actorAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   actorRole?: Prisma.SortOrder
   action?: Prisma.SortOrder
   resourceType?: Prisma.SortOrder
@@ -263,6 +274,7 @@ export type AuditLogScalarWhereWithAggregatesInput = {
   NOT?: Prisma.AuditLogScalarWhereWithAggregatesInput | Prisma.AuditLogScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"AuditLog"> | string
   actorUserId?: Prisma.StringWithAggregatesFilter<"AuditLog"> | string
+  actorAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"AuditLog"> | string | null
   actorRole?: Prisma.StringWithAggregatesFilter<"AuditLog"> | string
   action?: Prisma.StringWithAggregatesFilter<"AuditLog"> | string
   resourceType?: Prisma.StringWithAggregatesFilter<"AuditLog"> | string
@@ -276,6 +288,7 @@ export type AuditLogScalarWhereWithAggregatesInput = {
 export type AuditLogCreateInput = {
   id?: string
   actorUserId: string
+  actorAuthUserId?: string | null
   actorRole: string
   action: string
   resourceType: string
@@ -289,6 +302,7 @@ export type AuditLogCreateInput = {
 export type AuditLogUncheckedCreateInput = {
   id?: string
   actorUserId: string
+  actorAuthUserId?: string | null
   actorRole: string
   action: string
   resourceType: string
@@ -302,6 +316,7 @@ export type AuditLogUncheckedCreateInput = {
 export type AuditLogUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   actorUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  actorAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorRole?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   resourceType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -315,6 +330,7 @@ export type AuditLogUpdateInput = {
 export type AuditLogUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   actorUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  actorAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorRole?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   resourceType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -328,6 +344,7 @@ export type AuditLogUncheckedUpdateInput = {
 export type AuditLogCreateManyInput = {
   id?: string
   actorUserId: string
+  actorAuthUserId?: string | null
   actorRole: string
   action: string
   resourceType: string
@@ -341,6 +358,7 @@ export type AuditLogCreateManyInput = {
 export type AuditLogUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   actorUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  actorAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorRole?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   resourceType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -354,6 +372,7 @@ export type AuditLogUpdateManyMutationInput = {
 export type AuditLogUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   actorUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  actorAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   actorRole?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   resourceType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -367,6 +386,7 @@ export type AuditLogUncheckedUpdateManyInput = {
 export type AuditLogCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   actorUserId?: Prisma.SortOrder
+  actorAuthUserId?: Prisma.SortOrder
   actorRole?: Prisma.SortOrder
   action?: Prisma.SortOrder
   resourceType?: Prisma.SortOrder
@@ -380,6 +400,7 @@ export type AuditLogCountOrderByAggregateInput = {
 export type AuditLogMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   actorUserId?: Prisma.SortOrder
+  actorAuthUserId?: Prisma.SortOrder
   actorRole?: Prisma.SortOrder
   action?: Prisma.SortOrder
   resourceType?: Prisma.SortOrder
@@ -390,6 +411,7 @@ export type AuditLogMaxOrderByAggregateInput = {
 export type AuditLogMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   actorUserId?: Prisma.SortOrder
+  actorAuthUserId?: Prisma.SortOrder
   actorRole?: Prisma.SortOrder
   action?: Prisma.SortOrder
   resourceType?: Prisma.SortOrder
@@ -402,6 +424,7 @@ export type AuditLogMinOrderByAggregateInput = {
 export type AuditLogSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   actorUserId?: boolean
+  actorAuthUserId?: boolean
   actorRole?: boolean
   action?: boolean
   resourceType?: boolean
@@ -415,6 +438,7 @@ export type AuditLogSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type AuditLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   actorUserId?: boolean
+  actorAuthUserId?: boolean
   actorRole?: boolean
   action?: boolean
   resourceType?: boolean
@@ -428,6 +452,7 @@ export type AuditLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type AuditLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   actorUserId?: boolean
+  actorAuthUserId?: boolean
   actorRole?: boolean
   action?: boolean
   resourceType?: boolean
@@ -441,6 +466,7 @@ export type AuditLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type AuditLogSelectScalar = {
   id?: boolean
   actorUserId?: boolean
+  actorAuthUserId?: boolean
   actorRole?: boolean
   action?: boolean
   resourceType?: boolean
@@ -451,7 +477,7 @@ export type AuditLogSelectScalar = {
   createdAt?: boolean
 }
 
-export type AuditLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "actorUserId" | "actorRole" | "action" | "resourceType" | "resourceId" | "before" | "after" | "metadata" | "createdAt", ExtArgs["result"]["auditLog"]>
+export type AuditLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "actorUserId" | "actorAuthUserId" | "actorRole" | "action" | "resourceType" | "resourceId" | "before" | "after" | "metadata" | "createdAt", ExtArgs["result"]["auditLog"]>
 
 export type $AuditLogPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AuditLog"
@@ -459,6 +485,7 @@ export type $AuditLogPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     actorUserId: string
+    actorAuthUserId: string | null
     actorRole: string
     action: string
     resourceType: string
@@ -892,6 +919,7 @@ export interface Prisma__AuditLogClient<T, Null = never, ExtArgs extends runtime
 export interface AuditLogFieldRefs {
   readonly id: Prisma.FieldRef<"AuditLog", 'String'>
   readonly actorUserId: Prisma.FieldRef<"AuditLog", 'String'>
+  readonly actorAuthUserId: Prisma.FieldRef<"AuditLog", 'String'>
   readonly actorRole: Prisma.FieldRef<"AuditLog", 'String'>
   readonly action: Prisma.FieldRef<"AuditLog", 'String'>
   readonly resourceType: Prisma.FieldRef<"AuditLog", 'String'>

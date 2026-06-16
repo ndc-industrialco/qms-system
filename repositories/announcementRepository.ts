@@ -13,14 +13,62 @@ export class AnnouncementRepository extends BaseRepository<Announcement> {
   async findManyWithCreatedBy(tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findMany({
       orderBy: { createdAt: "desc" },
-      include: { createdBy: { select: { name: true } } },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        sourceSystem: true,
+        displayType: true,
+        pushToCompanyCenter: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        expiryDate: true,
+        fileName: true,
+        spItemId: true,
+        spWebUrl: true,
+        spDownloadUrl: true,
+        bgColor: true,
+        bgImageUrl: true,
+        bgImageSpId: true,
+        textColor: true,
+        createdById: true,
+        createdByAuthUserId: true,
+        createdByName: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
   async findByIdWithCreatedBy(id: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id },
-      include: { createdBy: { select: { name: true } } },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        sourceSystem: true,
+        displayType: true,
+        pushToCompanyCenter: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        expiryDate: true,
+        fileName: true,
+        spItemId: true,
+        spWebUrl: true,
+        spDownloadUrl: true,
+        bgColor: true,
+        bgImageUrl: true,
+        bgImageSpId: true,
+        textColor: true,
+        createdById: true,
+        createdByAuthUserId: true,
+        createdByName: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 

@@ -32,7 +32,7 @@ export default async function QmsCarDetailPage({
         car={car}
         userRole={role}
         userId={session.user.id}
-        userDepartmentId={session.user.departmentId ?? null}
+        userDepartmentId={session.user.authDepartmentId ?? session.user.departmentId ?? null}
         isPrivileged={role === "QMS" || role === "IT" || role === "MR"}
       />
     </div>

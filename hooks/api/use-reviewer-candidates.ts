@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 export interface ReviewerCandidate {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   employeeId: string | null;
   department: string | null;
   jobTitle: string | null;

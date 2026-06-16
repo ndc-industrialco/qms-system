@@ -23,7 +23,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const updated = await service.rejectObjectives(id, {
       userId: session.user.id,
       role: session.user.role,
-      departmentId: session.user.departmentId,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
     });
 
     const reviewerApproverIds = [updated.reviewerUserId, updated.approverUserId].filter(Boolean) as string[];
@@ -44,6 +44,14 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           }),
           u.email,
           'KPI Rejected',
+          u.id,
+          {
+            title: "KPI ถูกปฏิเสธ",
+            body: `KPI ${updated.department} ${updated.yearly}`,
+            module: "KPI",
+            resourceId: id,
+            resourceType: "KPI",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }
@@ -64,6 +72,14 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           }),
           preparer.email,
           'KPI Rejected - Preparer Notification',
+          preparer.id,
+          {
+            title: "KPI ถูกปฏิเสธ",
+            body: `KPI ${updated.department} ${updated.yearly}`,
+            module: "KPI",
+            resourceId: id,
+            resourceType: "KPI",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }

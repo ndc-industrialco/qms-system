@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { getToken } from "next-auth/jwt";
 import { isJwtBlocked } from "@/lib/jwt-blocklist";
+import { buildAuthCenterLoginUrl } from "@/lib/auth-center-client";
+import { hasQmsRole, type LegacyQmsRole } from "@/lib/qms-roles";
 
 // ioredis requires Node.js TCP sockets and cannot run in Edge Runtime.
 export const runtime = "nodejs";
@@ -14,8 +16,6 @@ const AUTH_LIMIT = { limit: 10, windowMs: 60_000 };
 const API_LIMIT = { limit: 60, windowMs: 60_000 };
 
 const PUBLIC_PATHS = ["/auth/login", "/auth/error", "/unauthorized"];
-
-type UserRole = "USER" | "IT" | "QMS" | "MR";
 
 function getClientIp(req: NextRequest): string {
   return (
@@ -72,7 +72,9 @@ export default auth(async (req) => {
     let rateLimitKey = `api:ip:${ip}:${path}`;
 
     if (!path.startsWith("/api/auth")) {
-      const token = await getToken({ req, secret: process.env.AUTH_SECRET! });
+      const isProduction = process.env.NODE_ENV === "production";
+      const cookieName = isProduction ? "__Secure-qms.session-token" : "qms.session-token";
+      const token = await getToken({ req, secret: process.env.AUTH_SECRET!, cookieName, salt: cookieName });
       if (token?.sub) rateLimitKey = `api:user:${token.sub}:${path}`;
     }
 
@@ -98,22 +100,21 @@ export default auth(async (req) => {
 
   if (!session?.user) {
     logRequest(req.method, path, 401, ip, requestId);
-    const url = new URL("/auth/login", req.url);
-    url.searchParams.set("callbackUrl", path + nextUrl.search);
-    return withRequestId(NextResponse.redirect(url), requestId);
+    const callbackPath = path + nextUrl.search;
+    const loginUrl = buildAuthCenterLoginUrl({ state: callbackPath });
+    return withRequestId(NextResponse.redirect(loginUrl), requestId);
   }
 
   const jti = session.user.jti;
   if (jti && (await isJwtBlocked(jti))) {
-    const url = new URL("/auth/login", req.url);
-    url.searchParams.set("callbackUrl", path + nextUrl.search);
-    url.searchParams.set("reason", "session_revoked");
-    return withRequestId(NextResponse.redirect(url), requestId);
+    logRequest(req.method, path, 401, ip, requestId, session?.user?.id);
+    const loginUrl = buildAuthCenterLoginUrl({ state: path + nextUrl.search });
+    return withRequestId(NextResponse.redirect(loginUrl), requestId);
   }
 
-  const role = (session.user.role ?? "USER") as UserRole;
+  const role = (session.user.role ?? "USER") as LegacyQmsRole;
 
-  if (path.startsWith("/it/") && role !== "IT") {
+  if (path.startsWith("/it/") && !hasQmsRole(role, "IT", "QMS_IT")) {
     return withRequestId(
       NextResponse.redirect(new URL("/unauthorized?reason=insufficient_role", req.url)),
       requestId,
@@ -124,9 +125,7 @@ export default auth(async (req) => {
     path.startsWith("/qms/") &&
     !path.startsWith("/qms/document-controls") &&
     !path.startsWith("/qms/kpi") &&
-    role !== "QMS" &&
-    role !== "MR" &&
-    role !== "IT"
+    !hasQmsRole(role, "QMS", "MR", "IT", "QMS_QMS", "QMS_MR", "QMS_IT")
   ) {
     return withRequestId(
       NextResponse.redirect(new URL("/unauthorized?reason=insufficient_role", req.url)),

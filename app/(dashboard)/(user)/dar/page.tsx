@@ -36,9 +36,11 @@ export default async function DarPage() {
   const session = await requireAuth();
 
   let departmentName: string | null = null;
-  if (session.user.departmentId) {
-    const departments = await deptService.getActiveDepartments();
-    departmentName = departments.find((d: { id: string; name: string }) => d.id === session.user.departmentId)?.name ?? null;
+  if (session.user.authDepartmentId || session.user.departmentId) {
+    const departments = await deptService.getActiveDepartments(session.user.accessToken);
+    departmentName =
+      departments.find((d: { id: string; name: string }) => d.id === (session.user.authDepartmentId ?? session.user.departmentId ?? ""))?.name
+      ?? null;
   }
 
   const requesterInfo = {

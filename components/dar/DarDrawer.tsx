@@ -3,7 +3,7 @@
 import { useState } from "react";
 import DarForm from "./DarForm";
 import { useT } from "@/lib/i18n";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useDepartments } from "@/hooks/api/use-departments";
 
@@ -27,31 +27,16 @@ export default function DarDrawer({ isOpen, onClose, requesterInfo }: Props) {
   const { data: departments = [], isLoading: depsLoading, isError, refetch } = useDepartments();
 
   return (
-    <Sheet open={isOpen} onOpenChange={(val) => { if (!val) onClose(); }}>
-      <SheetContent side="right" className="flex flex-col p-0 w-full lg:max-w-2xl h-full" hideClose>
-        <div className="lg:hidden flex justify-center pt-3 pb-1 shrink-0" aria-hidden="true">
-          <div className="w-10 h-1 rounded-full bg-slate-200" />
-        </div>
-
-        <SheetHeader className="px-6 py-4 border-b border-slate-100 shrink-0 text-left relative">
-          <SheetTitle className="text-lg font-semibold text-slate-800 leading-snug pr-8">
+    <Dialog open={isOpen} onOpenChange={(val) => { if (!val) onClose(); }}>
+      <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogHeader className="px-6 py-4 border-b border-slate-100 text-left">
+          <DialogTitle className="text-lg font-semibold text-slate-800 leading-snug pr-8">
             {t("dar.drawer.title")}
-          </SheetTitle>
-          <SheetDescription className="text-xs text-slate-500 mt-0.5">
+          </DialogTitle>
+          <DialogDescription className="text-xs text-slate-500 mt-0.5">
             {t("dar.drawer.subtitle")}
-          </SheetDescription>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            aria-label={t("common.close")}
-            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </Button>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
           {depsLoading && (
@@ -84,7 +69,7 @@ export default function DarDrawer({ isOpen, onClose, requesterInfo }: Props) {
             />
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

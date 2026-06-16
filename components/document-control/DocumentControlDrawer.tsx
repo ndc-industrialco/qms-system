@@ -19,12 +19,13 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import type { DocumentControlDetail, DocControlStatus } from '@/types/documentControl';
 
 interface DocumentControlDrawerProps {
@@ -148,18 +149,18 @@ export function DocumentControlDrawer({
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Sheet open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <SheetContent side="right" className="flex flex-col p-0">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b border-slate-100 shrink-0">
-          <SheetTitle>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+          <DialogTitle>
             {document ? t('documentControl.editTitle') : t('documentControl.new')}
-          </SheetTitle>
-          <SheetDescription>
+          </DialogTitle>
+          <DialogDescription>
             {document ? document.docNumber : t('documentControl.emptyDesc')}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
           <form id="doc-control-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
             {/* Document Number */}
@@ -237,7 +238,7 @@ export function DocumentControlDrawer({
           </form>
         </div>
 
-        <div className="shrink-0 border-t border-slate-100 px-6 py-4 flex gap-3">
+        <DialogFooter className="px-6 py-4 border-t border-slate-100">
           <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="h-11">
             {t('common.cancel')}
           </Button>
@@ -249,8 +250,8 @@ export function DocumentControlDrawer({
           >
             {isLoading ? t('common.loading') : t('common.save')}
           </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

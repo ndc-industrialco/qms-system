@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await requireAuth();
 
-    if (!session.user.departmentId) {
+    if (!session.user.departmentId && !session.user.authDepartmentId) {
       throw new ValidationError("บัญชีของคุณยังไม่ได้ผูกกับแผนก กรุณาติดต่อ IT");
     }
 
@@ -52,13 +52,18 @@ export async function POST(req: NextRequest) {
       throw new ValidationError("กรุณาระบุประเภทเอกสาร (อื่นๆ)");
     }
 
-    let dar = await darService.createDar(session.user.id, session.user.departmentId, {
-      ...input,
-      tempAttachments: parsed.tempAttachments,
-    });
+    let dar = await darService.createDar(
+      session.user.id,
+      session.user.departmentId,
+      {
+        ...input,
+        tempAttachments: parsed.tempAttachments,
+      },
+      session.user.authDepartmentId,
+    );
 
     if (action === "SUBMIT") {
-      dar = await darService.submitDar(dar.id, session.user.id);
+      dar = await darService.submitDar(dar.id, { userId: session.user.id, authUserId: session.user.authUserId });
     }
 
     revalidateTag("dar-list");

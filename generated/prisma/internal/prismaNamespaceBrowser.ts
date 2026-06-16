@@ -51,9 +51,8 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  Department: 'Department',
-  User: 'User',
   SystemConfig: 'SystemConfig',
+  UserPreference: 'UserPreference',
   Announcement: 'Announcement',
   DarMaster: 'DarMaster',
   DarItem: 'DarItem',
@@ -73,6 +72,7 @@ export const ModelName = {
   DocumentControlRevision: 'DocumentControlRevision',
   AuditLog: 'AuditLog',
   NotificationLog: 'NotificationLog',
+  Notification: 'Notification',
   ActionToken: 'ActionToken',
   CarMaster: 'CarMaster',
   CarResponse: 'CarResponse',
@@ -99,40 +99,6 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const DepartmentScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  emailGroup: 'emailGroup',
-  isActive: 'isActive',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type DepartmentScalarFieldEnum = (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum]
-
-
-export const UserScalarFieldEnum = {
-  id: 'id',
-  employeeId: 'employeeId',
-  msUserId: 'msUserId',
-  name: 'name',
-  email: 'email',
-  emailVerified: 'emailVerified',
-  image: 'image',
-  role: 'role',
-  position: 'position',
-  savedSignatureUrl: 'savedSignatureUrl',
-  signatureType: 'signatureType',
-  departmentId: 'departmentId',
-  localAuthEnabled: 'localAuthEnabled',
-  failedLoginCount: 'failedLoginCount',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
-
-
 export const SystemConfigScalarFieldEnum = {
   configKey: 'configKey',
   configValue: 'configValue',
@@ -141,6 +107,16 @@ export const SystemConfigScalarFieldEnum = {
 } as const
 
 export type SystemConfigScalarFieldEnum = (typeof SystemConfigScalarFieldEnum)[keyof typeof SystemConfigScalarFieldEnum]
+
+
+export const UserPreferenceScalarFieldEnum = {
+  authUserId: 'authUserId',
+  savedSignatureUrl: 'savedSignatureUrl',
+  signatureType: 'signatureType',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserPreferenceScalarFieldEnum = (typeof UserPreferenceScalarFieldEnum)[keyof typeof UserPreferenceScalarFieldEnum]
 
 
 export const AnnouncementScalarFieldEnum = {
@@ -164,6 +140,8 @@ export const AnnouncementScalarFieldEnum = {
   textColor: 'textColor',
   status: 'status',
   createdById: 'createdById',
+  createdByAuthUserId: 'createdByAuthUserId',
+  createdByName: 'createdByName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -186,7 +164,13 @@ export const DarMasterScalarFieldEnum = {
   spWebUrl: 'spWebUrl',
   status: 'status',
   requesterId: 'requesterId',
+  requesterAuthUserId: 'requesterAuthUserId',
+  requesterName: 'requesterName',
+  requesterEmployeeId: 'requesterEmployeeId',
+  requesterEmail: 'requesterEmail',
+  requesterDepartmentName: 'requesterDepartmentName',
   departmentId: 'departmentId',
+  authDepartmentId: 'authDepartmentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -209,7 +193,9 @@ export type DarItemScalarFieldEnum = (typeof DarItemScalarFieldEnum)[keyof typeo
 export const DarDistributionScalarFieldEnum = {
   id: 'id',
   darMasterId: 'darMasterId',
-  departmentId: 'departmentId'
+  departmentId: 'departmentId',
+  authDepartmentId: 'authDepartmentId',
+  departmentName: 'departmentName'
 } as const
 
 export type DarDistributionScalarFieldEnum = (typeof DarDistributionScalarFieldEnum)[keyof typeof DarDistributionScalarFieldEnum]
@@ -226,6 +212,8 @@ export const DarAttachmentScalarFieldEnum = {
   folderPath: 'folderPath',
   darMasterId: 'darMasterId',
   uploadedById: 'uploadedById',
+  uploadedByAuthUserId: 'uploadedByAuthUserId',
+  uploadedByName: 'uploadedByName',
   createdAt: 'createdAt'
 } as const
 
@@ -241,6 +229,10 @@ export const DarApprovalScalarFieldEnum = {
   signatureTypeUsed: 'signatureTypeUsed',
   darMasterId: 'darMasterId',
   assignedUserId: 'assignedUserId',
+  assignedAuthUserId: 'assignedAuthUserId',
+  assignedUserName: 'assignedUserName',
+  assignedEmployeeId: 'assignedEmployeeId',
+  assignedDepartmentName: 'assignedDepartmentName',
   comment: 'comment'
 } as const
 
@@ -255,6 +247,10 @@ export const ApprovalSignatureScalarFieldEnum = {
   action: 'action',
   actionDate: 'actionDate',
   signerUserId: 'signerUserId',
+  signerAuthUserId: 'signerAuthUserId',
+  signerName: 'signerName',
+  signerEmail: 'signerEmail',
+  signerDepartmentName: 'signerDepartmentName',
   signaturePath: 'signaturePath',
   comment: 'comment',
   createdAt: 'createdAt',
@@ -277,6 +273,9 @@ export const QmsProcessingScalarFieldEnum = {
   processDate: 'processDate',
   darMasterId: 'darMasterId',
   qmsUserId: 'qmsUserId',
+  qmsAuthUserId: 'qmsAuthUserId',
+  qmsUserName: 'qmsUserName',
+  qmsUserEmployeeId: 'qmsUserEmployeeId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -312,7 +311,11 @@ export const KPIScalarFieldEnum = {
   status: 'status',
   prepareSignature: 'prepareSignature',
   reviewerUserId: 'reviewerUserId',
+  reviewerAuthUserId: 'reviewerAuthUserId',
+  reviewerEmail: 'reviewerEmail',
   approverUserId: 'approverUserId',
+  approverAuthUserId: 'approverAuthUserId',
+  approverEmail: 'approverEmail',
   submittedAt: 'submittedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -410,10 +413,16 @@ export const DocumentControlScalarFieldEnum = {
   fileSize: 'fileSize',
   mimeType: 'mimeType',
   createdById: 'createdById',
+  createdByAuthUserId: 'createdByAuthUserId',
+  createdByName: 'createdByName',
   updatedById: 'updatedById',
+  updatedByAuthUserId: 'updatedByAuthUserId',
+  updatedByName: 'updatedByName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   departmentId: 'departmentId',
+  authDepartmentId: 'authDepartmentId',
+  departmentName: 'departmentName',
   categoryId: 'categoryId'
 } as const
 
@@ -426,6 +435,8 @@ export const DocumentCategoryScalarFieldEnum = {
   description: 'description',
   order: 'order',
   departmentId: 'departmentId',
+  authDepartmentId: 'authDepartmentId',
+  departmentName: 'departmentName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -448,6 +459,8 @@ export const DocumentControlRevisionScalarFieldEnum = {
   fileSize: 'fileSize',
   mimeType: 'mimeType',
   createdById: 'createdById',
+  createdByAuthUserId: 'createdByAuthUserId',
+  createdByName: 'createdByName',
   createdAt: 'createdAt'
 } as const
 
@@ -457,6 +470,7 @@ export type DocumentControlRevisionScalarFieldEnum = (typeof DocumentControlRevi
 export const AuditLogScalarFieldEnum = {
   id: 'id',
   actorUserId: 'actorUserId',
+  actorAuthUserId: 'actorAuthUserId',
   actorRole: 'actorRole',
   action: 'action',
   resourceType: 'resourceType',
@@ -484,6 +498,22 @@ export const NotificationLogScalarFieldEnum = {
 } as const
 
 export type NotificationLogScalarFieldEnum = (typeof NotificationLogScalarFieldEnum)[keyof typeof NotificationLogScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  recipientId: 'recipientId',
+  recipientAuthUserId: 'recipientAuthUserId',
+  title: 'title',
+  body: 'body',
+  module: 'module',
+  resourceId: 'resourceId',
+  resourceType: 'resourceType',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
 export const ActionTokenScalarFieldEnum = {
@@ -515,9 +545,14 @@ export const CarMasterScalarFieldEnum = {
   defectDetail: 'defectDetail',
   nonConformanceRef: 'nonConformanceRef',
   issuerId: 'issuerId',
+  issuerAuthUserId: 'issuerAuthUserId',
+  issuerName: 'issuerName',
+  issuerEmployeeId: 'issuerEmployeeId',
   issuerPosition: 'issuerPosition',
   issuedAt: 'issuedAt',
   targetDepartmentId: 'targetDepartmentId',
+  targetAuthDepartmentId: 'targetAuthDepartmentId',
+  targetDepartmentName: 'targetDepartmentName',
   targetEmailGroup: 'targetEmailGroup',
   responseDueAt: 'responseDueAt',
   reCar: 'reCar',
@@ -533,6 +568,9 @@ export const CarResponseScalarFieldEnum = {
   id: 'id',
   carMasterId: 'carMasterId',
   responderId: 'responderId',
+  responderAuthUserId: 'responderAuthUserId',
+  responderName: 'responderName',
+  responderEmployeeId: 'responderEmployeeId',
   responderPosition: 'responderPosition',
   respondedAt: 'respondedAt',
   whyAnalysis: 'whyAnalysis',
@@ -557,6 +595,9 @@ export const CarVerificationScalarFieldEnum = {
   carMasterId: 'carMasterId',
   round: 'round',
   verifierId: 'verifierId',
+  verifierAuthUserId: 'verifierAuthUserId',
+  verifierName: 'verifierName',
+  verifierEmployeeId: 'verifierEmployeeId',
   verifierPosition: 'verifierPosition',
   verifiedAt: 'verifiedAt',
   findings: 'findings',
@@ -571,6 +612,9 @@ export const CarMrSignatureScalarFieldEnum = {
   id: 'id',
   carMasterId: 'carMasterId',
   mrUserId: 'mrUserId',
+  mrAuthUserId: 'mrAuthUserId',
+  mrUserName: 'mrUserName',
+  mrEmployeeId: 'mrEmployeeId',
   signedAt: 'signedAt',
   comment: 'comment'
 } as const
@@ -589,6 +633,8 @@ export const CarAttachmentScalarFieldEnum = {
   spDownloadUrl: 'spDownloadUrl',
   folderPath: 'folderPath',
   uploadedById: 'uploadedById',
+  uploadedByAuthUserId: 'uploadedByAuthUserId',
+  uploadedByName: 'uploadedByName',
   createdAt: 'createdAt'
 } as const
 
@@ -599,6 +645,9 @@ export const CarMrResponseReviewScalarFieldEnum = {
   id: 'id',
   carMasterId: 'carMasterId',
   mrUserId: 'mrUserId',
+  mrAuthUserId: 'mrAuthUserId',
+  mrUserName: 'mrUserName',
+  mrEmployeeId: 'mrEmployeeId',
   reviewedAt: 'reviewedAt',
   action: 'action',
   comment: 'comment'

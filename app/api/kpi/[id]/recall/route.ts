@@ -13,7 +13,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const updated = await service.recallObjectives(id, {
       userId: session.user.id,
       role: session.user.role,
-      departmentId: session.user.departmentId,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
       email: session.user.email ?? undefined,
       name: session.user.name ?? undefined,
     });

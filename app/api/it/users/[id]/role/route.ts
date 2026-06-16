@@ -6,11 +6,17 @@ import { sendSuccess } from "@/lib/apiResponse";
 import { UserService } from "@/services/userService";
 import { AuditService } from "@/services/auditService";
 import { ValidationError } from "@/lib/errors";
+import { ALL_QMS_ROLES, normalizeQmsRole, toRenamedQmsRole } from "@/lib/qms-roles";
+import { grantAuthCenterRole, updateAuthCenterUserProfileM2M } from "@/lib/auth-center-admin-client";
 
 const bodySchema = z.object({
-  role: z.enum(["USER", "IT", "QMS", "MR"]).optional(),
+  role: z.enum(ALL_QMS_ROLES).optional(),
   departmentId: z.string().nullable().optional(),
+  departmentName: z.string().nullable().optional(), // auth_center mode: displayName to store in Auth Center profile
   employeeId: z.string().max(16).nullable().optional(),
+  // auth_center mode must supply these explicitly — never infer from URL param
+  authUserId: z.string().optional(),   // Auth Center userId (for role grant)
+  localUserId: z.string().optional(),  // QMS local User.id (for local attribute update)
 });
 
 type Params = { params: Promise<{ id: string }> };
@@ -28,27 +34,52 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       throw new ValidationError(parsed.error.issues[0]?.message ?? "Invalid body");
     }
 
-    const { role, departmentId, employeeId } = parsed.data;
-    if (role === undefined && departmentId === undefined && employeeId === undefined) {
-      throw new ValidationError("Nothing to update");
+    const { role, departmentId, departmentName, employeeId, authUserId, localUserId } = parsed.data;
+    const normalizedRole = role ? normalizeQmsRole(role) : undefined;
+
+    // Resolve identifiers:
+    // - authUserId: from body (preferred) or URL id if it looks like Auth Center id
+    // - localUserId: from body only — do NOT use URL id as local user id
+    const resolvedAuthUserId = authUserId ?? id;
+    const resolvedLocalUserId = localUserId; // intentionally undefined if not provided
+
+    if (normalizedRole !== undefined) {
+      if (!resolvedAuthUserId) throw new ValidationError("authUserId required for role changes");
+      const renamedRole = toRenamedQmsRole(normalizedRole);
+      await grantAuthCenterRole(resolvedAuthUserId, renamedRole, { accessToken: session.user.accessToken });
+
+      await AuditService.record({
+        actorUserId: session.user.id,
+        actorAuthUserId: session.user.authUserId,
+        actorRole: session.user.role,
+        action: "ROLE_CHANGE",
+        resourceType: "USER",
+        resourceId: resolvedAuthUserId,
+        after: { role: normalizedRole, renamedRole, source: "auth_center", targetAuthUserId: resolvedAuthUserId },
+      });
     }
 
-    const updated = await userService.updateUserAttributes(id, {
-      ...(role !== undefined ? { role } : {}),
-      ...(departmentId !== undefined ? { departmentId } : {}),
-      ...(employeeId !== undefined ? { employeeId: employeeId || null } : {}),
-    });
+    // Auth Center department update — when departmentName is provided, write to Auth Center profile
+    if (departmentName !== undefined && resolvedAuthUserId) {
+      await updateAuthCenterUserProfileM2M(
+        resolvedAuthUserId,
+        { department: departmentName ?? undefined },
+        { accessToken: session.user.accessToken },
+      );
+    }
 
-    await AuditService.record({
-      actorUserId: session.user.id,
-      actorRole: session.user.role,
-      action: "ROLE_CHANGE",
-      resourceType: "USER",
-      resourceId: id,
-      after: { role, departmentId, employeeId },
-    });
+    // Local-only QMS fields — only update if localUserId is explicitly provided
+    if (resolvedLocalUserId && (departmentId !== undefined || employeeId !== undefined)) {
+      await userService.updateUserAttributes(resolvedLocalUserId, {
+        ...(departmentId !== undefined ? { departmentId } : {}),
+        ...(employeeId !== undefined ? { employeeId: employeeId || null } : {}),
+      });
+    }
 
-    return sendSuccess(updated, "User attributes updated successfully");
+    return sendSuccess(
+      { authUserId: resolvedAuthUserId, localUserId: resolvedLocalUserId ?? null, role: normalizedRole },
+      "User updated successfully",
+    );
   } catch (err) {
     return handleApiError(err);
   }

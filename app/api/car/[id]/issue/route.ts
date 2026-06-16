@@ -18,7 +18,7 @@ export async function POST(
     }
 
     const { id } = await params;
-    const car = await carService.issueCar(id, session.user.id);
+    const car = await carService.issueCar(id, session.user.id, session.user.authUserId);
     return sendSuccess(
       { carNo: car.carNo, issuedAt: car.issuedAt, responseDueAt: car.responseDueAt },
       "CAR issued successfully"

@@ -15,7 +15,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
     const session = await requireAuth();
     const { reportId } = await params;
     const body = await _req.json().catch(() => ({}));
-    const updated = await service.approveReport(reportId, { userId: session.user.id, role: session.user.role, departmentId: session.user.departmentId }, body);
+    const updated = await service.approveReport(reportId, { userId: session.user.id, role: session.user.role, departmentId: session.user.authDepartmentId ?? session.user.departmentId }, body);
 
     const detail = await service.getReportById(reportId);
     if (detail.prepareBy) {
@@ -42,6 +42,14 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           }),
           preparer.email,
           'Monthly KPI Approved',
+          preparer.id,
+          {
+            title: "KPI รายเดือนได้รับการอนุมัติ",
+            body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
+            module: "KPI",
+            resourceId: reportId,
+            resourceType: "KPI_MONTHLY",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }

@@ -26,8 +26,9 @@ export async function GET(req: NextRequest) {
       return sendSuccess(result.data, "CARs retrieved successfully", 200, result.meta);
     }
 
+    const authDepartmentId = session.user.authDepartmentId;
     const departmentId = session.user.departmentId;
-    if (!departmentId) {
+    if (!authDepartmentId && !departmentId) {
       return sendSuccess([], "No department assigned", 200, {
         page: query.page,
         limit: query.limit,
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const result = await carService.listCars(query, { departmentId });
+    const result = await carService.listCars(query, { departmentId, authDepartmentId });
     return sendSuccess(result.data, "CARs retrieved successfully", 200, result.meta);
   } catch (err) {
     return handleApiError(err);
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     const input = carCreateSchema.parse(body);
     // Allow QMS/IT to designate a different person as issuer; fall back to session user
     const effectiveIssuerId = input.issuerId ?? session.user.id;
-    const car = await carService.createCar(effectiveIssuerId, input);
+    const car = await carService.createCar(effectiveIssuerId, input, session.user.authUserId);
     return sendSuccess(car, "CAR created successfully", 201);
   } catch (err) {
     return handleApiError(err);

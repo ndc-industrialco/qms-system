@@ -37,6 +37,8 @@ export class DocumentCategoryService {
 
     const cat = await this.repo.create({
       departmentId: data.departmentId,
+      authDepartmentId: dept.authDepartmentId ?? null,
+      departmentName: dept.name,
       name: data.name,
       description: data.description ?? null,
       order: data.order ?? 0,
@@ -50,7 +52,7 @@ export class DocumentCategoryService {
 
     const newName = data.name?.trim();
     if (newName && newName !== cat.name) {
-      const deptName = cat.department?.name ?? 'Unknown';
+      const deptName = cat.departmentName ?? 'Unknown';
       const oldCategoryPath = buildDocControlCategoryFolderPath(deptName, cat.name);
       const parentPath = buildDocControlCategoryFolderPath(deptName, '__tmp__').replace('/__tmp__', '');
 
@@ -103,7 +105,7 @@ export class DocumentCategoryService {
       throw new ForbiddenError('Cannot delete category with linked documents');
     }
 
-    const deptName = cat.department?.name ?? 'Unknown';
+    const deptName = cat.departmentName ?? 'Unknown';
     await deleteSpFolderByPath(buildDocControlCategoryFolderPath(deptName, cat.name));
     return this.repo.delete(id);
   }

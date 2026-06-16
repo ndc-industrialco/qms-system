@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import ConfirmModal from "@/components/common/ConfirmModal";
 import KpiObjectiveFormDrawer from "@/components/kpi/KpiObjectiveFormDrawer";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
-import KpiObjectiveAssignDialog from "@/components/kpi/KpiObjectiveAssignDialog";
+import KpiObjectiveAssignDialog, { type ReviewerCandidate } from "@/components/kpi/KpiObjectiveAssignDialog";
 import {
   useKpiById,
   useAddObjective,
@@ -146,12 +146,22 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
     }
   }
 
-  async function handleAssignConfirm(reviewerUserId: string, approverUserId: string) {
+  async function handleAssignConfirm(reviewer: ReviewerCandidate, approver: ReviewerCandidate | null) {
     if (!pendingSignature) return;
     try {
       await submitMutation.mutateAsync({
         kpiId,
-        data: { prepareSignature: pendingSignature, reviewerUserId, approverUserId },
+        data: {
+          prepareSignature: pendingSignature,
+          reviewerUserId: reviewer.id,
+          reviewerAuthUserId: reviewer.id,
+          reviewerName: reviewer.name,
+          reviewerEmail: reviewer.email,
+          approverUserId: approver?.id ?? "",
+          approverAuthUserId: approver?.id ?? null,
+          approverName: approver?.name ?? null,
+          approverEmail: approver?.email ?? null,
+        },
       });
       toast.success(t("kpi.submit.success"));
       setPendingSignature(null);

@@ -14,6 +14,27 @@ import FilterBar from "@/components/common/FilterBar";
 import Pagination from "@/components/common/Pagination";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 
+export type AuthCenterUserRow = {
+  authUserId: string;
+  localUserId: string | null;
+  name: string | null;
+  email: string;
+  employeeId: string | null;
+  position?: string | null;
+  role: string;
+  roleConflict: boolean;
+  grantId: string | null;
+  department: { id: string | null; name: string } | null;
+  localDepartmentId: string | null;
+  jobTitle: string | null;
+  m365Linked?: boolean;
+  source: "auth_center";
+  // legacy compat shims so shared filtering works
+  msUserId?: null;
+  id?: string;
+  createdAt?: string;
+};
+
 const ROLE_LABELS_TH: Record<UserRole, string> = {
   USER: "ผู้ใช้งาน",
   QMS:  "เจ้าหน้าที่ QMS",
@@ -36,7 +57,8 @@ const ROLE_BADGE: Record<UserRole, string> = {
 type SortKey = "name" | "email" | "employeeId" | "role" | "department" | "createdAt";
 type SortDir = "asc" | "desc";
 type Department = { id: string; name: string };
-type Props = { users: UserWithDept[]; departments: Department[] };
+type AnyUser = UserWithDept | AuthCenterUserRow;
+type Props = { users: AnyUser[]; departments: Department[]; authCenterMode?: boolean };
 
 function IconSort({ active, dir }: { active: boolean; dir: SortDir }) {
   if (!active) return (
@@ -77,7 +99,36 @@ function IconPencil({ className }: { className?: string }) {
   );
 }
 
-export default function ItUserTable({ users, departments }: Props) {
+function resolveUserId(user: AnyUser): string {
+  if ("localUserId" in user) return user.authUserId;
+  return user.id;
+}
+
+function buildPatchBody(
+  user: AnyUser,
+  patch: { role?: UserRole; departmentId?: string | null; departmentName?: string | null; employeeId?: string | null },
+) {
+  if ("localUserId" in user) {
+    return {
+      ...patch,
+      authUserId: user.authUserId,
+      localUserId: user.localUserId ?? undefined,
+    };
+  }
+  return patch;
+}
+
+function getPosition(user: AnyUser): string | null {
+  if ("jobTitle" in user) return user.jobTitle ?? user.position ?? null;
+  return user.position ?? null;
+}
+
+function isM365Linked(user: AnyUser): boolean {
+  if ("localUserId" in user) return user.m365Linked === true;
+  return Boolean(user.msUserId);
+}
+
+export default function ItUserTable({ users, departments, authCenterMode = false }: Props) {
   const locale = useLocale();
   const { toast, showToast, hideToast } = useToast();
   const router = useRouter();
@@ -107,6 +158,7 @@ export default function ItUserTable({ users, departments }: Props) {
     colName:            locale === "th" ? "ชื่อ"                   : "Name",
     colEmail:           locale === "th" ? "อีเมล"                  : "Email",
     colEmpId:           locale === "th" ? "รหัสพนักงาน"            : "Employee ID",
+    colPosition:        locale === "th" ? "ตำแหน่ง"               : "Position",
     colM365:            "M365",
     colRole:            "Role",
     colChangeRole:      locale === "th" ? "เปลี่ยน Role"           : "Change Role",
@@ -176,13 +228,14 @@ export default function ItUserTable({ users, departments }: Props) {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return users.filter((u) => {
-      if (q && ![u.name, u.email, u.employeeId].join(" ").toLowerCase().includes(q)) return false;
+      if (q && ![u.name, u.email, u.employeeId, getPosition(u)].join(" ").toLowerCase().includes(q)) return false;
       if (filterRole && u.role !== filterRole) return false;
       if (filterDept && u.department?.id !== filterDept) return false;
-      if (filterMs365 === "yes" && !u.msUserId) return false;
-      if (filterMs365 === "no" && u.msUserId) return false;
+      if (filterMs365 === "yes" && !isM365Linked(u)) return false;
+      if (filterMs365 === "no" && isM365Linked(u)) return false;
       return true;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [users, search, filterRole, filterDept, filterMs365]);
 
   const sorted = useMemo(() => {
@@ -190,17 +243,20 @@ export default function ItUserTable({ users, departments }: Props) {
       let va: string, vb: string;
       switch (sortKey) {
         case "name":       va = a.name ?? "";             vb = b.name ?? "";             break;
-        case "email":      va = a.email;                  vb = b.email;                  break;
+        case "email":      va = a.email ?? "";             vb = b.email ?? "";            break;
         case "employeeId": va = a.employeeId ?? "";       vb = b.employeeId ?? "";       break;
         case "role":       va = a.role;                   vb = b.role;                   break;
         case "department": va = a.department?.name ?? ""; vb = b.department?.name ?? ""; break;
-        case "createdAt":  va = a.createdAt;              vb = b.createdAt;              break;
+        case "createdAt":  va = ("createdAt" in a ? a.createdAt : "") ?? ""; vb = ("createdAt" in b ? b.createdAt : "") ?? ""; break;
       }
       return sortDir === "asc" ? va.localeCompare(vb, "th") : vb.localeCompare(va, "th");
     });
   }, [filtered, sortKey, sortDir]);
 
-  const m365Ids = useMemo(() => new Set(sorted.filter((u) => u.msUserId).map((u) => u.id)), [sorted]);
+  const m365Ids = useMemo(
+    () => new Set(sorted.filter((u) => !authCenterMode && isM365Linked(u)).map((u) => resolveUserId(u))),
+    [authCenterMode, sorted],
+  );
   const allChecked = m365Ids.size > 0 && [...m365Ids].every((id) => selected.has(id));
 
   // ── Client-side pagination ────────────────────────────────────────────────
@@ -226,13 +282,14 @@ export default function ItUserTable({ users, departments }: Props) {
     });
   }
 
-  async function patchUser(userId: string, patch: { role?: UserRole; departmentId?: string | null; employeeId?: string | null }) {
-    setPatchingId(userId);
+  async function patchUser(user: AnyUser, patch: { role?: UserRole; departmentId?: string | null; departmentName?: string | null; employeeId?: string | null }) {
+    const uid = resolveUserId(user);
+    setPatchingId(uid);
     try {
-      const res = await fetch(`/api/it/users/${userId}/role`, {
+      const res = await fetch(`/api/it/users/${uid}/role`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patch),
+        body: JSON.stringify(buildPatchBody(user, patch)),
       });
       const json = await res.json();
       if (!res.ok || json.error) { showToast("error", json.error ?? t.updateFail); return; }
@@ -245,28 +302,30 @@ export default function ItUserTable({ users, departments }: Props) {
     }
   }
 
-  function startEditEmpId(userId: string, current: string | null) {
-    setEditingEmpId(userId);
+  function startEditEmpId(user: AnyUser, current: string | null) {
+    setEditingEmpId(resolveUserId(user));
     setEmpIdDraft(current ?? "");
     setTimeout(() => empIdRef.current?.focus(), 30);
   }
-  async function commitEmpId(userId: string) {
+  async function commitEmpId(user: AnyUser) {
+    const uid = resolveUserId(user);
     const val = empIdDraft.trim();
     setEditingEmpId(null);
-    const orig = users.find((u) => u.id === userId)?.employeeId ?? "";
+    const orig = users.find((u) => resolveUserId(u) === uid)?.employeeId ?? "";
     if (val === orig) return;
-    await patchUser(userId, { employeeId: val || null });
+    await patchUser(user, { employeeId: val || null });
   }
 
-  async function pushToM365(userId: string) {
-    setPushingId(userId);
+  async function pushToM365(user: AnyUser) {
+    const uid = resolveUserId(user);
+    setPushingId(uid);
     try {
-      const res = await fetch(`/api/it/users/${userId}/push-to-m365`, { method: "POST" });
+      const res = await fetch(`/api/it/users/${uid}/push-to-m365`, { method: "POST" });
       const json = await res.json();
       if (!res.ok || json.error) { showToast("error", json.error ?? t.m365UpdateFail); return; }
       showToast("success", t.m365UpdateOk);
-      setPushedIds((p) => new Set(p).add(userId));
-      setTimeout(() => setPushedIds((p) => { const s = new Set(p); s.delete(userId); return s; }), 2500);
+      setPushedIds((p) => new Set(p).add(uid));
+      setTimeout(() => setPushedIds((p) => { const s = new Set(p); s.delete(uid); return s; }), 2500);
     } catch {
       showToast("error", t.m365ConnectFail);
     } finally {
@@ -382,21 +441,26 @@ export default function ItUserTable({ users, departments }: Props) {
               {thSort(t.colName, "name")}
               {thSort(t.colEmail, "email")}
               {thSort(t.colEmpId, "employeeId")}
+              <TableHead>{t.colPosition}</TableHead>
               <TableHead>{t.colM365}</TableHead>
               {thSort(t.colRole, "role")}
-              <TableHead>{t.colChangeRole}</TableHead>
+              {!authCenterMode && <TableHead>{t.colChangeRole}</TableHead>}
               {thSort(t.colDept, "department")}
               <TableHead className="text-center">{t.colUpdateM365}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sorted.length === 0 ? (
-              <TableRow><TableCell colSpan={9} className="py-12 text-center text-xs md:text-sm text-gray-500">{t.noUsers}</TableCell></TableRow>
-            ) : paginatedSorted.map((user) => (
-              <TableRow key={user.id} className={`transition-colors duration-100 ${selected.has(user.id) ? "bg-primary/5" : "hover:bg-base-200"}`}>
+              <TableRow><TableCell colSpan={10} className="py-12 text-center text-xs md:text-sm text-gray-500">{t.noUsers}</TableCell></TableRow>
+            ) : paginatedSorted.map((user) => {
+              const uid = resolveUserId(user);
+              const m365Linked = isM365Linked(user);
+              const roleSafe = (user.role in ROLE_BADGE ? user.role : "USER") as UserRole;
+              return (
+              <TableRow key={uid} className={`transition-colors duration-100 ${selected.has(uid) ? "bg-primary/5" : "hover:bg-base-200"}`}>
                 <TableCell>
-                  {user.msUserId
-                    ? <input type="checkbox" className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500" checked={selected.has(user.id)} onChange={() => toggleOne(user.id)} />
+                  {!authCenterMode && m365Linked
+                    ? <input type="checkbox" className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500" checked={selected.has(uid)} onChange={() => toggleOne(uid)} />
                     : <span className="w-4 h-4 block" />}
                 </TableCell>
 
@@ -405,7 +469,7 @@ export default function ItUserTable({ users, departments }: Props) {
 
                 {/* Inline employeeId */}
                 <TableCell>
-                  {editingEmpId === user.id ? (
+                  {editingEmpId === uid ? (
                     <Input
                       ref={empIdRef}
                       type="text"
@@ -413,17 +477,17 @@ export default function ItUserTable({ users, departments }: Props) {
                       value={empIdDraft}
                       maxLength={16}
                       onChange={(e) => setEmpIdDraft(e.target.value)}
-                      onBlur={() => commitEmpId(user.id)}
+                      onBlur={() => commitEmpId(user)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") commitEmpId(user.id);
+                        if (e.key === "Enter") commitEmpId(user);
                         if (e.key === "Escape") setEditingEmpId(null);
                       }}
                     />
                   ) : (
                     <button
                       className="flex items-center gap-1 group text-neutral hover:text-base-content"
-                      onClick={() => startEditEmpId(user.id, user.employeeId)}
-                      disabled={isBusy(user.id)}
+                      onClick={() => startEditEmpId(user, user.employeeId)}
+                      disabled={isBusy(uid)}
                       title={t.empIdEdit}
                     >
                       <span className="text-[13px]">
@@ -434,37 +498,49 @@ export default function ItUserTable({ users, departments }: Props) {
                   )}
                 </TableCell>
 
+                <TableCell className="text-[11px] md:text-xs text-gray-500">
+                  {getPosition(user) ?? "—"}
+                </TableCell>
+
                 {/* M365 status */}
                 <TableCell>
-                  {user.msUserId
+                  {m365Linked
                     ? <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-success/15 text-success"><IconCheck className="w-3 h-3" />{t.linked}</span>
                     : <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral">{t.unlinked}</span>}
                 </TableCell>
 
                 {/* Role badge */}
                 <TableCell>
-                  <span className={ROLE_BADGE[user.role]}>{ROLE_LABELS[user.role]}</span>
+                  <span className={ROLE_BADGE[roleSafe]}>{ROLE_LABELS[roleSafe]}</span>
                 </TableCell>
 
-                {/* Change role */}
-                <TableCell>
-                  <select
-                    className="h-7 px-2 py-0.5 text-[13px] rounded-md border border-slate-300 bg-white"
-                    value={user.role}
-                    disabled={isBusy(user.id)}
-                    onChange={(e) => patchUser(user.id, { role: e.target.value as UserRole })}
-                  >
-                    {(Object.entries(ROLE_LABELS) as [UserRole, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                  </select>
-                </TableCell>
+                {/* Change role — hidden in auth_center mode */}
+                {!authCenterMode && (
+                  <TableCell>
+                    <select
+                      className="h-7 px-2 py-0.5 text-[13px] rounded-md border border-slate-300 bg-white"
+                      value={roleSafe}
+                      disabled={isBusy(uid)}
+                      onChange={(e) => patchUser(user, { role: e.target.value as UserRole })}
+                    >
+                      {(Object.entries(ROLE_LABELS) as [UserRole, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </select>
+                  </TableCell>
+                )}
 
                 {/* Change dept */}
                 <TableCell>
                   <select
                     className="h-7 px-2 py-0.5 text-[13px] min-w-[130px] rounded-md border border-slate-300 bg-white"
                     value={user.department?.id ?? ""}
-                    disabled={isBusy(user.id)}
-                    onChange={(e) => patchUser(user.id, { departmentId: e.target.value || null })}
+                    disabled={isBusy(uid)}
+                    onChange={(e) => {
+                      const val = e.target.value || null;
+                      const deptName = val ? departments.find((d) => d.id === val)?.name ?? null : null;
+                      patchUser(user, authCenterMode
+                        ? { departmentName: deptName }
+                        : { departmentId: val });
+                    }}
                   >
                     <option value="">{t.noDept}</option>
                     {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -473,28 +549,31 @@ export default function ItUserTable({ users, departments }: Props) {
 
                 {/* Push to M365 */}
                 <TableCell className="text-center">
-                  {user.msUserId ? (
+                  {!authCenterMode && m365Linked ? (
                     <Button
                       size="sm"
-                      variant={pushedIds.has(user.id) ? "default" : "outline"}
-                      className={`h-7 px-2 text-xs ${pushedIds.has(user.id) ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent" : ""}`}
-                      disabled={isBusy(user.id) || bulkPushing}
-                      onClick={() => pushToM365(user.id)}
+                      variant={pushedIds.has(uid) ? "default" : "outline"}
+                      className={`h-7 px-2 text-xs ${pushedIds.has(uid) ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent" : ""}`}
+                      disabled={isBusy(uid) || bulkPushing}
+                      onClick={() => pushToM365(user)}
                       title={t.m365UpdateOk}
                     >
-                      {pushingId === user.id ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5 inline-block" />
-                        : pushedIds.has(user.id) ? <IconCheck className="w-3.5 h-3.5" />
+                      {pushingId === uid ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5 inline-block" />
+                        : pushedIds.has(uid) ? <IconCheck className="w-3.5 h-3.5" />
                         : <IconUpload className="w-3.5 h-3.5" />}
-                      {pushingId === user.id ? t.sending
-                        : pushedIds.has(user.id) ? t.successBtn
+                      {pushingId === uid ? t.sending
+                        : pushedIds.has(uid) ? t.successBtn
                         : t.updateBtn}
                     </Button>
                   ) : (
-                    <span className="text-[12px] text-neutral opacity-40">{t.noM365}</span>
+                    <span className="text-[12px] text-neutral opacity-40">
+                      {authCenterMode ? "Manage in Auth Center" : t.noM365}
+                    </span>
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </div>
@@ -503,30 +582,35 @@ export default function ItUserTable({ users, departments }: Props) {
       <div className="md:hidden flex flex-col gap-3">
         {sorted.length === 0 ? (
           <div className="text-center py-10 text-xs md:text-sm text-gray-500">{t.noUsers}</div>
-        ) : paginatedSorted.map((user) => (
-          <div key={user.id} className={`card-premium p-4 border rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${selected.has(user.id) ? "border-primary" : "border-base-300"}`}>
+        ) : paginatedSorted.map((user) => {
+          const uid = resolveUserId(user);
+          const m365Linked = isM365Linked(user);
+          const roleSafe = (user.role in ROLE_BADGE ? user.role : "USER") as UserRole;
+          return (
+          <div key={uid} className={`card-premium p-4 border rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${selected.has(uid) ? "border-primary" : "border-base-300"}`}>
             <div className="flex items-start gap-2 mb-1">
-              {user.msUserId && (
+              {!authCenterMode && m365Linked && (
                 <input
                   type="checkbox"
                   className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500 mt-0.5 shrink-0"
-                  checked={selected.has(user.id)}
-                  onChange={() => toggleOne(user.id)}
+                  checked={selected.has(uid)}
+                  onChange={() => toggleOne(uid)}
                 />
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs md:text-sm font-semibold text-neutral truncate">{user.name ?? "—"}</p>
-                  <span className={`shrink-0 ${ROLE_BADGE[user.role]}`}>{ROLE_LABELS[user.role]}</span>
+                  <span className={`shrink-0 ${ROLE_BADGE[roleSafe]}`}>{ROLE_LABELS[roleSafe]}</span>
                 </div>
                 <p className="text-[11px] md:text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="text-[11px] md:text-xs text-gray-400 truncate mt-0.5">{getPosition(user) ?? "—"}</p>
               </div>
             </div>
 
             {/* Employee ID inline */}
             <div className="flex items-center gap-2 my-2">
               <span className="text-[12px] text-neutral w-24 shrink-0">{t.colEmpId}:</span>
-              {editingEmpId === user.id ? (
+              {editingEmpId === uid ? (
                 <Input
                   ref={empIdRef}
                   type="text"
@@ -534,14 +618,14 @@ export default function ItUserTable({ users, departments }: Props) {
                   value={empIdDraft}
                   maxLength={16}
                   onChange={(e) => setEmpIdDraft(e.target.value)}
-                  onBlur={() => commitEmpId(user.id)}
+                  onBlur={() => commitEmpId(user)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") commitEmpId(user.id);
+                    if (e.key === "Enter") commitEmpId(user);
                     if (e.key === "Escape") setEditingEmpId(null);
                   }}
                 />
               ) : (
-                <button className="flex items-center gap-1" onClick={() => startEditEmpId(user.id, user.employeeId)}>
+                <button className="flex items-center gap-1" onClick={() => startEditEmpId(user, user.employeeId)}>
                   <span className="text-[13px]">
                     {user.employeeId ?? <span className="italic text-neutral opacity-50">{t.empIdNone}</span>}
                   </span>
@@ -551,48 +635,63 @@ export default function ItUserTable({ users, departments }: Props) {
             </div>
 
             <p className="text-[12px] text-neutral mb-3">
-              {t.m365Label}: {user.msUserId
+              {t.m365Label}: {m365Linked
                 ? <span className="text-success">{t.m365StatusYes}</span>
                 : t.m365StatusNo}
               {user.department && <> · {t.deptMobile}: {user.department.name}</>}
             </p>
 
             <div className="flex flex-col gap-2">
-              <select
-                className="w-full h-8 px-2 py-1 text-[13px] rounded-md border border-slate-300 bg-white"
-                value={user.role}
-                disabled={isBusy(user.id)}
-                onChange={(e) => patchUser(user.id, { role: e.target.value as UserRole })}
-              >
-                {(Object.entries(ROLE_LABELS) as [UserRole, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
+              {authCenterMode ? (
+                <p className="text-[11px] text-neutral opacity-60 italic">
+                  {locale === "th"
+                    ? "จัดการ Role ได้ที่ Auth Center"
+                    : "Roles are managed in Auth Center"}
+                </p>
+              ) : (
+                <select
+                  className="w-full h-8 px-2 py-1 text-[13px] rounded-md border border-slate-300 bg-white"
+                  value={roleSafe}
+                  disabled={isBusy(uid)}
+                  onChange={(e) => patchUser(user, { role: e.target.value as UserRole })}
+                >
+                  {(Object.entries(ROLE_LABELS) as [UserRole, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              )}
               <select
                 className="w-full h-8 px-2 py-1 text-[13px] rounded-md border border-slate-300 bg-white"
                 value={user.department?.id ?? ""}
-                disabled={isBusy(user.id)}
-                onChange={(e) => patchUser(user.id, { departmentId: e.target.value || null })}
+                disabled={isBusy(uid)}
+                onChange={(e) => {
+                  const val = e.target.value || null;
+                  const deptName = val ? departments.find((d) => d.id === val)?.name ?? null : null;
+                  patchUser(user, authCenterMode
+                    ? { departmentName: deptName }
+                    : { departmentId: val });
+                }}
               >
                 <option value="">{t.noDeptMobile}</option>
                 {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
-              {user.msUserId && (
+              {!authCenterMode && m365Linked && (
                 <Button
                   size="sm"
-                  variant={pushedIds.has(user.id) ? "default" : "outline"}
-                  className={`w-full gap-2 ${pushedIds.has(user.id) ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent" : ""}`}
-                  disabled={isBusy(user.id) || bulkPushing}
-                  onClick={() => pushToM365(user.id)}
+                  variant={pushedIds.has(uid) ? "default" : "outline"}
+                  className={`w-full gap-2 ${pushedIds.has(uid) ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent" : ""}`}
+                  disabled={isBusy(uid) || bulkPushing}
+                  onClick={() => pushToM365(user)}
                 >
-                  {pushingId === user.id
+                  {pushingId === uid
                     ? <><span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5 inline-block" />{t.sendingMobile}</>
-                    : pushedIds.has(user.id)
+                    : pushedIds.has(uid)
                     ? <><IconCheck className="w-4 h-4" />{t.successMobile}</>
                     : <><IconUpload className="w-4 h-4" />{t.updateMobile}</>}
                 </Button>
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {toast && <Toast type={toast.type} message={toast.message} onClose={hideToast} />}
@@ -607,4 +706,3 @@ export default function ItUserTable({ users, departments }: Props) {
     </>
   );
 }
-

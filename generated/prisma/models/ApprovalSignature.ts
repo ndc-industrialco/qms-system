@@ -32,6 +32,10 @@ export type ApprovalSignatureMinAggregateOutputType = {
   action: $Enums.ApprovalAction | null
   actionDate: Date | null
   signerUserId: string | null
+  signerAuthUserId: string | null
+  signerName: string | null
+  signerEmail: string | null
+  signerDepartmentName: string | null
   signaturePath: string | null
   comment: string | null
   createdAt: Date | null
@@ -46,6 +50,10 @@ export type ApprovalSignatureMaxAggregateOutputType = {
   action: $Enums.ApprovalAction | null
   actionDate: Date | null
   signerUserId: string | null
+  signerAuthUserId: string | null
+  signerName: string | null
+  signerEmail: string | null
+  signerDepartmentName: string | null
   signaturePath: string | null
   comment: string | null
   createdAt: Date | null
@@ -60,6 +68,10 @@ export type ApprovalSignatureCountAggregateOutputType = {
   action: number
   actionDate: number
   signerUserId: number
+  signerAuthUserId: number
+  signerName: number
+  signerEmail: number
+  signerDepartmentName: number
   signaturePath: number
   comment: number
   createdAt: number
@@ -76,6 +88,10 @@ export type ApprovalSignatureMinAggregateInputType = {
   action?: true
   actionDate?: true
   signerUserId?: true
+  signerAuthUserId?: true
+  signerName?: true
+  signerEmail?: true
+  signerDepartmentName?: true
   signaturePath?: true
   comment?: true
   createdAt?: true
@@ -90,6 +106,10 @@ export type ApprovalSignatureMaxAggregateInputType = {
   action?: true
   actionDate?: true
   signerUserId?: true
+  signerAuthUserId?: true
+  signerName?: true
+  signerEmail?: true
+  signerDepartmentName?: true
   signaturePath?: true
   comment?: true
   createdAt?: true
@@ -104,6 +124,10 @@ export type ApprovalSignatureCountAggregateInputType = {
   action?: true
   actionDate?: true
   signerUserId?: true
+  signerAuthUserId?: true
+  signerName?: true
+  signerEmail?: true
+  signerDepartmentName?: true
   signaturePath?: true
   comment?: true
   createdAt?: true
@@ -191,6 +215,10 @@ export type ApprovalSignatureGroupByOutputType = {
   action: $Enums.ApprovalAction
   actionDate: Date | null
   signerUserId: string
+  signerAuthUserId: string | null
+  signerName: string | null
+  signerEmail: string | null
+  signerDepartmentName: string | null
   signaturePath: string | null
   comment: string | null
   createdAt: Date
@@ -226,11 +254,14 @@ export type ApprovalSignatureWhereInput = {
   action?: Prisma.EnumApprovalActionFilter<"ApprovalSignature"> | $Enums.ApprovalAction
   actionDate?: Prisma.DateTimeNullableFilter<"ApprovalSignature"> | Date | string | null
   signerUserId?: Prisma.StringFilter<"ApprovalSignature"> | string
+  signerAuthUserId?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
+  signerName?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
+  signerEmail?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
+  signerDepartmentName?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
   signaturePath?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
   comment?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ApprovalSignature"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ApprovalSignature"> | Date | string
-  signerUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type ApprovalSignatureOrderByWithRelationInput = {
@@ -241,11 +272,14 @@ export type ApprovalSignatureOrderByWithRelationInput = {
   action?: Prisma.SortOrder
   actionDate?: Prisma.SortOrderInput | Prisma.SortOrder
   signerUserId?: Prisma.SortOrder
+  signerAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  signerName?: Prisma.SortOrderInput | Prisma.SortOrder
+  signerEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  signerDepartmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   signaturePath?: Prisma.SortOrderInput | Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  signerUser?: Prisma.UserOrderByWithRelationInput
 }
 
 export type ApprovalSignatureWhereUniqueInput = Prisma.AtLeast<{
@@ -260,11 +294,14 @@ export type ApprovalSignatureWhereUniqueInput = Prisma.AtLeast<{
   action?: Prisma.EnumApprovalActionFilter<"ApprovalSignature"> | $Enums.ApprovalAction
   actionDate?: Prisma.DateTimeNullableFilter<"ApprovalSignature"> | Date | string | null
   signerUserId?: Prisma.StringFilter<"ApprovalSignature"> | string
+  signerAuthUserId?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
+  signerName?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
+  signerEmail?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
+  signerDepartmentName?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
   signaturePath?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
   comment?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
   createdAt?: Prisma.DateTimeFilter<"ApprovalSignature"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ApprovalSignature"> | Date | string
-  signerUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "module_documentId_step">
 
 export type ApprovalSignatureOrderByWithAggregationInput = {
@@ -275,6 +312,10 @@ export type ApprovalSignatureOrderByWithAggregationInput = {
   action?: Prisma.SortOrder
   actionDate?: Prisma.SortOrderInput | Prisma.SortOrder
   signerUserId?: Prisma.SortOrder
+  signerAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  signerName?: Prisma.SortOrderInput | Prisma.SortOrder
+  signerEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  signerDepartmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   signaturePath?: Prisma.SortOrderInput | Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -295,6 +336,10 @@ export type ApprovalSignatureScalarWhereWithAggregatesInput = {
   action?: Prisma.EnumApprovalActionWithAggregatesFilter<"ApprovalSignature"> | $Enums.ApprovalAction
   actionDate?: Prisma.DateTimeNullableWithAggregatesFilter<"ApprovalSignature"> | Date | string | null
   signerUserId?: Prisma.StringWithAggregatesFilter<"ApprovalSignature"> | string
+  signerAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"ApprovalSignature"> | string | null
+  signerName?: Prisma.StringNullableWithAggregatesFilter<"ApprovalSignature"> | string | null
+  signerEmail?: Prisma.StringNullableWithAggregatesFilter<"ApprovalSignature"> | string | null
+  signerDepartmentName?: Prisma.StringNullableWithAggregatesFilter<"ApprovalSignature"> | string | null
   signaturePath?: Prisma.StringNullableWithAggregatesFilter<"ApprovalSignature"> | string | null
   comment?: Prisma.StringNullableWithAggregatesFilter<"ApprovalSignature"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ApprovalSignature"> | Date | string
@@ -308,11 +353,15 @@ export type ApprovalSignatureCreateInput = {
   step: $Enums.ApprovalStep
   action?: $Enums.ApprovalAction
   actionDate?: Date | string | null
+  signerUserId: string
+  signerAuthUserId?: string | null
+  signerName?: string | null
+  signerEmail?: string | null
+  signerDepartmentName?: string | null
   signaturePath?: string | null
   comment?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  signerUser: Prisma.UserCreateNestedOneWithoutApprovalSignaturesInput
 }
 
 export type ApprovalSignatureUncheckedCreateInput = {
@@ -323,6 +372,10 @@ export type ApprovalSignatureUncheckedCreateInput = {
   action?: $Enums.ApprovalAction
   actionDate?: Date | string | null
   signerUserId: string
+  signerAuthUserId?: string | null
+  signerName?: string | null
+  signerEmail?: string | null
+  signerDepartmentName?: string | null
   signaturePath?: string | null
   comment?: string | null
   createdAt?: Date | string
@@ -336,11 +389,15 @@ export type ApprovalSignatureUpdateInput = {
   step?: Prisma.EnumApprovalStepFieldUpdateOperationsInput | $Enums.ApprovalStep
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signerUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  signerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  signerUser?: Prisma.UserUpdateOneRequiredWithoutApprovalSignaturesNestedInput
 }
 
 export type ApprovalSignatureUncheckedUpdateInput = {
@@ -351,6 +408,10 @@ export type ApprovalSignatureUncheckedUpdateInput = {
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   signerUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  signerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -365,6 +426,10 @@ export type ApprovalSignatureCreateManyInput = {
   action?: $Enums.ApprovalAction
   actionDate?: Date | string | null
   signerUserId: string
+  signerAuthUserId?: string | null
+  signerName?: string | null
+  signerEmail?: string | null
+  signerDepartmentName?: string | null
   signaturePath?: string | null
   comment?: string | null
   createdAt?: Date | string
@@ -378,6 +443,11 @@ export type ApprovalSignatureUpdateManyMutationInput = {
   step?: Prisma.EnumApprovalStepFieldUpdateOperationsInput | $Enums.ApprovalStep
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signerUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  signerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -392,20 +462,14 @@ export type ApprovalSignatureUncheckedUpdateManyInput = {
   action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
   actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   signerUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  signerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signerDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type ApprovalSignatureListRelationFilter = {
-  every?: Prisma.ApprovalSignatureWhereInput
-  some?: Prisma.ApprovalSignatureWhereInput
-  none?: Prisma.ApprovalSignatureWhereInput
-}
-
-export type ApprovalSignatureOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
 }
 
 export type ApprovalSignatureModuleDocumentIdStepCompoundUniqueInput = {
@@ -422,6 +486,10 @@ export type ApprovalSignatureCountOrderByAggregateInput = {
   action?: Prisma.SortOrder
   actionDate?: Prisma.SortOrder
   signerUserId?: Prisma.SortOrder
+  signerAuthUserId?: Prisma.SortOrder
+  signerName?: Prisma.SortOrder
+  signerEmail?: Prisma.SortOrder
+  signerDepartmentName?: Prisma.SortOrder
   signaturePath?: Prisma.SortOrder
   comment?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -436,6 +504,10 @@ export type ApprovalSignatureMaxOrderByAggregateInput = {
   action?: Prisma.SortOrder
   actionDate?: Prisma.SortOrder
   signerUserId?: Prisma.SortOrder
+  signerAuthUserId?: Prisma.SortOrder
+  signerName?: Prisma.SortOrder
+  signerEmail?: Prisma.SortOrder
+  signerDepartmentName?: Prisma.SortOrder
   signaturePath?: Prisma.SortOrder
   comment?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -450,177 +522,18 @@ export type ApprovalSignatureMinOrderByAggregateInput = {
   action?: Prisma.SortOrder
   actionDate?: Prisma.SortOrder
   signerUserId?: Prisma.SortOrder
+  signerAuthUserId?: Prisma.SortOrder
+  signerName?: Prisma.SortOrder
+  signerEmail?: Prisma.SortOrder
+  signerDepartmentName?: Prisma.SortOrder
   signaturePath?: Prisma.SortOrder
   comment?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
-export type ApprovalSignatureCreateNestedManyWithoutSignerUserInput = {
-  create?: Prisma.XOR<Prisma.ApprovalSignatureCreateWithoutSignerUserInput, Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput> | Prisma.ApprovalSignatureCreateWithoutSignerUserInput[] | Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput[]
-  connectOrCreate?: Prisma.ApprovalSignatureCreateOrConnectWithoutSignerUserInput | Prisma.ApprovalSignatureCreateOrConnectWithoutSignerUserInput[]
-  createMany?: Prisma.ApprovalSignatureCreateManySignerUserInputEnvelope
-  connect?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-}
-
-export type ApprovalSignatureUncheckedCreateNestedManyWithoutSignerUserInput = {
-  create?: Prisma.XOR<Prisma.ApprovalSignatureCreateWithoutSignerUserInput, Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput> | Prisma.ApprovalSignatureCreateWithoutSignerUserInput[] | Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput[]
-  connectOrCreate?: Prisma.ApprovalSignatureCreateOrConnectWithoutSignerUserInput | Prisma.ApprovalSignatureCreateOrConnectWithoutSignerUserInput[]
-  createMany?: Prisma.ApprovalSignatureCreateManySignerUserInputEnvelope
-  connect?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-}
-
-export type ApprovalSignatureUpdateManyWithoutSignerUserNestedInput = {
-  create?: Prisma.XOR<Prisma.ApprovalSignatureCreateWithoutSignerUserInput, Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput> | Prisma.ApprovalSignatureCreateWithoutSignerUserInput[] | Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput[]
-  connectOrCreate?: Prisma.ApprovalSignatureCreateOrConnectWithoutSignerUserInput | Prisma.ApprovalSignatureCreateOrConnectWithoutSignerUserInput[]
-  upsert?: Prisma.ApprovalSignatureUpsertWithWhereUniqueWithoutSignerUserInput | Prisma.ApprovalSignatureUpsertWithWhereUniqueWithoutSignerUserInput[]
-  createMany?: Prisma.ApprovalSignatureCreateManySignerUserInputEnvelope
-  set?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-  disconnect?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-  delete?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-  connect?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-  update?: Prisma.ApprovalSignatureUpdateWithWhereUniqueWithoutSignerUserInput | Prisma.ApprovalSignatureUpdateWithWhereUniqueWithoutSignerUserInput[]
-  updateMany?: Prisma.ApprovalSignatureUpdateManyWithWhereWithoutSignerUserInput | Prisma.ApprovalSignatureUpdateManyWithWhereWithoutSignerUserInput[]
-  deleteMany?: Prisma.ApprovalSignatureScalarWhereInput | Prisma.ApprovalSignatureScalarWhereInput[]
-}
-
-export type ApprovalSignatureUncheckedUpdateManyWithoutSignerUserNestedInput = {
-  create?: Prisma.XOR<Prisma.ApprovalSignatureCreateWithoutSignerUserInput, Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput> | Prisma.ApprovalSignatureCreateWithoutSignerUserInput[] | Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput[]
-  connectOrCreate?: Prisma.ApprovalSignatureCreateOrConnectWithoutSignerUserInput | Prisma.ApprovalSignatureCreateOrConnectWithoutSignerUserInput[]
-  upsert?: Prisma.ApprovalSignatureUpsertWithWhereUniqueWithoutSignerUserInput | Prisma.ApprovalSignatureUpsertWithWhereUniqueWithoutSignerUserInput[]
-  createMany?: Prisma.ApprovalSignatureCreateManySignerUserInputEnvelope
-  set?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-  disconnect?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-  delete?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-  connect?: Prisma.ApprovalSignatureWhereUniqueInput | Prisma.ApprovalSignatureWhereUniqueInput[]
-  update?: Prisma.ApprovalSignatureUpdateWithWhereUniqueWithoutSignerUserInput | Prisma.ApprovalSignatureUpdateWithWhereUniqueWithoutSignerUserInput[]
-  updateMany?: Prisma.ApprovalSignatureUpdateManyWithWhereWithoutSignerUserInput | Prisma.ApprovalSignatureUpdateManyWithWhereWithoutSignerUserInput[]
-  deleteMany?: Prisma.ApprovalSignatureScalarWhereInput | Prisma.ApprovalSignatureScalarWhereInput[]
-}
-
 export type EnumApprovalModuleFieldUpdateOperationsInput = {
   set?: $Enums.ApprovalModule
-}
-
-export type ApprovalSignatureCreateWithoutSignerUserInput = {
-  id?: string
-  module: $Enums.ApprovalModule
-  documentId: string
-  step: $Enums.ApprovalStep
-  action?: $Enums.ApprovalAction
-  actionDate?: Date | string | null
-  signaturePath?: string | null
-  comment?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type ApprovalSignatureUncheckedCreateWithoutSignerUserInput = {
-  id?: string
-  module: $Enums.ApprovalModule
-  documentId: string
-  step: $Enums.ApprovalStep
-  action?: $Enums.ApprovalAction
-  actionDate?: Date | string | null
-  signaturePath?: string | null
-  comment?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type ApprovalSignatureCreateOrConnectWithoutSignerUserInput = {
-  where: Prisma.ApprovalSignatureWhereUniqueInput
-  create: Prisma.XOR<Prisma.ApprovalSignatureCreateWithoutSignerUserInput, Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput>
-}
-
-export type ApprovalSignatureCreateManySignerUserInputEnvelope = {
-  data: Prisma.ApprovalSignatureCreateManySignerUserInput | Prisma.ApprovalSignatureCreateManySignerUserInput[]
-  skipDuplicates?: boolean
-}
-
-export type ApprovalSignatureUpsertWithWhereUniqueWithoutSignerUserInput = {
-  where: Prisma.ApprovalSignatureWhereUniqueInput
-  update: Prisma.XOR<Prisma.ApprovalSignatureUpdateWithoutSignerUserInput, Prisma.ApprovalSignatureUncheckedUpdateWithoutSignerUserInput>
-  create: Prisma.XOR<Prisma.ApprovalSignatureCreateWithoutSignerUserInput, Prisma.ApprovalSignatureUncheckedCreateWithoutSignerUserInput>
-}
-
-export type ApprovalSignatureUpdateWithWhereUniqueWithoutSignerUserInput = {
-  where: Prisma.ApprovalSignatureWhereUniqueInput
-  data: Prisma.XOR<Prisma.ApprovalSignatureUpdateWithoutSignerUserInput, Prisma.ApprovalSignatureUncheckedUpdateWithoutSignerUserInput>
-}
-
-export type ApprovalSignatureUpdateManyWithWhereWithoutSignerUserInput = {
-  where: Prisma.ApprovalSignatureScalarWhereInput
-  data: Prisma.XOR<Prisma.ApprovalSignatureUpdateManyMutationInput, Prisma.ApprovalSignatureUncheckedUpdateManyWithoutSignerUserInput>
-}
-
-export type ApprovalSignatureScalarWhereInput = {
-  AND?: Prisma.ApprovalSignatureScalarWhereInput | Prisma.ApprovalSignatureScalarWhereInput[]
-  OR?: Prisma.ApprovalSignatureScalarWhereInput[]
-  NOT?: Prisma.ApprovalSignatureScalarWhereInput | Prisma.ApprovalSignatureScalarWhereInput[]
-  id?: Prisma.StringFilter<"ApprovalSignature"> | string
-  module?: Prisma.EnumApprovalModuleFilter<"ApprovalSignature"> | $Enums.ApprovalModule
-  documentId?: Prisma.StringFilter<"ApprovalSignature"> | string
-  step?: Prisma.EnumApprovalStepFilter<"ApprovalSignature"> | $Enums.ApprovalStep
-  action?: Prisma.EnumApprovalActionFilter<"ApprovalSignature"> | $Enums.ApprovalAction
-  actionDate?: Prisma.DateTimeNullableFilter<"ApprovalSignature"> | Date | string | null
-  signerUserId?: Prisma.StringFilter<"ApprovalSignature"> | string
-  signaturePath?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
-  comment?: Prisma.StringNullableFilter<"ApprovalSignature"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"ApprovalSignature"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"ApprovalSignature"> | Date | string
-}
-
-export type ApprovalSignatureCreateManySignerUserInput = {
-  id?: string
-  module: $Enums.ApprovalModule
-  documentId: string
-  step: $Enums.ApprovalStep
-  action?: $Enums.ApprovalAction
-  actionDate?: Date | string | null
-  signaturePath?: string | null
-  comment?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type ApprovalSignatureUpdateWithoutSignerUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  module?: Prisma.EnumApprovalModuleFieldUpdateOperationsInput | $Enums.ApprovalModule
-  documentId?: Prisma.StringFieldUpdateOperationsInput | string
-  step?: Prisma.EnumApprovalStepFieldUpdateOperationsInput | $Enums.ApprovalStep
-  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
-  actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type ApprovalSignatureUncheckedUpdateWithoutSignerUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  module?: Prisma.EnumApprovalModuleFieldUpdateOperationsInput | $Enums.ApprovalModule
-  documentId?: Prisma.StringFieldUpdateOperationsInput | string
-  step?: Prisma.EnumApprovalStepFieldUpdateOperationsInput | $Enums.ApprovalStep
-  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
-  actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type ApprovalSignatureUncheckedUpdateManyWithoutSignerUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  module?: Prisma.EnumApprovalModuleFieldUpdateOperationsInput | $Enums.ApprovalModule
-  documentId?: Prisma.StringFieldUpdateOperationsInput | string
-  step?: Prisma.EnumApprovalStepFieldUpdateOperationsInput | $Enums.ApprovalStep
-  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
-  actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -633,11 +546,14 @@ export type ApprovalSignatureSelect<ExtArgs extends runtime.Types.Extensions.Int
   action?: boolean
   actionDate?: boolean
   signerUserId?: boolean
+  signerAuthUserId?: boolean
+  signerName?: boolean
+  signerEmail?: boolean
+  signerDepartmentName?: boolean
   signaturePath?: boolean
   comment?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  signerUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["approvalSignature"]>
 
 export type ApprovalSignatureSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -648,11 +564,14 @@ export type ApprovalSignatureSelectCreateManyAndReturn<ExtArgs extends runtime.T
   action?: boolean
   actionDate?: boolean
   signerUserId?: boolean
+  signerAuthUserId?: boolean
+  signerName?: boolean
+  signerEmail?: boolean
+  signerDepartmentName?: boolean
   signaturePath?: boolean
   comment?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  signerUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["approvalSignature"]>
 
 export type ApprovalSignatureSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -663,11 +582,14 @@ export type ApprovalSignatureSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   action?: boolean
   actionDate?: boolean
   signerUserId?: boolean
+  signerAuthUserId?: boolean
+  signerName?: boolean
+  signerEmail?: boolean
+  signerDepartmentName?: boolean
   signaturePath?: boolean
   comment?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  signerUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["approvalSignature"]>
 
 export type ApprovalSignatureSelectScalar = {
@@ -678,28 +600,21 @@ export type ApprovalSignatureSelectScalar = {
   action?: boolean
   actionDate?: boolean
   signerUserId?: boolean
+  signerAuthUserId?: boolean
+  signerName?: boolean
+  signerEmail?: boolean
+  signerDepartmentName?: boolean
   signaturePath?: boolean
   comment?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ApprovalSignatureOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "module" | "documentId" | "step" | "action" | "actionDate" | "signerUserId" | "signaturePath" | "comment" | "createdAt" | "updatedAt", ExtArgs["result"]["approvalSignature"]>
-export type ApprovalSignatureInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  signerUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-}
-export type ApprovalSignatureIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  signerUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-}
-export type ApprovalSignatureIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  signerUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-}
+export type ApprovalSignatureOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "module" | "documentId" | "step" | "action" | "actionDate" | "signerUserId" | "signerAuthUserId" | "signerName" | "signerEmail" | "signerDepartmentName" | "signaturePath" | "comment" | "createdAt" | "updatedAt", ExtArgs["result"]["approvalSignature"]>
 
 export type $ApprovalSignaturePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ApprovalSignature"
-  objects: {
-    signerUser: Prisma.$UserPayload<ExtArgs>
-  }
+  objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     module: $Enums.ApprovalModule
@@ -708,6 +623,10 @@ export type $ApprovalSignaturePayload<ExtArgs extends runtime.Types.Extensions.I
     action: $Enums.ApprovalAction
     actionDate: Date | null
     signerUserId: string
+    signerAuthUserId: string | null
+    signerName: string | null
+    signerEmail: string | null
+    signerDepartmentName: string | null
     signaturePath: string | null
     comment: string | null
     createdAt: Date
@@ -1106,7 +1025,6 @@ readonly fields: ApprovalSignatureFieldRefs;
  */
 export interface Prisma__ApprovalSignatureClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  signerUser<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1143,6 +1061,10 @@ export interface ApprovalSignatureFieldRefs {
   readonly action: Prisma.FieldRef<"ApprovalSignature", 'ApprovalAction'>
   readonly actionDate: Prisma.FieldRef<"ApprovalSignature", 'DateTime'>
   readonly signerUserId: Prisma.FieldRef<"ApprovalSignature", 'String'>
+  readonly signerAuthUserId: Prisma.FieldRef<"ApprovalSignature", 'String'>
+  readonly signerName: Prisma.FieldRef<"ApprovalSignature", 'String'>
+  readonly signerEmail: Prisma.FieldRef<"ApprovalSignature", 'String'>
+  readonly signerDepartmentName: Prisma.FieldRef<"ApprovalSignature", 'String'>
   readonly signaturePath: Prisma.FieldRef<"ApprovalSignature", 'String'>
   readonly comment: Prisma.FieldRef<"ApprovalSignature", 'String'>
   readonly createdAt: Prisma.FieldRef<"ApprovalSignature", 'DateTime'>
@@ -1164,10 +1086,6 @@ export type ApprovalSignatureFindUniqueArgs<ExtArgs extends runtime.Types.Extens
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
-  /**
    * Filter, which ApprovalSignature to fetch.
    */
   where: Prisma.ApprovalSignatureWhereUniqueInput
@@ -1186,10 +1104,6 @@ export type ApprovalSignatureFindUniqueOrThrowArgs<ExtArgs extends runtime.Types
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
-  /**
    * Filter, which ApprovalSignature to fetch.
    */
   where: Prisma.ApprovalSignatureWhereUniqueInput
@@ -1207,10 +1121,6 @@ export type ApprovalSignatureFindFirstArgs<ExtArgs extends runtime.Types.Extensi
    * Omit specific fields from the ApprovalSignature
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
   /**
    * Filter, which ApprovalSignature to fetch.
    */
@@ -1260,10 +1170,6 @@ export type ApprovalSignatureFindFirstOrThrowArgs<ExtArgs extends runtime.Types.
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
-  /**
    * Filter, which ApprovalSignature to fetch.
    */
   where?: Prisma.ApprovalSignatureWhereInput
@@ -1311,10 +1217,6 @@ export type ApprovalSignatureFindManyArgs<ExtArgs extends runtime.Types.Extensio
    * Omit specific fields from the ApprovalSignature
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
   /**
    * Filter, which ApprovalSignatures to fetch.
    */
@@ -1364,10 +1266,6 @@ export type ApprovalSignatureCreateArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
-  /**
    * The data needed to create a ApprovalSignature.
    */
   data: Prisma.XOR<Prisma.ApprovalSignatureCreateInput, Prisma.ApprovalSignatureUncheckedCreateInput>
@@ -1401,10 +1299,6 @@ export type ApprovalSignatureCreateManyAndReturnArgs<ExtArgs extends runtime.Typ
    */
   data: Prisma.ApprovalSignatureCreateManyInput | Prisma.ApprovalSignatureCreateManyInput[]
   skipDuplicates?: boolean
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1419,10 +1313,6 @@ export type ApprovalSignatureUpdateArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the ApprovalSignature
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
   /**
    * The data needed to update a ApprovalSignature.
    */
@@ -1475,10 +1365,6 @@ export type ApprovalSignatureUpdateManyAndReturnArgs<ExtArgs extends runtime.Typ
    * Limit how many ApprovalSignatures to update.
    */
   limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1493,10 +1379,6 @@ export type ApprovalSignatureUpsertArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the ApprovalSignature
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
   /**
    * The filter to search for the ApprovalSignature to update in case it exists.
    */
@@ -1523,10 +1405,6 @@ export type ApprovalSignatureDeleteArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the ApprovalSignature
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
   /**
    * Filter which ApprovalSignature to delete.
    */
@@ -1559,8 +1437,4 @@ export type ApprovalSignatureDefaultArgs<ExtArgs extends runtime.Types.Extension
    * Omit specific fields from the ApprovalSignature
    */
   omit?: Prisma.ApprovalSignatureOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ApprovalSignatureInclude<ExtArgs> | null
 }

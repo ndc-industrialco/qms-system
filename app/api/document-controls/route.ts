@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     const validatedData = createDocumentControlSchema.parse(data);
 
-    const doc = await docService.createDocument(session.user.id, validatedData);
+    const doc = await docService.createDocument(session.user.id, validatedData, session.user.authUserId);
     return sendSuccess(doc, 'Document created successfully', 201);
   } catch (err) {
     return handleApiError(err);

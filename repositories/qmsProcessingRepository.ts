@@ -4,6 +4,9 @@ import type { Prisma, QmsProcessing } from "@/generated/prisma/client";
 type UpsertQmsProcessingInput = {
   darMasterId: string;
   qmsUserId: string;
+  qmsAuthUserId?: string | null;
+  qmsUserName?: string | null;
+  qmsUserEmployeeId?: string | null;
   chkHasAttachment: boolean;
   chkPrintAndValidate: boolean;
   chkRenumber: boolean;
@@ -29,6 +32,9 @@ export class QmsProcessingRepository extends BaseRepository<QmsProcessing> {
       where: { darMasterId: input.darMasterId },
       update: {
         qmsUserId: input.qmsUserId,
+        qmsAuthUserId: input.qmsAuthUserId ?? null,
+        qmsUserName: input.qmsUserName ?? null,
+        qmsUserEmployeeId: input.qmsUserEmployeeId ?? null,
         chkHasAttachment: input.chkHasAttachment,
         chkPrintAndValidate: input.chkPrintAndValidate,
         chkRenumber: input.chkRenumber,
@@ -42,6 +48,9 @@ export class QmsProcessingRepository extends BaseRepository<QmsProcessing> {
       create: {
         darMasterId: input.darMasterId,
         qmsUserId: input.qmsUserId,
+        qmsAuthUserId: input.qmsAuthUserId ?? null,
+        qmsUserName: input.qmsUserName ?? null,
+        qmsUserEmployeeId: input.qmsUserEmployeeId ?? null,
         chkHasAttachment: input.chkHasAttachment,
         chkPrintAndValidate: input.chkPrintAndValidate,
         chkRenumber: input.chkRenumber,
@@ -55,4 +64,3 @@ export class QmsProcessingRepository extends BaseRepository<QmsProcessing> {
     });
   }
 }
-

@@ -17,7 +17,7 @@ export const createDarSchema = z.object({
       revision: z.string().min(1, "กรุณาระบุ Revision").max(50),
     })
   ).min(1, "ต้องมีเอกสารอย่างน้อย 1 รายการ"),
-  distributionDepartmentIds: z.array(z.string().uuid()).default([]),
+  distributionDepartmentIds: z.array(z.string().min(1)).default([]),
   action: z.enum(["DRAFT", "SUBMIT"]).default("DRAFT"),
   tempAttachments: z.array(
     z.object({

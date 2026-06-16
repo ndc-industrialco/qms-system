@@ -40,6 +40,8 @@ export type DocumentCategoryMinAggregateOutputType = {
   description: string | null
   order: number | null
   departmentId: string | null
+  authDepartmentId: string | null
+  departmentName: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +52,8 @@ export type DocumentCategoryMaxAggregateOutputType = {
   description: string | null
   order: number | null
   departmentId: string | null
+  authDepartmentId: string | null
+  departmentName: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +64,8 @@ export type DocumentCategoryCountAggregateOutputType = {
   description: number
   order: number
   departmentId: number
+  authDepartmentId: number
+  departmentName: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -80,6 +86,8 @@ export type DocumentCategoryMinAggregateInputType = {
   description?: true
   order?: true
   departmentId?: true
+  authDepartmentId?: true
+  departmentName?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -90,6 +98,8 @@ export type DocumentCategoryMaxAggregateInputType = {
   description?: true
   order?: true
   departmentId?: true
+  authDepartmentId?: true
+  departmentName?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +110,8 @@ export type DocumentCategoryCountAggregateInputType = {
   description?: true
   order?: true
   departmentId?: true
+  authDepartmentId?: true
+  departmentName?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -197,6 +209,8 @@ export type DocumentCategoryGroupByOutputType = {
   description: string | null
   order: number
   departmentId: string
+  authDepartmentId: string | null
+  departmentName: string | null
   createdAt: Date
   updatedAt: Date
   _count: DocumentCategoryCountAggregateOutputType | null
@@ -230,9 +244,10 @@ export type DocumentCategoryWhereInput = {
   description?: Prisma.StringNullableFilter<"DocumentCategory"> | string | null
   order?: Prisma.IntFilter<"DocumentCategory"> | number
   departmentId?: Prisma.StringFilter<"DocumentCategory"> | string
+  authDepartmentId?: Prisma.StringNullableFilter<"DocumentCategory"> | string | null
+  departmentName?: Prisma.StringNullableFilter<"DocumentCategory"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DocumentCategory"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentCategory"> | Date | string
-  department?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>
   documents?: Prisma.DocumentControlListRelationFilter
 }
 
@@ -242,9 +257,10 @@ export type DocumentCategoryOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  departmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  department?: Prisma.DepartmentOrderByWithRelationInput
   documents?: Prisma.DocumentControlOrderByRelationAggregateInput
 }
 
@@ -258,9 +274,10 @@ export type DocumentCategoryWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"DocumentCategory"> | string | null
   order?: Prisma.IntFilter<"DocumentCategory"> | number
   departmentId?: Prisma.StringFilter<"DocumentCategory"> | string
+  authDepartmentId?: Prisma.StringNullableFilter<"DocumentCategory"> | string | null
+  departmentName?: Prisma.StringNullableFilter<"DocumentCategory"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DocumentCategory"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentCategory"> | Date | string
-  department?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>
   documents?: Prisma.DocumentControlListRelationFilter
 }, "id" | "departmentId_name">
 
@@ -270,6 +287,8 @@ export type DocumentCategoryOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  departmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DocumentCategoryCountOrderByAggregateInput
@@ -288,6 +307,8 @@ export type DocumentCategoryScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"DocumentCategory"> | string | null
   order?: Prisma.IntWithAggregatesFilter<"DocumentCategory"> | number
   departmentId?: Prisma.StringWithAggregatesFilter<"DocumentCategory"> | string
+  authDepartmentId?: Prisma.StringNullableWithAggregatesFilter<"DocumentCategory"> | string | null
+  departmentName?: Prisma.StringNullableWithAggregatesFilter<"DocumentCategory"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentCategory"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentCategory"> | Date | string
 }
@@ -297,9 +318,11 @@ export type DocumentCategoryCreateInput = {
   name: string
   description?: string | null
   order?: number
+  departmentId: string
+  authDepartmentId?: string | null
+  departmentName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  department: Prisma.DepartmentCreateNestedOneWithoutDocCategoriesInput
   documents?: Prisma.DocumentControlCreateNestedManyWithoutCategoryInput
 }
 
@@ -309,6 +332,8 @@ export type DocumentCategoryUncheckedCreateInput = {
   description?: string | null
   order?: number
   departmentId: string
+  authDepartmentId?: string | null
+  departmentName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   documents?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCategoryInput
@@ -319,9 +344,11 @@ export type DocumentCategoryUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  departmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  department?: Prisma.DepartmentUpdateOneRequiredWithoutDocCategoriesNestedInput
   documents?: Prisma.DocumentControlUpdateManyWithoutCategoryNestedInput
 }
 
@@ -331,6 +358,8 @@ export type DocumentCategoryUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   departmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documents?: Prisma.DocumentControlUncheckedUpdateManyWithoutCategoryNestedInput
@@ -342,6 +371,8 @@ export type DocumentCategoryCreateManyInput = {
   description?: string | null
   order?: number
   departmentId: string
+  authDepartmentId?: string | null
+  departmentName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -351,6 +382,9 @@ export type DocumentCategoryUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  departmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -361,18 +395,10 @@ export type DocumentCategoryUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   departmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type DocumentCategoryListRelationFilter = {
-  every?: Prisma.DocumentCategoryWhereInput
-  some?: Prisma.DocumentCategoryWhereInput
-  none?: Prisma.DocumentCategoryWhereInput
-}
-
-export type DocumentCategoryOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
 }
 
 export type DocumentCategoryNullableScalarRelationFilter = {
@@ -391,6 +417,8 @@ export type DocumentCategoryCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrder
+  departmentName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -405,6 +433,8 @@ export type DocumentCategoryMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrder
+  departmentName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -415,54 +445,14 @@ export type DocumentCategoryMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrder
+  departmentName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type DocumentCategorySumOrderByAggregateInput = {
   order?: Prisma.SortOrder
-}
-
-export type DocumentCategoryCreateNestedManyWithoutDepartmentInput = {
-  create?: Prisma.XOR<Prisma.DocumentCategoryCreateWithoutDepartmentInput, Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput> | Prisma.DocumentCategoryCreateWithoutDepartmentInput[] | Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput[]
-  connectOrCreate?: Prisma.DocumentCategoryCreateOrConnectWithoutDepartmentInput | Prisma.DocumentCategoryCreateOrConnectWithoutDepartmentInput[]
-  createMany?: Prisma.DocumentCategoryCreateManyDepartmentInputEnvelope
-  connect?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-}
-
-export type DocumentCategoryUncheckedCreateNestedManyWithoutDepartmentInput = {
-  create?: Prisma.XOR<Prisma.DocumentCategoryCreateWithoutDepartmentInput, Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput> | Prisma.DocumentCategoryCreateWithoutDepartmentInput[] | Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput[]
-  connectOrCreate?: Prisma.DocumentCategoryCreateOrConnectWithoutDepartmentInput | Prisma.DocumentCategoryCreateOrConnectWithoutDepartmentInput[]
-  createMany?: Prisma.DocumentCategoryCreateManyDepartmentInputEnvelope
-  connect?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-}
-
-export type DocumentCategoryUpdateManyWithoutDepartmentNestedInput = {
-  create?: Prisma.XOR<Prisma.DocumentCategoryCreateWithoutDepartmentInput, Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput> | Prisma.DocumentCategoryCreateWithoutDepartmentInput[] | Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput[]
-  connectOrCreate?: Prisma.DocumentCategoryCreateOrConnectWithoutDepartmentInput | Prisma.DocumentCategoryCreateOrConnectWithoutDepartmentInput[]
-  upsert?: Prisma.DocumentCategoryUpsertWithWhereUniqueWithoutDepartmentInput | Prisma.DocumentCategoryUpsertWithWhereUniqueWithoutDepartmentInput[]
-  createMany?: Prisma.DocumentCategoryCreateManyDepartmentInputEnvelope
-  set?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-  disconnect?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-  delete?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-  connect?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-  update?: Prisma.DocumentCategoryUpdateWithWhereUniqueWithoutDepartmentInput | Prisma.DocumentCategoryUpdateWithWhereUniqueWithoutDepartmentInput[]
-  updateMany?: Prisma.DocumentCategoryUpdateManyWithWhereWithoutDepartmentInput | Prisma.DocumentCategoryUpdateManyWithWhereWithoutDepartmentInput[]
-  deleteMany?: Prisma.DocumentCategoryScalarWhereInput | Prisma.DocumentCategoryScalarWhereInput[]
-}
-
-export type DocumentCategoryUncheckedUpdateManyWithoutDepartmentNestedInput = {
-  create?: Prisma.XOR<Prisma.DocumentCategoryCreateWithoutDepartmentInput, Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput> | Prisma.DocumentCategoryCreateWithoutDepartmentInput[] | Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput[]
-  connectOrCreate?: Prisma.DocumentCategoryCreateOrConnectWithoutDepartmentInput | Prisma.DocumentCategoryCreateOrConnectWithoutDepartmentInput[]
-  upsert?: Prisma.DocumentCategoryUpsertWithWhereUniqueWithoutDepartmentInput | Prisma.DocumentCategoryUpsertWithWhereUniqueWithoutDepartmentInput[]
-  createMany?: Prisma.DocumentCategoryCreateManyDepartmentInputEnvelope
-  set?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-  disconnect?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-  delete?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-  connect?: Prisma.DocumentCategoryWhereUniqueInput | Prisma.DocumentCategoryWhereUniqueInput[]
-  update?: Prisma.DocumentCategoryUpdateWithWhereUniqueWithoutDepartmentInput | Prisma.DocumentCategoryUpdateWithWhereUniqueWithoutDepartmentInput[]
-  updateMany?: Prisma.DocumentCategoryUpdateManyWithWhereWithoutDepartmentInput | Prisma.DocumentCategoryUpdateManyWithWhereWithoutDepartmentInput[]
-  deleteMany?: Prisma.DocumentCategoryScalarWhereInput | Prisma.DocumentCategoryScalarWhereInput[]
 }
 
 export type DocumentCategoryCreateNestedOneWithoutDocumentsInput = {
@@ -481,73 +471,16 @@ export type DocumentCategoryUpdateOneWithoutDocumentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentCategoryUpdateToOneWithWhereWithoutDocumentsInput, Prisma.DocumentCategoryUpdateWithoutDocumentsInput>, Prisma.DocumentCategoryUncheckedUpdateWithoutDocumentsInput>
 }
 
-export type DocumentCategoryCreateWithoutDepartmentInput = {
-  id?: string
-  name: string
-  description?: string | null
-  order?: number
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  documents?: Prisma.DocumentControlCreateNestedManyWithoutCategoryInput
-}
-
-export type DocumentCategoryUncheckedCreateWithoutDepartmentInput = {
-  id?: string
-  name: string
-  description?: string | null
-  order?: number
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  documents?: Prisma.DocumentControlUncheckedCreateNestedManyWithoutCategoryInput
-}
-
-export type DocumentCategoryCreateOrConnectWithoutDepartmentInput = {
-  where: Prisma.DocumentCategoryWhereUniqueInput
-  create: Prisma.XOR<Prisma.DocumentCategoryCreateWithoutDepartmentInput, Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput>
-}
-
-export type DocumentCategoryCreateManyDepartmentInputEnvelope = {
-  data: Prisma.DocumentCategoryCreateManyDepartmentInput | Prisma.DocumentCategoryCreateManyDepartmentInput[]
-  skipDuplicates?: boolean
-}
-
-export type DocumentCategoryUpsertWithWhereUniqueWithoutDepartmentInput = {
-  where: Prisma.DocumentCategoryWhereUniqueInput
-  update: Prisma.XOR<Prisma.DocumentCategoryUpdateWithoutDepartmentInput, Prisma.DocumentCategoryUncheckedUpdateWithoutDepartmentInput>
-  create: Prisma.XOR<Prisma.DocumentCategoryCreateWithoutDepartmentInput, Prisma.DocumentCategoryUncheckedCreateWithoutDepartmentInput>
-}
-
-export type DocumentCategoryUpdateWithWhereUniqueWithoutDepartmentInput = {
-  where: Prisma.DocumentCategoryWhereUniqueInput
-  data: Prisma.XOR<Prisma.DocumentCategoryUpdateWithoutDepartmentInput, Prisma.DocumentCategoryUncheckedUpdateWithoutDepartmentInput>
-}
-
-export type DocumentCategoryUpdateManyWithWhereWithoutDepartmentInput = {
-  where: Prisma.DocumentCategoryScalarWhereInput
-  data: Prisma.XOR<Prisma.DocumentCategoryUpdateManyMutationInput, Prisma.DocumentCategoryUncheckedUpdateManyWithoutDepartmentInput>
-}
-
-export type DocumentCategoryScalarWhereInput = {
-  AND?: Prisma.DocumentCategoryScalarWhereInput | Prisma.DocumentCategoryScalarWhereInput[]
-  OR?: Prisma.DocumentCategoryScalarWhereInput[]
-  NOT?: Prisma.DocumentCategoryScalarWhereInput | Prisma.DocumentCategoryScalarWhereInput[]
-  id?: Prisma.StringFilter<"DocumentCategory"> | string
-  name?: Prisma.StringFilter<"DocumentCategory"> | string
-  description?: Prisma.StringNullableFilter<"DocumentCategory"> | string | null
-  order?: Prisma.IntFilter<"DocumentCategory"> | number
-  departmentId?: Prisma.StringFilter<"DocumentCategory"> | string
-  createdAt?: Prisma.DateTimeFilter<"DocumentCategory"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"DocumentCategory"> | Date | string
-}
-
 export type DocumentCategoryCreateWithoutDocumentsInput = {
   id?: string
   name: string
   description?: string | null
   order?: number
+  departmentId: string
+  authDepartmentId?: string | null
+  departmentName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  department: Prisma.DepartmentCreateNestedOneWithoutDocCategoriesInput
 }
 
 export type DocumentCategoryUncheckedCreateWithoutDocumentsInput = {
@@ -556,6 +489,8 @@ export type DocumentCategoryUncheckedCreateWithoutDocumentsInput = {
   description?: string | null
   order?: number
   departmentId: string
+  authDepartmentId?: string | null
+  departmentName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -581,9 +516,11 @@ export type DocumentCategoryUpdateWithoutDocumentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  departmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  department?: Prisma.DepartmentUpdateOneRequiredWithoutDocCategoriesNestedInput
 }
 
 export type DocumentCategoryUncheckedUpdateWithoutDocumentsInput = {
@@ -592,44 +529,8 @@ export type DocumentCategoryUncheckedUpdateWithoutDocumentsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   departmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type DocumentCategoryCreateManyDepartmentInput = {
-  id?: string
-  name: string
-  description?: string | null
-  order?: number
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type DocumentCategoryUpdateWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  order?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  documents?: Prisma.DocumentControlUpdateManyWithoutCategoryNestedInput
-}
-
-export type DocumentCategoryUncheckedUpdateWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  order?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  documents?: Prisma.DocumentControlUncheckedUpdateManyWithoutCategoryNestedInput
-}
-
-export type DocumentCategoryUncheckedUpdateManyWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  order?: Prisma.IntFieldUpdateOperationsInput | number
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -671,9 +572,10 @@ export type DocumentCategorySelect<ExtArgs extends runtime.Types.Extensions.Inte
   description?: boolean
   order?: boolean
   departmentId?: boolean
+  authDepartmentId?: boolean
+  departmentName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   documents?: boolean | Prisma.DocumentCategory$documentsArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentCategoryCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["documentCategory"]>
@@ -684,9 +586,10 @@ export type DocumentCategorySelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   description?: boolean
   order?: boolean
   departmentId?: boolean
+  authDepartmentId?: boolean
+  departmentName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["documentCategory"]>
 
 export type DocumentCategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -695,9 +598,10 @@ export type DocumentCategorySelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   description?: boolean
   order?: boolean
   departmentId?: boolean
+  authDepartmentId?: boolean
+  departmentName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["documentCategory"]>
 
 export type DocumentCategorySelectScalar = {
@@ -706,27 +610,23 @@ export type DocumentCategorySelectScalar = {
   description?: boolean
   order?: boolean
   departmentId?: boolean
+  authDepartmentId?: boolean
+  departmentName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DocumentCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "order" | "departmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["documentCategory"]>
+export type DocumentCategoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "order" | "departmentId" | "authDepartmentId" | "departmentName" | "createdAt" | "updatedAt", ExtArgs["result"]["documentCategory"]>
 export type DocumentCategoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   documents?: boolean | Prisma.DocumentCategory$documentsArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentCategoryCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type DocumentCategoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
-}
-export type DocumentCategoryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
-}
+export type DocumentCategoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type DocumentCategoryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $DocumentCategoryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DocumentCategory"
   objects: {
-    department: Prisma.$DepartmentPayload<ExtArgs>
     documents: Prisma.$DocumentControlPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -735,6 +635,8 @@ export type $DocumentCategoryPayload<ExtArgs extends runtime.Types.Extensions.In
     description: string | null
     order: number
     departmentId: string
+    authDepartmentId: string | null
+    departmentName: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["documentCategory"]>
@@ -1131,7 +1033,6 @@ readonly fields: DocumentCategoryFieldRefs;
  */
 export interface Prisma__DocumentCategoryClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  department<T extends Prisma.DepartmentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DepartmentDefaultArgs<ExtArgs>>): Prisma.Prisma__DepartmentClient<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   documents<T extends Prisma.DocumentCategory$documentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentCategory$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentControlPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1167,6 +1068,8 @@ export interface DocumentCategoryFieldRefs {
   readonly description: Prisma.FieldRef<"DocumentCategory", 'String'>
   readonly order: Prisma.FieldRef<"DocumentCategory", 'Int'>
   readonly departmentId: Prisma.FieldRef<"DocumentCategory", 'String'>
+  readonly authDepartmentId: Prisma.FieldRef<"DocumentCategory", 'String'>
+  readonly departmentName: Prisma.FieldRef<"DocumentCategory", 'String'>
   readonly createdAt: Prisma.FieldRef<"DocumentCategory", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DocumentCategory", 'DateTime'>
 }
@@ -1423,10 +1326,6 @@ export type DocumentCategoryCreateManyAndReturnArgs<ExtArgs extends runtime.Type
    */
   data: Prisma.DocumentCategoryCreateManyInput | Prisma.DocumentCategoryCreateManyInput[]
   skipDuplicates?: boolean
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.DocumentCategoryIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1497,10 +1396,6 @@ export type DocumentCategoryUpdateManyAndReturnArgs<ExtArgs extends runtime.Type
    * Limit how many DocumentCategories to update.
    */
   limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.DocumentCategoryIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**

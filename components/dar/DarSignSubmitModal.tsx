@@ -17,10 +17,10 @@ export default function DarSignSubmitModal({ open, onConfirm, onCancel, savedSig
   const t = useT();
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg z-200" overlayClassName="z-[199]">
         <DialogHeader>
           <DialogTitle>{t("dar.signModal.title")}</DialogTitle>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-400 mt-1">
             {t("dar.signModal.subtitle")}
           </p>
         </DialogHeader>

@@ -17,12 +17,12 @@ const darService = new DarService();
 export default async function DarNewPage() {
   const session = await requireAuth();
   const [departments, savedSig, tempId] = await Promise.all([
-    deptService.getActiveDepartments(),
+    deptService.getActiveDepartments(session.user.accessToken),
     darService.getSavedSignature(session.user.id),
     Promise.resolve("temp_" + Math.random().toString(36).substring(2, 15) + "_" + Date.now()),
   ]);
 
-  if (!session.user.departmentId) {
+  if (!session.user.departmentId && !session.user.authDepartmentId) {
     return <DarNoDepartment />;
   }
 
@@ -36,7 +36,7 @@ export default async function DarNewPage() {
         requesterInfo={{
           name: session.user.name ?? null,
           employeeId: session.user.employeeId ?? null,
-          department: departments.find((d: { id: string; name: string }) => d.id === session.user.departmentId)?.name ?? null,
+          department: departments.find((d: { id: string; name: string }) => d.id === (session.user.authDepartmentId ?? session.user.departmentId ?? ""))?.name ?? null,
           requestDate: new Date().toISOString(),
         }}
         savedSignatureUrl={savedSig?.url ?? null}

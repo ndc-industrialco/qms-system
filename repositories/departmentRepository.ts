@@ -1,70 +1,77 @@
-import { BaseRepository } from "./baseRepository";
-import { Department, Prisma } from "@/generated/prisma/client";
+import { getDepartments, getDepartmentByCode, getDepartmentByName } from "@/lib/departmentCache";
+import type { AuthCenterDepartment } from "@/lib/auth-center-admin-client";
 
-export class DepartmentRepository extends BaseRepository<Department> {
-  constructor() {
-    super("department");
+type DeptShape = {
+  id: string;
+  authDepartmentId: string;
+  name: string;
+  emailGroup: string | null;
+  isActive: boolean;
+};
+
+function toDeptShape(d: AuthCenterDepartment): DeptShape {
+  return {
+    id: d.code,
+    authDepartmentId: d.code,
+    name: d.displayName,
+    emailGroup: d.emailGroup ?? null,
+    isActive: true,
+  };
+}
+
+export class DepartmentRepository {
+  async findByAuthDepartmentId(code: string) {
+    const d = await getDepartmentByCode(code);
+    return d ? toDeptShape(d) : null;
   }
 
-  private delegate(tx?: Prisma.TransactionClient) {
-    return this.getClient(tx).department;
+  async findByName(name: string) {
+    const d = await getDepartmentByName(name);
+    return d ? toDeptShape(d) : null;
   }
 
-  async findByName(name: string, tx?: Prisma.TransactionClient): Promise<Department | null> {
-    return this.delegate(tx).findUnique({ where: { name } });
+  // id is now authDepartmentId / code
+  async findById(id: string) {
+    return (await this.findByAuthDepartmentId(id)) ?? this.findByName(id);
   }
 
-  async findActive(tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true },
-    });
+  async findNameById(id: string) {
+    const d = await this.findById(id);
+    return d ?? null;
   }
 
-  async findManyWithCount(tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findMany({
-      orderBy: { name: "asc" },
-      include: { _count: { select: { users: true } } },
-    });
+  async findAll() {
+    const depts = await getDepartments();
+    return depts.map(toDeptShape);
   }
 
-  async findByIdWithMembers(id: string, tx?: Prisma.TransactionClient) {
-    return this.delegate(tx).findUnique({
-      where: { id },
-      include: {
-        _count: { select: { users: true } },
-        users: {
-          orderBy: { name: "asc" },
-          select: { id: true, name: true, email: true, employeeId: true, role: true, msUserId: true, createdAt: true },
-        },
-      },
-    });
+  async findManyWithCount() {
+    const depts = await getDepartments();
+    return depts.map(d => ({ ...toDeptShape(d), _count: { users: 0 } }));
   }
 
-  async findNameById(id: string, tx?: Prisma.TransactionClient): Promise<{ name: string } | null> {
-    return this.delegate(tx).findUnique({ where: { id }, select: { name: true } });
+  async findByIdWithMembers(id: string) {
+    const dept = await this.findById(id);
+    if (!dept) return null;
+    return { ...dept, users: [] as Array<{ id: string; name: string | null; email: string; employeeId: string | null; role: string; msUserId: string | null; createdAt: Date }> };
   }
 
-  async upsertDepartment(name: string, tx?: Prisma.TransactionClient): Promise<Department> {
-    return this.delegate(tx).upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    });
+  // These write operations go through Auth Center
+  async upsertByAuthDepartmentId(code: string, name: string) {
+    // Auth Center is source of truth — return a mock shape for compat
+    return { dept: { id: code, authDepartmentId: code, name, emailGroup: null, isActive: true } };
   }
 
-  async upsertDepartmentWithEmail(
-    name: string,
-    emailGroup: string | null,
-    tx?: Prisma.TransactionClient
-  ): Promise<{ created: boolean }> {
-    const existing = await this.delegate(tx).findUnique({ where: { name }, select: { id: true } });
-    if (existing) {
-      await this.delegate(tx).update({ where: { name }, data: { emailGroup } });
-      return { created: false };
-    }
-    await this.delegate(tx).create({ data: { name, emailGroup, isActive: true } });
-    return { created: true };
+  async upsertDepartment(name: string) {
+    return { id: name, authDepartmentId: name, name, emailGroup: null, isActive: true };
+  }
+
+  async upsertDepartmentWithEmail(name: string, emailGroup: string | null) {
+    return { id: name, authDepartmentId: name, name, emailGroup, isActive: true };
+  }
+
+  async update(_id: string, _data: Record<string, unknown>) {
+    // Updates go to Auth Center via departmentService
+    return null;
   }
 }

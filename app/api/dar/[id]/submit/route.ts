@@ -14,7 +14,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const session = await requireAuth();
     const { id } = await params;
 
-    const dar = await darService.submitDar(id, session.user.id);
+    const dar = await darService.submitDar(id, { userId: session.user.id, authUserId: session.user.authUserId });
 
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");

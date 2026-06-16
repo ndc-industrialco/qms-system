@@ -17,18 +17,22 @@ import {
 } from '@/services/sharepoint';
 import type { CreateDocumentControlInput, UpdateDocumentControlInput } from '@/types/documentControl';
 import { DocControlStatus, Prisma } from '@/generated/prisma/client';
-
-type DocumentControlWithNames = Prisma.DocumentControlGetPayload<{
-  include: {
-    department: { select: { name: true } };
-    category: { select: { name: true } };
-  };
-}>;
+import { UserRepository } from '@/repositories/userRepository';
+import { getUserSnapshot } from '@/lib/userSnapshotCache';
 
 export class DocumentControlService {
   private repo = new DocumentControlRepository();
   private deptRepo = new DepartmentRepository();
   private categoryRepo = new DocumentCategoryRepository();
+  private userRepo = new UserRepository();
+
+  private async getIdentitySnapshot(authUserId: string) {
+    // Try cache first (populated at login, no DB hit needed)
+    const cached = await getUserSnapshot(authUserId);
+    if (cached) return cached;
+    // Fallback: User table (during transition or cache miss)
+    return this.userRepo.findIdentitySnapshotByAuthUserId(authUserId);
+  }
 
   async listDocuments(
     page: number,
@@ -66,7 +70,7 @@ export class DocumentControlService {
     return this._formatDocDetail(doc);
   }
 
-  async createDocument(userId: string, data: CreateDocumentControlInput) {
+  async createDocument(userId: string, data: CreateDocumentControlInput, authUserId?: string | null) {
     const existing = await this.repo.findByDocNumber(data.docNumber);
     if (existing) {
       throw new ValidationError('Document number already exists');
@@ -76,6 +80,7 @@ export class DocumentControlService {
       this.deptRepo.findNameById(data.departmentId),
       this.categoryRepo.findForDocControl(data.categoryId),
     ]);
+    const creator = await this.getIdentitySnapshot(userId);
     if (!dept || !category) throw new ValidationError('Department or category not found');
     if (category.departmentId !== data.departmentId) throw new ValidationError('Category does not belong to department');
     const docFolderPath = buildDocControlDocumentFolderPath(dept.name, category.name, data.docNumber);
@@ -87,8 +92,12 @@ export class DocumentControlService {
       description: data.description ?? null,
       status: (data.status || 'DRAFT') as DocControlStatus,
       departmentId: data.departmentId,
+      authDepartmentId: dept.authDepartmentId ?? dept.name,
+      departmentName: dept.name,
       categoryId: data.categoryId,
       createdById: userId,
+      createdByAuthUserId: authUserId ?? null,
+      createdByName: creator?.name ?? null,
       revision: null,
       spFolderPath: docFolderPath,
     });
@@ -105,13 +114,18 @@ export class DocumentControlService {
     return this._formatDocDetail(doc);
   }
 
-  async updateDocument(id: string, userId: string, data: UpdateDocumentControlInput) {
+  async updateDocument(id: string, userId: string, data: UpdateDocumentControlInput, authUserId?: string | null) {
     const doc = await this.repo.findDetailById(id);
     if (!doc) {
       throw new NotFoundError('Document');
     }
+    const updater = await this.getIdentitySnapshot(userId);
 
-    const updates: Prisma.DocumentControlUncheckedUpdateInput = { updatedById: userId };
+    const updates: Prisma.DocumentControlUncheckedUpdateInput = {
+      updatedById: userId,
+      updatedByAuthUserId: authUserId ?? null,
+      updatedByName: updater?.name ?? null,
+    };
     const nextDepartmentId = data.departmentId ?? doc.departmentId ?? undefined;
     const nextCategoryId = data.categoryId ?? doc.categoryId ?? undefined;
     if (!nextDepartmentId || !nextCategoryId) throw new ValidationError('Department and category are required');
@@ -123,8 +137,8 @@ export class DocumentControlService {
     if (!nextDept || !nextCategory) throw new ValidationError('Department or category not found');
     if (nextCategory.departmentId !== nextDepartmentId) throw new ValidationError('Category does not belong to department');
 
-    const currentDeptName = (doc as DocumentControlWithNames).department?.name ?? 'Unknown';
-    const currentCategoryName = (doc as DocumentControlWithNames).category?.name ?? 'Uncategorized';
+    const currentDeptName = doc.departmentName ?? 'Unknown';
+    const currentCategoryName = doc.category?.name ?? 'Uncategorized';
     const oldDocFolderPath = buildDocControlDocumentFolderPath(currentDeptName, currentCategoryName, doc.docNumber);
     const newDocFolderPath = buildDocControlDocumentFolderPath(nextDept.name, nextCategory.name, doc.docNumber);
 
@@ -180,7 +194,11 @@ export class DocumentControlService {
     if (data.docName !== undefined) updates.docName = data.docName;
     if (data.description !== undefined) updates.description = data.description;
     if (data.status !== undefined) updates.status = data.status;
-    if (data.departmentId !== undefined) updates.departmentId = data.departmentId;
+    if (data.departmentId !== undefined) {
+      updates.departmentId = data.departmentId;
+      updates.authDepartmentId = nextDept.authDepartmentId ?? nextDept.name;
+      updates.departmentName = nextDept.name;
+    }
     if (data.categoryId !== undefined) updates.categoryId = data.categoryId;
 
     const updated = await this.repo.update(id, updates);
@@ -192,15 +210,16 @@ export class DocumentControlService {
     userId: string,
     data: { revision: string; effectiveDate?: string | null; status?: DocControlStatus },
     file: { buffer: Uint8Array; name: string; type: string },
+    authUserId?: string | null,
   ) {
     const doc = await this.repo.findDetailById(id);
     if (!doc) {
       throw new NotFoundError('Document');
     }
 
-    // Resolve dept + category names for SharePoint path
-    const deptName = (doc as DocumentControlWithNames).department?.name ?? 'Unknown';
-    const categoryName = (doc as DocumentControlWithNames).category?.name ?? 'Uncategorized';
+    const deptName = doc.departmentName ?? 'Unknown';
+    const categoryName = doc.category?.name ?? 'Uncategorized';
+    const creator = await this.getIdentitySnapshot(userId);
 
     // Step 1: Upload file to SharePoint FIRST.
     // DB changes only happen after upload succeeds so we never mark revisions
@@ -240,6 +259,8 @@ export class DocumentControlService {
             fileSize: file.buffer.length,
             mimeType: file.type,
             createdById: userId,
+            createdByAuthUserId: authUserId ?? null,
+            createdByName: creator?.name ?? null,
           },
           tx,
         );
@@ -260,6 +281,8 @@ export class DocumentControlService {
             fileSize: file.buffer.length,
             mimeType: file.type,
             updatedById: userId,
+            updatedByAuthUserId: authUserId ?? null,
+            updatedByName: creator?.name ?? null,
           },
           tx,
         );
@@ -319,8 +342,52 @@ export class DocumentControlService {
   }
 
   private _formatDocDetail<T extends { createdAt?: Date | string | null; updatedAt?: Date | string | null; effectiveDate?: Date | string | null }>(doc: T) {
+    const raw = doc as T & {
+      createdById?: string | null;
+      createdByAuthUserId?: string | null;
+      createdByName?: string | null;
+      updatedById?: string | null;
+      updatedByAuthUserId?: string | null;
+      updatedByName?: string | null;
+      departmentId?: string | null;
+      authDepartmentId?: string | null;
+      departmentName?: string | null;
+      revisions?: Array<{
+        id: string;
+        documentControlId: string;
+        revision: string;
+        effectiveDate?: Date | string | null;
+        status: DocControlStatus;
+        spWebUrl: string | null;
+        spDownloadUrl: string | null;
+        spFolderPath: string | null;
+        fileName: string | null;
+        fileSize: number | null;
+        mimeType: string | null;
+        createdById: string;
+        createdByAuthUserId?: string | null;
+        createdByName?: string | null;
+        createdAt: Date | string;
+      }>;
+    };
+
     return {
       ...doc,
+      createdBy: raw.createdById
+        ? { id: raw.createdById, authUserId: raw.createdByAuthUserId ?? null, name: raw.createdByName ?? null }
+        : undefined,
+      updatedBy: raw.updatedById
+        ? { id: raw.updatedById, authUserId: raw.updatedByAuthUserId ?? null, name: raw.updatedByName ?? null }
+        : null,
+      department: raw.departmentName
+        ? { id: raw.authDepartmentId ?? raw.departmentId ?? '', name: raw.departmentName }
+        : null,
+      revisions: raw.revisions?.map((rev) => ({
+        ...rev,
+        createdBy: { id: rev.createdById, authUserId: rev.createdByAuthUserId ?? null, name: rev.createdByName ?? null },
+        createdAt: rev.createdAt instanceof Date ? rev.createdAt.toISOString() : rev.createdAt,
+        effectiveDate: rev.effectiveDate instanceof Date ? rev.effectiveDate.toISOString() : rev.effectiveDate,
+      })),
       createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt,
       updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : doc.updatedAt,
       effectiveDate: doc.effectiveDate instanceof Date ? doc.effectiveDate.toISOString() : doc.effectiveDate,

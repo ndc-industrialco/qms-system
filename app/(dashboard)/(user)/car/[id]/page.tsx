@@ -29,7 +29,7 @@ export default async function UserCarDetailPage({
   // USER can only view their own department's CARs
   if (
     session.user.role === "USER" &&
-    car.targetDepartment.id !== session.user.departmentId
+    car.targetDepartment.id !== (session.user.authDepartmentId ?? session.user.departmentId)
   ) {
     redirect("/car");
   }
@@ -40,7 +40,7 @@ export default async function UserCarDetailPage({
         car={car}
         userRole={session.user.role}
         userId={session.user.id}
-        userDepartmentId={session.user.departmentId ?? null}
+        userDepartmentId={session.user.authDepartmentId ?? session.user.departmentId ?? null}
         isPrivileged={false}
       />
     </div>

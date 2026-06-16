@@ -14,15 +14,34 @@ export class DocumentCategoryRepository extends BaseRepository<DocumentCategory>
     return this.delegate(tx).findMany({
       where: { departmentId },
       orderBy: [{ order: 'asc' }, { name: 'asc' }],
-      include: { _count: { select: { documents: true } } },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        order: true,
+        departmentId: true,
+        authDepartmentId: true,
+        departmentName: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: { select: { documents: true } },
+      },
     });
   }
 
   async findByIdWithCount(id: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id },
-      include: {
-        department: { select: { id: true, name: true } },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        order: true,
+        departmentId: true,
+        authDepartmentId: true,
+        departmentName: true,
+        createdAt: true,
+        updatedAt: true,
         _count: { select: { documents: true } },
       },
     });
@@ -31,7 +50,7 @@ export class DocumentCategoryRepository extends BaseRepository<DocumentCategory>
   async findForDocControl(id: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id },
-      select: { name: true, departmentId: true },
+      select: { name: true, departmentId: true, authDepartmentId: true, departmentName: true },
     });
   }
 

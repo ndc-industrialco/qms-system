@@ -8,9 +8,8 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/Department'
-export type * from './models/User'
 export type * from './models/SystemConfig'
+export type * from './models/UserPreference'
 export type * from './models/Announcement'
 export type * from './models/DarMaster'
 export type * from './models/DarItem'
@@ -30,6 +29,7 @@ export type * from './models/DocumentCategory'
 export type * from './models/DocumentControlRevision'
 export type * from './models/AuditLog'
 export type * from './models/NotificationLog'
+export type * from './models/Notification'
 export type * from './models/ActionToken'
 export type * from './models/CarMaster'
 export type * from './models/CarResponse'

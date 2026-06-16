@@ -6,6 +6,10 @@ type UpsertApprovalSignatureInput = {
   documentId: string;
   step: ApprovalStep;
   signerUserId: string;
+  signerAuthUserId?: string | null;
+  signerName?: string | null;
+  signerEmail?: string | null;
+  signerDepartmentName?: string | null;
   action?: ApprovalAction;
   actionDate?: Date | null;
   signaturePath?: string | null;
@@ -31,6 +35,10 @@ export class ApprovalSignatureRepository extends BaseRepository<ApprovalSignatur
         documentId: input.documentId,
         step: input.step,
         signerUserId: input.signerUserId,
+        signerAuthUserId: input.signerAuthUserId ?? null,
+        signerName: input.signerName ?? null,
+        signerEmail: input.signerEmail ?? null,
+        signerDepartmentName: input.signerDepartmentName ?? null,
         action: input.action ?? "PENDING",
         actionDate: input.actionDate ?? null,
         signaturePath: input.signaturePath ?? null,
@@ -38,6 +46,10 @@ export class ApprovalSignatureRepository extends BaseRepository<ApprovalSignatur
       },
       update: {
         signerUserId: input.signerUserId,
+        signerAuthUserId: input.signerAuthUserId ?? null,
+        signerName: input.signerName ?? null,
+        signerEmail: input.signerEmail ?? null,
+        signerDepartmentName: input.signerDepartmentName ?? null,
         action: input.action ?? "PENDING",
         actionDate: input.actionDate ?? null,
         signaturePath: input.signaturePath ?? null,
@@ -72,7 +84,23 @@ export class ApprovalSignatureRepository extends BaseRepository<ApprovalSignatur
   async findByDocument(module: ApprovalModule, documentId: string) {
     return this.getClient().approvalSignature.findMany({
       where: { module, documentId },
-      include: { signerUser: { select: { id: true, name: true, email: true, department: { select: { name: true } } } } },
+      select: {
+        id: true,
+        module: true,
+        documentId: true,
+        step: true,
+        action: true,
+        actionDate: true,
+        signerUserId: true,
+        signerAuthUserId: true,
+        signerName: true,
+        signerEmail: true,
+        signerDepartmentName: true,
+        signaturePath: true,
+        comment: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: { createdAt: 'asc' },
     });
   }
@@ -80,7 +108,23 @@ export class ApprovalSignatureRepository extends BaseRepository<ApprovalSignatur
   async findByDocumentAndStep(module: ApprovalModule, documentId: string, step: ApprovalStep) {
     return this.getClient().approvalSignature.findUnique({
       where: { module_documentId_step: { module, documentId, step } },
-      include: { signerUser: { select: { id: true, name: true, email: true, department: { select: { name: true } } } } },
+      select: {
+        id: true,
+        module: true,
+        documentId: true,
+        step: true,
+        action: true,
+        actionDate: true,
+        signerUserId: true,
+        signerAuthUserId: true,
+        signerName: true,
+        signerEmail: true,
+        signerDepartmentName: true,
+        signaturePath: true,
+        comment: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
@@ -90,4 +134,3 @@ export class ApprovalSignatureRepository extends BaseRepository<ApprovalSignatur
     });
   }
 }
-

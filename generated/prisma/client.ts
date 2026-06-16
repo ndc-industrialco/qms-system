@@ -31,8 +31,8 @@ export * from "./enums"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Departments
- * const departments = await prisma.department.findMany()
+ * // Fetch zero or more SystemConfigs
+ * const systemConfigs = await prisma.systemConfig.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -42,20 +42,15 @@ export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts exten
 export { Prisma }
 
 /**
- * Model Department
- * 
- */
-export type Department = Prisma.DepartmentModel
-/**
- * Model User
- * 
- */
-export type User = Prisma.UserModel
-/**
  * Model SystemConfig
  * 
  */
 export type SystemConfig = Prisma.SystemConfigModel
+/**
+ * Model UserPreference
+ * 
+ */
+export type UserPreference = Prisma.UserPreferenceModel
 /**
  * Model Announcement
  * 
@@ -151,6 +146,11 @@ export type AuditLog = Prisma.AuditLogModel
  * 
  */
 export type NotificationLog = Prisma.NotificationLogModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel
 /**
  * Model ActionToken
  * 

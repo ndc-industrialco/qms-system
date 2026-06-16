@@ -36,7 +36,7 @@ export class ApprovalsService {
   private kpiMonthlyRepo = new KpiMonthlyReportRepository();
   private kpiRepo = new KpiRepository();
 
-  async getPendingSummaryForUser(userId: string): Promise<PendingApprovalSummary> {
+  async getPendingSummaryForUser(userId: string, authUserId?: string | null): Promise<PendingApprovalSummary> {
     const [
       pendingDarCount,
       pendingDarItemsRaw,
@@ -45,8 +45,8 @@ export class ApprovalsService {
       pendingKpiObjectiveReviewRaw,
       pendingKpiObjectiveApproveRaw,
     ] = await Promise.all([
-      this.darRepo.countPendingApprovalsByUser(userId),
-      this.darRepo.findPendingApprovalsByUser(userId, 10),
+      this.darRepo.countPendingApprovalsByUser(userId, authUserId),
+      this.darRepo.findPendingApprovalsByUser(userId, authUserId, 10),
       this.kpiMonthlyRepo.findPendingReviewByUser(userId, 10),
       this.kpiMonthlyRepo.findPendingApproveByUser(userId, 10),
       this.kpiRepo.findPendingReviewByUser(userId, 10),
@@ -58,7 +58,7 @@ export class ApprovalsService {
       darNo: row.darMaster.darNo,
       status: row.darMaster.status,
       requestDate: row.darMaster.requestDate.toISOString(),
-      requesterName: row.darMaster.requester.name,
+      requesterName: row.darMaster.requesterName,
       stepRole: row.stepRole,
     }));
 

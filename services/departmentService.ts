@@ -1,158 +1,96 @@
-import { DepartmentRepository } from "@/repositories/departmentRepository";
-import { NotFoundError, ValidationError } from "@/errors/customErrors";
 import type { DepartmentRow, DepartmentDetail } from "@/types/department";
-import { redis } from "@/lib/redis";
-
-type DeptRowInput = {
-  id: string;
-  name: string;
-  emailGroup: string | null;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  _count: { users: number };
-};
-
-type DeptWithMembers = NonNullable<Awaited<ReturnType<DepartmentRepository["findByIdWithMembers"]>>>;
+import {
+  listAuthCenterDepartments,
+  createAuthCenterDepartment,
+  updateAuthCenterDepartment,
+  deleteAuthCenterDepartment,
+  type AuthCenterDepartment,
+} from "@/lib/auth-center-admin-client";
+import {
+  getDepartments,
+  getDepartmentByCode,
+  invalidateDepartmentCache,
+} from "@/lib/departmentCache";
 
 export class DepartmentService {
-  private deptRepo = new DepartmentRepository();
-
-  /** Redis cache key for active departments list */
-  private static readonly ACTIVE_DEPTS_KEY = "qms:departments:active";
-  private static readonly ACTIVE_DEPTS_TTL = 300; // 5 minutes
-
-  private toRow(d: DeptRowInput): DepartmentRow {
+  private fromAuthCenter(ac: AuthCenterDepartment): DepartmentRow {
     return {
-      id: d.id,
-      name: d.name,
-      emailGroup: d.emailGroup,
-      isActive: d.isActive,
-      _count: { users: d._count?.users ?? 0 },
-      createdAt: d.createdAt.toISOString(),
-      updatedAt: d.updatedAt.toISOString(),
+      id: ac.code,
+      name: ac.displayName,
+      emailGroup: ac.emailGroup ?? null,
+      isActive: true,
+      _count: { users: ac.userCount },
+      createdAt: ac.createdAt,
+      updatedAt: ac.updatedAt,
     };
   }
 
-  async getActiveDepartments(): Promise<{ id: string; name: string }[]> {
-    try {
-      const cached = await redis.get(DepartmentService.ACTIVE_DEPTS_KEY);
-      if (cached) return JSON.parse(cached) as { id: string; name: string }[];
-    } catch {
-      // Redis unavailable — fall through to DB
-    }
+  // ─── Public active list (used by business forms) ───────────────────────────
 
-    const rows = await this.deptRepo.findActive();
-
-    try {
-      await redis.set(
-        DepartmentService.ACTIVE_DEPTS_KEY,
-        JSON.stringify(rows),
-        "EX",
-        DepartmentService.ACTIVE_DEPTS_TTL
-      );
-    } catch {
-      // Cache write failure is non-fatal
-    }
-
-    return rows;
+  async getActiveDepartments(accessToken?: string | null): Promise<{ id: string; name: string }[]> {
+    const depts = await getDepartments(accessToken);
+    return depts.map((d) => ({ id: d.code, name: d.displayName, authDepartmentId: d.code }));
   }
 
-  private async invalidateActiveCache(): Promise<void> {
-    try {
-      await redis.del(DepartmentService.ACTIVE_DEPTS_KEY);
-    } catch {
-      // Non-fatal
-    }
+  // ─── Admin list (IT admin page) ────────────────────────────────────────────
+
+  async getAllDepartments(accessToken?: string | null): Promise<DepartmentRow[]> {
+    const depts = await listAuthCenterDepartments({ accessToken });
+    return depts.map((d) => this.fromAuthCenter(d));
   }
 
-  async getAllDepartments(): Promise<DepartmentRow[]> {
-    const rows = await this.deptRepo.findManyWithCount();
-    return (rows as Array<{
-      id: string;
-      name: string;
-      emailGroup: string | null;
-      isActive: boolean;
-      createdAt: Date;
-      updatedAt: Date;
-      _count: { users: number };
-    }>).map((r) => this.toRow(r));
+  // ─── Create ────────────────────────────────────────────────────────────────
+
+  async createDepartment(data: { name: string; emailGroup?: string | null; isActive?: boolean }, accessToken?: string | null): Promise<DepartmentRow> {
+    const code = data.name.trim().toUpperCase().replace(/\s+/g, "_");
+    const ac = await createAuthCenterDepartment({ code, displayName: data.name.trim() }, { accessToken });
+    await invalidateDepartmentCache();
+    return this.fromAuthCenter(ac);
   }
 
-  async createDepartment(data: { name: string; emailGroup?: string | null; isActive?: boolean }): Promise<DepartmentRow> {
-    const existing = await this.deptRepo.findByName(data.name);
-    if (existing) throw new ValidationError(`แผนก "${data.name}" มีอยู่แล้ว`);
+  // ─── Update ────────────────────────────────────────────────────────────────
 
-    const dept = await this.deptRepo.create({
-      name: data.name,
-      emailGroup: data.emailGroup ?? null,
-      isActive: data.isActive ?? true,
-    });
-
-    await this.invalidateActiveCache();
-
-    const refetched = await this.deptRepo.findByIdWithMembers(dept.id);
-    if (!refetched) throw new NotFoundError("Department");
-    return this.toRow(refetched);
+  async updateDepartment(id: string, data: { name?: string; emailGroup?: string | null; isActive?: boolean }, accessToken?: string | null): Promise<DepartmentRow> {
+    const ac = await updateAuthCenterDepartment(id, { displayName: data.name }, { accessToken });
+    await invalidateDepartmentCache();
+    return this.fromAuthCenter(ac);
   }
 
-  async updateDepartment(id: string, data: { name?: string; emailGroup?: string | null; isActive?: boolean }): Promise<DepartmentRow> {
-    const existing = await this.deptRepo.findById(id);
-    if (!existing) throw new NotFoundError("Department");
+  // ─── Members view ──────────────────────────────────────────────────────────
 
-    if (data.name && data.name !== existing.name) {
-      const dup = await this.deptRepo.findByName(data.name);
-      if (dup) throw new ValidationError(`แผนก "${data.name}" มีอยู่แล้ว`);
-    }
-
-    const updated = await this.deptRepo.update(id, data);
-    await this.invalidateActiveCache();
-    const refetched = await this.deptRepo.findByIdWithMembers(updated.id);
-    if (!refetched) throw new NotFoundError("Department");
-    return this.toRow(refetched);
-  }
-
-  async getDepartmentWithMembers(id: string): Promise<DepartmentDetail | null> {
-    const dept = await this.deptRepo.findByIdWithMembers(id);
+  async getDepartmentWithMembers(id: string, accessToken?: string | null): Promise<DepartmentDetail | null> {
+    const dept = await getDepartmentByCode(id, accessToken);
     if (!dept) return null;
 
     return {
-      ...this.toRow(dept),
-      members: dept.users.map((u: DeptWithMembers["users"][number]) => ({ ...u, createdAt: u.createdAt.toISOString() })),
+      id: dept.code,
+      name: dept.displayName,
+      emailGroup: dept.emailGroup ?? null,
+      isActive: true,
+      _count: { users: dept.userCount },
+      createdAt: dept.createdAt,
+      updatedAt: dept.updatedAt,
+      members: [] as DepartmentDetail["members"],
     };
   }
 
-  async deleteDepartment(id: string): Promise<void> {
-    const dept = await this.deptRepo.findByIdWithMembers(id);
-    if (!dept) throw new NotFoundError("Department");
-    if (dept._count.users > 0) throw new ValidationError(`ไม่สามารถลบแผนกที่มีผู้ใช้งาน ${dept._count.users} คน`);
+  // ─── Delete ────────────────────────────────────────────────────────────────
 
-    await this.deptRepo.delete(id);
-    await this.invalidateActiveCache();
+  async deleteDepartment(id: string, accessToken?: string | null): Promise<void> {
+    await deleteAuthCenterDepartment(id, { accessToken });
+    await invalidateDepartmentCache();
   }
+
+  // ─── Sync from Entra ──────────────────────────────────────────────────────
+  // Entra sync now only invalidates the cache; Auth Center is the source of truth.
 
   async syncFromEntraGroups(
     groups: Array<{ displayName?: string | null; mail?: string | null }>
   ): Promise<{ total: number; created: number; updated: number; skipped: number }> {
     const valid = groups.filter((g) => g.displayName?.trim());
     const skipped = groups.length - valid.length;
-
-    let created = 0;
-    let updated = 0;
-
-    await Promise.all(
-      valid.map(async (g) => {
-        const name = g.displayName!.trim();
-        const emailGroup = g.mail?.toLowerCase().trim() ?? null;
-        const result = await this.deptRepo.upsertDepartmentWithEmail(name, emailGroup);
-        if (result.created) {
-          created++;
-        } else {
-          updated++;
-        }
-      })
-    );
-
-    return { total: groups.length, created, updated, skipped };
+    // With Auth Center as source of truth, sync is a no-op at the local level.
+    await invalidateDepartmentCache();
+    return { total: groups.length, created: 0, updated: 0, skipped };
   }
 }

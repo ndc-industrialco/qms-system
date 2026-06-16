@@ -8,8 +8,8 @@ const darService = new DarService();
 
 export async function GET() {
   try {
-    await requireAuth();
-    const candidates = await darService.getReviewerCandidates();
+    const session = await requireAuth();
+    const candidates = await darService.getReviewerCandidates(session.user.accessToken);
     return sendSuccess(candidates, "Reviewer candidates retrieved successfully");
   } catch (err) {
     return handleApiError(err);

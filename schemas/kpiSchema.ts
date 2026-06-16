@@ -85,5 +85,12 @@ export const rejectReportSchema = z.object({
 export const submitKpiObjectivesSchema = z.object({
   prepareSignature: z.string().min(1, 'Signature is required'),
   reviewerUserId: z.string().min(1, 'Reviewer is required'),
+  reviewerAuthUserId: z.string().optional().nullable(),
+  reviewerName: z.string().max(255).optional().nullable(),
+  reviewerEmail: z.string().email().optional().nullable(),
   approverUserId: z.string().min(1, 'Approver is required'),
+  approverAuthUserId: z.string().optional().nullable(),
+  approverName: z.string().max(255).optional().nullable(),
+  approverEmail: z.string().email().optional().nullable(),
+  preparerAuthUserId: z.string().optional().nullable(),
 });

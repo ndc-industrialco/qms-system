@@ -8,8 +8,8 @@ const deptService = new DepartmentService();
 
 export async function GET() {
   try {
-    await requireAuth();
-    const departments = await deptService.getActiveDepartments();
+    const session = await requireAuth();
+    const departments = await deptService.getActiveDepartments(session.user.accessToken);
     const res = sendSuccess(departments, "Active departments retrieved successfully");
     res.headers.set("Cache-Control", "s-maxage=3600");
     return res;

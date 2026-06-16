@@ -59,7 +59,9 @@ export async function POST(req: NextRequest) {
         endDate: parsedEndDate,
         expiryDate,
       },
-      session.user.id
+      session.user.id,
+      session.user.authUserId ?? null,
+      session.user.name ?? null,
     );
 
     return sendSuccess(result, "Announcement created successfully", 201);

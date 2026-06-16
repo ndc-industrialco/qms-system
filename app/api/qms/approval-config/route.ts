@@ -6,16 +6,16 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { ApprovalConfigService } from "@/services/approvalConfigService";
 
 const updateSchema = z.object({
-  mrUserId: z.string().uuid().nullable(),
-  qmsUserId: z.string().uuid().nullable(),
+  mrUserId: z.string().min(1).nullable(),
+  qmsUserId: z.string().min(1).nullable(),
 });
 
 const service = new ApprovalConfigService();
 
 export async function GET() {
   try {
-    await requireRole("QMS", "IT", "MR");
-    const data = await service.getConfig();
+    const session = await requireRole("QMS", "IT", "MR");
+    const data = await service.getConfig(session.user.accessToken);
     return sendSuccess(data, "Approval config retrieved successfully");
   } catch (error) {
     return handleApiError(error);

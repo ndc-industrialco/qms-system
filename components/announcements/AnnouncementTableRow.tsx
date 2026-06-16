@@ -132,10 +132,10 @@ export default function AnnouncementTableRow({ row: a, onView, onEdit, onDelete,
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-[#0F1059]/10 flex items-center justify-center shrink-0">
             <span className="text-[10px] font-bold text-[#0F1059]">
-              {(a.createdBy.name ?? "?").charAt(0).toUpperCase()}
+              {(a.createdByName ?? "?").charAt(0).toUpperCase()}
             </span>
           </div>
-          <span className="text-sm text-slate-600 truncate max-w-24">{a.createdBy.name}</span>
+          <span className="text-sm text-slate-600 truncate max-w-24">{a.createdByName}</span>
         </div>
       </TableCell>
 

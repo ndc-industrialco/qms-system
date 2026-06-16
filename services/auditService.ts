@@ -32,6 +32,7 @@ export type AuditResourceType =
 
 export interface AuditEntry {
   actorUserId: string;
+  actorAuthUserId?: string | null;
   actorRole: string;
   action: AuditAction;
   resourceType: AuditResourceType;
@@ -51,6 +52,7 @@ export class AuditService {
     await client.auditLog.create({
       data: {
         actorUserId: entry.actorUserId,
+        actorAuthUserId: entry.actorAuthUserId ?? null,
         actorRole: entry.actorRole,
         action: entry.action,
         resourceType: entry.resourceType,

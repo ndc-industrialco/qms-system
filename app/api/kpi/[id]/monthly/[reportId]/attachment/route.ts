@@ -25,7 +25,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const report = await service.uploadReportAttachment(reportId, file, {
       userId: session.user.id,
       role: session.user.role,
-      departmentId: session.user.departmentId,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
     });
 
     return sendSuccess(report, 'Monthly report attachment uploaded successfully');

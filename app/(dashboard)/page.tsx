@@ -1,6 +1,7 @@
 
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getDepartments } from "@/lib/departmentCache";
 import DashboardClientView from "@/components/dashboard/DashboardClientView";
 import type { Metadata } from "next";
 
@@ -25,6 +26,7 @@ export default async function CompanyCenterDashboard() {
     tickerAnnouncements,
     recentPublicDocs,
     departmentList,
+    departmentDocStats,
     recentAttachments,
     kpiOkCount,
     kpiNgCount,
@@ -48,17 +50,13 @@ export default async function CompanyCenterDashboard() {
       take: 5,
     }),
 
-    db.department.findMany({
-      where: { isActive: true },
-      include: {
-        _count: { select: { docControls: true } },
-        docControls: {
-          select: { updatedAt: true },
-          orderBy: { updatedAt: "desc" },
-          take: 1,
-        },
-      },
-      orderBy: { updatedAt: "desc" },
+    getDepartments(session.user.accessToken),
+
+    db.documentControl.groupBy({
+      by: ["departmentId"],
+      _count: { _all: true },
+      _max: { updatedAt: true },
+      where: { departmentId: { not: null } },
     }),
 
     db.darAttachment.findMany({
@@ -82,13 +80,18 @@ export default async function CompanyCenterDashboard() {
   ]);
 
   const canManage = ["QMS", "IT", "MR"].includes(session.user.role);
+  const docStatsByDepartment = new Map(
+    departmentDocStats
+      .filter((row) => row.departmentId)
+      .map((row) => [row.departmentId as string, { count: row._count._all, latest: row._max.updatedAt ?? null }]),
+  );
 
   const mappedDepartments = departmentList
     .map((dept) => ({
-      id: dept.id,
-      name: dept.name,
-      documentCount: dept._count.docControls,
-      latestDocUpdatedAt: dept.docControls[0]?.updatedAt ?? null,
+      id: dept.code,
+      name: dept.displayName,
+      documentCount: docStatsByDepartment.get(dept.code)?.count ?? 0,
+      latestDocUpdatedAt: docStatsByDepartment.get(dept.code)?.latest ?? null,
     }))
     .sort((a, b) => {
       const aTime = a.latestDocUpdatedAt ? new Date(a.latestDocUpdatedAt).getTime() : 0;

@@ -7,61 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-model Department {
-  id               String             @id @default(uuid())
-  name             String             @unique
-  emailGroup       String?
-  isActive         Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  darDistributions DarDistribution[]
-  darMasters       DarMaster[]
-  users            User[]
-  docControls      DocumentControl[]
-  docCategories    DocumentCategory[]
-  carMasters       CarMaster[]
-
-  @@map("Department")
-}
-
-model User {
-  id                    String                    @id @default(uuid())
-  employeeId            String?                   @unique
-  msUserId              String?                   @unique
-  name                  String?
-  email                 String                    @unique
-  emailVerified         DateTime?
-  image                 String?
-  role                  UserRole                  @default(USER)
-  position              String?
-  savedSignatureUrl     String?
-  signatureType         SignatureType?
-  departmentId          String?
-  localAuthEnabled      Boolean                   @default(false)
-  failedLoginCount      Int                       @default(0)
-  createdAt             DateTime                  @default(now())
-  updatedAt             DateTime                  @updatedAt
-  announcements       Announcement[]
-  darApprovals        DarApproval[]
-  darAttachments      DarAttachment[]
-  darMasters          DarMaster[]
-  qmsProcessings      QmsProcessing[]
-  approvalSignatures ApprovalSignature[]
-  docControlsCreated  DocumentControl[]         @relation("DocCreatedBy")
-  docControlsUpdated  DocumentControl[]         @relation("DocUpdatedBy")
-  docRevisionsCreated DocumentControlRevision[] @relation("DocRevCreatedBy")
-  department          Department?               @relation(fields: [departmentId], references: [id])
-  carsIssued              CarMaster[]               @relation("CarIssuer")
-  carResponses            CarResponse[]
-  carVerifications        CarVerification[]
-  carMrSignatures         CarMrSignature[]
-  carMrResponseReviews    CarMrResponseReview[]
-  carAttachments          CarAttachment[]
-
-  @@index([role])
-  @@index([departmentId])
-  @@map("User")
-}
 
 model SystemConfig {
   configKey   String   @id
@@ -70,6 +15,15 @@ model SystemConfig {
   updatedAt   DateTime @updatedAt
 
   @@map("SystemConfig")
+}
+
+model UserPreference {
+  authUserId        String        @id @map("auth_user_id")
+  savedSignatureUrl String?       @map("saved_signature_url")
+  signatureType     SignatureType? @map("signature_type")
+  updatedAt         DateTime      @updatedAt
+
+  @@map("user_preferences")
 }
 
 model Announcement {
@@ -93,9 +47,10 @@ model Announcement {
   textColor           String?
   status              String      @default("ACTIVE")
   createdById         String
+  createdByAuthUserId String?     @map("created_by_auth_user_id")
+  createdByName       String?     @map("created_by_name")
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
-  createdBy           User        @relation(fields: [createdById], references: [id])
 
   @@map("Announcement")
 }
@@ -113,17 +68,21 @@ model DarMaster {
   spDriveId     String?
   spItemId      String?
   spWebUrl      String?
-  status        DarStatus         @default(DRAFT)
-  requesterId   String
-  departmentId  String
+  status                  DarStatus         @default(DRAFT)
+  requesterId             String
+  requesterAuthUserId     String?           @map("requester_auth_user_id")
+  requesterName           String?           @map("requester_name")
+  requesterEmployeeId     String?           @map("requester_employee_id")
+  requesterEmail          String?           @map("requester_email")
+  requesterDepartmentName String?           @map("requester_department_name")
+  departmentId            String
+  authDepartmentId        String?           @map("auth_department_id")
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   approvals     DarApproval[]
   attachments   DarAttachment[]
   distributions DarDistribution[]
   items         DarItem[]
-  department    Department        @relation(fields: [departmentId], references: [id])
-  requester     User              @relation(fields: [requesterId], references: [id])
   qmsProcessing QmsProcessing?
 
   @@index([status])
@@ -145,11 +104,12 @@ model DarItem {
 }
 
 model DarDistribution {
-  id           String     @id @default(uuid())
-  darMasterId  String
-  departmentId String
-  darMaster    DarMaster  @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
-  department   Department @relation(fields: [departmentId], references: [id])
+  id               String    @id @default(uuid())
+  darMasterId      String
+  departmentId     String
+  authDepartmentId String?   @map("auth_department_id")
+  departmentName   String?   @map("department_name")
+  darMaster        DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
 
   @@map("DarDistribution")
 }
@@ -163,11 +123,13 @@ model DarAttachment {
   spWebUrl      String
   spDownloadUrl String
   folderPath    String
-  darMasterId   String
-  uploadedById  String
-  createdAt     DateTime  @default(now())
-  darMaster     DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
-  uploadedBy    User      @relation(fields: [uploadedById], references: [id])
+  darMasterId          String
+  uploadedById         String
+  uploadedByAuthUserId String?   @map("uploaded_by_auth_user_id")
+  uploadedByName       String?   @map("uploaded_by_name")
+  createdAt            DateTime  @default(now())
+  darMaster            DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  // uploadedBy relation removed
 
   @@index([darMasterId])
   @@index([spItemId])
@@ -181,11 +143,14 @@ model DarApproval {
   actionDate        DateTime?
   signatureUsedUrl  String?
   signatureTypeUsed SignatureType?
-  darMasterId       String
-  assignedUserId    String
-  comment           String?
-  assignedUser      User           @relation(fields: [assignedUserId], references: [id])
-  darMaster         DarMaster      @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  darMasterId        String
+  assignedUserId     String
+  assignedAuthUserId String?        @map("assigned_auth_user_id")
+  assignedUserName   String?        @map("assigned_user_name")
+  assignedEmployeeId String?        @map("assigned_employee_id")
+  assignedDepartmentName String?    @map("assigned_department_name")
+  comment            String?
+  darMaster          DarMaster      @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
 
   @@index([darMasterId])
   @@index([assignedUserId])
@@ -199,12 +164,15 @@ model ApprovalSignature {
   step          ApprovalStep
   action        ApprovalAction @default(PENDING)
   actionDate    DateTime?
-  signerUserId  String
-  signaturePath String?
-  comment       String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  signerUser    User           @relation(fields: [signerUserId], references: [id])
+  signerUserId     String
+  signerAuthUserId String?        @map("signer_auth_user_id")
+  signerName       String?        @map("signer_name")
+  signerEmail      String?        @map("signer_email")
+  signerDepartmentName String?    @map("signer_department_name")
+  signaturePath    String?
+  comment          String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@index([module, documentId])
   @@index([signerUserId])
@@ -223,12 +191,14 @@ model QmsProcessing {
   chkCopyDistribute     Boolean   @default(false)
   comments              String?
   processDate           DateTime?
-  darMasterId           String    @unique
-  qmsUserId             String
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  darMaster             DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
-  qmsUser               User      @relation(fields: [qmsUserId], references: [id])
+  darMasterId        String    @unique
+  qmsUserId          String
+  qmsAuthUserId      String?   @map("qms_auth_user_id")
+  qmsUserName        String?   @map("qms_user_name")
+  qmsUserEmployeeId  String?   @map("qms_user_employee_id")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  darMaster          DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
 
   @@map("QmsProcessing")
 }
@@ -259,8 +229,12 @@ model KPI {
   approver          String
   status            KpiObjectiveStatus @default(DRAFT)
   prepareSignature  String?            @map("prepare_signature") @db.Text
-  reviewerUserId    String?            @map("reviewer_user_id")
-  approverUserId    String?            @map("approver_user_id")
+  reviewerUserId        String?            @map("reviewer_user_id")
+  reviewerAuthUserId    String?            @map("reviewer_auth_user_id")
+  reviewerEmail         String?            @map("reviewer_email")
+  approverUserId        String?            @map("approver_user_id")
+  approverAuthUserId    String?            @map("approver_auth_user_id")
+  approverEmail         String?            @map("approver_email")
   submittedAt       DateTime?          @map("submitted_at")
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
@@ -461,16 +435,18 @@ model DocumentControl {
   fileName      String?
   fileSize      Int?
   mimeType      String?
-  createdById   String
-  updatedById   String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  createdById          String
+  createdByAuthUserId  String?          @map("created_by_auth_user_id")
+  createdByName        String?          @map("created_by_name")
+  updatedById          String?
+  updatedByAuthUserId  String?          @map("updated_by_auth_user_id")
+  updatedByName        String?          @map("updated_by_name")
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
-  // Relations
-  createdBy    User                      @relation("DocCreatedBy", fields: [createdById], references: [id])
-  updatedBy    User?                     @relation("DocUpdatedBy", fields: [updatedById], references: [id])
-  departmentId String?
-  department   Department?               @relation(fields: [departmentId], references: [id])
+  departmentId         String?
+  authDepartmentId     String?           @map("auth_department_id")
+  departmentName       String?           @map("department_name")
   categoryId   String?
   category     DocumentCategory?         @relation(fields: [categoryId], references: [id])
   revisions    DocumentControlRevision[]
@@ -483,15 +459,16 @@ model DocumentControl {
 }
 
 model DocumentCategory {
-  id           String   @id @default(uuid())
-  name         String
-  description  String?
-  order        Int      @default(0)
-  departmentId String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default(uuid())
+  name             String
+  description      String?
+  order            Int      @default(0)
+  departmentId     String
+  authDepartmentId String?  @map("auth_department_id")
+  departmentName   String?  @map("department_name")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  department Department        @relation(fields: [departmentId], references: [id])
   documents  DocumentControl[]
 
   @@unique([departmentId, name])
@@ -513,12 +490,12 @@ model DocumentControlRevision {
   fileName          String?
   fileSize          Int?
   mimeType          String?
-  createdById       String
-  createdAt         DateTime         @default(now())
+  createdById         String
+  createdByAuthUserId String?          @map("created_by_auth_user_id")
+  createdByName       String?          @map("created_by_name")
+  createdAt           DateTime         @default(now())
 
-  // Relations
   documentControl DocumentControl @relation(fields: [documentControlId], references: [id], onDelete: Cascade)
-  createdBy       User            @relation("DocRevCreatedBy", fields: [createdById], references: [id])
 
   @@index([documentControlId])
   @@index([status])
@@ -532,9 +509,10 @@ enum DocControlStatus {
 }
 
 model AuditLog {
-  id           String   @id @default(uuid())
-  actorUserId  String   @map("actor_user_id")
-  actorRole    String   @map("actor_role")
+  id              String   @id @default(uuid())
+  actorUserId     String   @map("actor_user_id")
+  actorAuthUserId String?  @map("actor_auth_user_id")
+  actorRole       String   @map("actor_role")
   action       String   // CREATE | UPDATE | DELETE | APPROVE | REJECT | RECALL | SYNC | EXPORT | ROLE_CHANGE
   resourceType String   @map("resource_type") // KPI | DAR | USER | DOCUMENT | DOCUMENT_CATEGORY
   resourceId   String   @map("resource_id")
@@ -567,13 +545,30 @@ model NotificationLog {
   @@map("notification_logs")
 }
 
+model Notification {
+  id                  String   @id @default(uuid())
+  recipientId         String   @map("recipient_id")
+  recipientAuthUserId String?  @map("recipient_auth_user_id")
+  title               String
+  body                String
+  module              String
+  resourceId          String   @map("resource_id")
+  resourceType        String   @map("resource_type")
+  isRead              Boolean  @default(false) @map("is_read")
+  createdAt           DateTime @default(now())
+
+  @@index([recipientId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
 model ActionToken {
   id         String         @id @default(cuid())
   token      String         @unique
   module     ApprovalModule
   documentId String
   role       ApprovalStep
-  issuedTo   String
+  issuedTo   String         // Auth Center authUserId
   metadata   Json?
   expiresAt  DateTime
   usedAt     DateTime?
@@ -601,19 +596,22 @@ model CarMaster {
   isoStandards       String[]
   defectDetail       String
   nonConformanceRef  String
-  issuerId           String
-  issuerPosition     String
-  issuedAt           DateTime?
-  targetDepartmentId String
-  targetEmailGroup   String?
+  issuerId               String
+  issuerAuthUserId       String?              @map("issuer_auth_user_id")
+  issuerName             String?              @map("issuer_name")
+  issuerEmployeeId       String?              @map("issuer_employee_id")
+  issuerPosition         String
+  issuedAt               DateTime?
+  targetDepartmentId     String
+  targetAuthDepartmentId String?              @map("target_auth_department_id")
+  targetDepartmentName   String?              @map("target_department_name")
+  targetEmailGroup       String?
   responseDueAt      DateTime?
   reCar              Boolean              @default(false)
   reCarRefId         String?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
-  issuer             User                 @relation("CarIssuer", fields: [issuerId], references: [id])
-  targetDepartment   Department           @relation(fields: [targetDepartmentId], references: [id])
   reCarRef           CarMaster?           @relation("ReCarRef", fields: [reCarRefId], references: [id])
   reCarChildren      CarMaster[]          @relation("ReCarRef")
   response             CarResponse?
@@ -631,9 +629,12 @@ model CarMaster {
 
 model CarResponse {
   id                   String          @id @default(uuid())
-  carMasterId          String          @unique
-  responderId          String
-  responderPosition    String
+  carMasterId           String          @unique
+  responderId           String
+  responderAuthUserId   String?         @map("responder_auth_user_id")
+  responderName         String?         @map("responder_name")
+  responderEmployeeId   String?         @map("responder_employee_id")
+  responderPosition     String
   respondedAt          DateTime        @default(now())
   whyAnalysis          String
   additionalToolDetail String?
@@ -649,7 +650,6 @@ model CarResponse {
   plannedCompletionDate DateTime
 
   carMaster            CarMaster       @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
-  responder            User            @relation(fields: [responderId], references: [id])
   attachments          CarAttachment[]
 
   @@map("CarResponse")
@@ -657,17 +657,19 @@ model CarResponse {
 
 model CarVerification {
   id               String             @id @default(uuid())
-  carMasterId      String
-  round            Int
-  verifierId       String
-  verifierPosition String
+  carMasterId         String
+  round               Int
+  verifierId          String
+  verifierAuthUserId  String?            @map("verifier_auth_user_id")
+  verifierName        String?            @map("verifier_name")
+  verifierEmployeeId  String?            @map("verifier_employee_id")
+  verifierPosition    String
   verifiedAt       DateTime           @default(now())
   findings         String
   result           VerificationResult
   nextDueDate      DateTime?
 
   carMaster        CarMaster          @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
-  verifier         User               @relation(fields: [verifierId], references: [id])
 
   @@unique([carMasterId, round])
   @@map("CarVerification")
@@ -675,13 +677,15 @@ model CarVerification {
 
 model CarMrSignature {
   id          String    @id @default(uuid())
-  carMasterId String    @unique
-  mrUserId    String
-  signedAt    DateTime  @default(now())
-  comment     String?
+  carMasterId    String    @unique
+  mrUserId       String
+  mrAuthUserId   String?   @map("mr_auth_user_id")
+  mrUserName     String?   @map("mr_user_name")
+  mrEmployeeId   String?   @map("mr_employee_id")
+  signedAt       DateTime  @default(now())
+  comment        String?
 
   carMaster   CarMaster @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
-  mrUser      User      @relation(fields: [mrUserId], references: [id])
 
   @@map("CarMrSignature")
 }
@@ -696,11 +700,12 @@ model CarAttachment {
   spWebUrl      String
   spDownloadUrl String
   folderPath    String
-  uploadedById  String
-  createdAt     DateTime    @default(now())
+  uploadedById         String
+  uploadedByAuthUserId String?     @map("uploaded_by_auth_user_id")
+  uploadedByName       String?     @map("uploaded_by_name")
+  createdAt            DateTime    @default(now())
 
   carResponse   CarResponse @relation(fields: [carResponseId], references: [id], onDelete: Cascade)
-  uploadedBy    User        @relation(fields: [uploadedById], references: [id])
 
   @@index([carResponseId])
   @@map("CarAttachment")
@@ -708,14 +713,16 @@ model CarAttachment {
 
 model CarMrResponseReview {
   id          String    @id @default(uuid())
-  carMasterId String    @unique
-  mrUserId    String
-  reviewedAt  DateTime  @default(now())
-  action      String    // "APPROVED" | "REJECTED"
-  comment     String?
+  carMasterId  String    @unique
+  mrUserId     String
+  mrAuthUserId String?   @map("mr_auth_user_id")
+  mrUserName   String?   @map("mr_user_name")
+  mrEmployeeId String?   @map("mr_employee_id")
+  reviewedAt   DateTime  @default(now())
+  action       String    // "APPROVED" | "REJECTED"
+  comment      String?
 
   carMaster   CarMaster @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
-  mrUser      User      @relation(fields: [mrUserId], references: [id])
 
   @@map("CarMrResponseReview")
 }

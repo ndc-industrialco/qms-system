@@ -1,19 +1,61 @@
 import { BaseRepository, type PaginatedResult } from '@/repositories/baseRepository';
 import { DocumentControl, Prisma } from '@/generated/prisma/client';
 
-const DOC_INCLUDE = {
-  createdBy: { select: { id: true, name: true } },
-  updatedBy: { select: { id: true, name: true } },
-  department: { select: { id: true, name: true } },
+const DOC_SELECT = {
+  id: true,
+  docNumber: true,
+  docName: true,
+  revision: true,
+  description: true,
+  status: true,
+  effectiveDate: true,
+  spDriveId: true,
+  spItemId: true,
+  spWebUrl: true,
+  spDownloadUrl: true,
+  spFolderPath: true,
+  fileName: true,
+  fileSize: true,
+  mimeType: true,
+  createdById: true,
+  createdByAuthUserId: true,
+  createdByName: true,
+  updatedById: true,
+  updatedByAuthUserId: true,
+  updatedByName: true,
+  createdAt: true,
+  updatedAt: true,
+  departmentId: true,
+  authDepartmentId: true,
+  departmentName: true,
+  categoryId: true,
   category: { select: { id: true, name: true, departmentId: true } },
   revisions: {
-    include: { createdBy: { select: { id: true, name: true } } },
+    select: {
+      id: true,
+      documentControlId: true,
+      revision: true,
+      effectiveDate: true,
+      status: true,
+      spDriveId: true,
+      spItemId: true,
+      spWebUrl: true,
+      spDownloadUrl: true,
+      spFolderPath: true,
+      fileName: true,
+      fileSize: true,
+      mimeType: true,
+      createdById: true,
+      createdByAuthUserId: true,
+      createdByName: true,
+      createdAt: true,
+    },
     orderBy: { createdAt: 'desc' as const },
   },
-} satisfies Prisma.DocumentControlInclude;
+} satisfies Prisma.DocumentControlSelect;
 
 type DocumentControlWithRelations = Prisma.DocumentControlGetPayload<{
-  include: typeof DOC_INCLUDE;
+  select: typeof DOC_SELECT;
 }>;
 
 export class DocumentControlRepository extends BaseRepository<DocumentControl> {
@@ -38,7 +80,7 @@ export class DocumentControlRepository extends BaseRepository<DocumentControl> {
     const [data, total] = await Promise.all([
       this.delegate(tx).findMany({
         where,
-        include: DOC_INCLUDE,
+        select: DOC_SELECT,
         orderBy: order,
         skip,
         take: params.limit,
@@ -50,17 +92,13 @@ export class DocumentControlRepository extends BaseRepository<DocumentControl> {
   }
 
   async findDetailById(id: string, tx?: Prisma.TransactionClient): Promise<DocumentControlWithRelations | null> {
-    return this.delegate(tx).findUnique({ where: { id }, include: DOC_INCLUDE });
+    return this.delegate(tx).findUnique({ where: { id }, select: DOC_SELECT });
   }
 
   async findByDocNumber(docNumber: string, tx?: Prisma.TransactionClient): Promise<DocumentControlWithRelations | null> {
-    return this.delegate(tx).findUnique({ where: { docNumber }, include: DOC_INCLUDE });
+    return this.delegate(tx).findUnique({ where: { docNumber }, select: DOC_SELECT });
   }
 
-  /**
-   * Rewrite spFolderPath for every revision that belongs to a document.
-   * Used when a document is moved to a new department/category.
-   */
   async updateRevisionPaths(
     documentControlId: string,
     pathBuilder: (revision: string) => string,
@@ -81,10 +119,6 @@ export class DocumentControlRepository extends BaseRepository<DocumentControl> {
     );
   }
 
-  /**
-   * Mark all existing revisions for a document as OBSOLETE, then create the new
-   * revision row — all inside the provided transaction.
-   */
   async obsoleteAndCreateRevision(
     documentControlId: string,
     revisionData: Prisma.DocumentControlRevisionUncheckedCreateInput,
@@ -97,10 +131,6 @@ export class DocumentControlRepository extends BaseRepository<DocumentControl> {
     await tx.documentControlRevision.create({ data: revisionData });
   }
 
-  /**
-   * Update spFolderPath for every document in a category, and rewrite revision
-   * paths for each of those documents — all inside the provided transaction.
-   */
   async updateCategoryDocumentPaths(
     categoryId: string,
     deptName: string,

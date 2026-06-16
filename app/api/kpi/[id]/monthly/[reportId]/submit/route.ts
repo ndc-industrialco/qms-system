@@ -17,7 +17,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
     const session = await requireAuth();
     const { reportId } = await params;
     const body = await _req.json().catch(() => ({}));
-    const updated = await service.submitReport(reportId, { userId: session.user.id, role: session.user.role, departmentId: session.user.departmentId }, body);
+    const updated = await service.submitReport(reportId, { userId: session.user.id, role: session.user.role, departmentId: session.user.authDepartmentId ?? session.user.departmentId }, body);
 
     const detail = await service.getReportById(reportId);
     
@@ -26,7 +26,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
     if (reviewerId) {
       const [reviewer, preparer] = await Promise.all([
         userRepo.findById(reviewerId),
-        userRepo.findById(session.user.id),
+        userRepo.findByAuthUserId(session.user.id),
       ]);
       if (reviewer?.email) {
         await ActionTokenService.revokeByDocument(ApprovalModule.KPI_MONTHLY, reportId);
@@ -58,6 +58,14 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           }),
           reviewer.email,
           'Monthly KPI Review Request',
+          reviewer.id,
+          {
+            title: "มี KPI รายเดือนรอการ Review",
+            body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
+            module: "KPI",
+            resourceId: reportId,
+            resourceType: "KPI_MONTHLY",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }

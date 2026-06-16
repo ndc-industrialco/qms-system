@@ -22,7 +22,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const body = await req.json();
     const parsed = schema.parse(body);
 
-    const dar = await darService.rejectDar(id, session.user.id, parsed.reason);
+    const dar = await darService.rejectDar(id, { userId: session.user.id, authUserId: session.user.authUserId }, parsed.reason);
 
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");

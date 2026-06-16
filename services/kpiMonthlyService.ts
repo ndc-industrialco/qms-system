@@ -137,6 +137,7 @@ export class KpiMonthlyService {
         documentId: reportId,
         step: 'PREPARER',
         signerUserId: actor.userId,
+        signerAuthUserId: actor.authUserId ?? null,
         action: 'APPROVED',
         actionDate: now,
         signaturePath: sigBody?.signatureDataUrl,
@@ -171,8 +172,12 @@ export class KpiMonthlyService {
     const report = await this.getReportById(reportId);
 
     const reviewerStep = await this.approvalSignatureRepo.findByDocumentAndStep('KPI_MONTHLY', reportId, 'REVIEWER');
-    if (reviewerStep && reviewerStep.signerUserId !== actor.userId && !['QMS', 'MR', 'IT'].includes(actor.role)) {
-      throw new ForbiddenError('You are not assigned to review this monthly report');
+    if (reviewerStep && !['QMS', 'MR', 'IT'].includes(actor.role)) {
+      const reviewerStepAuthId = (reviewerStep as Record<string, unknown>).signerAuthUserId as string | null | undefined;
+      const isAssignedReviewer = (actor.authUserId && reviewerStepAuthId)
+        ? reviewerStepAuthId === actor.authUserId
+        : reviewerStep.signerUserId === actor.userId;
+      if (!isAssignedReviewer) throw new ForbiddenError('You are not assigned to review this monthly report');
     }
 
     const hasApprover = await this.approvalSignatureRepo.findByDocumentAndStep('KPI_MONTHLY', reportId, 'APPROVER');
@@ -192,6 +197,7 @@ export class KpiMonthlyService {
         documentId: reportId,
         step: 'REVIEWER',
         signerUserId: actor.userId,
+        signerAuthUserId: actor.authUserId ?? null,
         action: 'APPROVED',
         actionDate: now,
         signaturePath: sigBody?.signatureDataUrl,
@@ -217,8 +223,12 @@ export class KpiMonthlyService {
     ensureMonthlyStatusTransition(report.status, 'APPROVED');
 
     const approverStep = await this.approvalSignatureRepo.findByDocumentAndStep('KPI_MONTHLY', reportId, 'APPROVER');
-    if (approverStep && approverStep.signerUserId !== actor.userId && !['QMS', 'MR', 'IT'].includes(actor.role)) {
-      throw new ForbiddenError('You are not assigned to approve this monthly report');
+    if (approverStep && !['QMS', 'MR', 'IT'].includes(actor.role)) {
+      const approverStepAuthId = (approverStep as Record<string, unknown>).signerAuthUserId as string | null | undefined;
+      const isAssignedApprover = (actor.authUserId && approverStepAuthId)
+        ? approverStepAuthId === actor.authUserId
+        : approverStep.signerUserId === actor.userId;
+      if (!isAssignedApprover) throw new ForbiddenError('You are not assigned to approve this monthly report');
     }
 
     const now = new Date();
@@ -232,6 +242,7 @@ export class KpiMonthlyService {
         documentId: reportId,
         step: 'APPROVER',
         signerUserId: actor.userId,
+        signerAuthUserId: actor.authUserId ?? null,
         action: 'APPROVED',
         actionDate: now,
         signaturePath: sigBody?.signatureDataUrl,
@@ -265,6 +276,7 @@ export class KpiMonthlyService {
         documentId: reportId,
         step: report.status === 'PENDING_REVIEW' ? 'REVIEWER' : 'APPROVER',
         signerUserId: actor.userId,
+        signerAuthUserId: actor.authUserId ?? null,
         action: 'REJECTED',
         actionDate: new Date(),
         comment: reason,

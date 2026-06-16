@@ -22,7 +22,7 @@ export interface DocumentControlSummary {
   status: DocControlStatus;
   effectiveDate: string | null;
   fileName: string | null;
-  createdBy: { id: string; name: string | null };
+  createdBy: { id: string; authUserId?: string | null; name: string | null };
   createdAt: string;
   departmentId: string | null;
   department?: { id: string; name: string } | null;
@@ -42,7 +42,7 @@ export interface DocumentControlRevisionDetail {
   fileName: string | null;
   fileSize: number | null;
   mimeType: string | null;
-  createdBy: { id: string; name: string | null };
+  createdBy: { id: string; authUserId?: string | null; name: string | null };
   createdAt: string;
 }
 
@@ -52,7 +52,7 @@ export interface DocumentControlDetail extends DocumentControlSummary {
   spFolderPath: string | null;
   fileSize: number | null;
   mimeType: string | null;
-  updatedBy: { id: string; name: string | null } | null;
+  updatedBy: { id: string; authUserId?: string | null; name: string | null } | null;
   updatedAt: string;
   revisions: DocumentControlRevisionDetail[];
 }

@@ -16,57 +16,147 @@ export class CarRepository extends BaseRepository<CarMaster> {
   async findDetailById(id: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id },
-      include: {
-        issuer: { select: { id: true, name: true, employeeId: true, department: true } },
-        targetDepartment: true,
+      select: {
+        id: true,
+        carNo: true,
+        carYear: true,
+        sequenceNo: true,
+        status: true,
+        sourceType: true,
+        sourceDetail: true,
+        isoStandards: true,
+        defectDetail: true,
+        nonConformanceRef: true,
+        issuerId: true,
+        issuerAuthUserId: true,
+        issuerName: true,
+        issuerEmployeeId: true,
+        issuerPosition: true,
+        issuedAt: true,
+        targetDepartmentId: true,
+        targetAuthDepartmentId: true,
+        targetDepartmentName: true,
+        targetEmailGroup: true,
+        responseDueAt: true,
+        reCar: true,
+        reCarRefId: true,
+        createdAt: true,
+        updatedAt: true,
         reCarRef: { select: { id: true, carNo: true } },
         reCarChildren: { select: { id: true, carNo: true, status: true } },
         response: {
-          include: {
-            responder: { select: { id: true, name: true, employeeId: true } },
-            attachments: { include: { uploadedBy: { select: { id: true, name: true } } } },
+          select: {
+            id: true,
+            responderId: true,
+            responderAuthUserId: true,
+            responderName: true,
+            responderEmployeeId: true,
+            responderPosition: true,
+            respondedAt: true,
+            whyAnalysis: true,
+            additionalToolDetail: true,
+            rootCausePerson: true,
+            rootCauseMaterial: true,
+            rootCauseMachine: true,
+            rootCauseMethod: true,
+            rootCauseOther: true,
+            rootCauseOtherDetail: true,
+            rootCauseSummary: true,
+            immediateAction: true,
+            preventiveAction: true,
+            plannedCompletionDate: true,
+            attachments: {
+              select: {
+                id: true,
+                fileName: true,
+                fileSize: true,
+                mimeType: true,
+                spItemId: true,
+                spWebUrl: true,
+                spDownloadUrl: true,
+                folderPath: true,
+                uploadedById: true,
+                uploadedByName: true,
+                createdAt: true,
+              },
+            },
           },
         },
         verifications: {
           orderBy: { round: "asc" },
-          include: { verifier: { select: { id: true, name: true, employeeId: true } } },
+          select: {
+            id: true,
+            round: true,
+            verifierId: true,
+            verifierAuthUserId: true,
+            verifierName: true,
+            verifierEmployeeId: true,
+            verifierPosition: true,
+            verifiedAt: true,
+            findings: true,
+            result: true,
+            nextDueDate: true,
+          },
         },
         mrSignature: {
-          include: { mrUser: { select: { id: true, name: true, employeeId: true } } },
+          select: {
+            id: true,
+            mrUserId: true,
+            mrAuthUserId: true,
+            mrUserName: true,
+            mrEmployeeId: true,
+            signedAt: true,
+            comment: true,
+          },
         },
         mrResponseReview: {
-          include: { mrUser: { select: { id: true, name: true, employeeId: true } } },
+          select: {
+            id: true,
+            mrUserId: true,
+            mrAuthUserId: true,
+            mrUserName: true,
+            mrEmployeeId: true,
+            reviewedAt: true,
+            action: true,
+            comment: true,
+          },
         },
         notificationLogs: { orderBy: { sentAt: "desc" } },
       },
     });
   }
 
-  async findManySummary(
-    where: Prisma.CarMasterWhereInput = {},
-    tx?: Prisma.TransactionClient
-  ) {
+  async findManySummary(where: Prisma.CarMasterWhereInput = {}, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findMany({
       where,
       orderBy: { createdAt: "desc" },
-      include: {
-        issuer: { select: { id: true, name: true } },
-        targetDepartment: { select: { id: true, name: true } },
+      select: {
+        id: true,
+        carNo: true,
+        carYear: true,
+        status: true,
+        sourceType: true,
+        defectDetail: true,
+        issuedAt: true,
+        responseDueAt: true,
+        createdAt: true,
+        issuerId: true,
+        issuerName: true,
+        targetDepartmentId: true,
+        targetAuthDepartmentId: true,
+        targetDepartmentName: true,
         _count: { select: { verifications: true } },
       },
     });
   }
 
-  async findManyByDepartment(
-    departmentId: string,
-    tx?: Prisma.TransactionClient
-  ) {
+  async findManyByDepartment(departmentId: string, tx?: Prisma.TransactionClient) {
     return this.findManySummary({ targetDepartmentId: departmentId }, tx);
   }
 
   async paginateSummaries(
     query: CarListQuery,
-    scope: { departmentId?: string },
+    scope: { departmentId?: string; authDepartmentId?: string | null },
     tx?: Prisma.TransactionClient
   ): Promise<PaginatedResult<Awaited<ReturnType<CarRepository["findManySummary"]>>[number]>> {
     const page = query.page || 1;
@@ -74,8 +164,14 @@ export class CarRepository extends BaseRepository<CarMaster> {
     const skip = (page - 1) * limit;
     const search = query.search?.trim();
 
+    const deptFilter = scope.authDepartmentId
+      ? { targetAuthDepartmentId: scope.authDepartmentId }
+      : scope.departmentId
+        ? { targetDepartmentId: scope.departmentId }
+        : {};
+
     const where: Prisma.CarMasterWhereInput = {
-      ...(scope.departmentId ? { targetDepartmentId: scope.departmentId } : {}),
+      ...deptFilter,
       ...(query.status ? { status: query.status } : {}),
       ...(query.sourceType ? { sourceType: query.sourceType } : {}),
       ...(search
@@ -84,8 +180,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
               { carNo: { contains: search, mode: "insensitive" } },
               { defectDetail: { contains: search, mode: "insensitive" } },
               { nonConformanceRef: { contains: search, mode: "insensitive" } },
-              { targetDepartment: { name: { contains: search, mode: "insensitive" } } },
-              { issuer: { name: { contains: search, mode: "insensitive" } } },
+              { targetDepartmentName: { contains: search, mode: "insensitive" } },
+              { issuerName: { contains: search, mode: "insensitive" } },
             ],
           }
         : {}),
@@ -97,9 +193,21 @@ export class CarRepository extends BaseRepository<CarMaster> {
         skip,
         take: limit,
         orderBy: [{ createdAt: "desc" }, { carNo: "desc" }],
-        include: {
-          issuer: { select: { id: true, name: true } },
-          targetDepartment: { select: { id: true, name: true } },
+        select: {
+          id: true,
+          carNo: true,
+          carYear: true,
+          status: true,
+          sourceType: true,
+          defectDetail: true,
+          issuedAt: true,
+          responseDueAt: true,
+          createdAt: true,
+          issuerId: true,
+          issuerName: true,
+          targetDepartmentId: true,
+          targetAuthDepartmentId: true,
+          targetDepartmentName: true,
           _count: { select: { verifications: true } },
         },
       }),
@@ -113,9 +221,16 @@ export class CarRepository extends BaseRepository<CarMaster> {
     return this.delegate(tx).findUnique({
       where: { id },
       select: {
-        id: true, status: true, targetEmailGroup: true, targetDepartmentId: true,
-        issuerId: true, carNo: true,
-        targetDepartment: { select: { name: true, emailGroup: true } },
+        id: true,
+        status: true,
+        targetEmailGroup: true,
+        targetDepartmentId: true,
+        targetAuthDepartmentId: true,
+        targetDepartmentName: true,
+        issuerId: true,
+        issuerAuthUserId: true,
+        issuerName: true,
+        carNo: true,
       },
     });
   }
@@ -124,8 +239,14 @@ export class CarRepository extends BaseRepository<CarMaster> {
     return this.delegate(tx).findUnique({
       where: { id },
       select: {
-        id: true, status: true, carNo: true, targetDepartmentId: true, issuerId: true,
-        issuer: { select: { email: true, name: true } },
+        id: true,
+        status: true,
+        carNo: true,
+        targetDepartmentId: true,
+        targetAuthDepartmentId: true,
+        issuerId: true,
+        issuerAuthUserId: true,
+        issuerName: true,
       },
     });
   }
@@ -134,10 +255,16 @@ export class CarRepository extends BaseRepository<CarMaster> {
     return this.delegate(tx).findUnique({
       where: { id },
       select: {
-        id: true, status: true, carNo: true, targetDepartmentId: true, issuerId: true,
+        id: true,
+        status: true,
+        carNo: true,
+        targetDepartmentId: true,
+        targetAuthDepartmentId: true,
+        targetDepartmentName: true,
+        issuerId: true,
+        issuerAuthUserId: true,
+        issuerName: true,
         targetEmailGroup: true,
-        targetDepartment: { select: { emailGroup: true } },
-        issuer: { select: { email: true, name: true } },
       },
     });
   }
@@ -153,9 +280,11 @@ export class CarRepository extends BaseRepository<CarMaster> {
     return this.delegate(tx).findUnique({
       where: { id },
       select: {
-        id: true, status: true, carNo: true,
+        id: true,
+        status: true,
+        carNo: true,
         targetEmailGroup: true,
-        targetDepartment: { select: { emailGroup: true } },
+        targetDepartmentName: true,
         response: { select: { plannedCompletionDate: true } },
       },
     });
@@ -165,6 +294,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
     carId: string,
     token: string,
     mrUserId: string,
+    snapshot: { mrAuthUserId?: string | null; mrUserName?: string | null; mrEmployeeId?: string | null },
     action: "APPROVED" | "REJECTED",
     comment: string | null | undefined,
     nextStatus: import("@/generated/prisma/client").CarStatus,
@@ -176,6 +306,9 @@ export class CarRepository extends BaseRepository<CarMaster> {
       data: {
         carMasterId: carId,
         mrUserId,
+        mrAuthUserId: snapshot.mrAuthUserId ?? null,
+        mrUserName: snapshot.mrUserName ?? null,
+        mrEmployeeId: snapshot.mrEmployeeId ?? null,
         action,
         comment: comment ?? null,
       },
@@ -193,15 +326,22 @@ export class CarRepository extends BaseRepository<CarMaster> {
     }
   }
 
-  async createNotificationLog(
-    data: { carMasterId: string; type: string; recipient: string },
-    tx?: Prisma.TransactionClient
-  ) {
+  async createNotificationLog(data: { carMasterId: string; type: string; recipient: string }, tx?: Prisma.TransactionClient) {
     return this.getClient(tx).carNotificationLog.create({ data });
   }
 
   async createDraft(
-    data: CarCreateInput & { issuerId: string; carNo: string; carYear: number; sequenceNo: number },
+    data: CarCreateInput & {
+      issuerId: string;
+      issuerAuthUserId?: string | null;
+      issuerName?: string | null;
+      issuerEmployeeId?: string | null;
+      targetAuthDepartmentId?: string | null;
+      targetDepartmentName?: string | null;
+      carNo: string;
+      carYear: number;
+      sequenceNo: number;
+    },
     tx?: Prisma.TransactionClient
   ) {
     return this.delegate(tx).create({
@@ -216,8 +356,13 @@ export class CarRepository extends BaseRepository<CarMaster> {
         defectDetail: data.defectDetail,
         nonConformanceRef: data.nonConformanceRef,
         issuerId: data.issuerId,
+        issuerAuthUserId: data.issuerAuthUserId ?? null,
+        issuerName: data.issuerName ?? null,
+        issuerEmployeeId: data.issuerEmployeeId ?? null,
         issuerPosition: data.issuerPosition,
         targetDepartmentId: data.targetDepartmentId,
+        targetAuthDepartmentId: data.targetAuthDepartmentId ?? null,
+        targetDepartmentName: data.targetDepartmentName ?? null,
         targetEmailGroup: data.targetEmailGroup ?? null,
         reCar: data.reCar ?? false,
         reCarRefId: data.reCarRefId ?? null,
@@ -225,7 +370,13 @@ export class CarRepository extends BaseRepository<CarMaster> {
     });
   }
 
-  async updateDraft(id: string, input: CarUpdateInput, tx?: Prisma.TransactionClient) {
+  async updateDraft(
+    id: string,
+    input: CarUpdateInput,
+    targetAuthDepartmentId?: string | null,
+    targetDepartmentName?: string | null,
+    tx?: Prisma.TransactionClient
+  ) {
     return this.delegate(tx).update({
       where: { id },
       data: {
@@ -236,6 +387,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
         nonConformanceRef: input.nonConformanceRef,
         issuerPosition: input.issuerPosition,
         targetDepartmentId: input.targetDepartmentId,
+        targetAuthDepartmentId: targetAuthDepartmentId ?? null,
+        targetDepartmentName: targetDepartmentName ?? null,
         targetEmailGroup: input.targetEmailGroup ?? null,
         reCar: input.reCar ?? false,
         reCarRefId: input.reCarRefId ?? null,
@@ -260,6 +413,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
   async createResponseAndSetStatus(
     id: string,
     responderId: string,
+    snapshot: { responderAuthUserId?: string | null; responderName?: string | null; responderEmployeeId?: string | null },
     input: CarRespondInput,
     tx?: Prisma.TransactionClient
   ) {
@@ -269,6 +423,9 @@ export class CarRepository extends BaseRepository<CarMaster> {
       data: {
         carMasterId: id,
         responderId,
+        responderAuthUserId: snapshot.responderAuthUserId ?? null,
+        responderName: snapshot.responderName ?? null,
+        responderEmployeeId: snapshot.responderEmployeeId ?? null,
         responderPosition: input.responderPosition,
         whyAnalysis: input.whyAnalysis,
         additionalToolDetail: input.additionalToolDetail ?? null,
@@ -292,6 +449,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
     id: string,
     input: CarVerifyInput,
     verifierId: string,
+    snapshot: { verifierAuthUserId?: string | null; verifierName?: string | null; verifierEmployeeId?: string | null },
     nextStatus: CarStatus,
     tx?: Prisma.TransactionClient
   ) {
@@ -302,6 +460,9 @@ export class CarRepository extends BaseRepository<CarMaster> {
         carMasterId: id,
         round: input.round,
         verifierId,
+        verifierAuthUserId: snapshot.verifierAuthUserId ?? null,
+        verifierName: snapshot.verifierName ?? null,
+        verifierEmployeeId: snapshot.verifierEmployeeId ?? null,
         verifierPosition: input.verifierPosition,
         findings: input.findings,
         result: input.result,
@@ -316,6 +477,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
     carId: string,
     token: string,
     mrUserId: string,
+    snapshot: { mrAuthUserId?: string | null; mrUserName?: string | null; mrEmployeeId?: string | null },
     comment: string | null | undefined,
     tx?: Prisma.TransactionClient
   ) {
@@ -325,11 +487,13 @@ export class CarRepository extends BaseRepository<CarMaster> {
       data: {
         carMasterId: carId,
         mrUserId,
+        mrAuthUserId: snapshot.mrAuthUserId ?? null,
+        mrUserName: snapshot.mrUserName ?? null,
+        mrEmployeeId: snapshot.mrEmployeeId ?? null,
         comment: comment ?? null,
       },
     });
 
-    // Atomic: only mark used if not already used — prevents double-use under concurrent requests.
     const result = await client.actionToken.updateMany({
       where: { token, usedAt: null },
       data: { usedAt: new Date() },
@@ -348,11 +512,25 @@ export class CarRepository extends BaseRepository<CarMaster> {
       isoStandards: string[];
       defectDetail: string;
       nonConformanceRef: string;
+      issuerName: string | null;
+      issuerEmployeeId: string | null;
       issuerPosition: string;
       targetDepartmentId: string;
+      targetAuthDepartmentId?: string | null;
+      targetDepartmentName?: string | null;
       targetEmailGroup: string | null;
     },
-    data: { carNo: string; carYear: number; sequenceNo: number; actorId: string; issuedAt: Date; responseDueAt: Date },
+    data: {
+      carNo: string;
+      carYear: number;
+      sequenceNo: number;
+      actorId: string;
+      actorAuthUserId?: string | null;
+      actorName?: string | null;
+      actorEmployeeId?: string | null;
+      issuedAt: Date;
+      responseDueAt: Date;
+    },
     tx?: Prisma.TransactionClient
   ) {
     return this.delegate(tx).create({
@@ -367,8 +545,13 @@ export class CarRepository extends BaseRepository<CarMaster> {
         defectDetail: original.defectDetail,
         nonConformanceRef: original.nonConformanceRef,
         issuerId: data.actorId,
+        issuerAuthUserId: data.actorAuthUserId ?? null,
+        issuerName: data.actorName ?? original.issuerName,
+        issuerEmployeeId: data.actorEmployeeId ?? original.issuerEmployeeId,
         issuerPosition: original.issuerPosition,
         targetDepartmentId: original.targetDepartmentId,
+        targetAuthDepartmentId: original.targetAuthDepartmentId ?? null,
+        targetDepartmentName: original.targetDepartmentName ?? null,
         targetEmailGroup: original.targetEmailGroup,
         reCar: true,
         reCarRefId: original.id,

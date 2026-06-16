@@ -44,7 +44,11 @@ export type KPIMinAggregateOutputType = {
   status: $Enums.KpiObjectiveStatus | null
   prepareSignature: string | null
   reviewerUserId: string | null
+  reviewerAuthUserId: string | null
+  reviewerEmail: string | null
   approverUserId: string | null
+  approverAuthUserId: string | null
+  approverEmail: string | null
   submittedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -60,7 +64,11 @@ export type KPIMaxAggregateOutputType = {
   status: $Enums.KpiObjectiveStatus | null
   prepareSignature: string | null
   reviewerUserId: string | null
+  reviewerAuthUserId: string | null
+  reviewerEmail: string | null
   approverUserId: string | null
+  approverAuthUserId: string | null
+  approverEmail: string | null
   submittedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -76,7 +84,11 @@ export type KPICountAggregateOutputType = {
   status: number
   prepareSignature: number
   reviewerUserId: number
+  reviewerAuthUserId: number
+  reviewerEmail: number
   approverUserId: number
+  approverAuthUserId: number
+  approverEmail: number
   submittedAt: number
   createdAt: number
   updatedAt: number
@@ -102,7 +114,11 @@ export type KPIMinAggregateInputType = {
   status?: true
   prepareSignature?: true
   reviewerUserId?: true
+  reviewerAuthUserId?: true
+  reviewerEmail?: true
   approverUserId?: true
+  approverAuthUserId?: true
+  approverEmail?: true
   submittedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -118,7 +134,11 @@ export type KPIMaxAggregateInputType = {
   status?: true
   prepareSignature?: true
   reviewerUserId?: true
+  reviewerAuthUserId?: true
+  reviewerEmail?: true
   approverUserId?: true
+  approverAuthUserId?: true
+  approverEmail?: true
   submittedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -134,7 +154,11 @@ export type KPICountAggregateInputType = {
   status?: true
   prepareSignature?: true
   reviewerUserId?: true
+  reviewerAuthUserId?: true
+  reviewerEmail?: true
   approverUserId?: true
+  approverAuthUserId?: true
+  approverEmail?: true
   submittedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -237,7 +261,11 @@ export type KPIGroupByOutputType = {
   status: $Enums.KpiObjectiveStatus
   prepareSignature: string | null
   reviewerUserId: string | null
+  reviewerAuthUserId: string | null
+  reviewerEmail: string | null
   approverUserId: string | null
+  approverAuthUserId: string | null
+  approverEmail: string | null
   submittedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -276,7 +304,11 @@ export type KPIWhereInput = {
   status?: Prisma.EnumKpiObjectiveStatusFilter<"KPI"> | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.StringNullableFilter<"KPI"> | string | null
   reviewerUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
+  reviewerAuthUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
+  reviewerEmail?: Prisma.StringNullableFilter<"KPI"> | string | null
   approverUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
+  approverAuthUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
+  approverEmail?: Prisma.StringNullableFilter<"KPI"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"KPI"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
@@ -294,7 +326,11 @@ export type KPIOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   prepareSignature?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewerUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewerAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewerEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   approverUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  approverAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  approverEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -316,7 +352,11 @@ export type KPIWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumKpiObjectiveStatusFilter<"KPI"> | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.StringNullableFilter<"KPI"> | string | null
   reviewerUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
+  reviewerAuthUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
+  reviewerEmail?: Prisma.StringNullableFilter<"KPI"> | string | null
   approverUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
+  approverAuthUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
+  approverEmail?: Prisma.StringNullableFilter<"KPI"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"KPI"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
@@ -334,7 +374,11 @@ export type KPIOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   prepareSignature?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewerUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewerAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  reviewerEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   approverUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  approverAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  approverEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -358,7 +402,11 @@ export type KPIScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumKpiObjectiveStatusWithAggregatesFilter<"KPI"> | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
   reviewerUserId?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
+  reviewerAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
+  reviewerEmail?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
   approverUserId?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
+  approverAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
+  approverEmail?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
   submittedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"KPI"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"KPI"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"KPI"> | Date | string
@@ -374,7 +422,11 @@ export type KPICreateInput = {
   status?: $Enums.KpiObjectiveStatus
   prepareSignature?: string | null
   reviewerUserId?: string | null
+  reviewerAuthUserId?: string | null
+  reviewerEmail?: string | null
   approverUserId?: string | null
+  approverAuthUserId?: string | null
+  approverEmail?: string | null
   submittedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -392,7 +444,11 @@ export type KPIUncheckedCreateInput = {
   status?: $Enums.KpiObjectiveStatus
   prepareSignature?: string | null
   reviewerUserId?: string | null
+  reviewerAuthUserId?: string | null
+  reviewerEmail?: string | null
   approverUserId?: string | null
+  approverAuthUserId?: string | null
+  approverEmail?: string | null
   submittedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -410,7 +466,11 @@ export type KPIUpdateInput = {
   status?: Prisma.EnumKpiObjectiveStatusFieldUpdateOperationsInput | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -428,7 +488,11 @@ export type KPIUncheckedUpdateInput = {
   status?: Prisma.EnumKpiObjectiveStatusFieldUpdateOperationsInput | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -446,7 +510,11 @@ export type KPICreateManyInput = {
   status?: $Enums.KpiObjectiveStatus
   prepareSignature?: string | null
   reviewerUserId?: string | null
+  reviewerAuthUserId?: string | null
+  reviewerEmail?: string | null
   approverUserId?: string | null
+  approverAuthUserId?: string | null
+  approverEmail?: string | null
   submittedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -462,7 +530,11 @@ export type KPIUpdateManyMutationInput = {
   status?: Prisma.EnumKpiObjectiveStatusFieldUpdateOperationsInput | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -478,7 +550,11 @@ export type KPIUncheckedUpdateManyInput = {
   status?: Prisma.EnumKpiObjectiveStatusFieldUpdateOperationsInput | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -499,7 +575,11 @@ export type KPICountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   prepareSignature?: Prisma.SortOrder
   reviewerUserId?: Prisma.SortOrder
+  reviewerAuthUserId?: Prisma.SortOrder
+  reviewerEmail?: Prisma.SortOrder
   approverUserId?: Prisma.SortOrder
+  approverAuthUserId?: Prisma.SortOrder
+  approverEmail?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -519,7 +599,11 @@ export type KPIMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   prepareSignature?: Prisma.SortOrder
   reviewerUserId?: Prisma.SortOrder
+  reviewerAuthUserId?: Prisma.SortOrder
+  reviewerEmail?: Prisma.SortOrder
   approverUserId?: Prisma.SortOrder
+  approverAuthUserId?: Prisma.SortOrder
+  approverEmail?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -535,7 +619,11 @@ export type KPIMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   prepareSignature?: Prisma.SortOrder
   reviewerUserId?: Prisma.SortOrder
+  reviewerAuthUserId?: Prisma.SortOrder
+  reviewerEmail?: Prisma.SortOrder
   approverUserId?: Prisma.SortOrder
+  approverAuthUserId?: Prisma.SortOrder
+  approverEmail?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -592,7 +680,11 @@ export type KPICreateWithoutObjectivesInput = {
   status?: $Enums.KpiObjectiveStatus
   prepareSignature?: string | null
   reviewerUserId?: string | null
+  reviewerAuthUserId?: string | null
+  reviewerEmail?: string | null
   approverUserId?: string | null
+  approverAuthUserId?: string | null
+  approverEmail?: string | null
   submittedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -609,7 +701,11 @@ export type KPIUncheckedCreateWithoutObjectivesInput = {
   status?: $Enums.KpiObjectiveStatus
   prepareSignature?: string | null
   reviewerUserId?: string | null
+  reviewerAuthUserId?: string | null
+  reviewerEmail?: string | null
   approverUserId?: string | null
+  approverAuthUserId?: string | null
+  approverEmail?: string | null
   submittedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -642,7 +738,11 @@ export type KPIUpdateWithoutObjectivesInput = {
   status?: Prisma.EnumKpiObjectiveStatusFieldUpdateOperationsInput | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -659,7 +759,11 @@ export type KPIUncheckedUpdateWithoutObjectivesInput = {
   status?: Prisma.EnumKpiObjectiveStatusFieldUpdateOperationsInput | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -676,7 +780,11 @@ export type KPICreateWithoutMonthlyReportsInput = {
   status?: $Enums.KpiObjectiveStatus
   prepareSignature?: string | null
   reviewerUserId?: string | null
+  reviewerAuthUserId?: string | null
+  reviewerEmail?: string | null
   approverUserId?: string | null
+  approverAuthUserId?: string | null
+  approverEmail?: string | null
   submittedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -693,7 +801,11 @@ export type KPIUncheckedCreateWithoutMonthlyReportsInput = {
   status?: $Enums.KpiObjectiveStatus
   prepareSignature?: string | null
   reviewerUserId?: string | null
+  reviewerAuthUserId?: string | null
+  reviewerEmail?: string | null
   approverUserId?: string | null
+  approverAuthUserId?: string | null
+  approverEmail?: string | null
   submittedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -726,7 +838,11 @@ export type KPIUpdateWithoutMonthlyReportsInput = {
   status?: Prisma.EnumKpiObjectiveStatusFieldUpdateOperationsInput | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -743,7 +859,11 @@ export type KPIUncheckedUpdateWithoutMonthlyReportsInput = {
   status?: Prisma.EnumKpiObjectiveStatusFieldUpdateOperationsInput | $Enums.KpiObjectiveStatus
   prepareSignature?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -800,7 +920,11 @@ export type KPISelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   status?: boolean
   prepareSignature?: boolean
   reviewerUserId?: boolean
+  reviewerAuthUserId?: boolean
+  reviewerEmail?: boolean
   approverUserId?: boolean
+  approverAuthUserId?: boolean
+  approverEmail?: boolean
   submittedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -819,7 +943,11 @@ export type KPISelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   status?: boolean
   prepareSignature?: boolean
   reviewerUserId?: boolean
+  reviewerAuthUserId?: boolean
+  reviewerEmail?: boolean
   approverUserId?: boolean
+  approverAuthUserId?: boolean
+  approverEmail?: boolean
   submittedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -835,7 +963,11 @@ export type KPISelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   status?: boolean
   prepareSignature?: boolean
   reviewerUserId?: boolean
+  reviewerAuthUserId?: boolean
+  reviewerEmail?: boolean
   approverUserId?: boolean
+  approverAuthUserId?: boolean
+  approverEmail?: boolean
   submittedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -851,13 +983,17 @@ export type KPISelectScalar = {
   status?: boolean
   prepareSignature?: boolean
   reviewerUserId?: boolean
+  reviewerAuthUserId?: boolean
+  reviewerEmail?: boolean
   approverUserId?: boolean
+  approverAuthUserId?: boolean
+  approverEmail?: boolean
   submittedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type KPIOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "yearly" | "department" | "prepare" | "reviewer" | "approver" | "status" | "prepareSignature" | "reviewerUserId" | "approverUserId" | "submittedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["kPI"]>
+export type KPIOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "yearly" | "department" | "prepare" | "reviewer" | "approver" | "status" | "prepareSignature" | "reviewerUserId" | "reviewerAuthUserId" | "reviewerEmail" | "approverUserId" | "approverAuthUserId" | "approverEmail" | "submittedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["kPI"]>
 export type KPIInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   objectives?: boolean | Prisma.KPI$objectivesArgs<ExtArgs>
   monthlyReports?: boolean | Prisma.KPI$monthlyReportsArgs<ExtArgs>
@@ -882,7 +1018,11 @@ export type $KPIPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     status: $Enums.KpiObjectiveStatus
     prepareSignature: string | null
     reviewerUserId: string | null
+    reviewerAuthUserId: string | null
+    reviewerEmail: string | null
     approverUserId: string | null
+    approverAuthUserId: string | null
+    approverEmail: string | null
     submittedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -1320,7 +1460,11 @@ export interface KPIFieldRefs {
   readonly status: Prisma.FieldRef<"KPI", 'KpiObjectiveStatus'>
   readonly prepareSignature: Prisma.FieldRef<"KPI", 'String'>
   readonly reviewerUserId: Prisma.FieldRef<"KPI", 'String'>
+  readonly reviewerAuthUserId: Prisma.FieldRef<"KPI", 'String'>
+  readonly reviewerEmail: Prisma.FieldRef<"KPI", 'String'>
   readonly approverUserId: Prisma.FieldRef<"KPI", 'String'>
+  readonly approverAuthUserId: Prisma.FieldRef<"KPI", 'String'>
+  readonly approverEmail: Prisma.FieldRef<"KPI", 'String'>
   readonly submittedAt: Prisma.FieldRef<"KPI", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"KPI", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"KPI", 'DateTime'>

@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     const data = await req.json();
     const validatedData = updateDocumentControlSchema.parse(data);
 
-    const doc = await docService.updateDocument(id, session.user.id, validatedData);
+    const doc = await docService.updateDocument(id, session.user.id, validatedData, session.user.authUserId);
     return sendSuccess(doc, 'Document updated successfully');
   } catch (err) {
     return handleApiError(err);

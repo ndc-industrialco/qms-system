@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DarForm from "./DarForm";
 import { useT } from "@/lib/i18n";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ConfirmModal from "@/components/common/ConfirmModal";
 import { useDarDetail, useDeleteDar } from "@/hooks/api/use-dar";
@@ -42,51 +42,31 @@ export default function DarEditDrawer({ darId, onClose }: Props) {
     });
   }
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (showDeleteConfirm) setShowDeleteConfirm(false);
-        else onClose();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose, showDeleteConfirm]);
 
   if (!isOpen) return null;
 
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={(val) => {
+      <Dialog open={isOpen} onOpenChange={(val) => {
         if (!val) {
           if (showDeleteConfirm) setShowDeleteConfirm(false);
           else onClose();
         }
       }}>
-        <SheetContent side="right" className="flex flex-col p-0 w-full lg:max-w-2xl h-full" hideClose>
-          <div className="lg:hidden flex justify-center pt-3 pb-1 shrink-0" aria-hidden="true">
-            <div className="w-10 h-1 rounded-full bg-slate-200" />
-          </div>
+        <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+          <DialogHeader className="px-6 py-4 border-b border-slate-100 text-left">
+            <div className="flex items-center justify-between pr-8">
+              <div>
+                <DialogTitle className="text-lg font-semibold text-slate-800 leading-snug">
+                  {t("dar.editDrawer.title")}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-slate-500 mt-0.5">
+                  {dar?.darNo
+                    ? `${t("dar.editDrawer.darNoPrefix")} ${dar.darNo}`
+                    : t("dar.editDrawer.draft")}
+                </DialogDescription>
+              </div>
 
-          <SheetHeader className="px-6 py-4 border-b border-slate-100 shrink-0 text-left relative flex flex-row items-center justify-between">
-            <div>
-              <SheetTitle className="text-lg font-semibold text-slate-800 leading-snug pr-8">
-                {t("dar.editDrawer.title")}
-              </SheetTitle>
-              <SheetDescription className="text-xs text-slate-500 mt-0.5">
-                {dar?.darNo
-                  ? `${t("dar.editDrawer.darNoPrefix")} ${dar.darNo}`
-                  : t("dar.editDrawer.draft")}
-              </SheetDescription>
-            </div>
-
-            <div className="flex items-center gap-2">
               {dar?.status === "DRAFT" && (
                 <Button
                   variant="outline"
@@ -101,20 +81,8 @@ export default function DarEditDrawer({ darId, onClose }: Props) {
                   <span className="hidden sm:inline">{t("common.delete")}</span>
                 </Button>
               )}
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                aria-label={t("common.close")}
-                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </Button>
             </div>
-          </SheetHeader>
+          </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
             {loading && (
@@ -153,8 +121,8 @@ export default function DarEditDrawer({ darId, onClose }: Props) {
               />
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {showDeleteConfirm && (
         <ConfirmModal

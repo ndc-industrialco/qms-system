@@ -1,7 +1,6 @@
 import { NotificationService } from '@/services/notificationService';
 import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
-import { UserRepository } from "@/repositories/userRepository";
 import { sendReviewerAssignedEmail } from "@/services/email";
 import { ActionTokenService } from "@/services/actionTokenService";
 import { ApprovalModule, ApprovalStep } from "@/generated/prisma/client";
@@ -11,12 +10,12 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { revalidateTag } from "next/cache";
+import { getUserSnapshot } from "@/lib/userSnapshotCache";
 
 const darService = new DarService();
-const userRepo = new UserRepository();
 
 const schema = z.object({
-  reviewerUserId: z.string().uuid(),
+  reviewerUserId: z.string(),
 });
 
 type Params = { params: Promise<{ id: string }> };
@@ -29,14 +28,17 @@ export async function POST(req: NextRequest, { params }: Params) {
     const body = await req.json();
     const parsed = schema.parse(body);
 
-    const dar = await darService.assignReviewer(id, session.user.id, parsed.reviewerUserId);
+    const dar = await darService.assignReviewer(id, { userId: session.user.id, authUserId: session.user.authUserId }, parsed.reviewerUserId);
 
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");
 
-    const reviewerUser = await userRepo.findById(parsed.reviewerUserId);
+    // Resolve reviewer identity from snapshot cache (no User table)
+    const reviewerSnapshot = await getUserSnapshot(parsed.reviewerUserId);
+    const reviewerEmail = reviewerSnapshot?.email;
+    const reviewerName = reviewerSnapshot?.name ?? "";
 
-    if (reviewerUser?.email && dar.darNo) {
+    if (reviewerEmail && dar.darNo) {
       await ActionTokenService.revokeByDocument(ApprovalModule.DAR, id);
       const reviewerToken = await ActionTokenService.issue({
         module: ApprovalModule.DAR,
@@ -46,9 +48,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
 
       NotificationService.sendEmailOnce(
-        `DAR:${id}:REVIEWER_ASSIGNED:reviewer:${reviewerUser.id}:${reviewerToken.substring(0, 16)}`,
+        `DAR:${id}:REVIEWER_ASSIGNED:reviewer:${parsed.reviewerUserId}:${reviewerToken.substring(0, 16)}`,
         () => sendReviewerAssignedEmail({
-          reviewer: { name: reviewerUser.name ?? "", email: reviewerUser.email },
+          reviewer: { name: reviewerName, email: reviewerEmail },
           requesterName: dar.requester.name ?? session.user.name ?? "",
           requesterDepartment: dar.requester.department?.name ?? null,
           darNo: dar.darNo!,
@@ -65,10 +67,18 @@ export async function POST(req: NextRequest, { params }: Params) {
             spWebUrl: a.spWebUrl,
           })),
           actionToken: reviewerToken,
-          senderEmail: session.user.email ?? undefined,
+          senderEmail: dar.requester.email ?? session.user.email ?? undefined,
         }),
-        reviewerUser.email,
+        reviewerEmail,
         'DAR Reviewer Assigned',
+        parsed.reviewerUserId,
+        {
+          title: "คุณได้รับมอบหมายเป็น Reviewer",
+          body: `DAR ${dar.darNo ?? dar.id}`,
+          module: "DAR",
+          resourceId: id,
+          resourceType: "DAR",
+        },
       ).catch(() => { /* logged inside NotificationService */ });
     }
 

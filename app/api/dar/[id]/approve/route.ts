@@ -1,7 +1,6 @@
 import { NotificationService } from '@/services/notificationService';
 import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
-import { UserRepository } from "@/repositories/userRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { sendMrApprovalRequestEmail, sendQmsApprovalRequestEmail, sendApprovalNotificationEmail } from "@/services/email";
 import { ActionTokenService } from "@/services/actionTokenService";
@@ -12,9 +11,9 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { revalidateTag } from "next/cache";
+import { getUserSnapshot } from "@/lib/userSnapshotCache";
 
 const darService = new DarService();
-const userRepo = new UserRepository();
 const configRepo = new SystemConfigRepository();
 
 const schema = z.object({
@@ -46,7 +45,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const body = await req.json();
     const parsed = schema.parse(body);
 
-    const dar = await darService.approveDar(id, session.user.id, {
+    const dar = await darService.approveDar(id, { userId: session.user.id, authUserId: session.user.authUserId }, {
       signatureDataUrl: parsed.signatureDataUrl,
       signatureType: parsed.signatureType,
       saveSignature: parsed.saveSignature,
@@ -74,26 +73,25 @@ export async function POST(req: NextRequest, { params }: Params) {
     );
 
     if (reviewerApprovedThisStep && hasPendingMrStep && dar.darNo) {
-      const [mrConfigValue, requesterUser] = await Promise.all([
-        configRepo.findValueByKey("CURRENT_MR_USER_ID"),
-        userRepo.findById(dar.requester.id),
-      ]);
+      const mrAuthKey = await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID")
+        ?? await configRepo.findValueByKey("CURRENT_MR_USER_ID");
 
-      if (mrConfigValue) {
-        const mrUser = await userRepo.findById(mrConfigValue);
+      if (mrAuthKey) {
+        const mrSnapshot = await getUserSnapshot(mrAuthKey);
+        const mrEmail = mrSnapshot?.email;
 
-        if (mrUser?.email) {
+        if (mrEmail) {
           const mrToken = await ActionTokenService.issue({
             module: ApprovalModule.DAR,
             documentId: id,
             role: ApprovalStep.APPROVER_MR,
-            issuedTo: mrUser.id,
+            issuedTo: mrAuthKey,
           });
 
           NotificationService.sendEmailOnce(
-            `DAR:${dar.id}:REVIEWER_APPROVED:mr:${mrUser.id}:${mrToken.substring(0, 16)}`,
+            `DAR:${dar.id}:REVIEWER_APPROVED:mr:${mrAuthKey}:${mrToken.substring(0, 16)}`,
             () => sendMrApprovalRequestEmail({
-              mr: { name: mrUser.name ?? "", email: mrUser.email },
+              mr: { name: mrSnapshot?.name ?? "", email: mrEmail },
               reviewerName: session.user.name ?? "",
               requesterName: dar.requester.name ?? "",
               requesterDepartment: dar.requester.department?.name ?? null,
@@ -108,46 +106,61 @@ export async function POST(req: NextRequest, { params }: Params) {
               items: dar.items,
               attachments: dar.attachments.map((a) => ({ fileName: a.fileName, spWebUrl: a.spWebUrl })),
               actionToken: mrToken,
-              senderEmail: requesterUser?.email ?? undefined,
+              senderEmail: dar.requester.email ?? undefined,
             }),
-            mrUser.email,
+            mrEmail,
             'DAR MR Approval Request',
+            mrAuthKey,
+            {
+              title: "มี DAR รอการอนุมัติจาก MR",
+              body: `DAR ${dar.darNo}`,
+              module: "DAR",
+              resourceId: id,
+              resourceType: "DAR",
+            },
           ).catch(() => { /* logged inside NotificationService */ });
         }
       }
     }
 
     if (mrApprovedThisStep && hasPendingQmsStep && dar.darNo) {
-      const [qmsConfigValue, requesterUser] = await Promise.all([
-        configRepo.findValueByKey("CURRENT_QMS_USER_ID"),
-        userRepo.findById(dar.requester.id),
-      ]);
+      const qmsAuthKey = await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID")
+        ?? await configRepo.findValueByKey("CURRENT_QMS_USER_ID");
 
-      const qmsUser = qmsConfigValue
-        ? await userRepo.findById(qmsConfigValue)
-        : await userRepo.findFirstByRole("QMS");
+      if (qmsAuthKey) {
+        const qmsSnapshot = await getUserSnapshot(qmsAuthKey);
+        const qmsEmail = qmsSnapshot?.email;
 
-      if (qmsUser?.email) {
-        const qmsToken = await ActionTokenService.issue({
-          module: ApprovalModule.DAR,
-          documentId: id,
-          role: ApprovalStep.QMS_PROCESSOR,
-          issuedTo: qmsUser.id,
-        });
+        if (qmsEmail) {
+          const qmsToken = await ActionTokenService.issue({
+            module: ApprovalModule.DAR,
+            documentId: id,
+            role: ApprovalStep.QMS_PROCESSOR,
+            issuedTo: qmsAuthKey,
+          });
 
-        NotificationService.sendEmailOnce(
-          `DAR:${dar.id}:MR_APPROVED:qms:${qmsUser.id}:${qmsToken.substring(0, 16)}`,
-          () => sendQmsApprovalRequestEmail({
-            qms: { name: qmsUser.name ?? "", email: qmsUser.email },
-            requesterName: dar.requester.name ?? "",
-            darNo: dar.darNo!,
-            darId: dar.id,
-            actionToken: qmsToken,
-            senderEmail: requesterUser?.email ?? undefined,
-          }),
-          qmsUser.email,
-          'DAR QMS Processing Request',
-        ).catch(() => { /* logged inside NotificationService */ });
+          NotificationService.sendEmailOnce(
+            `DAR:${dar.id}:MR_APPROVED:qms:${qmsAuthKey}:${qmsToken.substring(0, 16)}`,
+            () => sendQmsApprovalRequestEmail({
+              qms: { name: qmsSnapshot?.name ?? "", email: qmsEmail },
+              requesterName: dar.requester.name ?? "",
+              darNo: dar.darNo!,
+              darId: dar.id,
+              actionToken: qmsToken,
+              senderEmail: dar.requester.email ?? undefined,
+            }),
+            qmsEmail,
+            'DAR QMS Processing Request',
+            qmsAuthKey,
+            {
+              title: "มี DAR รอการประมวลผล QMS",
+              body: `DAR ${dar.darNo}`,
+              module: "DAR",
+              resourceId: id,
+              resourceType: "DAR",
+            },
+          ).catch(() => { /* logged inside NotificationService */ });
+        }
       }
     }
 
@@ -155,20 +168,27 @@ export async function POST(req: NextRequest, { params }: Params) {
       // All steps done — revoke any remaining DAR tokens
       await ActionTokenService.revokeByDocument(ApprovalModule.DAR, id);
 
-      const requesterUser = await userRepo.findById(dar.requester.id);
-      if (requesterUser?.email) {
+      if (dar.requester.email) {
         NotificationService.sendEmailOnce(
-          `DAR:${dar.id}:COMPLETED:requester:${requesterUser.id}`,
+          `DAR:${dar.id}:COMPLETED:requester:${dar.requester.id}`,
           () => sendApprovalNotificationEmail({
-            to: { name: requesterUser.name ?? "", email: requesterUser.email },
+            to: { name: dar.requester.name ?? "", email: dar.requester.email! },
             darNo: dar.darNo!,
             darId: dar.id,
             approverName: session.user.name ?? "QMS",
             stepLabel: "QMS",
             nextStepLabel: "Completed",
           }),
-          requesterUser.email,
+          dar.requester.email,
           'DAR Completed',
+          dar.requester.id,
+          {
+            title: "DAR เสร็จสมบูรณ์",
+            body: `DAR ${dar.darNo}`,
+            module: "DAR",
+            resourceId: id,
+            resourceType: "DAR",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }

@@ -18,7 +18,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const updated = await service.approveObjectives(id, {
       userId: session.user.id,
       role: session.user.role,
-      departmentId: session.user.departmentId,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
     }, body);
 
     const recipients = [updated.reviewerUserId, updated.approverUserId].filter(Boolean) as string[];
@@ -39,6 +39,14 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           }),
           u.email,
           'KPI Approved',
+          u.id,
+          {
+            title: "KPI ได้รับการอนุมัติ",
+            body: `KPI ${updated.department} ${updated.yearly}`,
+            module: "KPI",
+            resourceId: id,
+            resourceType: "KPI",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }

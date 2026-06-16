@@ -28,6 +28,9 @@ export type CarResponseMinAggregateOutputType = {
   id: string | null
   carMasterId: string | null
   responderId: string | null
+  responderAuthUserId: string | null
+  responderName: string | null
+  responderEmployeeId: string | null
   responderPosition: string | null
   respondedAt: Date | null
   whyAnalysis: string | null
@@ -48,6 +51,9 @@ export type CarResponseMaxAggregateOutputType = {
   id: string | null
   carMasterId: string | null
   responderId: string | null
+  responderAuthUserId: string | null
+  responderName: string | null
+  responderEmployeeId: string | null
   responderPosition: string | null
   respondedAt: Date | null
   whyAnalysis: string | null
@@ -68,6 +74,9 @@ export type CarResponseCountAggregateOutputType = {
   id: number
   carMasterId: number
   responderId: number
+  responderAuthUserId: number
+  responderName: number
+  responderEmployeeId: number
   responderPosition: number
   respondedAt: number
   whyAnalysis: number
@@ -90,6 +99,9 @@ export type CarResponseMinAggregateInputType = {
   id?: true
   carMasterId?: true
   responderId?: true
+  responderAuthUserId?: true
+  responderName?: true
+  responderEmployeeId?: true
   responderPosition?: true
   respondedAt?: true
   whyAnalysis?: true
@@ -110,6 +122,9 @@ export type CarResponseMaxAggregateInputType = {
   id?: true
   carMasterId?: true
   responderId?: true
+  responderAuthUserId?: true
+  responderName?: true
+  responderEmployeeId?: true
   responderPosition?: true
   respondedAt?: true
   whyAnalysis?: true
@@ -130,6 +145,9 @@ export type CarResponseCountAggregateInputType = {
   id?: true
   carMasterId?: true
   responderId?: true
+  responderAuthUserId?: true
+  responderName?: true
+  responderEmployeeId?: true
   responderPosition?: true
   respondedAt?: true
   whyAnalysis?: true
@@ -223,6 +241,9 @@ export type CarResponseGroupByOutputType = {
   id: string
   carMasterId: string
   responderId: string
+  responderAuthUserId: string | null
+  responderName: string | null
+  responderEmployeeId: string | null
   responderPosition: string
   respondedAt: Date
   whyAnalysis: string
@@ -264,6 +285,9 @@ export type CarResponseWhereInput = {
   id?: Prisma.StringFilter<"CarResponse"> | string
   carMasterId?: Prisma.StringFilter<"CarResponse"> | string
   responderId?: Prisma.StringFilter<"CarResponse"> | string
+  responderAuthUserId?: Prisma.StringNullableFilter<"CarResponse"> | string | null
+  responderName?: Prisma.StringNullableFilter<"CarResponse"> | string | null
+  responderEmployeeId?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringFilter<"CarResponse"> | string
   respondedAt?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
   whyAnalysis?: Prisma.StringFilter<"CarResponse"> | string
@@ -279,7 +303,6 @@ export type CarResponseWhereInput = {
   preventiveAction?: Prisma.StringFilter<"CarResponse"> | string
   plannedCompletionDate?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
   carMaster?: Prisma.XOR<Prisma.CarMasterScalarRelationFilter, Prisma.CarMasterWhereInput>
-  responder?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   attachments?: Prisma.CarAttachmentListRelationFilter
 }
 
@@ -287,6 +310,9 @@ export type CarResponseOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   responderId?: Prisma.SortOrder
+  responderAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  responderName?: Prisma.SortOrderInput | Prisma.SortOrder
+  responderEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
@@ -302,7 +328,6 @@ export type CarResponseOrderByWithRelationInput = {
   preventiveAction?: Prisma.SortOrder
   plannedCompletionDate?: Prisma.SortOrder
   carMaster?: Prisma.CarMasterOrderByWithRelationInput
-  responder?: Prisma.UserOrderByWithRelationInput
   attachments?: Prisma.CarAttachmentOrderByRelationAggregateInput
 }
 
@@ -313,6 +338,9 @@ export type CarResponseWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.CarResponseWhereInput[]
   NOT?: Prisma.CarResponseWhereInput | Prisma.CarResponseWhereInput[]
   responderId?: Prisma.StringFilter<"CarResponse"> | string
+  responderAuthUserId?: Prisma.StringNullableFilter<"CarResponse"> | string | null
+  responderName?: Prisma.StringNullableFilter<"CarResponse"> | string | null
+  responderEmployeeId?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringFilter<"CarResponse"> | string
   respondedAt?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
   whyAnalysis?: Prisma.StringFilter<"CarResponse"> | string
@@ -328,7 +356,6 @@ export type CarResponseWhereUniqueInput = Prisma.AtLeast<{
   preventiveAction?: Prisma.StringFilter<"CarResponse"> | string
   plannedCompletionDate?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
   carMaster?: Prisma.XOR<Prisma.CarMasterScalarRelationFilter, Prisma.CarMasterWhereInput>
-  responder?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   attachments?: Prisma.CarAttachmentListRelationFilter
 }, "id" | "carMasterId">
 
@@ -336,6 +363,9 @@ export type CarResponseOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   responderId?: Prisma.SortOrder
+  responderAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  responderName?: Prisma.SortOrderInput | Prisma.SortOrder
+  responderEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
@@ -362,6 +392,9 @@ export type CarResponseScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"CarResponse"> | string
   carMasterId?: Prisma.StringWithAggregatesFilter<"CarResponse"> | string
   responderId?: Prisma.StringWithAggregatesFilter<"CarResponse"> | string
+  responderAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
+  responderName?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
+  responderEmployeeId?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringWithAggregatesFilter<"CarResponse"> | string
   respondedAt?: Prisma.DateTimeWithAggregatesFilter<"CarResponse"> | Date | string
   whyAnalysis?: Prisma.StringWithAggregatesFilter<"CarResponse"> | string
@@ -380,6 +413,10 @@ export type CarResponseScalarWhereWithAggregatesInput = {
 
 export type CarResponseCreateInput = {
   id?: string
+  responderId: string
+  responderAuthUserId?: string | null
+  responderName?: string | null
+  responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
   whyAnalysis: string
@@ -395,7 +432,6 @@ export type CarResponseCreateInput = {
   preventiveAction: string
   plannedCompletionDate: Date | string
   carMaster: Prisma.CarMasterCreateNestedOneWithoutResponseInput
-  responder: Prisma.UserCreateNestedOneWithoutCarResponsesInput
   attachments?: Prisma.CarAttachmentCreateNestedManyWithoutCarResponseInput
 }
 
@@ -403,6 +439,9 @@ export type CarResponseUncheckedCreateInput = {
   id?: string
   carMasterId: string
   responderId: string
+  responderAuthUserId?: string | null
+  responderName?: string | null
+  responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
   whyAnalysis: string
@@ -422,6 +461,10 @@ export type CarResponseUncheckedCreateInput = {
 
 export type CarResponseUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  responderId?: Prisma.StringFieldUpdateOperationsInput | string
+  responderAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
@@ -437,7 +480,6 @@ export type CarResponseUpdateInput = {
   preventiveAction?: Prisma.StringFieldUpdateOperationsInput | string
   plannedCompletionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carMaster?: Prisma.CarMasterUpdateOneRequiredWithoutResponseNestedInput
-  responder?: Prisma.UserUpdateOneRequiredWithoutCarResponsesNestedInput
   attachments?: Prisma.CarAttachmentUpdateManyWithoutCarResponseNestedInput
 }
 
@@ -445,6 +487,9 @@ export type CarResponseUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   responderId?: Prisma.StringFieldUpdateOperationsInput | string
+  responderAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
@@ -466,6 +511,9 @@ export type CarResponseCreateManyInput = {
   id?: string
   carMasterId: string
   responderId: string
+  responderAuthUserId?: string | null
+  responderName?: string | null
+  responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
   whyAnalysis: string
@@ -484,6 +532,10 @@ export type CarResponseCreateManyInput = {
 
 export type CarResponseUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  responderId?: Prisma.StringFieldUpdateOperationsInput | string
+  responderAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
@@ -504,6 +556,9 @@ export type CarResponseUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   responderId?: Prisma.StringFieldUpdateOperationsInput | string
+  responderAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
@@ -520,16 +575,6 @@ export type CarResponseUncheckedUpdateManyInput = {
   plannedCompletionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type CarResponseListRelationFilter = {
-  every?: Prisma.CarResponseWhereInput
-  some?: Prisma.CarResponseWhereInput
-  none?: Prisma.CarResponseWhereInput
-}
-
-export type CarResponseOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type CarResponseNullableScalarRelationFilter = {
   is?: Prisma.CarResponseWhereInput | null
   isNot?: Prisma.CarResponseWhereInput | null
@@ -539,6 +584,9 @@ export type CarResponseCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   responderId?: Prisma.SortOrder
+  responderAuthUserId?: Prisma.SortOrder
+  responderName?: Prisma.SortOrder
+  responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
@@ -559,6 +607,9 @@ export type CarResponseMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   responderId?: Prisma.SortOrder
+  responderAuthUserId?: Prisma.SortOrder
+  responderName?: Prisma.SortOrder
+  responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
@@ -579,6 +630,9 @@ export type CarResponseMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carMasterId?: Prisma.SortOrder
   responderId?: Prisma.SortOrder
+  responderAuthUserId?: Prisma.SortOrder
+  responderName?: Prisma.SortOrder
+  responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
@@ -598,48 +652,6 @@ export type CarResponseMinOrderByAggregateInput = {
 export type CarResponseScalarRelationFilter = {
   is?: Prisma.CarResponseWhereInput
   isNot?: Prisma.CarResponseWhereInput
-}
-
-export type CarResponseCreateNestedManyWithoutResponderInput = {
-  create?: Prisma.XOR<Prisma.CarResponseCreateWithoutResponderInput, Prisma.CarResponseUncheckedCreateWithoutResponderInput> | Prisma.CarResponseCreateWithoutResponderInput[] | Prisma.CarResponseUncheckedCreateWithoutResponderInput[]
-  connectOrCreate?: Prisma.CarResponseCreateOrConnectWithoutResponderInput | Prisma.CarResponseCreateOrConnectWithoutResponderInput[]
-  createMany?: Prisma.CarResponseCreateManyResponderInputEnvelope
-  connect?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-}
-
-export type CarResponseUncheckedCreateNestedManyWithoutResponderInput = {
-  create?: Prisma.XOR<Prisma.CarResponseCreateWithoutResponderInput, Prisma.CarResponseUncheckedCreateWithoutResponderInput> | Prisma.CarResponseCreateWithoutResponderInput[] | Prisma.CarResponseUncheckedCreateWithoutResponderInput[]
-  connectOrCreate?: Prisma.CarResponseCreateOrConnectWithoutResponderInput | Prisma.CarResponseCreateOrConnectWithoutResponderInput[]
-  createMany?: Prisma.CarResponseCreateManyResponderInputEnvelope
-  connect?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-}
-
-export type CarResponseUpdateManyWithoutResponderNestedInput = {
-  create?: Prisma.XOR<Prisma.CarResponseCreateWithoutResponderInput, Prisma.CarResponseUncheckedCreateWithoutResponderInput> | Prisma.CarResponseCreateWithoutResponderInput[] | Prisma.CarResponseUncheckedCreateWithoutResponderInput[]
-  connectOrCreate?: Prisma.CarResponseCreateOrConnectWithoutResponderInput | Prisma.CarResponseCreateOrConnectWithoutResponderInput[]
-  upsert?: Prisma.CarResponseUpsertWithWhereUniqueWithoutResponderInput | Prisma.CarResponseUpsertWithWhereUniqueWithoutResponderInput[]
-  createMany?: Prisma.CarResponseCreateManyResponderInputEnvelope
-  set?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-  disconnect?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-  delete?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-  connect?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-  update?: Prisma.CarResponseUpdateWithWhereUniqueWithoutResponderInput | Prisma.CarResponseUpdateWithWhereUniqueWithoutResponderInput[]
-  updateMany?: Prisma.CarResponseUpdateManyWithWhereWithoutResponderInput | Prisma.CarResponseUpdateManyWithWhereWithoutResponderInput[]
-  deleteMany?: Prisma.CarResponseScalarWhereInput | Prisma.CarResponseScalarWhereInput[]
-}
-
-export type CarResponseUncheckedUpdateManyWithoutResponderNestedInput = {
-  create?: Prisma.XOR<Prisma.CarResponseCreateWithoutResponderInput, Prisma.CarResponseUncheckedCreateWithoutResponderInput> | Prisma.CarResponseCreateWithoutResponderInput[] | Prisma.CarResponseUncheckedCreateWithoutResponderInput[]
-  connectOrCreate?: Prisma.CarResponseCreateOrConnectWithoutResponderInput | Prisma.CarResponseCreateOrConnectWithoutResponderInput[]
-  upsert?: Prisma.CarResponseUpsertWithWhereUniqueWithoutResponderInput | Prisma.CarResponseUpsertWithWhereUniqueWithoutResponderInput[]
-  createMany?: Prisma.CarResponseCreateManyResponderInputEnvelope
-  set?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-  disconnect?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-  delete?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-  connect?: Prisma.CarResponseWhereUniqueInput | Prisma.CarResponseWhereUniqueInput[]
-  update?: Prisma.CarResponseUpdateWithWhereUniqueWithoutResponderInput | Prisma.CarResponseUpdateWithWhereUniqueWithoutResponderInput[]
-  updateMany?: Prisma.CarResponseUpdateManyWithWhereWithoutResponderInput | Prisma.CarResponseUpdateManyWithWhereWithoutResponderInput[]
-  deleteMany?: Prisma.CarResponseScalarWhereInput | Prisma.CarResponseScalarWhereInput[]
 }
 
 export type CarResponseCreateNestedOneWithoutCarMasterInput = {
@@ -688,97 +700,12 @@ export type CarResponseUpdateOneRequiredWithoutAttachmentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CarResponseUpdateToOneWithWhereWithoutAttachmentsInput, Prisma.CarResponseUpdateWithoutAttachmentsInput>, Prisma.CarResponseUncheckedUpdateWithoutAttachmentsInput>
 }
 
-export type CarResponseCreateWithoutResponderInput = {
-  id?: string
-  responderPosition: string
-  respondedAt?: Date | string
-  whyAnalysis: string
-  additionalToolDetail?: string | null
-  rootCausePerson?: boolean
-  rootCauseMaterial?: boolean
-  rootCauseMachine?: boolean
-  rootCauseMethod?: boolean
-  rootCauseOther?: boolean
-  rootCauseOtherDetail?: string | null
-  rootCauseSummary: string
-  immediateAction: string
-  preventiveAction: string
-  plannedCompletionDate: Date | string
-  carMaster: Prisma.CarMasterCreateNestedOneWithoutResponseInput
-  attachments?: Prisma.CarAttachmentCreateNestedManyWithoutCarResponseInput
-}
-
-export type CarResponseUncheckedCreateWithoutResponderInput = {
-  id?: string
-  carMasterId: string
-  responderPosition: string
-  respondedAt?: Date | string
-  whyAnalysis: string
-  additionalToolDetail?: string | null
-  rootCausePerson?: boolean
-  rootCauseMaterial?: boolean
-  rootCauseMachine?: boolean
-  rootCauseMethod?: boolean
-  rootCauseOther?: boolean
-  rootCauseOtherDetail?: string | null
-  rootCauseSummary: string
-  immediateAction: string
-  preventiveAction: string
-  plannedCompletionDate: Date | string
-  attachments?: Prisma.CarAttachmentUncheckedCreateNestedManyWithoutCarResponseInput
-}
-
-export type CarResponseCreateOrConnectWithoutResponderInput = {
-  where: Prisma.CarResponseWhereUniqueInput
-  create: Prisma.XOR<Prisma.CarResponseCreateWithoutResponderInput, Prisma.CarResponseUncheckedCreateWithoutResponderInput>
-}
-
-export type CarResponseCreateManyResponderInputEnvelope = {
-  data: Prisma.CarResponseCreateManyResponderInput | Prisma.CarResponseCreateManyResponderInput[]
-  skipDuplicates?: boolean
-}
-
-export type CarResponseUpsertWithWhereUniqueWithoutResponderInput = {
-  where: Prisma.CarResponseWhereUniqueInput
-  update: Prisma.XOR<Prisma.CarResponseUpdateWithoutResponderInput, Prisma.CarResponseUncheckedUpdateWithoutResponderInput>
-  create: Prisma.XOR<Prisma.CarResponseCreateWithoutResponderInput, Prisma.CarResponseUncheckedCreateWithoutResponderInput>
-}
-
-export type CarResponseUpdateWithWhereUniqueWithoutResponderInput = {
-  where: Prisma.CarResponseWhereUniqueInput
-  data: Prisma.XOR<Prisma.CarResponseUpdateWithoutResponderInput, Prisma.CarResponseUncheckedUpdateWithoutResponderInput>
-}
-
-export type CarResponseUpdateManyWithWhereWithoutResponderInput = {
-  where: Prisma.CarResponseScalarWhereInput
-  data: Prisma.XOR<Prisma.CarResponseUpdateManyMutationInput, Prisma.CarResponseUncheckedUpdateManyWithoutResponderInput>
-}
-
-export type CarResponseScalarWhereInput = {
-  AND?: Prisma.CarResponseScalarWhereInput | Prisma.CarResponseScalarWhereInput[]
-  OR?: Prisma.CarResponseScalarWhereInput[]
-  NOT?: Prisma.CarResponseScalarWhereInput | Prisma.CarResponseScalarWhereInput[]
-  id?: Prisma.StringFilter<"CarResponse"> | string
-  carMasterId?: Prisma.StringFilter<"CarResponse"> | string
-  responderId?: Prisma.StringFilter<"CarResponse"> | string
-  responderPosition?: Prisma.StringFilter<"CarResponse"> | string
-  respondedAt?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
-  whyAnalysis?: Prisma.StringFilter<"CarResponse"> | string
-  additionalToolDetail?: Prisma.StringNullableFilter<"CarResponse"> | string | null
-  rootCausePerson?: Prisma.BoolFilter<"CarResponse"> | boolean
-  rootCauseMaterial?: Prisma.BoolFilter<"CarResponse"> | boolean
-  rootCauseMachine?: Prisma.BoolFilter<"CarResponse"> | boolean
-  rootCauseMethod?: Prisma.BoolFilter<"CarResponse"> | boolean
-  rootCauseOther?: Prisma.BoolFilter<"CarResponse"> | boolean
-  rootCauseOtherDetail?: Prisma.StringNullableFilter<"CarResponse"> | string | null
-  rootCauseSummary?: Prisma.StringFilter<"CarResponse"> | string
-  immediateAction?: Prisma.StringFilter<"CarResponse"> | string
-  preventiveAction?: Prisma.StringFilter<"CarResponse"> | string
-  plannedCompletionDate?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
-}
-
 export type CarResponseCreateWithoutCarMasterInput = {
   id?: string
+  responderId: string
+  responderAuthUserId?: string | null
+  responderName?: string | null
+  responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
   whyAnalysis: string
@@ -793,13 +720,15 @@ export type CarResponseCreateWithoutCarMasterInput = {
   immediateAction: string
   preventiveAction: string
   plannedCompletionDate: Date | string
-  responder: Prisma.UserCreateNestedOneWithoutCarResponsesInput
   attachments?: Prisma.CarAttachmentCreateNestedManyWithoutCarResponseInput
 }
 
 export type CarResponseUncheckedCreateWithoutCarMasterInput = {
   id?: string
   responderId: string
+  responderAuthUserId?: string | null
+  responderName?: string | null
+  responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
   whyAnalysis: string
@@ -835,6 +764,10 @@ export type CarResponseUpdateToOneWithWhereWithoutCarMasterInput = {
 
 export type CarResponseUpdateWithoutCarMasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  responderId?: Prisma.StringFieldUpdateOperationsInput | string
+  responderAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
@@ -849,13 +782,15 @@ export type CarResponseUpdateWithoutCarMasterInput = {
   immediateAction?: Prisma.StringFieldUpdateOperationsInput | string
   preventiveAction?: Prisma.StringFieldUpdateOperationsInput | string
   plannedCompletionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  responder?: Prisma.UserUpdateOneRequiredWithoutCarResponsesNestedInput
   attachments?: Prisma.CarAttachmentUpdateManyWithoutCarResponseNestedInput
 }
 
 export type CarResponseUncheckedUpdateWithoutCarMasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   responderId?: Prisma.StringFieldUpdateOperationsInput | string
+  responderAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
@@ -875,6 +810,10 @@ export type CarResponseUncheckedUpdateWithoutCarMasterInput = {
 
 export type CarResponseCreateWithoutAttachmentsInput = {
   id?: string
+  responderId: string
+  responderAuthUserId?: string | null
+  responderName?: string | null
+  responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
   whyAnalysis: string
@@ -890,13 +829,15 @@ export type CarResponseCreateWithoutAttachmentsInput = {
   preventiveAction: string
   plannedCompletionDate: Date | string
   carMaster: Prisma.CarMasterCreateNestedOneWithoutResponseInput
-  responder: Prisma.UserCreateNestedOneWithoutCarResponsesInput
 }
 
 export type CarResponseUncheckedCreateWithoutAttachmentsInput = {
   id?: string
   carMasterId: string
   responderId: string
+  responderAuthUserId?: string | null
+  responderName?: string | null
+  responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
   whyAnalysis: string
@@ -931,6 +872,10 @@ export type CarResponseUpdateToOneWithWhereWithoutAttachmentsInput = {
 
 export type CarResponseUpdateWithoutAttachmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  responderId?: Prisma.StringFieldUpdateOperationsInput | string
+  responderAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
@@ -946,91 +891,15 @@ export type CarResponseUpdateWithoutAttachmentsInput = {
   preventiveAction?: Prisma.StringFieldUpdateOperationsInput | string
   plannedCompletionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carMaster?: Prisma.CarMasterUpdateOneRequiredWithoutResponseNestedInput
-  responder?: Prisma.UserUpdateOneRequiredWithoutCarResponsesNestedInput
 }
 
 export type CarResponseUncheckedUpdateWithoutAttachmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   responderId?: Prisma.StringFieldUpdateOperationsInput | string
-  responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMethod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseOther?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseOtherDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  rootCauseSummary?: Prisma.StringFieldUpdateOperationsInput | string
-  immediateAction?: Prisma.StringFieldUpdateOperationsInput | string
-  preventiveAction?: Prisma.StringFieldUpdateOperationsInput | string
-  plannedCompletionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type CarResponseCreateManyResponderInput = {
-  id?: string
-  carMasterId: string
-  responderPosition: string
-  respondedAt?: Date | string
-  whyAnalysis: string
-  additionalToolDetail?: string | null
-  rootCausePerson?: boolean
-  rootCauseMaterial?: boolean
-  rootCauseMachine?: boolean
-  rootCauseMethod?: boolean
-  rootCauseOther?: boolean
-  rootCauseOtherDetail?: string | null
-  rootCauseSummary: string
-  immediateAction: string
-  preventiveAction: string
-  plannedCompletionDate: Date | string
-}
-
-export type CarResponseUpdateWithoutResponderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMethod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseOther?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseOtherDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  rootCauseSummary?: Prisma.StringFieldUpdateOperationsInput | string
-  immediateAction?: Prisma.StringFieldUpdateOperationsInput | string
-  preventiveAction?: Prisma.StringFieldUpdateOperationsInput | string
-  plannedCompletionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  carMaster?: Prisma.CarMasterUpdateOneRequiredWithoutResponseNestedInput
-  attachments?: Prisma.CarAttachmentUpdateManyWithoutCarResponseNestedInput
-}
-
-export type CarResponseUncheckedUpdateWithoutResponderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
-  responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
-  respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseMethod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseOther?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  rootCauseOtherDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  rootCauseSummary?: Prisma.StringFieldUpdateOperationsInput | string
-  immediateAction?: Prisma.StringFieldUpdateOperationsInput | string
-  preventiveAction?: Prisma.StringFieldUpdateOperationsInput | string
-  plannedCompletionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  attachments?: Prisma.CarAttachmentUncheckedUpdateManyWithoutCarResponseNestedInput
-}
-
-export type CarResponseUncheckedUpdateManyWithoutResponderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  carMasterId?: Prisma.StringFieldUpdateOperationsInput | string
+  responderAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1082,6 +951,9 @@ export type CarResponseSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   id?: boolean
   carMasterId?: boolean
   responderId?: boolean
+  responderAuthUserId?: boolean
+  responderName?: boolean
+  responderEmployeeId?: boolean
   responderPosition?: boolean
   respondedAt?: boolean
   whyAnalysis?: boolean
@@ -1097,7 +969,6 @@ export type CarResponseSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   preventiveAction?: boolean
   plannedCompletionDate?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  responder?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   attachments?: boolean | Prisma.CarResponse$attachmentsArgs<ExtArgs>
   _count?: boolean | Prisma.CarResponseCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carResponse"]>
@@ -1106,6 +977,9 @@ export type CarResponseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   carMasterId?: boolean
   responderId?: boolean
+  responderAuthUserId?: boolean
+  responderName?: boolean
+  responderEmployeeId?: boolean
   responderPosition?: boolean
   respondedAt?: boolean
   whyAnalysis?: boolean
@@ -1121,13 +995,15 @@ export type CarResponseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   preventiveAction?: boolean
   plannedCompletionDate?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  responder?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carResponse"]>
 
 export type CarResponseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   carMasterId?: boolean
   responderId?: boolean
+  responderAuthUserId?: boolean
+  responderName?: boolean
+  responderEmployeeId?: boolean
   responderPosition?: boolean
   respondedAt?: boolean
   whyAnalysis?: boolean
@@ -1143,13 +1019,15 @@ export type CarResponseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   preventiveAction?: boolean
   plannedCompletionDate?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  responder?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carResponse"]>
 
 export type CarResponseSelectScalar = {
   id?: boolean
   carMasterId?: boolean
   responderId?: boolean
+  responderAuthUserId?: boolean
+  responderName?: boolean
+  responderEmployeeId?: boolean
   responderPosition?: boolean
   respondedAt?: boolean
   whyAnalysis?: boolean
@@ -1166,33 +1044,32 @@ export type CarResponseSelectScalar = {
   plannedCompletionDate?: boolean
 }
 
-export type CarResponseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "responderId" | "responderPosition" | "respondedAt" | "whyAnalysis" | "additionalToolDetail" | "rootCausePerson" | "rootCauseMaterial" | "rootCauseMachine" | "rootCauseMethod" | "rootCauseOther" | "rootCauseOtherDetail" | "rootCauseSummary" | "immediateAction" | "preventiveAction" | "plannedCompletionDate", ExtArgs["result"]["carResponse"]>
+export type CarResponseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "responderId" | "responderAuthUserId" | "responderName" | "responderEmployeeId" | "responderPosition" | "respondedAt" | "whyAnalysis" | "additionalToolDetail" | "rootCausePerson" | "rootCauseMaterial" | "rootCauseMachine" | "rootCauseMethod" | "rootCauseOther" | "rootCauseOtherDetail" | "rootCauseSummary" | "immediateAction" | "preventiveAction" | "plannedCompletionDate", ExtArgs["result"]["carResponse"]>
 export type CarResponseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  responder?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   attachments?: boolean | Prisma.CarResponse$attachmentsArgs<ExtArgs>
   _count?: boolean | Prisma.CarResponseCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CarResponseIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  responder?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type CarResponseIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
-  responder?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $CarResponsePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CarResponse"
   objects: {
     carMaster: Prisma.$CarMasterPayload<ExtArgs>
-    responder: Prisma.$UserPayload<ExtArgs>
     attachments: Prisma.$CarAttachmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     carMasterId: string
     responderId: string
+    responderAuthUserId: string | null
+    responderName: string | null
+    responderEmployeeId: string | null
     responderPosition: string
     respondedAt: Date
     whyAnalysis: string
@@ -1602,7 +1479,6 @@ readonly fields: CarResponseFieldRefs;
 export interface Prisma__CarResponseClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   carMaster<T extends Prisma.CarMasterDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarMasterDefaultArgs<ExtArgs>>): Prisma.Prisma__CarMasterClient<runtime.Types.Result.GetResult<Prisma.$CarMasterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  responder<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   attachments<T extends Prisma.CarResponse$attachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarResponse$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1636,6 +1512,9 @@ export interface CarResponseFieldRefs {
   readonly id: Prisma.FieldRef<"CarResponse", 'String'>
   readonly carMasterId: Prisma.FieldRef<"CarResponse", 'String'>
   readonly responderId: Prisma.FieldRef<"CarResponse", 'String'>
+  readonly responderAuthUserId: Prisma.FieldRef<"CarResponse", 'String'>
+  readonly responderName: Prisma.FieldRef<"CarResponse", 'String'>
+  readonly responderEmployeeId: Prisma.FieldRef<"CarResponse", 'String'>
   readonly responderPosition: Prisma.FieldRef<"CarResponse", 'String'>
   readonly respondedAt: Prisma.FieldRef<"CarResponse", 'DateTime'>
   readonly whyAnalysis: Prisma.FieldRef<"CarResponse", 'String'>

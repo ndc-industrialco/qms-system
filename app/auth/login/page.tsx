@@ -1,8 +1,7 @@
 
-import { Suspense } from "react";
 import { auth } from "@/lib/auth-node";
 import { redirect } from "next/navigation";
-import LoginClient from "@/components/auth/LoginClient";
+import { buildAuthCenterLoginUrl } from "@/lib/auth-center-client";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -22,13 +21,10 @@ export default async function LoginPage({
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const session = await auth();
-  if (session?.user) {
-    const { callbackUrl } = await searchParams;
-    redirect(safeCallbackUrl(callbackUrl));
-  }
-  return (
-    <Suspense>
-      <LoginClient />
-    </Suspense>
-  );
+  const { callbackUrl } = await searchParams;
+  const safeCb = safeCallbackUrl(callbackUrl);
+
+  if (session?.user) redirect(safeCb);
+
+  redirect(buildAuthCenterLoginUrl({ state: safeCb }));
 }

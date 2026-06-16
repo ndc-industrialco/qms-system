@@ -9,7 +9,7 @@ import PageHeader from "@/components/common/PageHeader";
 type ConfigUser = {
   id: string;
   name: string | null;
-  email: string;
+  email: string | null;
   role: string;
   department: { id: string; name: string } | null;
 };
@@ -21,7 +21,7 @@ type Props = {
 };
 
 function labelOf(user: ConfigUser) {
-  const base = user.name?.trim() || user.email;
+  const base = user.name?.trim() || user.email || user.id;
   const dept = user.department?.name ? ` - ${user.department.name}` : "";
   return `${base} (${user.role})${dept}`;
 }

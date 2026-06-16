@@ -1,6 +1,8 @@
 import { requireAuth } from "@/lib/auth";
-import { UserRepository } from "@/repositories/userRepository";
+import { getAuthCenterMe, getAuthCenterUserProfile } from "@/lib/auth-center-admin-client";
+import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 import { DepartmentService } from "@/services/departmentService";
+import { getUserSnapshot } from "@/lib/userSnapshotCache";
 import { t } from "@/lib/i18n";
 import PageHeader from "@/components/common/PageHeader";
 import ProfileClient from "@/components/profile/ProfileClient";
@@ -10,33 +12,41 @@ export const metadata: Metadata = {
   title: "My Profile",
 };
 
-const userRepo = new UserRepository();
+const userPrefRepo = new UserPreferenceRepository();
 const deptService = new DepartmentService();
 
 export default async function ProfilePage() {
   const session = await requireAuth();
-  const [user, departments] = await Promise.all([
-    userRepo.findById(session.user.id),
-    deptService.getActiveDepartments(),
+  const authUserId = session.user.authUserId ?? session.user.id;
+  const [departments, authProfile, userPref, snapshot] = await Promise.all([
+    deptService.getActiveDepartments(session.user.accessToken),
+    authUserId
+      ? (session.user.accessToken
+          ? getAuthCenterMe(session.user.accessToken)
+          : getAuthCenterUserProfile(authUserId))
+      : Promise.resolve(null),
+    userPrefRepo.findByAuthUserId(session.user.id),
+    getUserSnapshot(session.user.id),
   ]);
 
-  if (!user) return null;
-
-  const departmentName = user.departmentId
-    ? departments.find((d: { id: string; name: string }) => d.id === user.departmentId)?.name ?? null
-    : null;
+  const authDepartmentId = session.user.authDepartmentId ?? null;
+  const departmentName = authDepartmentId
+    ? departments.find((d: { id: string; name: string }) => d.id === authDepartmentId)?.name
+        ?? authProfile?.department
+        ?? null
+    : authProfile?.department ?? snapshot?.departmentName ?? null;
 
   const profile = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    employeeId: user.employeeId ?? null,
-    position: user.position ?? null,
-    departmentId: user.departmentId ?? null,
-    savedSignatureUrl: user.savedSignatureUrl ?? null,
-    signatureType: user.signatureType ?? null,
-    image: user.image ?? null,
-    role: user.role,
+    id: session.user.id,
+    name: authProfile?.displayName ?? snapshot?.name ?? null,
+    email: authProfile?.email ?? snapshot?.email ?? "",
+    employeeId: authProfile?.employeeId ?? snapshot?.employeeId ?? null,
+    position: authProfile?.jobTitle ?? null,
+    departmentId: authDepartmentId ?? snapshot?.departmentId ?? null,
+    savedSignatureUrl: userPref?.savedSignatureUrl ?? null,
+    signatureType: userPref?.signatureType ?? null,
+    image: null,
+    role: session.user.role,
   };
 
   return (

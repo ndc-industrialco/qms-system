@@ -4,6 +4,7 @@ import { AuditService } from "@/services/auditService";
 import { CarRepository } from "@/repositories/carRepository";
 import { CarSequenceRepository } from "@/repositories/carSequenceRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
+import { getDepartmentByCode, getDepartmentByName } from "@/lib/departmentCache";
 import { ActionTokenService } from "@/services/actionTokenService";
 import { NotFoundError, ValidationError, ForbiddenError } from "@/errors/customErrors";
 import type { CarCreateInput, CarUpdateInput, CarRespondInput, CarVerifyInput, CarReviewResponseInput, CarListQuery } from "@/lib/validations/car";
@@ -33,7 +34,8 @@ export type CarDetail = {
   reCarChildren: { id: string; carNo: string; status: string }[];
   createdAt: string;
   updatedAt: string;
-  issuer: { id: string; name: string | null; employeeId: string | null; department: { id: string; name: string } | null };
+  targetAuthDepartmentId?: string | null;
+  issuer: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null; department: { id: string; name: string } | null };
   targetDepartment: { id: string; name: string; emailGroup: string | null };
   targetEmailGroup: string | null;
   response: CarResponseDetail | null;
@@ -45,6 +47,7 @@ export type CarDetail = {
 export type CarResponseDetail = {
   id: string;
   responderId: string;
+  responderAuthUserId?: string | null;
   responderPosition: string;
   respondedAt: string;
   whyAnalysis: string;
@@ -59,7 +62,7 @@ export type CarResponseDetail = {
   immediateAction: string;
   preventiveAction: string;
   plannedCompletionDate: string;
-  responder: { id: string; name: string | null; employeeId: string | null };
+  responder: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null };
   attachments: CarAttachmentRow[];
 };
 
@@ -67,29 +70,32 @@ export type CarVerificationDetail = {
   id: string;
   round: number;
   verifierId: string;
+  verifierAuthUserId?: string | null;
   verifierPosition: string;
   verifiedAt: string;
   findings: string;
   result: VerificationResult;
   nextDueDate: string | null;
-  verifier: { id: string; name: string | null; employeeId: string | null };
+  verifier: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null };
 };
 
 export type CarMrSignatureDetail = {
   id: string;
   mrUserId: string;
+  mrAuthUserId?: string | null;
   signedAt: string;
   comment: string | null;
-  mrUser: { id: string; name: string | null; employeeId: string | null };
+  mrUser: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null };
 };
 
 export type CarMrResponseReviewDetail = {
   id: string;
   mrUserId: string;
+  mrAuthUserId?: string | null;
   reviewedAt: string;
   action: "APPROVED" | "REJECTED";
   comment: string | null;
-  mrUser: { id: string; name: string | null; employeeId: string | null };
+  mrUser: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null };
 };
 
 export type CarAttachmentRow = {
@@ -115,15 +121,52 @@ export type CarSummary = {
   issuedAt: string | null;
   responseDueAt: string | null;
   createdAt: string;
+  targetAuthDepartmentId?: string | null;
   issuer: { id: string; name: string | null };
   targetDepartment: { id: string; name: string };
   verificationCount: number;
+};
+
+type IdentitySnapshot = {
+  id: string;
+  authUserId: string | null;
+  name: string | null;
+  email: string | null;
+  employeeId: string | null;
+  department: { id: string; name: string } | null;
 };
 
 export class CarService {
   private carRepo = new CarRepository();
   private seqRepo = new CarSequenceRepository();
   private configRepo = new SystemConfigRepository();
+
+  private async getIdentitySnapshot(authUserId: string): Promise<IdentitySnapshot | null> {
+    const { getUserSnapshot } = await import("@/lib/userSnapshotCache");
+    const cached = await getUserSnapshot(authUserId);
+    if (cached) {
+      return {
+        id: cached.authUserId,
+        authUserId: cached.authUserId,
+        name: cached.name,
+        email: cached.email,
+        employeeId: cached.employeeId,
+        department: cached.departmentName
+          ? { id: cached.departmentId ?? cached.authUserId, name: cached.departmentName }
+          : null,
+      };
+    }
+    return null;
+  }
+
+  /** Resolve the designated MR user, preferring Auth Center stable key. */
+  private async resolveMrUser(): Promise<{ authUserId: string } | null> {
+    const authKey = await this.configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
+    if (authKey) return { authUserId: authKey };
+    const localKey = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID");
+    if (localKey) return { authUserId: localKey };
+    return null;
+  }
 
   private mapDetail(raw: CarDetailRaw): CarDetail {
     return {
@@ -146,13 +189,25 @@ export class CarService {
       reCarChildren: raw.reCarChildren,
       createdAt: raw.createdAt.toISOString(),
       updatedAt: raw.updatedAt.toISOString(),
-      issuer: raw.issuer,
-      targetDepartment: raw.targetDepartment,
+      targetAuthDepartmentId: raw.targetAuthDepartmentId ?? null,
+      issuer: {
+        id: raw.issuerId,
+        authUserId: raw.issuerAuthUserId ?? null,
+        name: raw.issuerName ?? null,
+        employeeId: raw.issuerEmployeeId ?? null,
+        department: null,
+      },
+      targetDepartment: {
+        id: raw.targetDepartmentId,
+        name: raw.targetDepartmentName ?? "-",
+        emailGroup: raw.targetEmailGroup ?? null,
+      },
       targetEmailGroup: raw.targetEmailGroup,
       response: raw.response
         ? {
             id: raw.response.id,
             responderId: raw.response.responderId,
+            responderAuthUserId: raw.response.responderAuthUserId ?? null,
             responderPosition: raw.response.responderPosition,
             respondedAt: raw.response.respondedAt.toISOString(),
             whyAnalysis: raw.response.whyAnalysis,
@@ -167,7 +222,12 @@ export class CarService {
             immediateAction: raw.response.immediateAction,
             preventiveAction: raw.response.preventiveAction,
             plannedCompletionDate: raw.response.plannedCompletionDate.toISOString(),
-            responder: raw.response.responder,
+            responder: {
+              id: raw.response.responderId,
+              authUserId: raw.response.responderAuthUserId ?? null,
+              name: raw.response.responderName ?? null,
+              employeeId: raw.response.responderEmployeeId ?? null,
+            },
             attachments: raw.response.attachments.map((a) => ({
               id: a.id,
               fileName: a.fileName,
@@ -178,7 +238,7 @@ export class CarService {
               spDownloadUrl: a.spDownloadUrl,
               folderPath: a.folderPath,
               createdAt: a.createdAt.toISOString(),
-              uploadedBy: a.uploadedBy,
+              uploadedBy: { id: a.uploadedById, name: a.uploadedByName ?? null },
             })),
           }
         : null,
@@ -186,30 +246,48 @@ export class CarService {
         id: v.id,
         round: v.round,
         verifierId: v.verifierId,
+        verifierAuthUserId: v.verifierAuthUserId ?? null,
         verifierPosition: v.verifierPosition,
         verifiedAt: v.verifiedAt.toISOString(),
         findings: v.findings,
         result: v.result as VerificationResult,
         nextDueDate: v.nextDueDate?.toISOString() ?? null,
-        verifier: v.verifier,
+        verifier: {
+          id: v.verifierId,
+          authUserId: v.verifierAuthUserId ?? null,
+          name: v.verifierName ?? null,
+          employeeId: v.verifierEmployeeId ?? null,
+        },
       })),
       mrSignature: raw.mrSignature
         ? {
             id: raw.mrSignature.id,
             mrUserId: raw.mrSignature.mrUserId,
+            mrAuthUserId: raw.mrSignature.mrAuthUserId ?? null,
             signedAt: raw.mrSignature.signedAt.toISOString(),
             comment: raw.mrSignature.comment,
-            mrUser: raw.mrSignature.mrUser,
+            mrUser: {
+              id: raw.mrSignature.mrUserId,
+              authUserId: raw.mrSignature.mrAuthUserId ?? null,
+              name: raw.mrSignature.mrUserName ?? null,
+              employeeId: raw.mrSignature.mrEmployeeId ?? null,
+            },
           }
         : null,
       mrResponseReview: raw.mrResponseReview
         ? {
             id: raw.mrResponseReview.id,
             mrUserId: raw.mrResponseReview.mrUserId,
+            mrAuthUserId: raw.mrResponseReview.mrAuthUserId ?? null,
             reviewedAt: raw.mrResponseReview.reviewedAt.toISOString(),
             action: raw.mrResponseReview.action as "APPROVED" | "REJECTED",
             comment: raw.mrResponseReview.comment,
-            mrUser: raw.mrResponseReview.mrUser,
+            mrUser: {
+              id: raw.mrResponseReview.mrUserId,
+              authUserId: raw.mrResponseReview.mrAuthUserId ?? null,
+              name: raw.mrResponseReview.mrUserName ?? null,
+              employeeId: raw.mrResponseReview.mrEmployeeId ?? null,
+            },
           }
         : null,
     };
@@ -230,7 +308,7 @@ export class CarService {
     return this.mapSummaries(raws);
   }
 
-  async listCars(query: CarListQuery, scope: { departmentId?: string }): Promise<PaginatedResult<CarSummary>> {
+  async listCars(query: CarListQuery, scope: { departmentId?: string; authDepartmentId?: string | null }): Promise<PaginatedResult<CarSummary>> {
     const result = await this.carRepo.paginateSummaries(query, scope);
     return {
       data: this.mapSummaries(result.data),
@@ -251,8 +329,9 @@ export class CarService {
       issuedAt: r.issuedAt?.toISOString() ?? null,
       responseDueAt: r.responseDueAt?.toISOString() ?? null,
       createdAt: r.createdAt.toISOString(),
-      issuer: r.issuer,
-      targetDepartment: r.targetDepartment,
+      targetAuthDepartmentId: (r as { targetAuthDepartmentId?: string | null }).targetAuthDepartmentId ?? null,
+      issuer: { id: r.issuerId, name: r.issuerName ?? null },
+      targetDepartment: { id: r.targetDepartmentId, name: r.targetDepartmentName ?? "-" },
       verificationCount: r._count.verifications,
     }));
   }
@@ -263,8 +342,14 @@ export class CarService {
     return this.mapDetail(raw);
   }
 
-  async createCar(issuerId: string, input: CarCreateInput): Promise<CarDetail> {
+  async createCar(issuerId: string, input: CarCreateInput, issuerAuthUserId?: string | null): Promise<CarDetail> {
     const year = new Date().getFullYear();
+    const issuerSnapshot = await this.getIdentitySnapshot(issuerId);
+    if (!issuerSnapshot) throw new ValidationError("Issuer not found");
+
+    const targetDept = await getDepartmentByCode(input.targetDepartmentId)
+      ?? await getDepartmentByName(input.targetDepartmentId);
+    const targetAuthDepartmentId = targetDept?.code ?? input.targetDepartmentId;
 
     const id = await db.$transaction(async (tx) => {
       if (input.reCarRefId) {
@@ -277,10 +362,22 @@ export class CarService {
       const seq = await this.seqRepo.nextSequence(year, tx);
       const carNo = this.buildCarNo(year, seq);
 
-      const car = await this.carRepo.createDraft({ ...input, issuerId, carNo, carYear: year, sequenceNo: seq }, tx);
+      const car = await this.carRepo.createDraft({
+        ...input,
+        issuerId,
+        issuerAuthUserId: issuerAuthUserId ?? null,
+        issuerName: issuerSnapshot.name,
+        issuerEmployeeId: issuerSnapshot.employeeId,
+        targetAuthDepartmentId,
+        targetDepartmentName: targetDept?.displayName ?? null,
+        carNo,
+        carYear: year,
+        sequenceNo: seq,
+      }, tx);
 
       await AuditService.record({
         actorUserId: issuerId,
+        actorAuthUserId: issuerAuthUserId,
         actorRole: "QMS",
         action: "CREATE",
         resourceType: "CAR",
@@ -308,14 +405,21 @@ export class CarService {
       }
     }
 
-    await this.carRepo.updateDraft(id, input);
+    // Dual-write targetAuthDepartmentId from Auth Center cache
+    const targetDept = input.targetDepartmentId
+      ? (await getDepartmentByCode(input.targetDepartmentId)
+        ?? await getDepartmentByName(input.targetDepartmentId))
+      : null;
+    const targetAuthDepartmentId = targetDept?.code ?? input.targetDepartmentId ?? null;
+
+    await this.carRepo.updateDraft(id, input, targetAuthDepartmentId, targetDept?.displayName ?? null);
 
     const detail = await this.carRepo.findDetailById(id);
     if (!detail) throw new NotFoundError("CAR");
     return this.mapDetail(detail);
   }
 
-  async cancelCar(id: string, actorId: string): Promise<void> {
+  async cancelCar(id: string, actorId: string, actorAuthUserId?: string | null): Promise<void> {
     const existing = await this.carRepo.findById(id);
     if (!existing) throw new NotFoundError("CAR");
     if (existing.status === "CLOSED") throw new ValidationError("Cannot cancel a closed CAR.");
@@ -324,6 +428,7 @@ export class CarService {
       await this.carRepo.updateStatus(id, "CANCELLED", tx);
       await AuditService.record({
         actorUserId: actorId,
+        actorAuthUserId: actorAuthUserId,
         actorRole: "QMS",
         action: "DELETE",
         resourceType: "CAR",
@@ -334,14 +439,14 @@ export class CarService {
     });
   }
 
-  async issueCar(id: string, actorId: string): Promise<CarDetail> {
+  async issueCar(id: string, actorId: string, actorAuthUserId?: string | null): Promise<CarDetail> {
     const car = await this.carRepo.findForIssue(id);
     if (!car) throw new NotFoundError("CAR");
     if (car.status !== "DRAFT") throw new ValidationError("Only DRAFT CAR records can be issued.");
 
     const now = new Date();
     const responseDueAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const emailTarget = car.targetEmailGroup ?? car.targetDepartment.emailGroup ?? null;
+    const emailTarget = car.targetEmailGroup ?? null;
 
     await db.$transaction(async (tx) => {
       await this.carRepo.issue(id, now, responseDueAt, tx);
@@ -352,6 +457,7 @@ export class CarService {
 
       await AuditService.record({
         actorUserId: actorId,
+        actorAuthUserId: actorAuthUserId,
         actorRole: "QMS",
         action: "ISSUE",
         resourceType: "CAR",
@@ -377,31 +483,53 @@ export class CarService {
     id: string,
     responderId: string,
     responderDepartmentId: string | null | undefined,
-    input: CarRespondInput
+    input: CarRespondInput,
+    responderAuthUserId?: string | null,
+    responderAuthDepartmentId?: string | null,
   ): Promise<CarDetail> {
     const car = await this.carRepo.findForRespond(id);
     if (!car) throw new NotFoundError("CAR");
     if (car.status !== "ISSUED") throw new ValidationError("Only ISSUED CAR records can be responded to.");
-    if (responderDepartmentId !== car.targetDepartmentId) throw new ForbiddenError("You do not have permission to respond to this CAR.");
 
-    const mrEmail = await this.configRepo.findValueByKey("CURRENT_MR_EMAIL");
-    const mrUserId = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID");
-    const qmsEmail = await this.configRepo.findValueByKey("CURRENT_QMS_EMAIL");
+    // Prefer authDepartmentId check when both sides are available
+    const carAuthDeptId = (car as Record<string, unknown>).targetAuthDepartmentId as string | null | undefined;
+    const inTargetDept = (responderAuthDepartmentId && carAuthDeptId)
+      ? carAuthDeptId === responderAuthDepartmentId
+      : responderDepartmentId === car.targetDepartmentId;
+    if (!inTargetDept) throw new ForbiddenError("You do not have permission to respond to this CAR.");
+
+    const [mrEmail, mrUser, qmsEmail] = await Promise.all([
+      this.configRepo.findValueByKey("CURRENT_MR_EMAIL"),
+      this.resolveMrUser(),
+      this.configRepo.findValueByKey("CURRENT_QMS_EMAIL"),
+    ]);
+    const responderSnapshot = await this.getIdentitySnapshot(responderId);
+    if (!responderSnapshot) throw new ValidationError("Responder not found");
     const infoRecipients = [qmsEmail].filter(Boolean) as string[];
     const plannedDate = input.plannedCompletionDate;
 
     let mrReviewToken: string | null = null;
 
     await db.$transaction(async (tx) => {
-      await this.carRepo.createResponseAndSetStatus(id, responderId, input, tx);
+      await this.carRepo.createResponseAndSetStatus(
+        id,
+        responderId,
+        {
+          responderAuthUserId: responderAuthUserId ?? responderSnapshot.authUserId,
+          responderName: responderSnapshot.name,
+          responderEmployeeId: responderSnapshot.employeeId,
+        },
+        input,
+        tx
+      );
 
-      // Issue ActionToken for MR to review the response plan
-      if (mrUserId) {
+      // Issue ActionToken for MR — use auth-stable localUserId as issuedTo
+      if (mrUser) {
         mrReviewToken = await ActionTokenService.issue({
           module: "CAR",
           documentId: id,
           role: "APPROVER_MR",
-          issuedTo: mrUserId,
+          issuedTo: mrUser.authUserId,
         });
       }
 
@@ -414,6 +542,7 @@ export class CarService {
 
       await AuditService.record({
         actorUserId: responderId,
+        actorAuthUserId: responderAuthUserId,
         actorRole: "USER",
         action: "RESPOND",
         resourceType: "CAR",
@@ -462,15 +591,21 @@ export class CarService {
     if (car.status !== "RESPONDED") throw new ValidationError("CAR must be in RESPONDED status for MR review.");
 
     const nextStatus: CarStatus = input.action === "APPROVED" ? "VERIFY_1" : "ISSUED";
-    const deptEmail = car.targetEmailGroup ?? car.targetDepartment?.emailGroup ?? null;
+    const deptEmail = car.targetEmailGroup ?? null;
     const qmsEmail = input.action === "APPROVED" ? await this.configRepo.findValueByKey("CURRENT_QMS_EMAIL") : null;
     const approvedRecipients = [deptEmail, qmsEmail].filter(Boolean) as string[];
+    const mrSnapshot = await this.getIdentitySnapshot(tokenData.issuedTo);
 
     await db.$transaction(async (tx) => {
       await this.carRepo.createMrResponseReviewAndUseToken(
         id,
         input.token,
         tokenData.issuedTo,
+        {
+          mrAuthUserId: mrSnapshot?.authUserId ?? null,
+          mrUserName: mrSnapshot?.name ?? null,
+          mrEmployeeId: mrSnapshot?.employeeId ?? null,
+        },
         input.action,
         input.comment,
         nextStatus,
@@ -513,7 +648,8 @@ export class CarService {
   async verifyCar(
     id: string,
     verifierId: string,
-    input: CarVerifyInput
+    input: CarVerifyInput,
+    verifierAuthUserId?: string | null,
   ): Promise<CarDetail> {
     const car = await this.carRepo.findForVerify(id);
     if (!car) throw new NotFoundError("CAR");
@@ -533,22 +669,37 @@ export class CarService {
     }
 
     let actionTokenValue: string | null = null;
-    const mrEmail = input.result === "PASSED" ? await this.configRepo.findValueByKey("CURRENT_MR_EMAIL") : null;
+    const [mrEmail, mrUserForVerify] = await Promise.all([
+      input.result === "PASSED" ? this.configRepo.findValueByKey("CURRENT_MR_EMAIL") : Promise.resolve(null),
+      input.result === "PASSED" ? this.resolveMrUser() : Promise.resolve(null),
+    ]);
     const deptEmail = (input.result === "FAILED" && input.round === 1)
-      ? (car.targetEmailGroup ?? car.targetDepartment?.emailGroup ?? null)
+      ? (car.targetEmailGroup ?? null)
       : null;
+    const verifierSnapshot = await this.getIdentitySnapshot(verifierId);
+    if (!verifierSnapshot) throw new ValidationError("Verifier not found");
 
     await db.$transaction(async (tx) => {
-      await this.carRepo.createVerificationAndSetStatus(id, input, verifierId, nextStatus, tx);
+      await this.carRepo.createVerificationAndSetStatus(
+        id,
+        input,
+        verifierId,
+        {
+          verifierAuthUserId: verifierAuthUserId ?? verifierSnapshot.authUserId,
+          verifierName: verifierSnapshot.name,
+          verifierEmployeeId: verifierSnapshot.employeeId,
+        },
+        nextStatus,
+        tx
+      );
 
       if (input.result === "PASSED") {
-        const mrUserId = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID", tx);
-        if (mrUserId) {
+        if (mrUserForVerify) {
           actionTokenValue = await ActionTokenService.issue({
             module: "CAR",
             documentId: id,
             role: "APPROVER_MR",
-            issuedTo: mrUserId,
+            issuedTo: mrUserForVerify.authUserId,
           });
         }
         if (mrEmail) {
@@ -560,6 +711,7 @@ export class CarService {
 
       await AuditService.record({
         actorUserId: verifierId,
+        actorAuthUserId: verifierAuthUserId,
         actorRole: "QMS",
         action: input.round === 1 ? "VERIFY_1" : "VERIFY_2",
         resourceType: "CAR",
@@ -600,9 +752,21 @@ export class CarService {
     const car = await this.carRepo.findForClose(id);
     if (!car) throw new NotFoundError("CAR");
     if (car.status !== "CLOSED") throw new ValidationError("CAR is not ready for MR sign-off.");
+    const mrSnapshot = await this.getIdentitySnapshot(tokenData.issuedTo);
 
     await db.$transaction(async (tx) => {
-      await this.carRepo.createMrSignatureAndUseToken(id, token, tokenData.issuedTo, comment, tx);
+      await this.carRepo.createMrSignatureAndUseToken(
+        id,
+        token,
+        tokenData.issuedTo,
+        {
+          mrAuthUserId: mrSnapshot?.authUserId ?? null,
+          mrUserName: mrSnapshot?.name ?? null,
+          mrEmployeeId: mrSnapshot?.employeeId ?? null,
+        },
+        comment,
+        tx
+      );
 
       await AuditService.record({
         actorUserId: tokenData.issuedTo,
@@ -619,13 +783,15 @@ export class CarService {
     return this.mapDetail(detail);
   }
 
-  async createReCar(originalId: string, actorId: string): Promise<{ newCarId: string; newCarNo: string }> {
+  async createReCar(originalId: string, actorId: string, actorAuthUserId?: string | null): Promise<{ newCarId: string; newCarNo: string }> {
     const original = await this.carRepo.findDetailById(originalId);
     if (!original) throw new NotFoundError("CAR");
     if (original.status !== "RE_CAR") throw new ValidationError("CAR must be in RE_CAR status before creating a Re-CAR.");
+    const actorSnapshot = await this.getIdentitySnapshot(actorId);
+    if (!actorSnapshot) throw new ValidationError("Actor not found");
 
     const year = new Date().getFullYear();
-    const emailTarget = original.targetEmailGroup ?? original.targetDepartment.emailGroup ?? null;
+    const emailTarget = original.targetEmailGroup ?? null;
 
     const { newId, newCarNo } = await db.$transaction(async (tx) => {
       const seq = await this.seqRepo.nextSequence(year, tx);
@@ -640,11 +806,25 @@ export class CarService {
           isoStandards: original.isoStandards,
           defectDetail: original.defectDetail,
           nonConformanceRef: original.nonConformanceRef,
+          issuerName: original.issuerName ?? null,
+          issuerEmployeeId: original.issuerEmployeeId ?? null,
           issuerPosition: original.issuerPosition,
           targetDepartmentId: original.targetDepartmentId,
+          targetAuthDepartmentId: (original as Record<string, unknown>).targetAuthDepartmentId as string | null | undefined,
+          targetDepartmentName: original.targetDepartmentName ?? null,
           targetEmailGroup: original.targetEmailGroup,
         },
-        { carNo, carYear: year, sequenceNo: seq, actorId, issuedAt, responseDueAt },
+        {
+          carNo,
+          carYear: year,
+          sequenceNo: seq,
+          actorId,
+          actorAuthUserId: actorAuthUserId ?? actorSnapshot.authUserId,
+          actorName: actorSnapshot.name,
+          actorEmployeeId: actorSnapshot.employeeId,
+          issuedAt,
+          responseDueAt,
+        },
         tx
       );
 
@@ -654,6 +834,7 @@ export class CarService {
 
       await AuditService.record({
         actorUserId: actorId,
+        actorAuthUserId: actorAuthUserId,
         actorRole: "QMS",
         action: "RE_CAR",
         resourceType: "CAR",
@@ -684,7 +865,7 @@ export class CarService {
     const car = await this.carRepo.findForIssue(carId);
     if (!car || car.status !== "ISSUED") return;
 
-    const emailTarget = car.targetEmailGroup ?? car.targetDepartment.emailGroup ?? null;
+    const emailTarget = car.targetEmailGroup ?? null;
     if (!emailTarget) return;
 
     sendCarReminderEmail({ carId, carNo: car.carNo, targetEmail: emailTarget }).catch((err) =>

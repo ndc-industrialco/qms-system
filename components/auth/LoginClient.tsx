@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
 
 const YT_ID = "XKch3HFovaQ";
 const YT_SRC =
@@ -11,17 +9,11 @@ const YT_SRC =
   `&controls=0&showinfo=0&rel=0&iv_load_policy=3` +
   `&modestbranding=1&disablekb=1&fs=0&playsinline=1`;
 
-/** Only allow same-site relative paths to avoid open-redirects. */
-function safeCallbackUrl(raw: string | null): string {
-  if (!raw) return "/";
-  // Must be a single-leading-slash relative path (not "//host" protocol-relative).
-  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
-  return raw;
+interface LoginClientProps {
+  authCenterLoginUrl: string;
 }
 
-export default function LoginClient() {
-  const searchParams = useSearchParams();
-  const callbackUrl = safeCallbackUrl(searchParams.get("callbackUrl"));
+export default function LoginClient({ authCenterLoginUrl }: LoginClientProps) {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
@@ -105,41 +97,28 @@ export default function LoginClient() {
             เข้าสู่ระบบด้วยบัญชีองค์กร
           </p>
 
-          <form
-            action={async () => {
-              await signIn("microsoft-entra-id", { callbackUrl });
+          <a
+            href={authCenterLoginUrl}
+            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl text-[13.5px] font-medium text-black transition-all duration-300 cursor-pointer no-underline"
+            style={{
+              background: "rgba(0,0,0,0)",
+              border: "1px solid #000000",
+              backdropFilter: "blur(8px)",
+              color: "black",
+              textShadow: "0 1px 2px rgba(0,0,0,0.2)",
             }}
-            className="w-full"
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background = "rgba(0,0,0,0.1)";
+              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 20px rgba(0,0,0,0.15)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background = "rgba(0,0,0,0)";
+              (e.currentTarget as HTMLAnchorElement).style.boxShadow = "none";
+            }}
           >
-            <button
-              type="submit"
-              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl text-[13.5px] font-medium text-black transition-all duration-300 cursor-pointer"
-              style={{
-                background: "rgba(0,0,0,0)",
-                border: "1px solid #000000",
-                backdropFilter: "blur(8px)",
-                color: "black",
-                textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-              }}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.background = "rgba(0,0,0,0.1)";
-                btn.style.borderColor =
-                  "#000000";
-                btn.style.boxShadow = "0 4px 20px rgba(0,0,0,0.15)";
-              }}
-              onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.background = "rgba(0,0,0,0)";
-                btn.style.borderColor =
-                  "#000000"; 
-                btn.style.boxShadow = "none";
-              }}
-            >
-              <MicrosoftIcon />
-              <span>Continue with Microsoft 365</span>
-            </button>
-          </form>
+            <MicrosoftIcon />
+            <span>Continue with Microsoft 365</span>
+          </a>
         </div>
       </div>
     </div>

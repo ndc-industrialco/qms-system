@@ -54,7 +54,19 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
 
   async submitObjectives(
     id: string,
-    payload: { prepareSignature: string; reviewerUserId: string; approverUserId: string; submittedAt: Date; prepare?: string },
+    payload: {
+      prepareSignature: string;
+      reviewerUserId: string;
+      reviewerAuthUserId?: string | null;
+      reviewer?: string | null;
+      reviewerEmail?: string | null;
+      approverUserId: string;
+      approverAuthUserId?: string | null;
+      approver?: string | null;
+      approverEmail?: string | null;
+      submittedAt: Date;
+      prepare?: string;
+    },
     tx?: Prisma.TransactionClient,
   ) {
     return this.delegate(tx).update({
@@ -63,7 +75,13 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
         status: 'PENDING_REVIEW',
         prepareSignature: payload.prepareSignature,
         reviewerUserId: payload.reviewerUserId,
+        reviewerAuthUserId: payload.reviewerAuthUserId ?? null,
+        reviewer: payload.reviewer ?? "",
+        reviewerEmail: payload.reviewerEmail ?? null,
         approverUserId: payload.approverUserId,
+        approverAuthUserId: payload.approverAuthUserId ?? null,
+        approver: payload.approver ?? "",
+        approverEmail: payload.approverEmail ?? null,
         submittedAt: payload.submittedAt,
         ...(payload.prepare ? { prepare: payload.prepare } : {}),
       },

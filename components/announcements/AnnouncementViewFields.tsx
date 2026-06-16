@@ -113,10 +113,10 @@ export default function AnnouncementViewFields({ item }: { item: AnnouncementRow
           <div className="flex items-center gap-2 mt-0.5">
             <div className="w-6 h-6 rounded-full bg-[#0F1059]/10 flex items-center justify-center shrink-0">
               <span className="text-[10px] font-bold text-[#0F1059]">
-                {(item.createdBy.name ?? "?").charAt(0).toUpperCase()}
+                {(item.createdByName ?? "?").charAt(0).toUpperCase()}
               </span>
             </div>
-            <p className={value}>{item.createdBy.name}</p>
+            <p className={value}>{item.createdByName}</p>
           </div>
         </div>
         <div>

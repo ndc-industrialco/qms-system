@@ -74,6 +74,7 @@ export interface CreateCorrectiveActionDTO {
 
 export interface ActorContext {
   userId: string;
+  authUserId?: string | null;
   role: 'USER' | 'IT' | 'QMS' | 'MR';
   departmentId?: string | null;
   email?: string;
@@ -90,7 +91,14 @@ export interface ListKpiQuery {
 export interface SubmitKpiObjectivesDTO {
   prepareSignature: string;
   reviewerUserId: string;
+  reviewerAuthUserId?: string | null;
+  reviewerName?: string | null;
+  reviewerEmail?: string | null;
   approverUserId: string;
+  approverAuthUserId?: string | null;
+  approverName?: string | null;
+  approverEmail?: string | null;
+  preparerAuthUserId?: string | null;
 }
 
 export interface ListMonthlyQuery {

@@ -31,7 +31,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const { id } = paramSchema.parse(await params);
     const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
 
-    await darService.deleteDar(id, session.user.id, isPrivileged);
+    await darService.deleteDar(id, { userId: session.user.id, authUserId: session.user.authUserId }, isPrivileged);
     revalidateTag("dar-list");
     
     return sendSuccess(null, "DAR deleted successfully");

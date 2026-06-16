@@ -54,12 +54,13 @@ async function mapRows(
 ): Promise<AuditLogRow[]> {
   if (rows.length === 0) return [];
 
+  // User table removed (Phase D) — resolve names from snapshot cache
+  const { getUserSnapshot } = await import("@/lib/userSnapshotCache");
   const userIds = [...new Set(rows.map((r) => r.actorUserId))];
-  const users = await db.user.findMany({
-    where: { id: { in: userIds } },
-    select: { id: true, name: true, email: true },
-  });
-  const userMap = new Map(users.map((u) => [u.id, u]));
+  const snapshots = await Promise.all(userIds.map((id) => getUserSnapshot(id)));
+  const userMap = new Map(
+    userIds.map((id, i) => [id, snapshots[i]])
+  );
 
   return rows.map((r) => {
     const actor = userMap.get(r.actorUserId);

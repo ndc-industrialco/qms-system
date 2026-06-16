@@ -14,3 +14,4 @@
 - [x] Fixed 409 on monthly review: `PENDING_REVIEW -> PENDING_APPROVAL` added to state machine; `ensureMonthlyStatusTransition` moved to after `nextStatus` is determined in `reviewReport`.
 - [x] KPI Monthly approval timeline: reduced to 2 steps (`Preparer -> Reviewer` only, no approver). `KpiApprovalTimeline` now accepts `steps` prop; added `KPI_MONTHLY_STEPS` export. `KpiApproveActionClient` passes monthly steps for `type=kpi-monthly`.
 - [x] Audited KPI module against the updated API and UI rules; identified KPI master workflow-state mismatch and KPI UI-rule gaps to address next.
+- [x] Fixed KPI department scoping after Auth Center migration: KPI list/detail pages now prefer `session.user.authDepartmentId` and mirrored `department.authDepartmentId` instead of only local `departmentId`, preventing empty KPI department views and broken USER-level access when local department UUIDs are stale or absent.

@@ -3,36 +3,24 @@
 import { useState, useEffect } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDepartments } from "@/hooks/api/use-departments";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { carCreateSchema, type CarCreateInput } from "@/lib/validations/car";
 import { ISO_STANDARDS, CAR_SOURCE_LABELS } from "@/types/car";
 import type { CarSourceType, CarDetail } from "@/types/car";
 import GraphUserPicker, { type GraphUserResult } from "@/components/shared/GraphUserPicker";
 import GraphGroupPicker, { type GraphGroupResult } from "@/components/shared/GraphGroupPicker";
 
-interface Department {
-  id: string;
-  name: string;
-  emailGroup: string | null;
-}
-
 interface Props {
   open: boolean;
   onClose: () => void;
   editCar?: CarDetail;
   onSuccess?: (car: CarDetail) => void;
-}
-
-async function fetchDepartments(): Promise<Department[]> {
-  const res = await fetch("/api/departments");
-  if (!res.ok) throw new Error("Failed to fetch departments");
-  const json = await res.json();
-  return json.data ?? json;
 }
 
 async function saveCar(data: CarCreateInput, editId?: string): Promise<CarDetail> {
@@ -64,11 +52,7 @@ export default function CarFormDrawer({ open, onClose, editCar, onSuccess }: Pro
   const [issuerError, setIssuerError] = useState<string | null>(null);
   const [groupError, setGroupError] = useState<string | null>(null);
 
-  const { data: departments = [] } = useQuery({
-    queryKey: ["departments"],
-    queryFn: fetchDepartments,
-    enabled: open,
-  });
+  const { data: departments = [] } = useDepartments();
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<CarCreateInput>({
     resolver: zodResolver(carCreateSchema) as Resolver<CarCreateInput>,
@@ -128,7 +112,7 @@ export default function CarFormDrawer({ open, onClose, editCar, onSuccess }: Pro
   }
 
   const selectedDeptId = watch("targetDepartmentId");
-  const selectedDept = departments.find((d) => d.id === selectedDeptId);
+  const selectedDept = departments.find((d) => d.id === selectedDeptId) as (typeof departments[0] & { emailGroup?: string | null }) | undefined;
   useEffect(() => {
     if (selectedDept?.emailGroup && !selectedGroup && !editCar) {
       setSelectedGroup({ id: "", displayName: selectedDept.name, mail: selectedDept.emailGroup, description: null });
@@ -164,22 +148,16 @@ export default function CarFormDrawer({ open, onClose, editCar, onSuccess }: Pro
     mutation.mutate(data);
   }
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40" onClick={onClose} />
-      <div className="w-full max-w-xl bg-white overflow-y-auto shadow-2xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between bg-white border-b border-slate-100 px-6 py-4">
-          <h2 className="text-lg font-bold text-slate-900">
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogHeader className="px-6 py-4 border-b border-slate-100">
+          <DialogTitle className="text-lg font-bold text-slate-900">
             {editCar ? t("car.form.editTitle", { carNo: editCar.carNo }) : t("car.form.createTitle")}
-          </h2>
-          <Button variant="ghost" size="sm" onClick={onClose} className="w-8 h-8 p-0 text-slate-400 hover:text-slate-600">
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+        <form id="car-form" onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 space-y-6">
 
           {/* ── ส่วนที่ 1 ── */}
           <section className="space-y-3">
@@ -328,17 +306,18 @@ export default function CarFormDrawer({ open, onClose, editCar, onSuccess }: Pro
             )}
           </section>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={mutation.isPending}>
-              {t("common.cancel")}
-            </Button>
-            <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5" />}
-              {mutation.isPending ? t("car.form.btnSaving") : editCar ? t("car.form.btnSave") : t("car.form.btnCreate2")}
-            </Button>
-          </div>
         </form>
-      </div>
-    </div>
+
+        <DialogFooter className="px-6 py-4 border-t border-slate-100">
+          <Button type="button" variant="outline" onClick={onClose} disabled={mutation.isPending}>
+            {t("common.cancel")}
+          </Button>
+          <Button type="submit" form="car-form" disabled={mutation.isPending}>
+            {mutation.isPending && <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5" />}
+            {mutation.isPending ? t("car.form.btnSaving") : editCar ? t("car.form.btnSave") : t("car.form.btnCreate2")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

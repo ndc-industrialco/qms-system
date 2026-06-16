@@ -19,7 +19,7 @@ export type AnnouncementRow = {
   bgImageSpId: string | null;
   textColor: string | null;
   createdAt: Date;
-  createdBy: { name: string | null };
+  createdByName: string | null;
 };
 
 export type CreateAnnouncementInput = {
@@ -100,10 +100,12 @@ export class AnnouncementService {
     return row as AnnouncementRow;
   }
 
-  async createAnnouncement(data: CreateAnnouncementInput, createdById: string): Promise<{ id: string }> {
+  async createAnnouncement(data: CreateAnnouncementInput, createdById: string, createdByAuthUserId?: string | null, createdByName?: string | null): Promise<{ id: string }> {
     const newAnn = await this.announceRepo.create({
       ...data,
       createdById,
+      createdByAuthUserId: createdByAuthUserId ?? null,
+      createdByName: createdByName ?? null,
     });
     await this.invalidateListCache();
     return { id: newAnn.id };

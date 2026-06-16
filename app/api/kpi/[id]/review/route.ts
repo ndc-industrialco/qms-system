@@ -18,7 +18,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const updated = await service.reviewObjectives(id, {
       userId: session.user.id,
       role: session.user.role,
-      departmentId: session.user.departmentId,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
     }, body);
 
     if (updated.approverUserId) {
@@ -37,6 +37,14 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           }),
           approver.email,
           'KPI Approval Request',
+          approver.id,
+          {
+            title: "มี KPI รอการอนุมัติ",
+            body: `KPI ${updated.department} ${updated.yearly}`,
+            module: "KPI",
+            resourceId: id,
+            resourceType: "KPI",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }

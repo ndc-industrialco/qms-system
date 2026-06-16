@@ -15,7 +15,13 @@ interface KpiListResponse {
 export interface KpiSubmitPayload {
   prepareSignature: string;
   reviewerUserId: string;
+  reviewerAuthUserId?: string | null;
+  reviewerName?: string | null;
+  reviewerEmail?: string | null;
   approverUserId: string;
+  approverAuthUserId?: string | null;
+  approverName?: string | null;
+  approverEmail?: string | null;
 }
 
 export interface KpiQuery {

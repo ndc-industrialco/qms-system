@@ -1,11 +1,11 @@
-import type { UserRole } from "@/generated/prisma/client";
+import { LEGACY_PRIVILEGED_QMS_ROLES, isPrivilegedQmsRole, type AnyQmsRole } from "@/lib/qms-roles";
 
-export const PRIVILEGED_ROLES: UserRole[] = ["IT", "QMS", "MR"];
+export const PRIVILEGED_ROLES = [...LEGACY_PRIVILEGED_QMS_ROLES];
 
 /**
  * ตรวจสอบว่า Role ปัจจุบันเป็นกลุ่มผู้มีสิทธิ์พิเศษ (Privileged) หรือไม่
  */
-export function isPrivilegedRole(role?: UserRole | string | null): boolean {
+export function isPrivilegedRole(role?: AnyQmsRole | string | null): boolean {
   if (!role) return false;
-  return PRIVILEGED_ROLES.includes(role as UserRole);
+  return isPrivilegedQmsRole(role);
 }

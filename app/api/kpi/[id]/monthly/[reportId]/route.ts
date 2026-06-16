@@ -26,7 +26,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const report = await service.updateReportMetadata(reportId, body, {
       userId: session.user.id,
       role: session.user.role,
-      departmentId: session.user.departmentId,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
     });
     return sendSuccess(report, 'Monthly report updated successfully');
   } catch (error) {

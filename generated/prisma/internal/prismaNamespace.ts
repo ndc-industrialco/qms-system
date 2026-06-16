@@ -384,9 +384,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  Department: 'Department',
-  User: 'User',
   SystemConfig: 'SystemConfig',
+  UserPreference: 'UserPreference',
   Announcement: 'Announcement',
   DarMaster: 'DarMaster',
   DarItem: 'DarItem',
@@ -406,6 +405,7 @@ export const ModelName = {
   DocumentControlRevision: 'DocumentControlRevision',
   AuditLog: 'AuditLog',
   NotificationLog: 'NotificationLog',
+  Notification: 'Notification',
   ActionToken: 'ActionToken',
   CarMaster: 'CarMaster',
   CarResponse: 'CarResponse',
@@ -429,158 +429,10 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "department" | "user" | "systemConfig" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog"
+    modelProps: "systemConfig" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
-    Department: {
-      payload: Prisma.$DepartmentPayload<ExtArgs>
-      fields: Prisma.DepartmentFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.DepartmentFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.DepartmentFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>
-        }
-        findFirst: {
-          args: Prisma.DepartmentFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.DepartmentFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>
-        }
-        findMany: {
-          args: Prisma.DepartmentFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>[]
-        }
-        create: {
-          args: Prisma.DepartmentCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>
-        }
-        createMany: {
-          args: Prisma.DepartmentCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.DepartmentCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>[]
-        }
-        delete: {
-          args: Prisma.DepartmentDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>
-        }
-        update: {
-          args: Prisma.DepartmentUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>
-        }
-        deleteMany: {
-          args: Prisma.DepartmentDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.DepartmentUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.DepartmentUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>[]
-        }
-        upsert: {
-          args: Prisma.DepartmentUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentPayload>
-        }
-        aggregate: {
-          args: Prisma.DepartmentAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateDepartment>
-        }
-        groupBy: {
-          args: Prisma.DepartmentGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.DepartmentGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.DepartmentCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.DepartmentCountAggregateOutputType> | number
-        }
-      }
-    }
-    User: {
-      payload: Prisma.$UserPayload<ExtArgs>
-      fields: Prisma.UserFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.UserFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.UserFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
-        }
-        findFirst: {
-          args: Prisma.UserFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.UserFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
-        }
-        findMany: {
-          args: Prisma.UserFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>[]
-        }
-        create: {
-          args: Prisma.UserCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
-        }
-        createMany: {
-          args: Prisma.UserCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.UserCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>[]
-        }
-        delete: {
-          args: Prisma.UserDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
-        }
-        update: {
-          args: Prisma.UserUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
-        }
-        deleteMany: {
-          args: Prisma.UserDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.UserUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.UserUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>[]
-        }
-        upsert: {
-          args: Prisma.UserUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
-        }
-        aggregate: {
-          args: Prisma.UserAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateUser>
-        }
-        groupBy: {
-          args: Prisma.UserGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.UserGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.UserCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
-        }
-      }
-    }
     SystemConfig: {
       payload: Prisma.$SystemConfigPayload<ExtArgs>
       fields: Prisma.SystemConfigFieldRefs
@@ -652,6 +504,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SystemConfigCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SystemConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    UserPreference: {
+      payload: Prisma.$UserPreferencePayload<ExtArgs>
+      fields: Prisma.UserPreferenceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserPreferenceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserPreferenceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>
+        }
+        findFirst: {
+          args: Prisma.UserPreferenceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserPreferenceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>
+        }
+        findMany: {
+          args: Prisma.UserPreferenceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>[]
+        }
+        create: {
+          args: Prisma.UserPreferenceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>
+        }
+        createMany: {
+          args: Prisma.UserPreferenceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserPreferenceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>[]
+        }
+        delete: {
+          args: Prisma.UserPreferenceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>
+        }
+        update: {
+          args: Prisma.UserPreferenceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>
+        }
+        deleteMany: {
+          args: Prisma.UserPreferenceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserPreferenceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserPreferenceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>[]
+        }
+        upsert: {
+          args: Prisma.UserPreferenceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPreferencePayload>
+        }
+        aggregate: {
+          args: Prisma.UserPreferenceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserPreference>
+        }
+        groupBy: {
+          args: Prisma.UserPreferenceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserPreferenceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserPreferenceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserPreferenceCountAggregateOutputType> | number
         }
       }
     }
@@ -2061,6 +1987,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Notification: {
+      payload: Prisma.$NotificationPayload<ExtArgs>
+      fields: Prisma.NotificationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NotificationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NotificationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>
+        }
+        findFirst: {
+          args: Prisma.NotificationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NotificationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>
+        }
+        findMany: {
+          args: Prisma.NotificationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+        }
+        create: {
+          args: Prisma.NotificationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>
+        }
+        createMany: {
+          args: Prisma.NotificationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NotificationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+        }
+        delete: {
+          args: Prisma.NotificationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>
+        }
+        update: {
+          args: Prisma.NotificationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>
+        }
+        deleteMany: {
+          args: Prisma.NotificationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NotificationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NotificationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+        }
+        upsert: {
+          args: Prisma.NotificationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPayload>
+        }
+        aggregate: {
+          args: Prisma.NotificationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotification>
+        }
+        groupBy: {
+          args: Prisma.NotificationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NotificationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationCountAggregateOutputType> | number
+        }
+      }
+    }
     ActionToken: {
       payload: Prisma.$ActionTokenPayload<ExtArgs>
       fields: Prisma.ActionTokenFieldRefs
@@ -2692,40 +2692,6 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const DepartmentScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  emailGroup: 'emailGroup',
-  isActive: 'isActive',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type DepartmentScalarFieldEnum = (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum]
-
-
-export const UserScalarFieldEnum = {
-  id: 'id',
-  employeeId: 'employeeId',
-  msUserId: 'msUserId',
-  name: 'name',
-  email: 'email',
-  emailVerified: 'emailVerified',
-  image: 'image',
-  role: 'role',
-  position: 'position',
-  savedSignatureUrl: 'savedSignatureUrl',
-  signatureType: 'signatureType',
-  departmentId: 'departmentId',
-  localAuthEnabled: 'localAuthEnabled',
-  failedLoginCount: 'failedLoginCount',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
-
-
 export const SystemConfigScalarFieldEnum = {
   configKey: 'configKey',
   configValue: 'configValue',
@@ -2734,6 +2700,16 @@ export const SystemConfigScalarFieldEnum = {
 } as const
 
 export type SystemConfigScalarFieldEnum = (typeof SystemConfigScalarFieldEnum)[keyof typeof SystemConfigScalarFieldEnum]
+
+
+export const UserPreferenceScalarFieldEnum = {
+  authUserId: 'authUserId',
+  savedSignatureUrl: 'savedSignatureUrl',
+  signatureType: 'signatureType',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserPreferenceScalarFieldEnum = (typeof UserPreferenceScalarFieldEnum)[keyof typeof UserPreferenceScalarFieldEnum]
 
 
 export const AnnouncementScalarFieldEnum = {
@@ -2757,6 +2733,8 @@ export const AnnouncementScalarFieldEnum = {
   textColor: 'textColor',
   status: 'status',
   createdById: 'createdById',
+  createdByAuthUserId: 'createdByAuthUserId',
+  createdByName: 'createdByName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2779,7 +2757,13 @@ export const DarMasterScalarFieldEnum = {
   spWebUrl: 'spWebUrl',
   status: 'status',
   requesterId: 'requesterId',
+  requesterAuthUserId: 'requesterAuthUserId',
+  requesterName: 'requesterName',
+  requesterEmployeeId: 'requesterEmployeeId',
+  requesterEmail: 'requesterEmail',
+  requesterDepartmentName: 'requesterDepartmentName',
   departmentId: 'departmentId',
+  authDepartmentId: 'authDepartmentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2802,7 +2786,9 @@ export type DarItemScalarFieldEnum = (typeof DarItemScalarFieldEnum)[keyof typeo
 export const DarDistributionScalarFieldEnum = {
   id: 'id',
   darMasterId: 'darMasterId',
-  departmentId: 'departmentId'
+  departmentId: 'departmentId',
+  authDepartmentId: 'authDepartmentId',
+  departmentName: 'departmentName'
 } as const
 
 export type DarDistributionScalarFieldEnum = (typeof DarDistributionScalarFieldEnum)[keyof typeof DarDistributionScalarFieldEnum]
@@ -2819,6 +2805,8 @@ export const DarAttachmentScalarFieldEnum = {
   folderPath: 'folderPath',
   darMasterId: 'darMasterId',
   uploadedById: 'uploadedById',
+  uploadedByAuthUserId: 'uploadedByAuthUserId',
+  uploadedByName: 'uploadedByName',
   createdAt: 'createdAt'
 } as const
 
@@ -2834,6 +2822,10 @@ export const DarApprovalScalarFieldEnum = {
   signatureTypeUsed: 'signatureTypeUsed',
   darMasterId: 'darMasterId',
   assignedUserId: 'assignedUserId',
+  assignedAuthUserId: 'assignedAuthUserId',
+  assignedUserName: 'assignedUserName',
+  assignedEmployeeId: 'assignedEmployeeId',
+  assignedDepartmentName: 'assignedDepartmentName',
   comment: 'comment'
 } as const
 
@@ -2848,6 +2840,10 @@ export const ApprovalSignatureScalarFieldEnum = {
   action: 'action',
   actionDate: 'actionDate',
   signerUserId: 'signerUserId',
+  signerAuthUserId: 'signerAuthUserId',
+  signerName: 'signerName',
+  signerEmail: 'signerEmail',
+  signerDepartmentName: 'signerDepartmentName',
   signaturePath: 'signaturePath',
   comment: 'comment',
   createdAt: 'createdAt',
@@ -2870,6 +2866,9 @@ export const QmsProcessingScalarFieldEnum = {
   processDate: 'processDate',
   darMasterId: 'darMasterId',
   qmsUserId: 'qmsUserId',
+  qmsAuthUserId: 'qmsAuthUserId',
+  qmsUserName: 'qmsUserName',
+  qmsUserEmployeeId: 'qmsUserEmployeeId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2905,7 +2904,11 @@ export const KPIScalarFieldEnum = {
   status: 'status',
   prepareSignature: 'prepareSignature',
   reviewerUserId: 'reviewerUserId',
+  reviewerAuthUserId: 'reviewerAuthUserId',
+  reviewerEmail: 'reviewerEmail',
   approverUserId: 'approverUserId',
+  approverAuthUserId: 'approverAuthUserId',
+  approverEmail: 'approverEmail',
   submittedAt: 'submittedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -3003,10 +3006,16 @@ export const DocumentControlScalarFieldEnum = {
   fileSize: 'fileSize',
   mimeType: 'mimeType',
   createdById: 'createdById',
+  createdByAuthUserId: 'createdByAuthUserId',
+  createdByName: 'createdByName',
   updatedById: 'updatedById',
+  updatedByAuthUserId: 'updatedByAuthUserId',
+  updatedByName: 'updatedByName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   departmentId: 'departmentId',
+  authDepartmentId: 'authDepartmentId',
+  departmentName: 'departmentName',
   categoryId: 'categoryId'
 } as const
 
@@ -3019,6 +3028,8 @@ export const DocumentCategoryScalarFieldEnum = {
   description: 'description',
   order: 'order',
   departmentId: 'departmentId',
+  authDepartmentId: 'authDepartmentId',
+  departmentName: 'departmentName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3041,6 +3052,8 @@ export const DocumentControlRevisionScalarFieldEnum = {
   fileSize: 'fileSize',
   mimeType: 'mimeType',
   createdById: 'createdById',
+  createdByAuthUserId: 'createdByAuthUserId',
+  createdByName: 'createdByName',
   createdAt: 'createdAt'
 } as const
 
@@ -3050,6 +3063,7 @@ export type DocumentControlRevisionScalarFieldEnum = (typeof DocumentControlRevi
 export const AuditLogScalarFieldEnum = {
   id: 'id',
   actorUserId: 'actorUserId',
+  actorAuthUserId: 'actorAuthUserId',
   actorRole: 'actorRole',
   action: 'action',
   resourceType: 'resourceType',
@@ -3077,6 +3091,22 @@ export const NotificationLogScalarFieldEnum = {
 } as const
 
 export type NotificationLogScalarFieldEnum = (typeof NotificationLogScalarFieldEnum)[keyof typeof NotificationLogScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  recipientId: 'recipientId',
+  recipientAuthUserId: 'recipientAuthUserId',
+  title: 'title',
+  body: 'body',
+  module: 'module',
+  resourceId: 'resourceId',
+  resourceType: 'resourceType',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
 export const ActionTokenScalarFieldEnum = {
@@ -3108,9 +3138,14 @@ export const CarMasterScalarFieldEnum = {
   defectDetail: 'defectDetail',
   nonConformanceRef: 'nonConformanceRef',
   issuerId: 'issuerId',
+  issuerAuthUserId: 'issuerAuthUserId',
+  issuerName: 'issuerName',
+  issuerEmployeeId: 'issuerEmployeeId',
   issuerPosition: 'issuerPosition',
   issuedAt: 'issuedAt',
   targetDepartmentId: 'targetDepartmentId',
+  targetAuthDepartmentId: 'targetAuthDepartmentId',
+  targetDepartmentName: 'targetDepartmentName',
   targetEmailGroup: 'targetEmailGroup',
   responseDueAt: 'responseDueAt',
   reCar: 'reCar',
@@ -3126,6 +3161,9 @@ export const CarResponseScalarFieldEnum = {
   id: 'id',
   carMasterId: 'carMasterId',
   responderId: 'responderId',
+  responderAuthUserId: 'responderAuthUserId',
+  responderName: 'responderName',
+  responderEmployeeId: 'responderEmployeeId',
   responderPosition: 'responderPosition',
   respondedAt: 'respondedAt',
   whyAnalysis: 'whyAnalysis',
@@ -3150,6 +3188,9 @@ export const CarVerificationScalarFieldEnum = {
   carMasterId: 'carMasterId',
   round: 'round',
   verifierId: 'verifierId',
+  verifierAuthUserId: 'verifierAuthUserId',
+  verifierName: 'verifierName',
+  verifierEmployeeId: 'verifierEmployeeId',
   verifierPosition: 'verifierPosition',
   verifiedAt: 'verifiedAt',
   findings: 'findings',
@@ -3164,6 +3205,9 @@ export const CarMrSignatureScalarFieldEnum = {
   id: 'id',
   carMasterId: 'carMasterId',
   mrUserId: 'mrUserId',
+  mrAuthUserId: 'mrAuthUserId',
+  mrUserName: 'mrUserName',
+  mrEmployeeId: 'mrEmployeeId',
   signedAt: 'signedAt',
   comment: 'comment'
 } as const
@@ -3182,6 +3226,8 @@ export const CarAttachmentScalarFieldEnum = {
   spDownloadUrl: 'spDownloadUrl',
   folderPath: 'folderPath',
   uploadedById: 'uploadedById',
+  uploadedByAuthUserId: 'uploadedByAuthUserId',
+  uploadedByName: 'uploadedByName',
   createdAt: 'createdAt'
 } as const
 
@@ -3192,6 +3238,9 @@ export const CarMrResponseReviewScalarFieldEnum = {
   id: 'id',
   carMasterId: 'carMasterId',
   mrUserId: 'mrUserId',
+  mrAuthUserId: 'mrAuthUserId',
+  mrUserName: 'mrUserName',
+  mrEmployeeId: 'mrEmployeeId',
   reviewedAt: 'reviewedAt',
   action: 'action',
   comment: 'comment'
@@ -3273,13 +3322,6 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -3290,20 +3332,6 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-/**
- * Reference to a field of type 'UserRole'
- */
-export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
-    
-
-
-/**
- * Reference to a field of type 'UserRole[]'
- */
-export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole[]'>
     
 
 
@@ -3322,20 +3350,6 @@ export type ListEnumSignatureTypeFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
-
-/**
  * Reference to a field of type 'DisplayType'
  */
 export type EnumDisplayTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DisplayType'>
@@ -3350,6 +3364,13 @@ export type ListEnumDisplayTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'DarStatus'
  */
 export type EnumDarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DarStatus'>
@@ -3360,6 +3381,20 @@ export type EnumDarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'DarStatus[]'
  */
 export type ListEnumDarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DarStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -3640,9 +3675,8 @@ export type PrismaClientOptions = ({
   queryPlanCacheMaxSize?: number
 }
 export type GlobalOmitConfig = {
-  department?: Prisma.DepartmentOmit
-  user?: Prisma.UserOmit
   systemConfig?: Prisma.SystemConfigOmit
+  userPreference?: Prisma.UserPreferenceOmit
   announcement?: Prisma.AnnouncementOmit
   darMaster?: Prisma.DarMasterOmit
   darItem?: Prisma.DarItemOmit
@@ -3662,6 +3696,7 @@ export type GlobalOmitConfig = {
   documentControlRevision?: Prisma.DocumentControlRevisionOmit
   auditLog?: Prisma.AuditLogOmit
   notificationLog?: Prisma.NotificationLogOmit
+  notification?: Prisma.NotificationOmit
   actionToken?: Prisma.ActionTokenOmit
   carMaster?: Prisma.CarMasterOmit
   carResponse?: Prisma.CarResponseOmit

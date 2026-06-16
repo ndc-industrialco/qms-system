@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +25,7 @@ import {
 import { useAddCorrectiveAction, useDeleteCorrectiveAction } from "@/hooks/api/use-kpi-corrective";
 import type { AchievedStatus, MonthlyStatus } from "@/generated/prisma/client";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
-import KpiObjectiveAssignDialog from "@/components/kpi/KpiObjectiveAssignDialog";
+import KpiObjectiveAssignDialog, { type ReviewerCandidate } from "@/components/kpi/KpiObjectiveAssignDialog";
 import type { SignatureType } from "@/generated/prisma/client";
 
 type UserRole = "USER" | "IT" | "QMS" | "MR";
@@ -265,7 +265,7 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
     }
   }
 
-  async function handleAssignConfirm(reviewerUserId: string, _approverUserId?: string) {
+  async function handleAssignConfirm(reviewer: ReviewerCandidate) {
     if (!kpiId || !reportId || !pendingSignaturePayload) return;
     try {
       await submitMutation.mutateAsync({ 
@@ -273,7 +273,7 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
         reportId, 
         data: { 
           ...pendingSignaturePayload, 
-          reviewerUserId 
+          reviewerUserId: reviewer.id,
         } 
       });
       toast.success(t("kpi.monthly.messages.submitSuccess"));
@@ -308,15 +308,16 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+    <>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl max-h-[90vh]">
 
         {/* Header */}
-        <SheetHeader className="shrink-0 border-b border-slate-100 px-6 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <SheetTitle className="text-base font-bold text-primary">
+        <DialogHeader className="shrink-0 border-b border-slate-100 px-6 py-4">
+          <div className="flex items-center justify-between gap-3 pr-8">
+            <DialogTitle className="text-base font-bold text-primary">
               {t("kpi.monthly.drawer.title")}
-            </SheetTitle>
+            </DialogTitle>
             {privileged && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
                 <ShieldCheck className="h-3 w-3" />
@@ -324,7 +325,7 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
               </span>
             )}
           </div>
-        </SheetHeader>
+        </DialogHeader>
 
         {isLoading || !report ? (
           <DrawerSkeleton />
@@ -753,28 +754,29 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
             </div>
           </>
         )}
-      </SheetContent>
+      </DialogContent>
+    </Dialog>
 
-      <KpiSignatureDialog
-        open={signatureOpen}
-        title={
-          signatureMode === "approve"
-            ? t("kpi.approve.signatureTitle")
-            : t("kpi.submit.signatureTitle")
-        }
-        onOpenChange={setSignatureOpen}
-        onConfirm={async (payload) => {
-          await handleSignatureConfirm(payload);
-        }}
-      />
+    <KpiSignatureDialog
+      open={signatureOpen}
+      title={
+        signatureMode === "approve"
+          ? t("kpi.approve.signatureTitle")
+          : t("kpi.submit.signatureTitle")
+      }
+      onOpenChange={setSignatureOpen}
+      onConfirm={async (payload) => {
+        await handleSignatureConfirm(payload);
+      }}
+    />
 
-      <KpiObjectiveAssignDialog
-        open={assignOpen}
-        onOpenChange={setAssignOpen}
-        initialReviewerId={report?.kpi?.reviewerUserId || ""}
-        hideApprover={true}
-        onConfirm={handleAssignConfirm}
-      />
-    </Sheet>
+    <KpiObjectiveAssignDialog
+      open={assignOpen}
+      onOpenChange={setAssignOpen}
+      initialReviewerId={report?.kpi?.reviewerUserId || ""}
+      hideApprover={true}
+      onConfirm={handleAssignConfirm}
+    />
+    </>
   );
 }

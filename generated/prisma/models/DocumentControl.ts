@@ -51,10 +51,16 @@ export type DocumentControlMinAggregateOutputType = {
   fileSize: number | null
   mimeType: string | null
   createdById: string | null
+  createdByAuthUserId: string | null
+  createdByName: string | null
   updatedById: string | null
+  updatedByAuthUserId: string | null
+  updatedByName: string | null
   createdAt: Date | null
   updatedAt: Date | null
   departmentId: string | null
+  authDepartmentId: string | null
+  departmentName: string | null
   categoryId: string | null
 }
 
@@ -75,10 +81,16 @@ export type DocumentControlMaxAggregateOutputType = {
   fileSize: number | null
   mimeType: string | null
   createdById: string | null
+  createdByAuthUserId: string | null
+  createdByName: string | null
   updatedById: string | null
+  updatedByAuthUserId: string | null
+  updatedByName: string | null
   createdAt: Date | null
   updatedAt: Date | null
   departmentId: string | null
+  authDepartmentId: string | null
+  departmentName: string | null
   categoryId: string | null
 }
 
@@ -99,10 +111,16 @@ export type DocumentControlCountAggregateOutputType = {
   fileSize: number
   mimeType: number
   createdById: number
+  createdByAuthUserId: number
+  createdByName: number
   updatedById: number
+  updatedByAuthUserId: number
+  updatedByName: number
   createdAt: number
   updatedAt: number
   departmentId: number
+  authDepartmentId: number
+  departmentName: number
   categoryId: number
   _all: number
 }
@@ -133,10 +151,16 @@ export type DocumentControlMinAggregateInputType = {
   fileSize?: true
   mimeType?: true
   createdById?: true
+  createdByAuthUserId?: true
+  createdByName?: true
   updatedById?: true
+  updatedByAuthUserId?: true
+  updatedByName?: true
   createdAt?: true
   updatedAt?: true
   departmentId?: true
+  authDepartmentId?: true
+  departmentName?: true
   categoryId?: true
 }
 
@@ -157,10 +181,16 @@ export type DocumentControlMaxAggregateInputType = {
   fileSize?: true
   mimeType?: true
   createdById?: true
+  createdByAuthUserId?: true
+  createdByName?: true
   updatedById?: true
+  updatedByAuthUserId?: true
+  updatedByName?: true
   createdAt?: true
   updatedAt?: true
   departmentId?: true
+  authDepartmentId?: true
+  departmentName?: true
   categoryId?: true
 }
 
@@ -181,10 +211,16 @@ export type DocumentControlCountAggregateInputType = {
   fileSize?: true
   mimeType?: true
   createdById?: true
+  createdByAuthUserId?: true
+  createdByName?: true
   updatedById?: true
+  updatedByAuthUserId?: true
+  updatedByName?: true
   createdAt?: true
   updatedAt?: true
   departmentId?: true
+  authDepartmentId?: true
+  departmentName?: true
   categoryId?: true
   _all?: true
 }
@@ -292,10 +328,16 @@ export type DocumentControlGroupByOutputType = {
   fileSize: number | null
   mimeType: string | null
   createdById: string
+  createdByAuthUserId: string | null
+  createdByName: string | null
   updatedById: string | null
+  updatedByAuthUserId: string | null
+  updatedByName: string | null
   createdAt: Date
   updatedAt: Date
   departmentId: string | null
+  authDepartmentId: string | null
+  departmentName: string | null
   categoryId: string | null
   _count: DocumentControlCountAggregateOutputType | null
   _avg: DocumentControlAvgAggregateOutputType | null
@@ -339,14 +381,17 @@ export type DocumentControlWhereInput = {
   fileSize?: Prisma.IntNullableFilter<"DocumentControl"> | number | null
   mimeType?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   createdById?: Prisma.StringFilter<"DocumentControl"> | string
+  createdByAuthUserId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  createdByName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   updatedById?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  updatedByAuthUserId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  updatedByName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DocumentControl"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentControl"> | Date | string
   departmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  authDepartmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  departmentName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   categoryId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  department?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
   category?: Prisma.XOR<Prisma.DocumentCategoryNullableScalarRelationFilter, Prisma.DocumentCategoryWhereInput> | null
   revisions?: Prisma.DocumentControlRevisionListRelationFilter
 }
@@ -368,14 +413,17 @@ export type DocumentControlOrderByWithRelationInput = {
   fileSize?: Prisma.SortOrderInput | Prisma.SortOrder
   mimeType?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  createdByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdByName?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedByName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   departmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  departmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdBy?: Prisma.UserOrderByWithRelationInput
-  updatedBy?: Prisma.UserOrderByWithRelationInput
-  department?: Prisma.DepartmentOrderByWithRelationInput
   category?: Prisma.DocumentCategoryOrderByWithRelationInput
   revisions?: Prisma.DocumentControlRevisionOrderByRelationAggregateInput
 }
@@ -400,14 +448,17 @@ export type DocumentControlWhereUniqueInput = Prisma.AtLeast<{
   fileSize?: Prisma.IntNullableFilter<"DocumentControl"> | number | null
   mimeType?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   createdById?: Prisma.StringFilter<"DocumentControl"> | string
+  createdByAuthUserId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  createdByName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   updatedById?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  updatedByAuthUserId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  updatedByName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DocumentControl"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentControl"> | Date | string
   departmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  authDepartmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  departmentName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   categoryId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  updatedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  department?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
   category?: Prisma.XOR<Prisma.DocumentCategoryNullableScalarRelationFilter, Prisma.DocumentCategoryWhereInput> | null
   revisions?: Prisma.DocumentControlRevisionListRelationFilter
 }, "id" | "docNumber">
@@ -429,10 +480,16 @@ export type DocumentControlOrderByWithAggregationInput = {
   fileSize?: Prisma.SortOrderInput | Prisma.SortOrder
   mimeType?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  createdByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdByName?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedByName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   departmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  departmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DocumentControlCountOrderByAggregateInput
   _avg?: Prisma.DocumentControlAvgOrderByAggregateInput
@@ -461,10 +518,16 @@ export type DocumentControlScalarWhereWithAggregatesInput = {
   fileSize?: Prisma.IntNullableWithAggregatesFilter<"DocumentControl"> | number | null
   mimeType?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
   createdById?: Prisma.StringWithAggregatesFilter<"DocumentControl"> | string
+  createdByAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
+  createdByName?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
   updatedById?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
+  updatedByAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
+  updatedByName?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentControl"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentControl"> | Date | string
   departmentId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
+  authDepartmentId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
+  departmentName?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
 }
 
@@ -484,11 +547,17 @@ export type DocumentControlCreateInput = {
   fileName?: string | null
   fileSize?: number | null
   mimeType?: string | null
+  createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
+  updatedById?: string | null
+  updatedByAuthUserId?: string | null
+  updatedByName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  createdBy: Prisma.UserCreateNestedOneWithoutDocControlsCreatedInput
-  updatedBy?: Prisma.UserCreateNestedOneWithoutDocControlsUpdatedInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutDocControlsInput
+  departmentId?: string | null
+  authDepartmentId?: string | null
+  departmentName?: string | null
   category?: Prisma.DocumentCategoryCreateNestedOneWithoutDocumentsInput
   revisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDocumentControlInput
 }
@@ -510,10 +579,16 @@ export type DocumentControlUncheckedCreateInput = {
   fileSize?: number | null
   mimeType?: string | null
   createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
   updatedById?: string | null
+  updatedByAuthUserId?: string | null
+  updatedByName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   departmentId?: string | null
+  authDepartmentId?: string | null
+  departmentName?: string | null
   categoryId?: string | null
   revisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDocumentControlInput
 }
@@ -534,11 +609,17 @@ export type DocumentControlUpdateInput = {
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.UserUpdateOneRequiredWithoutDocControlsCreatedNestedInput
-  updatedBy?: Prisma.UserUpdateOneWithoutDocControlsUpdatedNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutDocControlsNestedInput
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.DocumentCategoryUpdateOneWithoutDocumentsNestedInput
   revisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDocumentControlNestedInput
 }
@@ -560,10 +641,16 @@ export type DocumentControlUncheckedUpdateInput = {
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNestedInput
 }
@@ -585,10 +672,16 @@ export type DocumentControlCreateManyInput = {
   fileSize?: number | null
   mimeType?: string | null
   createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
   updatedById?: string | null
+  updatedByAuthUserId?: string | null
+  updatedByName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   departmentId?: string | null
+  authDepartmentId?: string | null
+  departmentName?: string | null
   categoryId?: string | null
 }
 
@@ -608,8 +701,17 @@ export type DocumentControlUpdateManyMutationInput = {
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DocumentControlUncheckedUpdateManyInput = {
@@ -629,21 +731,17 @@ export type DocumentControlUncheckedUpdateManyInput = {
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type DocumentControlListRelationFilter = {
-  every?: Prisma.DocumentControlWhereInput
-  some?: Prisma.DocumentControlWhereInput
-  none?: Prisma.DocumentControlWhereInput
-}
-
-export type DocumentControlOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
 }
 
 export type DocumentControlCountOrderByAggregateInput = {
@@ -663,10 +761,16 @@ export type DocumentControlCountOrderByAggregateInput = {
   fileSize?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  createdByAuthUserId?: Prisma.SortOrder
+  createdByName?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
+  updatedByAuthUserId?: Prisma.SortOrder
+  updatedByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrder
+  departmentName?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
 }
 
@@ -691,10 +795,16 @@ export type DocumentControlMaxOrderByAggregateInput = {
   fileSize?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  createdByAuthUserId?: Prisma.SortOrder
+  createdByName?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
+  updatedByAuthUserId?: Prisma.SortOrder
+  updatedByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrder
+  departmentName?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
 }
 
@@ -715,10 +825,16 @@ export type DocumentControlMinOrderByAggregateInput = {
   fileSize?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  createdByAuthUserId?: Prisma.SortOrder
+  createdByName?: Prisma.SortOrder
   updatedById?: Prisma.SortOrder
+  updatedByAuthUserId?: Prisma.SortOrder
+  updatedByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   departmentId?: Prisma.SortOrder
+  authDepartmentId?: Prisma.SortOrder
+  departmentName?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
 }
 
@@ -726,135 +842,19 @@ export type DocumentControlSumOrderByAggregateInput = {
   fileSize?: Prisma.SortOrder
 }
 
+export type DocumentControlListRelationFilter = {
+  every?: Prisma.DocumentControlWhereInput
+  some?: Prisma.DocumentControlWhereInput
+  none?: Prisma.DocumentControlWhereInput
+}
+
+export type DocumentControlOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
 export type DocumentControlScalarRelationFilter = {
   is?: Prisma.DocumentControlWhereInput
   isNot?: Prisma.DocumentControlWhereInput
-}
-
-export type DocumentControlCreateNestedManyWithoutDepartmentInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutDepartmentInput, Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput> | Prisma.DocumentControlCreateWithoutDepartmentInput[] | Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutDepartmentInput | Prisma.DocumentControlCreateOrConnectWithoutDepartmentInput[]
-  createMany?: Prisma.DocumentControlCreateManyDepartmentInputEnvelope
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-}
-
-export type DocumentControlUncheckedCreateNestedManyWithoutDepartmentInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutDepartmentInput, Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput> | Prisma.DocumentControlCreateWithoutDepartmentInput[] | Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutDepartmentInput | Prisma.DocumentControlCreateOrConnectWithoutDepartmentInput[]
-  createMany?: Prisma.DocumentControlCreateManyDepartmentInputEnvelope
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-}
-
-export type DocumentControlUpdateManyWithoutDepartmentNestedInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutDepartmentInput, Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput> | Prisma.DocumentControlCreateWithoutDepartmentInput[] | Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutDepartmentInput | Prisma.DocumentControlCreateOrConnectWithoutDepartmentInput[]
-  upsert?: Prisma.DocumentControlUpsertWithWhereUniqueWithoutDepartmentInput | Prisma.DocumentControlUpsertWithWhereUniqueWithoutDepartmentInput[]
-  createMany?: Prisma.DocumentControlCreateManyDepartmentInputEnvelope
-  set?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  disconnect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  delete?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  update?: Prisma.DocumentControlUpdateWithWhereUniqueWithoutDepartmentInput | Prisma.DocumentControlUpdateWithWhereUniqueWithoutDepartmentInput[]
-  updateMany?: Prisma.DocumentControlUpdateManyWithWhereWithoutDepartmentInput | Prisma.DocumentControlUpdateManyWithWhereWithoutDepartmentInput[]
-  deleteMany?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
-}
-
-export type DocumentControlUncheckedUpdateManyWithoutDepartmentNestedInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutDepartmentInput, Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput> | Prisma.DocumentControlCreateWithoutDepartmentInput[] | Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutDepartmentInput | Prisma.DocumentControlCreateOrConnectWithoutDepartmentInput[]
-  upsert?: Prisma.DocumentControlUpsertWithWhereUniqueWithoutDepartmentInput | Prisma.DocumentControlUpsertWithWhereUniqueWithoutDepartmentInput[]
-  createMany?: Prisma.DocumentControlCreateManyDepartmentInputEnvelope
-  set?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  disconnect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  delete?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  update?: Prisma.DocumentControlUpdateWithWhereUniqueWithoutDepartmentInput | Prisma.DocumentControlUpdateWithWhereUniqueWithoutDepartmentInput[]
-  updateMany?: Prisma.DocumentControlUpdateManyWithWhereWithoutDepartmentInput | Prisma.DocumentControlUpdateManyWithWhereWithoutDepartmentInput[]
-  deleteMany?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
-}
-
-export type DocumentControlCreateNestedManyWithoutCreatedByInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutCreatedByInput, Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput> | Prisma.DocumentControlCreateWithoutCreatedByInput[] | Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutCreatedByInput | Prisma.DocumentControlCreateOrConnectWithoutCreatedByInput[]
-  createMany?: Prisma.DocumentControlCreateManyCreatedByInputEnvelope
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-}
-
-export type DocumentControlCreateNestedManyWithoutUpdatedByInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutUpdatedByInput, Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput> | Prisma.DocumentControlCreateWithoutUpdatedByInput[] | Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutUpdatedByInput | Prisma.DocumentControlCreateOrConnectWithoutUpdatedByInput[]
-  createMany?: Prisma.DocumentControlCreateManyUpdatedByInputEnvelope
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-}
-
-export type DocumentControlUncheckedCreateNestedManyWithoutCreatedByInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutCreatedByInput, Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput> | Prisma.DocumentControlCreateWithoutCreatedByInput[] | Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutCreatedByInput | Prisma.DocumentControlCreateOrConnectWithoutCreatedByInput[]
-  createMany?: Prisma.DocumentControlCreateManyCreatedByInputEnvelope
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-}
-
-export type DocumentControlUncheckedCreateNestedManyWithoutUpdatedByInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutUpdatedByInput, Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput> | Prisma.DocumentControlCreateWithoutUpdatedByInput[] | Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutUpdatedByInput | Prisma.DocumentControlCreateOrConnectWithoutUpdatedByInput[]
-  createMany?: Prisma.DocumentControlCreateManyUpdatedByInputEnvelope
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-}
-
-export type DocumentControlUpdateManyWithoutCreatedByNestedInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutCreatedByInput, Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput> | Prisma.DocumentControlCreateWithoutCreatedByInput[] | Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutCreatedByInput | Prisma.DocumentControlCreateOrConnectWithoutCreatedByInput[]
-  upsert?: Prisma.DocumentControlUpsertWithWhereUniqueWithoutCreatedByInput | Prisma.DocumentControlUpsertWithWhereUniqueWithoutCreatedByInput[]
-  createMany?: Prisma.DocumentControlCreateManyCreatedByInputEnvelope
-  set?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  disconnect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  delete?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  update?: Prisma.DocumentControlUpdateWithWhereUniqueWithoutCreatedByInput | Prisma.DocumentControlUpdateWithWhereUniqueWithoutCreatedByInput[]
-  updateMany?: Prisma.DocumentControlUpdateManyWithWhereWithoutCreatedByInput | Prisma.DocumentControlUpdateManyWithWhereWithoutCreatedByInput[]
-  deleteMany?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
-}
-
-export type DocumentControlUpdateManyWithoutUpdatedByNestedInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutUpdatedByInput, Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput> | Prisma.DocumentControlCreateWithoutUpdatedByInput[] | Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutUpdatedByInput | Prisma.DocumentControlCreateOrConnectWithoutUpdatedByInput[]
-  upsert?: Prisma.DocumentControlUpsertWithWhereUniqueWithoutUpdatedByInput | Prisma.DocumentControlUpsertWithWhereUniqueWithoutUpdatedByInput[]
-  createMany?: Prisma.DocumentControlCreateManyUpdatedByInputEnvelope
-  set?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  disconnect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  delete?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  update?: Prisma.DocumentControlUpdateWithWhereUniqueWithoutUpdatedByInput | Prisma.DocumentControlUpdateWithWhereUniqueWithoutUpdatedByInput[]
-  updateMany?: Prisma.DocumentControlUpdateManyWithWhereWithoutUpdatedByInput | Prisma.DocumentControlUpdateManyWithWhereWithoutUpdatedByInput[]
-  deleteMany?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
-}
-
-export type DocumentControlUncheckedUpdateManyWithoutCreatedByNestedInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutCreatedByInput, Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput> | Prisma.DocumentControlCreateWithoutCreatedByInput[] | Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutCreatedByInput | Prisma.DocumentControlCreateOrConnectWithoutCreatedByInput[]
-  upsert?: Prisma.DocumentControlUpsertWithWhereUniqueWithoutCreatedByInput | Prisma.DocumentControlUpsertWithWhereUniqueWithoutCreatedByInput[]
-  createMany?: Prisma.DocumentControlCreateManyCreatedByInputEnvelope
-  set?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  disconnect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  delete?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  update?: Prisma.DocumentControlUpdateWithWhereUniqueWithoutCreatedByInput | Prisma.DocumentControlUpdateWithWhereUniqueWithoutCreatedByInput[]
-  updateMany?: Prisma.DocumentControlUpdateManyWithWhereWithoutCreatedByInput | Prisma.DocumentControlUpdateManyWithWhereWithoutCreatedByInput[]
-  deleteMany?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
-}
-
-export type DocumentControlUncheckedUpdateManyWithoutUpdatedByNestedInput = {
-  create?: Prisma.XOR<Prisma.DocumentControlCreateWithoutUpdatedByInput, Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput> | Prisma.DocumentControlCreateWithoutUpdatedByInput[] | Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput[]
-  connectOrCreate?: Prisma.DocumentControlCreateOrConnectWithoutUpdatedByInput | Prisma.DocumentControlCreateOrConnectWithoutUpdatedByInput[]
-  upsert?: Prisma.DocumentControlUpsertWithWhereUniqueWithoutUpdatedByInput | Prisma.DocumentControlUpsertWithWhereUniqueWithoutUpdatedByInput[]
-  createMany?: Prisma.DocumentControlCreateManyUpdatedByInputEnvelope
-  set?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  disconnect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  delete?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  connect?: Prisma.DocumentControlWhereUniqueInput | Prisma.DocumentControlWhereUniqueInput[]
-  update?: Prisma.DocumentControlUpdateWithWhereUniqueWithoutUpdatedByInput | Prisma.DocumentControlUpdateWithWhereUniqueWithoutUpdatedByInput[]
-  updateMany?: Prisma.DocumentControlUpdateManyWithWhereWithoutUpdatedByInput | Prisma.DocumentControlUpdateManyWithWhereWithoutUpdatedByInput[]
-  deleteMany?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
 }
 
 export type EnumDocControlStatusFieldUpdateOperationsInput = {
@@ -917,255 +917,6 @@ export type DocumentControlUpdateOneRequiredWithoutRevisionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentControlUpdateToOneWithWhereWithoutRevisionsInput, Prisma.DocumentControlUpdateWithoutRevisionsInput>, Prisma.DocumentControlUncheckedUpdateWithoutRevisionsInput>
 }
 
-export type DocumentControlCreateWithoutDepartmentInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  createdBy: Prisma.UserCreateNestedOneWithoutDocControlsCreatedInput
-  updatedBy?: Prisma.UserCreateNestedOneWithoutDocControlsUpdatedInput
-  category?: Prisma.DocumentCategoryCreateNestedOneWithoutDocumentsInput
-  revisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDocumentControlInput
-}
-
-export type DocumentControlUncheckedCreateWithoutDepartmentInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  createdById: string
-  updatedById?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  categoryId?: string | null
-  revisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDocumentControlInput
-}
-
-export type DocumentControlCreateOrConnectWithoutDepartmentInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  create: Prisma.XOR<Prisma.DocumentControlCreateWithoutDepartmentInput, Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput>
-}
-
-export type DocumentControlCreateManyDepartmentInputEnvelope = {
-  data: Prisma.DocumentControlCreateManyDepartmentInput | Prisma.DocumentControlCreateManyDepartmentInput[]
-  skipDuplicates?: boolean
-}
-
-export type DocumentControlUpsertWithWhereUniqueWithoutDepartmentInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  update: Prisma.XOR<Prisma.DocumentControlUpdateWithoutDepartmentInput, Prisma.DocumentControlUncheckedUpdateWithoutDepartmentInput>
-  create: Prisma.XOR<Prisma.DocumentControlCreateWithoutDepartmentInput, Prisma.DocumentControlUncheckedCreateWithoutDepartmentInput>
-}
-
-export type DocumentControlUpdateWithWhereUniqueWithoutDepartmentInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  data: Prisma.XOR<Prisma.DocumentControlUpdateWithoutDepartmentInput, Prisma.DocumentControlUncheckedUpdateWithoutDepartmentInput>
-}
-
-export type DocumentControlUpdateManyWithWhereWithoutDepartmentInput = {
-  where: Prisma.DocumentControlScalarWhereInput
-  data: Prisma.XOR<Prisma.DocumentControlUpdateManyMutationInput, Prisma.DocumentControlUncheckedUpdateManyWithoutDepartmentInput>
-}
-
-export type DocumentControlScalarWhereInput = {
-  AND?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
-  OR?: Prisma.DocumentControlScalarWhereInput[]
-  NOT?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
-  id?: Prisma.StringFilter<"DocumentControl"> | string
-  docNumber?: Prisma.StringFilter<"DocumentControl"> | string
-  docName?: Prisma.StringFilter<"DocumentControl"> | string
-  revision?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  description?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  status?: Prisma.EnumDocControlStatusFilter<"DocumentControl"> | $Enums.DocControlStatus
-  effectiveDate?: Prisma.DateTimeNullableFilter<"DocumentControl"> | Date | string | null
-  spDriveId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  spItemId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  spWebUrl?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  spDownloadUrl?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  spFolderPath?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  fileName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  fileSize?: Prisma.IntNullableFilter<"DocumentControl"> | number | null
-  mimeType?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  createdById?: Prisma.StringFilter<"DocumentControl"> | string
-  updatedById?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"DocumentControl"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"DocumentControl"> | Date | string
-  departmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-  categoryId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
-}
-
-export type DocumentControlCreateWithoutCreatedByInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  updatedBy?: Prisma.UserCreateNestedOneWithoutDocControlsUpdatedInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutDocControlsInput
-  category?: Prisma.DocumentCategoryCreateNestedOneWithoutDocumentsInput
-  revisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDocumentControlInput
-}
-
-export type DocumentControlUncheckedCreateWithoutCreatedByInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  updatedById?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  departmentId?: string | null
-  categoryId?: string | null
-  revisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDocumentControlInput
-}
-
-export type DocumentControlCreateOrConnectWithoutCreatedByInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  create: Prisma.XOR<Prisma.DocumentControlCreateWithoutCreatedByInput, Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput>
-}
-
-export type DocumentControlCreateManyCreatedByInputEnvelope = {
-  data: Prisma.DocumentControlCreateManyCreatedByInput | Prisma.DocumentControlCreateManyCreatedByInput[]
-  skipDuplicates?: boolean
-}
-
-export type DocumentControlCreateWithoutUpdatedByInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  createdBy: Prisma.UserCreateNestedOneWithoutDocControlsCreatedInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutDocControlsInput
-  category?: Prisma.DocumentCategoryCreateNestedOneWithoutDocumentsInput
-  revisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDocumentControlInput
-}
-
-export type DocumentControlUncheckedCreateWithoutUpdatedByInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  createdById: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  departmentId?: string | null
-  categoryId?: string | null
-  revisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDocumentControlInput
-}
-
-export type DocumentControlCreateOrConnectWithoutUpdatedByInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  create: Prisma.XOR<Prisma.DocumentControlCreateWithoutUpdatedByInput, Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput>
-}
-
-export type DocumentControlCreateManyUpdatedByInputEnvelope = {
-  data: Prisma.DocumentControlCreateManyUpdatedByInput | Prisma.DocumentControlCreateManyUpdatedByInput[]
-  skipDuplicates?: boolean
-}
-
-export type DocumentControlUpsertWithWhereUniqueWithoutCreatedByInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  update: Prisma.XOR<Prisma.DocumentControlUpdateWithoutCreatedByInput, Prisma.DocumentControlUncheckedUpdateWithoutCreatedByInput>
-  create: Prisma.XOR<Prisma.DocumentControlCreateWithoutCreatedByInput, Prisma.DocumentControlUncheckedCreateWithoutCreatedByInput>
-}
-
-export type DocumentControlUpdateWithWhereUniqueWithoutCreatedByInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  data: Prisma.XOR<Prisma.DocumentControlUpdateWithoutCreatedByInput, Prisma.DocumentControlUncheckedUpdateWithoutCreatedByInput>
-}
-
-export type DocumentControlUpdateManyWithWhereWithoutCreatedByInput = {
-  where: Prisma.DocumentControlScalarWhereInput
-  data: Prisma.XOR<Prisma.DocumentControlUpdateManyMutationInput, Prisma.DocumentControlUncheckedUpdateManyWithoutCreatedByInput>
-}
-
-export type DocumentControlUpsertWithWhereUniqueWithoutUpdatedByInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  update: Prisma.XOR<Prisma.DocumentControlUpdateWithoutUpdatedByInput, Prisma.DocumentControlUncheckedUpdateWithoutUpdatedByInput>
-  create: Prisma.XOR<Prisma.DocumentControlCreateWithoutUpdatedByInput, Prisma.DocumentControlUncheckedCreateWithoutUpdatedByInput>
-}
-
-export type DocumentControlUpdateWithWhereUniqueWithoutUpdatedByInput = {
-  where: Prisma.DocumentControlWhereUniqueInput
-  data: Prisma.XOR<Prisma.DocumentControlUpdateWithoutUpdatedByInput, Prisma.DocumentControlUncheckedUpdateWithoutUpdatedByInput>
-}
-
-export type DocumentControlUpdateManyWithWhereWithoutUpdatedByInput = {
-  where: Prisma.DocumentControlScalarWhereInput
-  data: Prisma.XOR<Prisma.DocumentControlUpdateManyMutationInput, Prisma.DocumentControlUncheckedUpdateManyWithoutUpdatedByInput>
-}
-
 export type DocumentControlCreateWithoutCategoryInput = {
   id?: string
   docNumber: string
@@ -1182,11 +933,17 @@ export type DocumentControlCreateWithoutCategoryInput = {
   fileName?: string | null
   fileSize?: number | null
   mimeType?: string | null
+  createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
+  updatedById?: string | null
+  updatedByAuthUserId?: string | null
+  updatedByName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  createdBy: Prisma.UserCreateNestedOneWithoutDocControlsCreatedInput
-  updatedBy?: Prisma.UserCreateNestedOneWithoutDocControlsUpdatedInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutDocControlsInput
+  departmentId?: string | null
+  authDepartmentId?: string | null
+  departmentName?: string | null
   revisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDocumentControlInput
 }
 
@@ -1207,10 +964,16 @@ export type DocumentControlUncheckedCreateWithoutCategoryInput = {
   fileSize?: number | null
   mimeType?: string | null
   createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
   updatedById?: string | null
+  updatedByAuthUserId?: string | null
+  updatedByName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   departmentId?: string | null
+  authDepartmentId?: string | null
+  departmentName?: string | null
   revisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDocumentControlInput
 }
 
@@ -1240,6 +1003,39 @@ export type DocumentControlUpdateManyWithWhereWithoutCategoryInput = {
   data: Prisma.XOR<Prisma.DocumentControlUpdateManyMutationInput, Prisma.DocumentControlUncheckedUpdateManyWithoutCategoryInput>
 }
 
+export type DocumentControlScalarWhereInput = {
+  AND?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
+  OR?: Prisma.DocumentControlScalarWhereInput[]
+  NOT?: Prisma.DocumentControlScalarWhereInput | Prisma.DocumentControlScalarWhereInput[]
+  id?: Prisma.StringFilter<"DocumentControl"> | string
+  docNumber?: Prisma.StringFilter<"DocumentControl"> | string
+  docName?: Prisma.StringFilter<"DocumentControl"> | string
+  revision?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  description?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  status?: Prisma.EnumDocControlStatusFilter<"DocumentControl"> | $Enums.DocControlStatus
+  effectiveDate?: Prisma.DateTimeNullableFilter<"DocumentControl"> | Date | string | null
+  spDriveId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  spItemId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  spWebUrl?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  spDownloadUrl?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  spFolderPath?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  fileName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  fileSize?: Prisma.IntNullableFilter<"DocumentControl"> | number | null
+  mimeType?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  createdById?: Prisma.StringFilter<"DocumentControl"> | string
+  createdByAuthUserId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  createdByName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  updatedById?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  updatedByAuthUserId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  updatedByName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"DocumentControl"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"DocumentControl"> | Date | string
+  departmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  authDepartmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  departmentName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  categoryId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+}
+
 export type DocumentControlCreateWithoutRevisionsInput = {
   id?: string
   docNumber: string
@@ -1256,11 +1052,17 @@ export type DocumentControlCreateWithoutRevisionsInput = {
   fileName?: string | null
   fileSize?: number | null
   mimeType?: string | null
+  createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
+  updatedById?: string | null
+  updatedByAuthUserId?: string | null
+  updatedByName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  createdBy: Prisma.UserCreateNestedOneWithoutDocControlsCreatedInput
-  updatedBy?: Prisma.UserCreateNestedOneWithoutDocControlsUpdatedInput
-  department?: Prisma.DepartmentCreateNestedOneWithoutDocControlsInput
+  departmentId?: string | null
+  authDepartmentId?: string | null
+  departmentName?: string | null
   category?: Prisma.DocumentCategoryCreateNestedOneWithoutDocumentsInput
 }
 
@@ -1281,10 +1083,16 @@ export type DocumentControlUncheckedCreateWithoutRevisionsInput = {
   fileSize?: number | null
   mimeType?: string | null
   createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
   updatedById?: string | null
+  updatedByAuthUserId?: string | null
+  updatedByName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   departmentId?: string | null
+  authDepartmentId?: string | null
+  departmentName?: string | null
   categoryId?: string | null
 }
 
@@ -1320,11 +1128,17 @@ export type DocumentControlUpdateWithoutRevisionsInput = {
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.UserUpdateOneRequiredWithoutDocControlsCreatedNestedInput
-  updatedBy?: Prisma.UserUpdateOneWithoutDocControlsUpdatedNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutDocControlsNestedInput
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.DocumentCategoryUpdateOneWithoutDocumentsNestedInput
 }
 
@@ -1345,292 +1159,16 @@ export type DocumentControlUncheckedUpdateWithoutRevisionsInput = {
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type DocumentControlCreateManyDepartmentInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  createdById: string
-  updatedById?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  categoryId?: string | null
-}
-
-export type DocumentControlUpdateWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.UserUpdateOneRequiredWithoutDocControlsCreatedNestedInput
-  updatedBy?: Prisma.UserUpdateOneWithoutDocControlsUpdatedNestedInput
-  category?: Prisma.DocumentCategoryUpdateOneWithoutDocumentsNestedInput
-  revisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDocumentControlNestedInput
-}
-
-export type DocumentControlUncheckedUpdateWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  revisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNestedInput
-}
-
-export type DocumentControlUncheckedUpdateManyWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type DocumentControlCreateManyCreatedByInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  updatedById?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  departmentId?: string | null
-  categoryId?: string | null
-}
-
-export type DocumentControlCreateManyUpdatedByInput = {
-  id?: string
-  docNumber: string
-  docName: string
-  revision?: string | null
-  description?: string | null
-  status?: $Enums.DocControlStatus
-  effectiveDate?: Date | string | null
-  spDriveId?: string | null
-  spItemId?: string | null
-  spWebUrl?: string | null
-  spDownloadUrl?: string | null
-  spFolderPath?: string | null
-  fileName?: string | null
-  fileSize?: number | null
-  mimeType?: string | null
-  createdById: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  departmentId?: string | null
-  categoryId?: string | null
-}
-
-export type DocumentControlUpdateWithoutCreatedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedBy?: Prisma.UserUpdateOneWithoutDocControlsUpdatedNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutDocControlsNestedInput
-  category?: Prisma.DocumentCategoryUpdateOneWithoutDocumentsNestedInput
-  revisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDocumentControlNestedInput
-}
-
-export type DocumentControlUncheckedUpdateWithoutCreatedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  revisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNestedInput
-}
-
-export type DocumentControlUncheckedUpdateManyWithoutCreatedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type DocumentControlUpdateWithoutUpdatedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.UserUpdateOneRequiredWithoutDocControlsCreatedNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutDocControlsNestedInput
-  category?: Prisma.DocumentCategoryUpdateOneWithoutDocumentsNestedInput
-  revisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDocumentControlNestedInput
-}
-
-export type DocumentControlUncheckedUpdateWithoutUpdatedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  revisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNestedInput
-}
-
-export type DocumentControlUncheckedUpdateManyWithoutUpdatedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  docNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  docName?: Prisma.StringFieldUpdateOperationsInput | string
-  revision?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
-  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdById?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -1651,10 +1189,16 @@ export type DocumentControlCreateManyCategoryInput = {
   fileSize?: number | null
   mimeType?: string | null
   createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
   updatedById?: string | null
+  updatedByAuthUserId?: string | null
+  updatedByName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   departmentId?: string | null
+  authDepartmentId?: string | null
+  departmentName?: string | null
 }
 
 export type DocumentControlUpdateWithoutCategoryInput = {
@@ -1673,11 +1217,17 @@ export type DocumentControlUpdateWithoutCategoryInput = {
   fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.UserUpdateOneRequiredWithoutDocControlsCreatedNestedInput
-  updatedBy?: Prisma.UserUpdateOneWithoutDocControlsUpdatedNestedInput
-  department?: Prisma.DepartmentUpdateOneWithoutDocControlsNestedInput
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDocumentControlNestedInput
 }
 
@@ -1698,10 +1248,16 @@ export type DocumentControlUncheckedUpdateWithoutCategoryInput = {
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNestedInput
 }
 
@@ -1722,10 +1278,16 @@ export type DocumentControlUncheckedUpdateManyWithoutCategoryInput = {
   fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1776,14 +1338,17 @@ export type DocumentControlSelect<ExtArgs extends runtime.Types.Extensions.Inter
   fileSize?: boolean
   mimeType?: boolean
   createdById?: boolean
+  createdByAuthUserId?: boolean
+  createdByName?: boolean
   updatedById?: boolean
+  updatedByAuthUserId?: boolean
+  updatedByName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   departmentId?: boolean
+  authDepartmentId?: boolean
+  departmentName?: boolean
   categoryId?: boolean
-  createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  updatedBy?: boolean | Prisma.DocumentControl$updatedByArgs<ExtArgs>
-  department?: boolean | Prisma.DocumentControl$departmentArgs<ExtArgs>
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
   revisions?: boolean | Prisma.DocumentControl$revisionsArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentControlCountOutputTypeDefaultArgs<ExtArgs>
@@ -1806,14 +1371,17 @@ export type DocumentControlSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   fileSize?: boolean
   mimeType?: boolean
   createdById?: boolean
+  createdByAuthUserId?: boolean
+  createdByName?: boolean
   updatedById?: boolean
+  updatedByAuthUserId?: boolean
+  updatedByName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   departmentId?: boolean
+  authDepartmentId?: boolean
+  departmentName?: boolean
   categoryId?: boolean
-  createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  updatedBy?: boolean | Prisma.DocumentControl$updatedByArgs<ExtArgs>
-  department?: boolean | Prisma.DocumentControl$departmentArgs<ExtArgs>
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
 }, ExtArgs["result"]["documentControl"]>
 
@@ -1834,14 +1402,17 @@ export type DocumentControlSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   fileSize?: boolean
   mimeType?: boolean
   createdById?: boolean
+  createdByAuthUserId?: boolean
+  createdByName?: boolean
   updatedById?: boolean
+  updatedByAuthUserId?: boolean
+  updatedByName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   departmentId?: boolean
+  authDepartmentId?: boolean
+  departmentName?: boolean
   categoryId?: boolean
-  createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  updatedBy?: boolean | Prisma.DocumentControl$updatedByArgs<ExtArgs>
-  department?: boolean | Prisma.DocumentControl$departmentArgs<ExtArgs>
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
 }, ExtArgs["result"]["documentControl"]>
 
@@ -1862,41 +1433,35 @@ export type DocumentControlSelectScalar = {
   fileSize?: boolean
   mimeType?: boolean
   createdById?: boolean
+  createdByAuthUserId?: boolean
+  createdByName?: boolean
   updatedById?: boolean
+  updatedByAuthUserId?: boolean
+  updatedByName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   departmentId?: boolean
+  authDepartmentId?: boolean
+  departmentName?: boolean
   categoryId?: boolean
 }
 
-export type DocumentControlOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "docNumber" | "docName" | "revision" | "description" | "status" | "effectiveDate" | "spDriveId" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "spFolderPath" | "fileName" | "fileSize" | "mimeType" | "createdById" | "updatedById" | "createdAt" | "updatedAt" | "departmentId" | "categoryId", ExtArgs["result"]["documentControl"]>
+export type DocumentControlOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "docNumber" | "docName" | "revision" | "description" | "status" | "effectiveDate" | "spDriveId" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "spFolderPath" | "fileName" | "fileSize" | "mimeType" | "createdById" | "createdByAuthUserId" | "createdByName" | "updatedById" | "updatedByAuthUserId" | "updatedByName" | "createdAt" | "updatedAt" | "departmentId" | "authDepartmentId" | "departmentName" | "categoryId", ExtArgs["result"]["documentControl"]>
 export type DocumentControlInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  updatedBy?: boolean | Prisma.DocumentControl$updatedByArgs<ExtArgs>
-  department?: boolean | Prisma.DocumentControl$departmentArgs<ExtArgs>
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
   revisions?: boolean | Prisma.DocumentControl$revisionsArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentControlCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DocumentControlIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  updatedBy?: boolean | Prisma.DocumentControl$updatedByArgs<ExtArgs>
-  department?: boolean | Prisma.DocumentControl$departmentArgs<ExtArgs>
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
 }
 export type DocumentControlIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  updatedBy?: boolean | Prisma.DocumentControl$updatedByArgs<ExtArgs>
-  department?: boolean | Prisma.DocumentControl$departmentArgs<ExtArgs>
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
 }
 
 export type $DocumentControlPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DocumentControl"
   objects: {
-    createdBy: Prisma.$UserPayload<ExtArgs>
-    updatedBy: Prisma.$UserPayload<ExtArgs> | null
-    department: Prisma.$DepartmentPayload<ExtArgs> | null
     category: Prisma.$DocumentCategoryPayload<ExtArgs> | null
     revisions: Prisma.$DocumentControlRevisionPayload<ExtArgs>[]
   }
@@ -1917,10 +1482,16 @@ export type $DocumentControlPayload<ExtArgs extends runtime.Types.Extensions.Int
     fileSize: number | null
     mimeType: string | null
     createdById: string
+    createdByAuthUserId: string | null
+    createdByName: string | null
     updatedById: string | null
+    updatedByAuthUserId: string | null
+    updatedByName: string | null
     createdAt: Date
     updatedAt: Date
     departmentId: string | null
+    authDepartmentId: string | null
+    departmentName: string | null
     categoryId: string | null
   }, ExtArgs["result"]["documentControl"]>
   composites: {}
@@ -2316,9 +1887,6 @@ readonly fields: DocumentControlFieldRefs;
  */
 export interface Prisma__DocumentControlClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  createdBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  updatedBy<T extends Prisma.DocumentControl$updatedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControl$updatedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  department<T extends Prisma.DocumentControl$departmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControl$departmentArgs<ExtArgs>>): Prisma.Prisma__DepartmentClient<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   category<T extends Prisma.DocumentControl$categoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControl$categoryArgs<ExtArgs>>): Prisma.Prisma__DocumentCategoryClient<runtime.Types.Result.GetResult<Prisma.$DocumentCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   revisions<T extends Prisma.DocumentControl$revisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControl$revisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentControlRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2366,10 +1934,16 @@ export interface DocumentControlFieldRefs {
   readonly fileSize: Prisma.FieldRef<"DocumentControl", 'Int'>
   readonly mimeType: Prisma.FieldRef<"DocumentControl", 'String'>
   readonly createdById: Prisma.FieldRef<"DocumentControl", 'String'>
+  readonly createdByAuthUserId: Prisma.FieldRef<"DocumentControl", 'String'>
+  readonly createdByName: Prisma.FieldRef<"DocumentControl", 'String'>
   readonly updatedById: Prisma.FieldRef<"DocumentControl", 'String'>
+  readonly updatedByAuthUserId: Prisma.FieldRef<"DocumentControl", 'String'>
+  readonly updatedByName: Prisma.FieldRef<"DocumentControl", 'String'>
   readonly createdAt: Prisma.FieldRef<"DocumentControl", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DocumentControl", 'DateTime'>
   readonly departmentId: Prisma.FieldRef<"DocumentControl", 'String'>
+  readonly authDepartmentId: Prisma.FieldRef<"DocumentControl", 'String'>
+  readonly departmentName: Prisma.FieldRef<"DocumentControl", 'String'>
   readonly categoryId: Prisma.FieldRef<"DocumentControl", 'String'>
 }
     
@@ -2769,44 +2343,6 @@ export type DocumentControlDeleteManyArgs<ExtArgs extends runtime.Types.Extensio
    * Limit how many DocumentControls to delete.
    */
   limit?: number
-}
-
-/**
- * DocumentControl.updatedBy
- */
-export type DocumentControl$updatedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the User
-   */
-  select?: Prisma.UserSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the User
-   */
-  omit?: Prisma.UserOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
-}
-
-/**
- * DocumentControl.department
- */
-export type DocumentControl$departmentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Department
-   */
-  select?: Prisma.DepartmentSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Department
-   */
-  omit?: Prisma.DepartmentOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.DepartmentInclude<ExtArgs> | null
-  where?: Prisma.DepartmentWhereInput
 }
 
 /**

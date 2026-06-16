@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const session = await requireAuth();
     const { reportId } = await params;
     const { reason } = rejectReportSchema.parse(await request.json());
-    const updated = await service.rejectReport(reportId, reason, { userId: session.user.id, role: session.user.role, departmentId: session.user.departmentId });
+    const updated = await service.rejectReport(reportId, reason, { userId: session.user.id, role: session.user.role, departmentId: session.user.authDepartmentId ?? session.user.departmentId });
 
     const detail = await service.getReportById(reportId);
     if (detail.prepareBy) {
@@ -44,6 +44,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           }),
           preparer.email,
           'Monthly KPI Rejected',
+          preparer.id,
+          {
+            title: "KPI รายเดือนถูกปฏิเสธ",
+            body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
+            module: "KPI",
+            resourceId: reportId,
+            resourceType: "KPI_MONTHLY",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }

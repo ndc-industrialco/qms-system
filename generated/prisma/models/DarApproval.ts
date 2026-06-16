@@ -33,6 +33,10 @@ export type DarApprovalMinAggregateOutputType = {
   signatureTypeUsed: $Enums.SignatureType | null
   darMasterId: string | null
   assignedUserId: string | null
+  assignedAuthUserId: string | null
+  assignedUserName: string | null
+  assignedEmployeeId: string | null
+  assignedDepartmentName: string | null
   comment: string | null
 }
 
@@ -45,6 +49,10 @@ export type DarApprovalMaxAggregateOutputType = {
   signatureTypeUsed: $Enums.SignatureType | null
   darMasterId: string | null
   assignedUserId: string | null
+  assignedAuthUserId: string | null
+  assignedUserName: string | null
+  assignedEmployeeId: string | null
+  assignedDepartmentName: string | null
   comment: string | null
 }
 
@@ -57,6 +65,10 @@ export type DarApprovalCountAggregateOutputType = {
   signatureTypeUsed: number
   darMasterId: number
   assignedUserId: number
+  assignedAuthUserId: number
+  assignedUserName: number
+  assignedEmployeeId: number
+  assignedDepartmentName: number
   comment: number
   _all: number
 }
@@ -71,6 +83,10 @@ export type DarApprovalMinAggregateInputType = {
   signatureTypeUsed?: true
   darMasterId?: true
   assignedUserId?: true
+  assignedAuthUserId?: true
+  assignedUserName?: true
+  assignedEmployeeId?: true
+  assignedDepartmentName?: true
   comment?: true
 }
 
@@ -83,6 +99,10 @@ export type DarApprovalMaxAggregateInputType = {
   signatureTypeUsed?: true
   darMasterId?: true
   assignedUserId?: true
+  assignedAuthUserId?: true
+  assignedUserName?: true
+  assignedEmployeeId?: true
+  assignedDepartmentName?: true
   comment?: true
 }
 
@@ -95,6 +115,10 @@ export type DarApprovalCountAggregateInputType = {
   signatureTypeUsed?: true
   darMasterId?: true
   assignedUserId?: true
+  assignedAuthUserId?: true
+  assignedUserName?: true
+  assignedEmployeeId?: true
+  assignedDepartmentName?: true
   comment?: true
   _all?: true
 }
@@ -180,6 +204,10 @@ export type DarApprovalGroupByOutputType = {
   signatureTypeUsed: $Enums.SignatureType | null
   darMasterId: string
   assignedUserId: string
+  assignedAuthUserId: string | null
+  assignedUserName: string | null
+  assignedEmployeeId: string | null
+  assignedDepartmentName: string | null
   comment: string | null
   _count: DarApprovalCountAggregateOutputType | null
   _min: DarApprovalMinAggregateOutputType | null
@@ -213,8 +241,11 @@ export type DarApprovalWhereInput = {
   signatureTypeUsed?: Prisma.EnumSignatureTypeNullableFilter<"DarApproval"> | $Enums.SignatureType | null
   darMasterId?: Prisma.StringFilter<"DarApproval"> | string
   assignedUserId?: Prisma.StringFilter<"DarApproval"> | string
+  assignedAuthUserId?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedUserName?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedEmployeeId?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedDepartmentName?: Prisma.StringNullableFilter<"DarApproval"> | string | null
   comment?: Prisma.StringNullableFilter<"DarApproval"> | string | null
-  assignedUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   darMaster?: Prisma.XOR<Prisma.DarMasterScalarRelationFilter, Prisma.DarMasterWhereInput>
 }
 
@@ -227,8 +258,11 @@ export type DarApprovalOrderByWithRelationInput = {
   signatureTypeUsed?: Prisma.SortOrderInput | Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrder
+  assignedAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedUserName?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedDepartmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
-  assignedUser?: Prisma.UserOrderByWithRelationInput
   darMaster?: Prisma.DarMasterOrderByWithRelationInput
 }
 
@@ -244,8 +278,11 @@ export type DarApprovalWhereUniqueInput = Prisma.AtLeast<{
   signatureTypeUsed?: Prisma.EnumSignatureTypeNullableFilter<"DarApproval"> | $Enums.SignatureType | null
   darMasterId?: Prisma.StringFilter<"DarApproval"> | string
   assignedUserId?: Prisma.StringFilter<"DarApproval"> | string
+  assignedAuthUserId?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedUserName?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedEmployeeId?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedDepartmentName?: Prisma.StringNullableFilter<"DarApproval"> | string | null
   comment?: Prisma.StringNullableFilter<"DarApproval"> | string | null
-  assignedUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   darMaster?: Prisma.XOR<Prisma.DarMasterScalarRelationFilter, Prisma.DarMasterWhereInput>
 }, "id">
 
@@ -258,6 +295,10 @@ export type DarApprovalOrderByWithAggregationInput = {
   signatureTypeUsed?: Prisma.SortOrderInput | Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrder
+  assignedAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedUserName?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignedDepartmentName?: Prisma.SortOrderInput | Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DarApprovalCountOrderByAggregateInput
   _max?: Prisma.DarApprovalMaxOrderByAggregateInput
@@ -276,6 +317,10 @@ export type DarApprovalScalarWhereWithAggregatesInput = {
   signatureTypeUsed?: Prisma.EnumSignatureTypeNullableWithAggregatesFilter<"DarApproval"> | $Enums.SignatureType | null
   darMasterId?: Prisma.StringWithAggregatesFilter<"DarApproval"> | string
   assignedUserId?: Prisma.StringWithAggregatesFilter<"DarApproval"> | string
+  assignedAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"DarApproval"> | string | null
+  assignedUserName?: Prisma.StringNullableWithAggregatesFilter<"DarApproval"> | string | null
+  assignedEmployeeId?: Prisma.StringNullableWithAggregatesFilter<"DarApproval"> | string | null
+  assignedDepartmentName?: Prisma.StringNullableWithAggregatesFilter<"DarApproval"> | string | null
   comment?: Prisma.StringNullableWithAggregatesFilter<"DarApproval"> | string | null
 }
 
@@ -286,8 +331,12 @@ export type DarApprovalCreateInput = {
   actionDate?: Date | string | null
   signatureUsedUrl?: string | null
   signatureTypeUsed?: $Enums.SignatureType | null
+  assignedUserId: string
+  assignedAuthUserId?: string | null
+  assignedUserName?: string | null
+  assignedEmployeeId?: string | null
+  assignedDepartmentName?: string | null
   comment?: string | null
-  assignedUser: Prisma.UserCreateNestedOneWithoutDarApprovalsInput
   darMaster: Prisma.DarMasterCreateNestedOneWithoutApprovalsInput
 }
 
@@ -300,6 +349,10 @@ export type DarApprovalUncheckedCreateInput = {
   signatureTypeUsed?: $Enums.SignatureType | null
   darMasterId: string
   assignedUserId: string
+  assignedAuthUserId?: string | null
+  assignedUserName?: string | null
+  assignedEmployeeId?: string | null
+  assignedDepartmentName?: string | null
   comment?: string | null
 }
 
@@ -310,8 +363,12 @@ export type DarApprovalUpdateInput = {
   actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   signatureUsedUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  assignedUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  assignedUser?: Prisma.UserUpdateOneRequiredWithoutDarApprovalsNestedInput
   darMaster?: Prisma.DarMasterUpdateOneRequiredWithoutApprovalsNestedInput
 }
 
@@ -324,6 +381,10 @@ export type DarApprovalUncheckedUpdateInput = {
   signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   darMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -336,6 +397,10 @@ export type DarApprovalCreateManyInput = {
   signatureTypeUsed?: $Enums.SignatureType | null
   darMasterId: string
   assignedUserId: string
+  assignedAuthUserId?: string | null
+  assignedUserName?: string | null
+  assignedEmployeeId?: string | null
+  assignedDepartmentName?: string | null
   comment?: string | null
 }
 
@@ -346,6 +411,11 @@ export type DarApprovalUpdateManyMutationInput = {
   actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   signatureUsedUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  assignedUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -358,6 +428,10 @@ export type DarApprovalUncheckedUpdateManyInput = {
   signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   darMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -380,6 +454,10 @@ export type DarApprovalCountOrderByAggregateInput = {
   signatureTypeUsed?: Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrder
+  assignedAuthUserId?: Prisma.SortOrder
+  assignedUserName?: Prisma.SortOrder
+  assignedEmployeeId?: Prisma.SortOrder
+  assignedDepartmentName?: Prisma.SortOrder
   comment?: Prisma.SortOrder
 }
 
@@ -392,6 +470,10 @@ export type DarApprovalMaxOrderByAggregateInput = {
   signatureTypeUsed?: Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrder
+  assignedAuthUserId?: Prisma.SortOrder
+  assignedUserName?: Prisma.SortOrder
+  assignedEmployeeId?: Prisma.SortOrder
+  assignedDepartmentName?: Prisma.SortOrder
   comment?: Prisma.SortOrder
 }
 
@@ -404,49 +486,11 @@ export type DarApprovalMinOrderByAggregateInput = {
   signatureTypeUsed?: Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   assignedUserId?: Prisma.SortOrder
+  assignedAuthUserId?: Prisma.SortOrder
+  assignedUserName?: Prisma.SortOrder
+  assignedEmployeeId?: Prisma.SortOrder
+  assignedDepartmentName?: Prisma.SortOrder
   comment?: Prisma.SortOrder
-}
-
-export type DarApprovalCreateNestedManyWithoutAssignedUserInput = {
-  create?: Prisma.XOR<Prisma.DarApprovalCreateWithoutAssignedUserInput, Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput> | Prisma.DarApprovalCreateWithoutAssignedUserInput[] | Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput[]
-  connectOrCreate?: Prisma.DarApprovalCreateOrConnectWithoutAssignedUserInput | Prisma.DarApprovalCreateOrConnectWithoutAssignedUserInput[]
-  createMany?: Prisma.DarApprovalCreateManyAssignedUserInputEnvelope
-  connect?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-}
-
-export type DarApprovalUncheckedCreateNestedManyWithoutAssignedUserInput = {
-  create?: Prisma.XOR<Prisma.DarApprovalCreateWithoutAssignedUserInput, Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput> | Prisma.DarApprovalCreateWithoutAssignedUserInput[] | Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput[]
-  connectOrCreate?: Prisma.DarApprovalCreateOrConnectWithoutAssignedUserInput | Prisma.DarApprovalCreateOrConnectWithoutAssignedUserInput[]
-  createMany?: Prisma.DarApprovalCreateManyAssignedUserInputEnvelope
-  connect?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-}
-
-export type DarApprovalUpdateManyWithoutAssignedUserNestedInput = {
-  create?: Prisma.XOR<Prisma.DarApprovalCreateWithoutAssignedUserInput, Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput> | Prisma.DarApprovalCreateWithoutAssignedUserInput[] | Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput[]
-  connectOrCreate?: Prisma.DarApprovalCreateOrConnectWithoutAssignedUserInput | Prisma.DarApprovalCreateOrConnectWithoutAssignedUserInput[]
-  upsert?: Prisma.DarApprovalUpsertWithWhereUniqueWithoutAssignedUserInput | Prisma.DarApprovalUpsertWithWhereUniqueWithoutAssignedUserInput[]
-  createMany?: Prisma.DarApprovalCreateManyAssignedUserInputEnvelope
-  set?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-  disconnect?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-  delete?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-  connect?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-  update?: Prisma.DarApprovalUpdateWithWhereUniqueWithoutAssignedUserInput | Prisma.DarApprovalUpdateWithWhereUniqueWithoutAssignedUserInput[]
-  updateMany?: Prisma.DarApprovalUpdateManyWithWhereWithoutAssignedUserInput | Prisma.DarApprovalUpdateManyWithWhereWithoutAssignedUserInput[]
-  deleteMany?: Prisma.DarApprovalScalarWhereInput | Prisma.DarApprovalScalarWhereInput[]
-}
-
-export type DarApprovalUncheckedUpdateManyWithoutAssignedUserNestedInput = {
-  create?: Prisma.XOR<Prisma.DarApprovalCreateWithoutAssignedUserInput, Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput> | Prisma.DarApprovalCreateWithoutAssignedUserInput[] | Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput[]
-  connectOrCreate?: Prisma.DarApprovalCreateOrConnectWithoutAssignedUserInput | Prisma.DarApprovalCreateOrConnectWithoutAssignedUserInput[]
-  upsert?: Prisma.DarApprovalUpsertWithWhereUniqueWithoutAssignedUserInput | Prisma.DarApprovalUpsertWithWhereUniqueWithoutAssignedUserInput[]
-  createMany?: Prisma.DarApprovalCreateManyAssignedUserInputEnvelope
-  set?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-  disconnect?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-  delete?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-  connect?: Prisma.DarApprovalWhereUniqueInput | Prisma.DarApprovalWhereUniqueInput[]
-  update?: Prisma.DarApprovalUpdateWithWhereUniqueWithoutAssignedUserInput | Prisma.DarApprovalUpdateWithWhereUniqueWithoutAssignedUserInput[]
-  updateMany?: Prisma.DarApprovalUpdateManyWithWhereWithoutAssignedUserInput | Prisma.DarApprovalUpdateManyWithWhereWithoutAssignedUserInput[]
-  deleteMany?: Prisma.DarApprovalScalarWhereInput | Prisma.DarApprovalScalarWhereInput[]
 }
 
 export type DarApprovalCreateNestedManyWithoutDarMasterInput = {
@@ -499,69 +543,6 @@ export type EnumApprovalActionFieldUpdateOperationsInput = {
   set?: $Enums.ApprovalAction
 }
 
-export type DarApprovalCreateWithoutAssignedUserInput = {
-  id?: string
-  stepRole: $Enums.ApprovalStep
-  action?: $Enums.ApprovalAction
-  actionDate?: Date | string | null
-  signatureUsedUrl?: string | null
-  signatureTypeUsed?: $Enums.SignatureType | null
-  comment?: string | null
-  darMaster: Prisma.DarMasterCreateNestedOneWithoutApprovalsInput
-}
-
-export type DarApprovalUncheckedCreateWithoutAssignedUserInput = {
-  id?: string
-  stepRole: $Enums.ApprovalStep
-  action?: $Enums.ApprovalAction
-  actionDate?: Date | string | null
-  signatureUsedUrl?: string | null
-  signatureTypeUsed?: $Enums.SignatureType | null
-  darMasterId: string
-  comment?: string | null
-}
-
-export type DarApprovalCreateOrConnectWithoutAssignedUserInput = {
-  where: Prisma.DarApprovalWhereUniqueInput
-  create: Prisma.XOR<Prisma.DarApprovalCreateWithoutAssignedUserInput, Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput>
-}
-
-export type DarApprovalCreateManyAssignedUserInputEnvelope = {
-  data: Prisma.DarApprovalCreateManyAssignedUserInput | Prisma.DarApprovalCreateManyAssignedUserInput[]
-  skipDuplicates?: boolean
-}
-
-export type DarApprovalUpsertWithWhereUniqueWithoutAssignedUserInput = {
-  where: Prisma.DarApprovalWhereUniqueInput
-  update: Prisma.XOR<Prisma.DarApprovalUpdateWithoutAssignedUserInput, Prisma.DarApprovalUncheckedUpdateWithoutAssignedUserInput>
-  create: Prisma.XOR<Prisma.DarApprovalCreateWithoutAssignedUserInput, Prisma.DarApprovalUncheckedCreateWithoutAssignedUserInput>
-}
-
-export type DarApprovalUpdateWithWhereUniqueWithoutAssignedUserInput = {
-  where: Prisma.DarApprovalWhereUniqueInput
-  data: Prisma.XOR<Prisma.DarApprovalUpdateWithoutAssignedUserInput, Prisma.DarApprovalUncheckedUpdateWithoutAssignedUserInput>
-}
-
-export type DarApprovalUpdateManyWithWhereWithoutAssignedUserInput = {
-  where: Prisma.DarApprovalScalarWhereInput
-  data: Prisma.XOR<Prisma.DarApprovalUpdateManyMutationInput, Prisma.DarApprovalUncheckedUpdateManyWithoutAssignedUserInput>
-}
-
-export type DarApprovalScalarWhereInput = {
-  AND?: Prisma.DarApprovalScalarWhereInput | Prisma.DarApprovalScalarWhereInput[]
-  OR?: Prisma.DarApprovalScalarWhereInput[]
-  NOT?: Prisma.DarApprovalScalarWhereInput | Prisma.DarApprovalScalarWhereInput[]
-  id?: Prisma.StringFilter<"DarApproval"> | string
-  stepRole?: Prisma.EnumApprovalStepFilter<"DarApproval"> | $Enums.ApprovalStep
-  action?: Prisma.EnumApprovalActionFilter<"DarApproval"> | $Enums.ApprovalAction
-  actionDate?: Prisma.DateTimeNullableFilter<"DarApproval"> | Date | string | null
-  signatureUsedUrl?: Prisma.StringNullableFilter<"DarApproval"> | string | null
-  signatureTypeUsed?: Prisma.EnumSignatureTypeNullableFilter<"DarApproval"> | $Enums.SignatureType | null
-  darMasterId?: Prisma.StringFilter<"DarApproval"> | string
-  assignedUserId?: Prisma.StringFilter<"DarApproval"> | string
-  comment?: Prisma.StringNullableFilter<"DarApproval"> | string | null
-}
-
 export type DarApprovalCreateWithoutDarMasterInput = {
   id?: string
   stepRole: $Enums.ApprovalStep
@@ -569,8 +550,12 @@ export type DarApprovalCreateWithoutDarMasterInput = {
   actionDate?: Date | string | null
   signatureUsedUrl?: string | null
   signatureTypeUsed?: $Enums.SignatureType | null
+  assignedUserId: string
+  assignedAuthUserId?: string | null
+  assignedUserName?: string | null
+  assignedEmployeeId?: string | null
+  assignedDepartmentName?: string | null
   comment?: string | null
-  assignedUser: Prisma.UserCreateNestedOneWithoutDarApprovalsInput
 }
 
 export type DarApprovalUncheckedCreateWithoutDarMasterInput = {
@@ -581,6 +566,10 @@ export type DarApprovalUncheckedCreateWithoutDarMasterInput = {
   signatureUsedUrl?: string | null
   signatureTypeUsed?: $Enums.SignatureType | null
   assignedUserId: string
+  assignedAuthUserId?: string | null
+  assignedUserName?: string | null
+  assignedEmployeeId?: string | null
+  assignedDepartmentName?: string | null
   comment?: string | null
 }
 
@@ -610,48 +599,23 @@ export type DarApprovalUpdateManyWithWhereWithoutDarMasterInput = {
   data: Prisma.XOR<Prisma.DarApprovalUpdateManyMutationInput, Prisma.DarApprovalUncheckedUpdateManyWithoutDarMasterInput>
 }
 
-export type DarApprovalCreateManyAssignedUserInput = {
-  id?: string
-  stepRole: $Enums.ApprovalStep
-  action?: $Enums.ApprovalAction
-  actionDate?: Date | string | null
-  signatureUsedUrl?: string | null
-  signatureTypeUsed?: $Enums.SignatureType | null
-  darMasterId: string
-  comment?: string | null
-}
-
-export type DarApprovalUpdateWithoutAssignedUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  stepRole?: Prisma.EnumApprovalStepFieldUpdateOperationsInput | $Enums.ApprovalStep
-  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
-  actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  signatureUsedUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  darMaster?: Prisma.DarMasterUpdateOneRequiredWithoutApprovalsNestedInput
-}
-
-export type DarApprovalUncheckedUpdateWithoutAssignedUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  stepRole?: Prisma.EnumApprovalStepFieldUpdateOperationsInput | $Enums.ApprovalStep
-  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
-  actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  signatureUsedUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  darMasterId?: Prisma.StringFieldUpdateOperationsInput | string
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type DarApprovalUncheckedUpdateManyWithoutAssignedUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  stepRole?: Prisma.EnumApprovalStepFieldUpdateOperationsInput | $Enums.ApprovalStep
-  action?: Prisma.EnumApprovalActionFieldUpdateOperationsInput | $Enums.ApprovalAction
-  actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  signatureUsedUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
-  darMasterId?: Prisma.StringFieldUpdateOperationsInput | string
-  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+export type DarApprovalScalarWhereInput = {
+  AND?: Prisma.DarApprovalScalarWhereInput | Prisma.DarApprovalScalarWhereInput[]
+  OR?: Prisma.DarApprovalScalarWhereInput[]
+  NOT?: Prisma.DarApprovalScalarWhereInput | Prisma.DarApprovalScalarWhereInput[]
+  id?: Prisma.StringFilter<"DarApproval"> | string
+  stepRole?: Prisma.EnumApprovalStepFilter<"DarApproval"> | $Enums.ApprovalStep
+  action?: Prisma.EnumApprovalActionFilter<"DarApproval"> | $Enums.ApprovalAction
+  actionDate?: Prisma.DateTimeNullableFilter<"DarApproval"> | Date | string | null
+  signatureUsedUrl?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  signatureTypeUsed?: Prisma.EnumSignatureTypeNullableFilter<"DarApproval"> | $Enums.SignatureType | null
+  darMasterId?: Prisma.StringFilter<"DarApproval"> | string
+  assignedUserId?: Prisma.StringFilter<"DarApproval"> | string
+  assignedAuthUserId?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedUserName?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedEmployeeId?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  assignedDepartmentName?: Prisma.StringNullableFilter<"DarApproval"> | string | null
+  comment?: Prisma.StringNullableFilter<"DarApproval"> | string | null
 }
 
 export type DarApprovalCreateManyDarMasterInput = {
@@ -662,6 +626,10 @@ export type DarApprovalCreateManyDarMasterInput = {
   signatureUsedUrl?: string | null
   signatureTypeUsed?: $Enums.SignatureType | null
   assignedUserId: string
+  assignedAuthUserId?: string | null
+  assignedUserName?: string | null
+  assignedEmployeeId?: string | null
+  assignedDepartmentName?: string | null
   comment?: string | null
 }
 
@@ -672,8 +640,12 @@ export type DarApprovalUpdateWithoutDarMasterInput = {
   actionDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   signatureUsedUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
+  assignedUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  assignedUser?: Prisma.UserUpdateOneRequiredWithoutDarApprovalsNestedInput
 }
 
 export type DarApprovalUncheckedUpdateWithoutDarMasterInput = {
@@ -684,6 +656,10 @@ export type DarApprovalUncheckedUpdateWithoutDarMasterInput = {
   signatureUsedUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   assignedUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -695,6 +671,10 @@ export type DarApprovalUncheckedUpdateManyWithoutDarMasterInput = {
   signatureUsedUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureTypeUsed?: Prisma.NullableEnumSignatureTypeFieldUpdateOperationsInput | $Enums.SignatureType | null
   assignedUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignedAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedUserName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignedDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -709,8 +689,11 @@ export type DarApprovalSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   signatureTypeUsed?: boolean
   darMasterId?: boolean
   assignedUserId?: boolean
+  assignedAuthUserId?: boolean
+  assignedUserName?: boolean
+  assignedEmployeeId?: boolean
+  assignedDepartmentName?: boolean
   comment?: boolean
-  assignedUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   darMaster?: boolean | Prisma.DarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["darApproval"]>
 
@@ -723,8 +706,11 @@ export type DarApprovalSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   signatureTypeUsed?: boolean
   darMasterId?: boolean
   assignedUserId?: boolean
+  assignedAuthUserId?: boolean
+  assignedUserName?: boolean
+  assignedEmployeeId?: boolean
+  assignedDepartmentName?: boolean
   comment?: boolean
-  assignedUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   darMaster?: boolean | Prisma.DarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["darApproval"]>
 
@@ -737,8 +723,11 @@ export type DarApprovalSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   signatureTypeUsed?: boolean
   darMasterId?: boolean
   assignedUserId?: boolean
+  assignedAuthUserId?: boolean
+  assignedUserName?: boolean
+  assignedEmployeeId?: boolean
+  assignedDepartmentName?: boolean
   comment?: boolean
-  assignedUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   darMaster?: boolean | Prisma.DarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["darApproval"]>
 
@@ -751,27 +740,27 @@ export type DarApprovalSelectScalar = {
   signatureTypeUsed?: boolean
   darMasterId?: boolean
   assignedUserId?: boolean
+  assignedAuthUserId?: boolean
+  assignedUserName?: boolean
+  assignedEmployeeId?: boolean
+  assignedDepartmentName?: boolean
   comment?: boolean
 }
 
-export type DarApprovalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "stepRole" | "action" | "actionDate" | "signatureUsedUrl" | "signatureTypeUsed" | "darMasterId" | "assignedUserId" | "comment", ExtArgs["result"]["darApproval"]>
+export type DarApprovalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "stepRole" | "action" | "actionDate" | "signatureUsedUrl" | "signatureTypeUsed" | "darMasterId" | "assignedUserId" | "assignedAuthUserId" | "assignedUserName" | "assignedEmployeeId" | "assignedDepartmentName" | "comment", ExtArgs["result"]["darApproval"]>
 export type DarApprovalInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  assignedUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   darMaster?: boolean | Prisma.DarMasterDefaultArgs<ExtArgs>
 }
 export type DarApprovalIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  assignedUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   darMaster?: boolean | Prisma.DarMasterDefaultArgs<ExtArgs>
 }
 export type DarApprovalIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  assignedUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   darMaster?: boolean | Prisma.DarMasterDefaultArgs<ExtArgs>
 }
 
 export type $DarApprovalPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DarApproval"
   objects: {
-    assignedUser: Prisma.$UserPayload<ExtArgs>
     darMaster: Prisma.$DarMasterPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -783,6 +772,10 @@ export type $DarApprovalPayload<ExtArgs extends runtime.Types.Extensions.Interna
     signatureTypeUsed: $Enums.SignatureType | null
     darMasterId: string
     assignedUserId: string
+    assignedAuthUserId: string | null
+    assignedUserName: string | null
+    assignedEmployeeId: string | null
+    assignedDepartmentName: string | null
     comment: string | null
   }, ExtArgs["result"]["darApproval"]>
   composites: {}
@@ -1178,7 +1171,6 @@ readonly fields: DarApprovalFieldRefs;
  */
 export interface Prisma__DarApprovalClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  assignedUser<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   darMaster<T extends Prisma.DarMasterDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DarMasterDefaultArgs<ExtArgs>>): Prisma.Prisma__DarMasterClient<runtime.Types.Result.GetResult<Prisma.$DarMasterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1217,6 +1209,10 @@ export interface DarApprovalFieldRefs {
   readonly signatureTypeUsed: Prisma.FieldRef<"DarApproval", 'SignatureType'>
   readonly darMasterId: Prisma.FieldRef<"DarApproval", 'String'>
   readonly assignedUserId: Prisma.FieldRef<"DarApproval", 'String'>
+  readonly assignedAuthUserId: Prisma.FieldRef<"DarApproval", 'String'>
+  readonly assignedUserName: Prisma.FieldRef<"DarApproval", 'String'>
+  readonly assignedEmployeeId: Prisma.FieldRef<"DarApproval", 'String'>
+  readonly assignedDepartmentName: Prisma.FieldRef<"DarApproval", 'String'>
   readonly comment: Prisma.FieldRef<"DarApproval", 'String'>
 }
     

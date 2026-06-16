@@ -432,7 +432,6 @@ export default function ProfileClient({ profile, departmentName }: Props) {
 
   const hasChanges =
     name !== (profile.name ?? "") ||
-    employeeId !== (profile.employeeId ?? "") ||
     position !== (profile.position ?? "");
 
   async function handleConfirmSave() {
@@ -447,7 +446,6 @@ export default function ProfileClient({ profile, departmentName }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          employeeId: employeeId.trim() || null,
           position: position.trim() || null,
         }),
       });
@@ -472,7 +470,6 @@ export default function ProfileClient({ profile, departmentName }: Props) {
 
   function handleCancelEdit() {
     setName(profile.name ?? "");
-    setEmployeeId(profile.employeeId ?? "");
     setPosition(profile.position ?? "");
     setIsEditing(false);
   }
@@ -637,7 +634,7 @@ export default function ProfileClient({ profile, departmentName }: Props) {
               <h3 className="text-lg font-bold text-slate-900">Confirm Update</h3>
             </div>
             <p className="text-sm text-slate-600 mb-6">
-              Your profile information will be updated in Microsoft 365. This action cannot be undone. Do you want to proceed?
+              Your profile information will be updated in Auth Center and reflected in connected apps. Do you want to proceed?
             </p>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
               <p className="text-xs font-medium text-amber-900">

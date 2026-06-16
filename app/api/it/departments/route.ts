@@ -16,8 +16,8 @@ const createSchema = z.object({
 
 export async function GET() {
   try {
-    await requireRole("IT", "QMS", "MR");
-    const departments = await deptService.getAllDepartments();
+    const session = await requireRole("IT");
+    const departments = await deptService.getAllDepartments(session.user.accessToken);
     return sendSuccess(departments, "Departments retrieved successfully");
   } catch (err) {
     return handleApiError(err);
@@ -26,10 +26,10 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireRole("IT", "QMS", "MR");
+    const session = await requireRole("IT");
     const body = await req.json();
     const validated = createSchema.parse(body);
-    const dept = await deptService.createDepartment(validated);
+    const dept = await deptService.createDepartment(validated, session.user.accessToken);
     return sendSuccess(dept, "Department created successfully", 201);
   } catch (err) {
     return handleApiError(err);

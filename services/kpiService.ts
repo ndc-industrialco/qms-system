@@ -11,6 +11,8 @@ import { KpiMonthlyReportRepository } from '@/repositories/kpiMonthlyReportRepos
 import { KpiMonthlyDetailRepository } from '@/repositories/kpiMonthlyDetailRepository';
 import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRepository';
 import { UserRepository } from '@/repositories/userRepository';
+import { UserPreferenceRepository } from '@/repositories/userPreferenceRepository';
+import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { CreateKpiDTO, UpdateKpiDTO, CreateKpiObjectiveDTO, UpdateKpiObjectiveDTO, ListKpiQuery, SubmitKpiObjectivesDTO } from '@/types/kpi';
 import type { ActorContext } from '@/types/kpi';
 import type { Prisma, SignatureType } from '@/generated/prisma/client';
@@ -24,6 +26,7 @@ export class KpiService {
   private monthlyDetailRepo = new KpiMonthlyDetailRepository();
   private approvalSignatureRepo = new ApprovalSignatureRepository();
   private userRepo = new UserRepository();
+  private userPrefRepo = new UserPreferenceRepository();
 
   async listKpis(query: ListKpiQuery) {
     const result = await this.kpiRepo.paginateKpis(query);
@@ -42,8 +45,12 @@ export class KpiService {
       ...result,
       data: result.data.map(k => ({
         ...k,
-        reviewerUser: k.reviewerUserId ? (userMap.get(k.reviewerUserId) ?? null) : null,
-        approverUser: k.approverUserId ? (userMap.get(k.approverUserId) ?? null) : null,
+        reviewerUser: k.reviewerUserId
+          ? (userMap.get(k.reviewerUserId) ?? (k.reviewerEmail ? { id: k.reviewerUserId, name: k.reviewer || null, email: k.reviewerEmail } : null))
+          : null,
+        approverUser: k.approverUserId
+          ? (userMap.get(k.approverUserId) ?? (k.approverEmail ? { id: k.approverUserId, name: k.approver || null, email: k.approverEmail } : null))
+          : null,
       })),
     };
   }
@@ -66,8 +73,12 @@ export class KpiService {
     return {
       ...kpi,
       prepare: resolvedPrepare,
-      reviewerUser: kpi.reviewerUserId ? (userMap.get(kpi.reviewerUserId) ?? null) : null,
-      approverUser: kpi.approverUserId ? (userMap.get(kpi.approverUserId) ?? null) : null,
+      reviewerUser: kpi.reviewerUserId
+        ? (userMap.get(kpi.reviewerUserId) ?? (kpi.reviewerEmail ? { id: kpi.reviewerUserId, name: kpi.reviewer || null, email: kpi.reviewerEmail } : null))
+        : null,
+      approverUser: kpi.approverUserId
+        ? (userMap.get(kpi.approverUserId) ?? (kpi.approverEmail ? { id: kpi.approverUserId, name: kpi.approver || null, email: kpi.approverEmail } : null))
+        : null,
       approvalSignatures: signatures,
     };
   }
@@ -140,17 +151,25 @@ export class KpiService {
     if (kpi.objectives.length === 0) throw new ConflictError('Cannot submit KPI with no objectives');
     const now = new Date();
 
-    const [preparer, reviewer] = await Promise.all([
-      this.userRepo.findById(preparerUserId),
-      this.userRepo.findById(dto.reviewerUserId),
+    const [preparer, preparerSnapshot] = await Promise.all([
+      this.userRepo.findByAuthUserId(preparerUserId),
+      getUserSnapshot(preparerUserId),
     ]);
-    const preparerName = preparer?.name || preparer?.email || '';
+    const preparerName = preparer?.name || preparer?.email || preparerSnapshot?.name || preparerSnapshot?.email || '';
+    const reviewerName = dto.reviewerName?.trim() || dto.reviewerEmail || '';
+    const approverName = dto.approverName?.trim() || dto.approverEmail || '';
 
     const updated = await db.$transaction(async (tx) => {
       const result = await this.kpiRepo.submitObjectives(id, {
         prepareSignature: dto.prepareSignature,
         reviewerUserId: dto.reviewerUserId,
+        reviewerAuthUserId: dto.reviewerAuthUserId ?? dto.reviewerUserId,
+        reviewer: reviewerName,
+        reviewerEmail: dto.reviewerEmail ?? null,
         approverUserId: dto.approverUserId,
+        approverAuthUserId: dto.approverAuthUserId ?? dto.approverUserId,
+        approver: approverName,
+        approverEmail: dto.approverEmail ?? null,
         submittedAt: now,
         prepare: preparerName,
       }, tx);
@@ -161,6 +180,7 @@ export class KpiService {
         documentId: id,
         step: 'PREPARER',
         signerUserId: preparerUserId,
+        signerAuthUserId: dto.preparerAuthUserId ?? null,
         action: 'APPROVED',
         actionDate: now,
         signaturePath: dto.prepareSignature,
@@ -182,6 +202,7 @@ export class KpiService {
 
       await AuditService.record({
         actorUserId: preparerUserId,
+        actorAuthUserId: dto.preparerAuthUserId,
         actorRole: 'PREPARER',
         action: 'SUBMIT',
         resourceType: 'KPI',
@@ -195,7 +216,7 @@ export class KpiService {
 
     // Revoke any existing tokens, then issue fresh reviewer token
     await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
-    const reviewerToken = reviewer?.email
+    const reviewerToken = dto.reviewerEmail
       ? await ActionTokenService.issue({
           module: ApprovalModule.KPI,
           documentId: id,
@@ -205,11 +226,11 @@ export class KpiService {
       : null;
 
     // Send notification outside transaction — idempotent via NotificationService
-    if (reviewer?.email && reviewerToken) {
+    if (dto.reviewerEmail && reviewerToken) {
       NotificationService.sendEmailOnce(
         `KPI:${id}:SUBMITTED:reviewer:${dto.reviewerUserId}:${reviewerToken.substring(0, 16)}`,
         () => sendKpiObjectiveReviewerAssignedEmail({
-          reviewer: { name: reviewer.name ?? '', email: reviewer.email },
+          reviewer: { name: reviewerName, email: dto.reviewerEmail! },
           requesterName: preparerName,
           departmentName: updated.department,
           kpiId: updated.id,
@@ -218,8 +239,16 @@ export class KpiService {
           actionToken: reviewerToken,
           senderEmail,
         }),
-        reviewer.email,
+        dto.reviewerEmail,
         'KPI Review Request',
+        dto.reviewerUserId,
+        {
+          title: "มี KPI รอการ Review",
+          body: `KPI ${updated.department} ${updated.yearly}`,
+          module: "KPI",
+          resourceId: id,
+          resourceType: "KPI",
+        },
       ).catch(() => { /* logged inside NotificationService */ });
     }
 
@@ -234,7 +263,11 @@ export class KpiService {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
     if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI is not pending review');
-    if (kpi.reviewerUserId !== actor.userId) throw new ForbiddenError('You are not assigned as reviewer');
+    const reviewerAuthId = (kpi as Record<string, unknown>).reviewerAuthUserId as string | null | undefined;
+    const isReviewer = (actor.authUserId && reviewerAuthId)
+      ? reviewerAuthId === actor.authUserId
+      : kpi.reviewerUserId === actor.userId;
+    if (!isReviewer) throw new ForbiddenError('You are not assigned as reviewer');
 
     const updated = await db.$transaction(async (tx) => {
       const result = await this.kpiRepo.setStatus(id, 'PENDING_REVIEW', tx);
@@ -243,13 +276,14 @@ export class KpiService {
         documentId: id,
         step: 'REVIEWER',
         signerUserId: actor.userId,
+        signerAuthUserId: actor.authUserId ?? null,
         action: 'APPROVED',
         actionDate: new Date(),
         signaturePath: sigBody?.signatureDataUrl,
       }, tx);
 
       if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
-        await this.userRepo.saveSignature(actor.userId, {
+        await this.userPrefRepo.upsertSignature(actor.userId, {
           savedSignatureUrl: sigBody.signatureDataUrl,
           signatureType: sigBody.signatureType ?? 'DRAW',
         }, tx);
@@ -257,6 +291,7 @@ export class KpiService {
 
       await AuditService.record({
         actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
         actorRole: actor.role,
         action: 'REVIEW',
         resourceType: 'KPI',
@@ -289,7 +324,11 @@ export class KpiService {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
     if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI is not pending approval');
-    if (kpi.approverUserId !== actor.userId) throw new ForbiddenError('You are not assigned as approver');
+    const approverAuthId = (kpi as Record<string, unknown>).approverAuthUserId as string | null | undefined;
+    const isApprover = (actor.authUserId && approverAuthId)
+      ? approverAuthId === actor.authUserId
+      : kpi.approverUserId === actor.userId;
+    if (!isApprover) throw new ForbiddenError('You are not assigned as approver');
 
     const signatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
     const reviewerSig = signatures.find(s => s.step === 'REVIEWER');
@@ -304,13 +343,14 @@ export class KpiService {
         documentId: id,
         step: 'APPROVER',
         signerUserId: actor.userId,
+        signerAuthUserId: actor.authUserId ?? null,
         action: 'APPROVED',
         actionDate: new Date(),
         signaturePath: sigBody?.signatureDataUrl,
       }, tx);
 
       if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
-        await this.userRepo.saveSignature(actor.userId, {
+        await this.userPrefRepo.upsertSignature(actor.userId, {
           savedSignatureUrl: sigBody.signatureDataUrl,
           signatureType: sigBody.signatureType ?? 'DRAW',
         }, tx);
@@ -324,6 +364,7 @@ export class KpiService {
 
       await AuditService.record({
         actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
         actorRole: actor.role,
         action: 'APPROVE',
         resourceType: 'KPI',
@@ -358,7 +399,13 @@ export class KpiService {
 
     const signatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
     const preparerSig = signatures.find(s => s.step === 'PREPARER');
-    if (!preparerSig || preparerSig.signerUserId !== actor.userId) {
+    const preparerSigAuthId = (preparerSig as Record<string, unknown> | undefined)?.signerAuthUserId as string | null | undefined;
+    const isPreparer = preparerSig && (
+      (actor.authUserId && preparerSigAuthId)
+        ? preparerSigAuthId === actor.authUserId
+        : preparerSig.signerUserId === actor.userId
+    );
+    if (!isPreparer) {
       throw new ForbiddenError('Only the preparer can recall this KPI');
     }
 
@@ -371,6 +418,7 @@ export class KpiService {
 
       await AuditService.record({
         actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
         actorRole: actor.role,
         action: 'RECALL',
         resourceType: 'KPI',
@@ -403,6 +451,14 @@ export class KpiService {
           }),
           u.email,
           'KPI Recalled',
+          u.id,
+          {
+            title: "KPI ถูก Recall",
+            body: `KPI ${kpi.department} ${kpi.yearly}`,
+            module: "KPI",
+            resourceId: id,
+            resourceType: "KPI",
+          },
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }
@@ -414,10 +470,16 @@ export class KpiService {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
     if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI cannot be rejected in current status');
-    if (kpi.reviewerUserId !== actor.userId && kpi.approverUserId !== actor.userId) {
+    const rejectReviewerAuthId = (kpi as Record<string, unknown>).reviewerAuthUserId as string | null | undefined;
+    const rejectApproverAuthId = (kpi as Record<string, unknown>).approverAuthUserId as string | null | undefined;
+    const isRejectReviewer = (actor.authUserId && rejectReviewerAuthId)
+      ? rejectReviewerAuthId === actor.authUserId : kpi.reviewerUserId === actor.userId;
+    const isRejectApprover = (actor.authUserId && rejectApproverAuthId)
+      ? rejectApproverAuthId === actor.authUserId : kpi.approverUserId === actor.userId;
+    if (!isRejectReviewer && !isRejectApprover) {
       throw new ForbiddenError('You are not assigned in this KPI workflow');
     }
-    const rejectedStep = kpi.reviewerUserId === actor.userId ? 'REVIEWER' : 'APPROVER';
+    const rejectedStep = isRejectReviewer ? 'REVIEWER' : 'APPROVER';
     const updated = await db.$transaction(async (tx) => {
       const result = await this.kpiRepo.setStatus(id, 'REJECTED', tx);
       await this.approvalSignatureRepo.upsertStep({
@@ -425,12 +487,14 @@ export class KpiService {
         documentId: id,
         step: rejectedStep,
         signerUserId: actor.userId,
+        signerAuthUserId: actor.authUserId ?? null,
         action: 'REJECTED',
         actionDate: new Date(),
       }, tx);
 
       await AuditService.record({
         actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
         actorRole: actor.role,
         action: 'REJECT',
         resourceType: 'KPI',

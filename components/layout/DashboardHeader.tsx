@@ -6,6 +6,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 import AnnouncementTicker from "./AnnouncementTicker";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 type Props = {
   role: UserRole;
@@ -66,7 +67,6 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
   const pageTitle = crumbs[crumbs.length - 1];
   const roleLabel = ROLE_LABELS[role][locale];
   const signOutLabel = locale === "th" ? "ออกจากระบบ" : "Sign Out";
-  const notifLabel = locale === "th" ? "การแจ้งเตือน" : "Notifications";
 
   return (
     <header className="flex flex-col bg-base-100/80 backdrop-blur-md border-b border-base-300 shrink-0 z-30 sticky top-0">
@@ -127,14 +127,7 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
         </div>
 
         {/* Notification bell */}
-        <button
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-200 transition-colors text-neutral"
-          aria-label={notifLabel}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-        </button>
+        <NotificationBell />
 
         {/* Profile dropdown */}
         <DropdownMenu.Root>

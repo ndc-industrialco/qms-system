@@ -3,7 +3,7 @@ import { logger } from "@/lib/logger";
 import { AuditService } from "@/services/auditService";
 import { DarRepository } from "@/repositories/darRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
-import { UserRepository } from "@/repositories/userRepository";
+import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 import { DepartmentRepository } from "@/repositories/departmentRepository";
 import { ApprovalSignatureRepository } from "@/repositories/approvalSignatureRepository";
 import { QmsProcessingRepository } from "@/repositories/qmsProcessingRepository";
@@ -40,13 +40,64 @@ type MovedAttachmentResult = {
   targetPath: string;
 };
 
+type ActorIdentity = {
+  userId: string;
+  authUserId?: string | null;
+};
+
+type IdentitySnapshot = {
+  id: string;
+  authUserId: string | null;
+  name: string | null;
+  email: string | null;
+  employeeId: string | null;
+  department: { id: string; name: string } | null;
+};
+
 export class DarService {
   private darRepo = new DarRepository();
   private configRepo = new SystemConfigRepository();
-  private userRepo = new UserRepository();
+  private userPrefRepo = new UserPreferenceRepository();
   private deptRepo = new DepartmentRepository();
+
+  /**
+   * Resolve a designated user (MR or QMS) for approval routing.
+   * Identity comes entirely from Auth Center — no local User table.
+   * Returns { authUserId } from SystemConfig.
+   */
+  private async resolveDesignatedUser(
+    authConfigKey: string,
+    localConfigKey: string,
+    fallbackRoleFinder?: never,
+  ): Promise<{ authUserId: string } | null> {
+    const authUserKey = await this.configRepo.findValueByKey(authConfigKey);
+    if (authUserKey) return { authUserId: authUserKey };
+
+    const localKey = await this.configRepo.findValueByKey(localConfigKey);
+    if (localKey) return { authUserId: localKey };
+
+    return null;
+  }
   private approvalSignatureRepo = new ApprovalSignatureRepository();
   private qmsProcessingRepo = new QmsProcessingRepository();
+
+  private async getIdentitySnapshot(authUserId: string, tx?: Prisma.TransactionClient): Promise<IdentitySnapshot | null> {
+    const { getUserSnapshot } = await import("@/lib/userSnapshotCache");
+    const cached = await getUserSnapshot(authUserId);
+    if (cached) {
+      return {
+        id: cached.authUserId,
+        authUserId: cached.authUserId,
+        name: cached.name,
+        email: cached.email,
+        employeeId: cached.employeeId,
+        department: cached.departmentName
+          ? { id: cached.departmentId ?? cached.authUserId, name: cached.departmentName }
+          : null,
+      };
+    }
+    return null;
+  }
 
   private mapApproval(a: DarApprovalRaw): DarApprovalRow {
     return {
@@ -57,7 +108,15 @@ export class DarService {
       signatureUsedUrl: a.signatureUsedUrl,
       signatureTypeUsed: a.signatureTypeUsed,
       comment: a.comment,
-      assignedUser: a.assignedUser,
+      assignedUser: {
+        id: a.assignedUserId,
+        authUserId: a.assignedAuthUserId ?? null,
+        name: a.assignedUserName ?? null,
+        employeeId: a.assignedEmployeeId ?? null,
+        department: a.assignedDepartmentName
+          ? { id: "", name: a.assignedDepartmentName }
+          : null,
+      },
     };
   }
 
@@ -75,10 +134,14 @@ export class DarService {
       reason: master.reason,
       status: master.status,
       requester: {
-        id: master.requester.id,
-        name: master.requester.name,
-        employeeId: master.requester.employeeId,
-        department: master.requester.department ?? null,
+        id: master.requesterId,
+        authUserId: master.requesterAuthUserId ?? null,
+        name: master.requesterName ?? null,
+        employeeId: master.requesterEmployeeId ?? null,
+        email: master.requesterEmail ?? null,
+        department: master.requesterDepartmentName
+          ? { id: master.authDepartmentId ?? master.departmentId, name: master.requesterDepartmentName }
+          : null,
       },
       items: master.items.map((i: DarDetailRaw["items"][number]) => ({
         itemNo: i.itemNo,
@@ -88,7 +151,10 @@ export class DarService {
       })),
       distributions: master.distributions.map((d: DarDetailRaw["distributions"][number]) => ({
         departmentId: d.departmentId,
-        department: { id: d.department.id, name: d.department.name },
+        department: {
+          id: d.authDepartmentId ?? d.departmentId,
+          name: d.departmentName ?? d.departmentId,
+        },
       })),
       approvals: master.approvals.map((a: DarDetailRaw["approvals"][number]) =>
         this.mapApproval(a)
@@ -103,7 +169,7 @@ export class DarService {
         spDownloadUrl: a.spDownloadUrl,
         folderPath: a.folderPath,
         createdAt: a.createdAt.toISOString(),
-        uploadedBy: { id: a.uploadedBy.id, name: a.uploadedBy.name },
+        uploadedBy: { id: a.uploadedById, name: a.uploadedByName ?? null },
       })),
       qmsProcessing: master.qmsProcessing
         ? {
@@ -117,6 +183,9 @@ export class DarService {
             comments: master.qmsProcessing.comments ?? null,
             processDate: master.qmsProcessing.processDate?.toISOString() ?? null,
             qmsUserId: master.qmsProcessing.qmsUserId,
+            qmsAuthUserId: master.qmsProcessing.qmsAuthUserId ?? null,
+            qmsUserName: master.qmsProcessing.qmsUserName ?? null,
+            qmsUserEmployeeId: master.qmsProcessing.qmsUserEmployeeId ?? null,
           }
         : null,
     };
@@ -188,8 +257,28 @@ export class DarService {
     return detail;
   }
 
-  async createDar(requesterId: string, departmentId: string, input: CreateDarInput): Promise<DarDetail> {
-    const dept = await this.deptRepo.findById(departmentId);
+  async createDar(requesterId: string, departmentId: string | null | undefined, input: CreateDarInput, authDepartmentId?: string | null): Promise<DarDetail> {
+    // Resolve departmentId — prefer authDepartmentId lookup (stable code), fallback by name
+    let resolvedDepartmentId = departmentId ?? authDepartmentId ?? null;
+    if (!resolvedDepartmentId && authDepartmentId) {
+      const byAuthId = await this.deptRepo.findByAuthDepartmentId(authDepartmentId);
+      if (byAuthId) {
+        resolvedDepartmentId = byAuthId.authDepartmentId;
+      } else {
+        const byName = await this.deptRepo.findByName(authDepartmentId);
+        resolvedDepartmentId = byName?.authDepartmentId ?? null;
+      }
+    }
+    if (!resolvedDepartmentId) throw new ValidationError("บัญชีของคุณยังไม่ได้ผูกกับแผนก");
+
+    const requester = await this.getIdentitySnapshot(requesterId);
+    if (!requester) throw new ValidationError("ไม่พบข้อมูลผู้ร้องขอ");
+    const dept = await this.deptRepo.findById(resolvedDepartmentId);
+
+    // Lookup distribution departments for snapshot fields
+    const distDepts = await Promise.all(
+      input.distributionDepartmentIds.map((deptId) => this.deptRepo.findById(deptId))
+    );
 
     const newDar = await this.darRepo.create({
       objective: input.objective,
@@ -198,7 +287,13 @@ export class DarService {
       reason: input.reason,
       status: "DRAFT" as DarStatus,
       requesterId,
-      departmentId,
+      requesterAuthUserId: requester.authUserId ?? null,
+      requesterName: requester.name,
+      requesterEmployeeId: requester.employeeId,
+      requesterEmail: requester.email,
+      requesterDepartmentName: requester.department?.name ?? dept?.name ?? null,
+      departmentId: resolvedDepartmentId,
+      authDepartmentId: authDepartmentId ?? null,
       items: {
         create: input.items.map((item, idx) => ({
           itemNo: idx + 1,
@@ -208,7 +303,11 @@ export class DarService {
         })),
       },
       distributions: {
-        create: input.distributionDepartmentIds.map((deptId) => ({ departmentId: deptId })),
+        create: input.distributionDepartmentIds.map((deptId, idx) => ({
+          departmentId: deptId,
+          authDepartmentId: distDepts[idx]?.authDepartmentId ?? null,
+          departmentName: distDepts[idx]?.name ?? null,
+        })),
       },
     });
 
@@ -240,6 +339,8 @@ export class DarService {
     const { moveSpItem, buildFolderPath } = await import("@/services/sharepoint");
     const targetPath = buildFolderPath({ departmentName: opts.departmentName, objective: opts.objective, docType: opts.docType });
 
+    const uploaderSnapshot = await this.getIdentitySnapshot(opts.uploadedById);
+
     const results = await Promise.allSettled(
       opts.tempAttachments.map(async (t) => {
         const safeBase = t.fileName.replace(/[/\\:*?"<>|]/g, "_");
@@ -261,6 +362,7 @@ export class DarService {
         folderPath: targetPath,
         darMasterId: opts.darId,
         uploadedById: opts.uploadedById,
+        uploadedByName: uploaderSnapshot?.name ?? null,
       }));
 
     if (toCreate.length > 0) {
@@ -342,22 +444,35 @@ export class DarService {
     return `DAR-${year}-${String(nextSeq).padStart(4, "0")}`;
   }
 
-  async submitDar(id: string, requesterId: string): Promise<DarDetail> {
+  async submitDar(id: string, actor: ActorIdentity): Promise<DarDetail> {
+    const requesterId = actor.userId;
     const existing = await this.darRepo.findById(id);
 
     if (!existing) throw new NotFoundError("DAR");
-    if (existing.requesterId !== requesterId) throw new ForbiddenError();
+    const submitAuthId = (existing as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
+    const isSubmitOwner = (actor.authUserId && submitAuthId) ? submitAuthId === actor.authUserId : existing.requesterId === requesterId;
+    if (!isSubmitOwner) throw new ForbiddenError();
     if (existing.status !== "DRAFT") throw new ValidationError("Only DRAFT requests can be submitted");
 
     const year = new Date().getFullYear();
 
     await db.$transaction(async (tx) => {
+      const requester = await this.getIdentitySnapshot(requesterId, tx);
       const darNo = existing.darNo || await this.generateDarNo(year, tx);
-      await this.darRepo.update(id, { status: "PENDING_REVIEW" as DarStatus, darNo }, tx);
+      await this.darRepo.update(id, { status: "PENDING_REVIEW" as DarStatus, darNo, requesterAuthUserId: actor.authUserId ?? null }, tx);
       await this.darRepo.deleteApprovalsByDarId(id, tx);
       await this.approvalSignatureRepo.deleteByDocument("DAR", id, tx);
       await this.darRepo.createApproval(
-        { stepRole: "PREPARER", action: "PENDING", assignedUserId: requesterId, darMasterId: id },
+        {
+          stepRole: "PREPARER",
+          action: "PENDING",
+          assignedUserId: requesterId,
+          assignedAuthUserId: actor.authUserId ?? null,
+          assignedUserName: requester?.name ?? null,
+          assignedEmployeeId: requester?.employeeId ?? null,
+          assignedDepartmentName: requester?.department?.name ?? null,
+          darMasterId: id,
+        },
         tx
       );
       await this.approvalSignatureRepo.upsertStep(
@@ -366,6 +481,10 @@ export class DarService {
           documentId: id,
           step: "PREPARER",
           signerUserId: requesterId,
+          signerAuthUserId: actor.authUserId ?? null,
+          signerName: requester?.name ?? null,
+          signerEmail: requester?.email ?? null,
+          signerDepartmentName: requester?.department?.name ?? null,
           action: "PENDING",
         },
         tx
@@ -376,24 +495,38 @@ export class DarService {
     return detail!;
   }
 
-  async assignReviewer(darId: string, requesterId: string, reviewerUserId: string): Promise<DarDetail> {
+  async assignReviewer(darId: string, requester: ActorIdentity, reviewerUserId: string): Promise<DarDetail> {
+    const requesterId = requester.userId;
     const dar = await this.darRepo.findById(darId);
 
     if (!dar) throw new NotFoundError("DAR");
-    if (dar.requesterId !== requesterId) throw new ForbiddenError();
+    // Prefer authUserId check when both sides populated
+    const darAuthUserId = (dar as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
+    const isOwner = (requester.authUserId && darAuthUserId)
+      ? darAuthUserId === requester.authUserId
+      : dar.requesterId === requesterId;
+    if (!isOwner) throw new ForbiddenError();
     if (dar.status !== "PENDING_REVIEW") throw new ValidationError("DAR must be in PENDING_REVIEW status");
 
     const currentApprovals = await this.darRepo.findApprovalsByDarId(darId);
     const preparer = currentApprovals.find((a) => a.stepRole === "PREPARER");
     if (!preparer || preparer.action !== "APPROVED") throw new ValidationError("Preparer must approve before assigning a reviewer");
 
-    const reviewer = await this.userRepo.findById(reviewerUserId);
-    if (!reviewer) throw new NotFoundError("Reviewer not found");
+    const reviewerSnapshot = await this.getIdentitySnapshot(reviewerUserId);
 
     await db.$transaction(async (tx) => {
       await this.darRepo.deleteApprovalsByDarIdExceptPreparer(darId, tx);
       await this.darRepo.createApproval(
-        { stepRole: "REVIEWER", action: "PENDING", assignedUserId: reviewerUserId, darMasterId: darId },
+        {
+          stepRole: "REVIEWER",
+          action: "PENDING",
+          assignedUserId: reviewerUserId,
+          assignedAuthUserId: reviewerSnapshot?.authUserId ?? reviewerUserId,
+          assignedUserName: reviewerSnapshot?.name ?? null,
+          assignedEmployeeId: reviewerSnapshot?.employeeId ?? null,
+          assignedDepartmentName: reviewerSnapshot?.department?.name ?? null,
+          darMasterId: darId,
+        },
         tx
       );
       await this.approvalSignatureRepo.upsertStep(
@@ -402,6 +535,10 @@ export class DarService {
           documentId: darId,
           step: "REVIEWER",
           signerUserId: reviewerUserId,
+          signerAuthUserId: reviewerSnapshot?.authUserId ?? reviewerUserId,
+          signerName: reviewerSnapshot?.name ?? null,
+          signerEmail: reviewerSnapshot?.email ?? null,
+          signerDepartmentName: reviewerSnapshot?.department?.name ?? null,
           action: "PENDING",
         },
         tx
@@ -412,12 +549,18 @@ export class DarService {
     return detail!;
   }
 
-  async approveDar(darId: string, userId: string, input: ApproveDarInput): Promise<DarDetail> {
+  async approveDar(darId: string, actor: ActorIdentity, input: ApproveDarInput): Promise<DarDetail> {
+    const userId = actor.userId;
     const dar = await this.darRepo.findById(darId);
     if (!dar) throw new NotFoundError("DAR");
 
     const currentApprovals = await this.darRepo.findApprovalsByDarId(darId);
-    const myStep = currentApprovals.find((a) => a.assignedUserId === userId && a.action === "PENDING");
+    const myStep = currentApprovals.find((a) => {
+      if (a.action !== "PENDING") return false;
+      // Prefer authUserId match when both sides are populated
+      if (actor.authUserId && a.assignedAuthUserId) return a.assignedAuthUserId === actor.authUserId;
+      return a.assignedUserId === userId;
+    });
     if (!myStep) throw new ForbiddenError("No pending approval step assigned to you");
 
     if (myStep.stepRole === "PREPARER" && dar.status !== "PENDING_REVIEW") throw new ValidationError("Invalid DAR status for PREPARER approval");
@@ -440,21 +583,23 @@ export class DarService {
       nextStatus = "COMPLETED" as DarStatus;
     }
 
-    let mrUserId: string | null = null;
-    let qmsUserId: string | null = null;
+    let mrUser: { authUserId: string } | null = null;
+    let qmsUser: { authUserId: string } | null = null;
     if (createMrStep) {
-      // Keep this uncached: tiny config lookup and avoids stale config risk.
-      mrUserId = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID");
-      if (!mrUserId) throw new AppError("MR user is not configured. Please contact QMS/IT administrator.", 400, "MR_NOT_CONFIGURED");
+      mrUser = await this.resolveDesignatedUser("CURRENT_MR_AUTH_USER_ID", "CURRENT_MR_USER_ID");
+      if (!mrUser) throw new AppError("MR user is not configured. Please contact QMS/IT administrator.", 400, "MR_NOT_CONFIGURED");
     }
     if (myStep.stepRole === "APPROVER_MR") {
-      qmsUserId = await this.configRepo.findValueByKey("CURRENT_QMS_USER_ID");
-      if (!qmsUserId) {
-        const qmsUser = await this.userRepo.findFirstByRole("QMS");
-        qmsUserId = qmsUser?.id ?? null;
-      }
-      if (!qmsUserId) throw new AppError("QMS signer is not configured in the system", 400, "QMS_NOT_CONFIGURED");
+      qmsUser = await this.resolveDesignatedUser(
+        "CURRENT_QMS_AUTH_USER_ID",
+        "CURRENT_QMS_USER_ID",
+      );
+      if (!qmsUser) throw new AppError("QMS signer is not configured in the system", 400, "QMS_NOT_CONFIGURED");
     }
+
+    const actorSnapshot = await this.getIdentitySnapshot(userId);
+    const mrSnapshot = mrUser ? await this.getIdentitySnapshot(mrUser.authUserId) : null;
+    const qmsSnapshot = qmsUser ? await this.getIdentitySnapshot(qmsUser.authUserId) : null;
 
     const now = new Date();
     await db.$transaction(async (tx) => {
@@ -475,6 +620,10 @@ export class DarService {
           documentId: darId,
           step: myStep.stepRole,
           signerUserId: userId,
+          signerAuthUserId: actor.authUserId ?? null,
+          signerName: actorSnapshot?.name ?? null,
+          signerEmail: actorSnapshot?.email ?? null,
+          signerDepartmentName: actorSnapshot?.department?.name ?? null,
           action: "APPROVED",
           actionDate: now,
           signaturePath: input.signatureDataUrl,
@@ -484,16 +633,25 @@ export class DarService {
       );
 
       if (input.saveSignature) {
-        await this.userRepo.updateProfile(
+        await this.userPrefRepo.upsertSignature(
           userId,
           { savedSignatureUrl: input.signatureDataUrl, signatureType: input.signatureType },
-          tx
+          tx,
         );
       }
 
-      if (createMrStep && mrUserId) {
+      if (createMrStep && mrUser) {
         await this.darRepo.createApproval(
-          { stepRole: "APPROVER_MR", action: "PENDING", assignedUserId: mrUserId, darMasterId: darId },
+          {
+            stepRole: "APPROVER_MR",
+            action: "PENDING",
+            assignedUserId: mrUser.authUserId,
+            assignedAuthUserId: mrUser.authUserId ?? null,
+            assignedUserName: mrSnapshot?.name ?? null,
+            assignedEmployeeId: mrSnapshot?.employeeId ?? null,
+            assignedDepartmentName: mrSnapshot?.department?.name ?? null,
+            darMasterId: darId,
+          },
           tx
         );
         await this.approvalSignatureRepo.upsertStep(
@@ -501,16 +659,29 @@ export class DarService {
             module: "DAR",
             documentId: darId,
             step: "APPROVER_MR",
-            signerUserId: mrUserId,
+            signerUserId: mrUser.authUserId,
+            signerAuthUserId: mrUser.authUserId ?? null,
+            signerName: mrSnapshot?.name ?? null,
+            signerEmail: mrSnapshot?.email ?? null,
+            signerDepartmentName: mrSnapshot?.department?.name ?? null,
             action: "PENDING",
           },
           tx
         );
       }
 
-      if (myStep.stepRole === "APPROVER_MR" && qmsUserId) {
+      if (myStep.stepRole === "APPROVER_MR" && qmsUser) {
         await this.darRepo.createApproval(
-          { stepRole: "QMS_PROCESSOR", action: "PENDING", assignedUserId: qmsUserId, darMasterId: darId },
+          {
+            stepRole: "QMS_PROCESSOR",
+            action: "PENDING",
+            assignedUserId: qmsUser.authUserId,
+            assignedAuthUserId: qmsUser.authUserId ?? null,
+            assignedUserName: qmsSnapshot?.name ?? null,
+            assignedEmployeeId: qmsSnapshot?.employeeId ?? null,
+            assignedDepartmentName: qmsSnapshot?.department?.name ?? null,
+            darMasterId: darId,
+          },
           tx
         );
         await this.approvalSignatureRepo.upsertStep(
@@ -518,7 +689,11 @@ export class DarService {
             module: "DAR",
             documentId: darId,
             step: "QMS_PROCESSOR",
-            signerUserId: qmsUserId,
+            signerUserId: qmsUser.authUserId,
+            signerAuthUserId: qmsUser.authUserId ?? null,
+            signerName: qmsSnapshot?.name ?? null,
+            signerEmail: qmsSnapshot?.email ?? null,
+            signerDepartmentName: qmsSnapshot?.department?.name ?? null,
             action: "PENDING",
           },
           tx
@@ -530,6 +705,9 @@ export class DarService {
           {
             darMasterId: darId,
             qmsUserId: userId,
+            qmsAuthUserId: actor.authUserId ?? null,
+            qmsUserName: actorSnapshot?.name ?? null,
+            qmsUserEmployeeId: actorSnapshot?.employeeId ?? null,
             chkHasAttachment: input.qmsProcessing.chkHasAttachment,
             chkPrintAndValidate: input.qmsProcessing.chkPrintAndValidate,
             chkRenumber: input.qmsProcessing.chkRenumber,
@@ -548,6 +726,7 @@ export class DarService {
 
       await AuditService.record({
         actorUserId: userId,
+        actorAuthUserId: actor.authUserId,
         actorRole: myStep.stepRole,
         action: "APPROVE",
         resourceType: "DAR",
@@ -562,14 +741,16 @@ export class DarService {
     return detail!;
   }
 
-  async rejectDar(darId: string, userId: string, comment: string): Promise<DarDetail> {
+  async rejectDar(darId: string, actor: ActorIdentity, comment: string): Promise<DarDetail> {
+    const userId = actor.userId;
     const dar = await this.darRepo.findById(darId);
     if (!dar) throw new NotFoundError("DAR");
 
-    const myStep = await this.darRepo.findPendingApproval(darId, userId);
+    const myStep = await this.darRepo.findPendingApproval(darId, userId, actor.authUserId);
     if (!myStep) throw new ForbiddenError("No pending approval step assigned to you");
 
     const now = new Date();
+    const actorSnapshot = await this.getIdentitySnapshot(userId);
     await db.$transaction(async (tx) => {
       await this.darRepo.updateApproval(myStep.id, { action: "REJECTED", actionDate: now, comment }, tx);
       await this.approvalSignatureRepo.upsertStep(
@@ -578,6 +759,10 @@ export class DarService {
           documentId: darId,
           step: myStep.stepRole,
           signerUserId: userId,
+          signerAuthUserId: actor.authUserId ?? null,
+          signerName: actorSnapshot?.name ?? null,
+          signerEmail: actorSnapshot?.email ?? null,
+          signerDepartmentName: actorSnapshot?.department?.name ?? null,
           action: "REJECTED",
           actionDate: now,
           comment,
@@ -588,6 +773,7 @@ export class DarService {
 
       await AuditService.record({
         actorUserId: userId,
+        actorAuthUserId: actor.authUserId,
         actorRole: myStep.stepRole,
         action: "REJECT",
         resourceType: "DAR",
@@ -602,52 +788,44 @@ export class DarService {
     return detail!;
   }
 
-  async getReviewerCandidates(): Promise<ReviewerCandidate[]> {
+  async getReviewerCandidates(accessToken?: string | null): Promise<ReviewerCandidate[]> {
     const CACHE_KEY = "qms:dar:reviewer_candidates";
-    const CACHE_TTL = 120; // 2 minutes
+    const CACHE_TTL = 120;
 
     try {
       const cached = await redis.get(CACHE_KEY);
       if (cached) return JSON.parse(cached) as ReviewerCandidate[];
-    } catch {
-      // Redis unavailable â€” fall through to DB
-    }
+    } catch { /* Redis unavailable */ }
 
-    const users = await this.userRepo.findManyWithDept();
-    const candidates = (users as Array<{
-      id: string;
-      name: string | null;
-      email: string;
-      employeeId: string | null;
-      role: string;
-      msUserId: string | null;
-      department: { id: string; name: string } | null;
-      createdAt: Date;
-    }>).filter((u) => u.msUserId !== null);
+    const { listAuthCenterUsers } = await import("@/lib/auth-center-admin-client");
+    const authUsers = await listAuthCenterUsers({ accessToken });
 
-    const result: ReviewerCandidate[] = candidates.map((u) => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      employeeId: u.employeeId,
-      msUserId: u.msUserId!,
-      department: u.department ?? null,
-    }));
+    const result: ReviewerCandidate[] = authUsers
+      .filter((u) => u.id && u.email)
+      .map((u) => ({
+        id: u.id,
+        name: u.displayName ?? null,
+        email: u.email!,
+        employeeId: u.employeeId ?? null,
+        msUserId: null,
+        department: u.department ? { id: u.department, name: u.department } : null,
+      }));
 
     try {
       await redis.set(CACHE_KEY, JSON.stringify(result), "EX", CACHE_TTL);
-    } catch {
-      // Cache write failure is non-fatal
-    }
+    } catch { /* non-fatal */ }
 
     return result;
   }
 
-  async deleteDar(id: string, requesterId: string, isPrivileged = false): Promise<void> {
+  async deleteDar(id: string, actor: ActorIdentity, isPrivileged = false): Promise<void> {
+    const requesterId = actor.userId;
     const dar = await this.darRepo.findById(id);
 
     if (!dar) throw new NotFoundError("DAR");
-    if (!isPrivileged && dar.requesterId !== requesterId) throw new ForbiddenError();
+    const deleteAuthId = (dar as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
+    const isDeleteOwner = (actor.authUserId && deleteAuthId) ? deleteAuthId === actor.authUserId : dar.requesterId === requesterId;
+    if (!isPrivileged && !isDeleteOwner) throw new ForbiddenError();
     if (!isPrivileged && dar.status !== "DRAFT") throw new ValidationError("Only DRAFT DAR can be deleted");
 
     const attachments = await this.darRepo.findAttachmentsByDarId(id);
@@ -666,6 +844,7 @@ export class DarService {
 
       await AuditService.record({
         actorUserId: requesterId,
+        actorAuthUserId: actor.authUserId,
         actorRole: isPrivileged ? "QMS" : "USER",
         action: "DELETE",
         resourceType: "DAR",
@@ -675,10 +854,10 @@ export class DarService {
     });
   }
 
-  async getSavedSignature(userId: string): Promise<{ url: string; type: SignatureType } | null> {
-    const user = await this.userRepo.findById(userId);
-    if (!user?.savedSignatureUrl || !user.signatureType) return null;
-    return { url: user.savedSignatureUrl, type: user.signatureType };
+  async getSavedSignature(authUserId: string): Promise<{ url: string; type: SignatureType } | null> {
+    const pref = await this.userPrefRepo.findByAuthUserId(authUserId);
+    if (!pref?.savedSignatureUrl || !pref.signatureType) return null;
+    return { url: pref.savedSignatureUrl, type: pref.signatureType };
   }
 
   private static readonly MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -742,12 +921,14 @@ export class DarService {
       throw new ValidationError("เนื้อหาไฟล์ไม่ตรงกับประเภทที่ระบุ");
     }
 
+    const uploaderSnapshot = await this.getIdentitySnapshot(uploaderId);
+
     const sp = await uploadFileToDar({
       fileBuffer: buffer,
       fileName: file.name,
       mimeType: file.type,
       darNo: dar.darNo ?? darId,
-      departmentName: dar.department?.name ?? "",
+      departmentName: dar.requesterDepartmentName ?? "",
       objective: dar.objective as Parameters<typeof uploadFileToDar>[0]["objective"],
       docType: dar.docType as Parameters<typeof uploadFileToDar>[0]["docType"],
     });
@@ -764,6 +945,7 @@ export class DarService {
         folderPath: sp.folderPath,
         darMasterId: darId,
         uploadedById: uploaderId,
+        uploadedByName: uploaderSnapshot?.name ?? null,
       });
     } catch (dbErr) {
       logger.error("[DarService.uploadAttachment] DB insert failed after SP upload. Compensating by deleting SP item.", dbErr);
@@ -785,7 +967,7 @@ export class DarService {
       spDownloadUrl: attachment.spDownloadUrl,
       folderPath: attachment.folderPath,
       createdAt: attachment.createdAt.toISOString(),
-      uploadedBy: { id: uploaderId, name: null },
+      uploadedBy: { id: uploaderId, name: uploaderSnapshot?.name ?? null },
     };
   }
 

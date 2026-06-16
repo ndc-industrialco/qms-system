@@ -1,0 +1,18 @@
+import { requireAuth } from "@/lib/auth";
+import { NotificationRepository } from "@/repositories/notificationRepository";
+import { sendSuccess } from "@/lib/apiResponse";
+import { handleApiError } from "@/lib/apiErrorHandler";
+
+const repo = new NotificationRepository();
+type Params = { params: Promise<{ id: string }> };
+
+export async function PATCH(_req: Request, { params }: Params) {
+  try {
+    const session = await requireAuth();
+    const { id } = await params;
+    await repo.markRead(id, session.user.id);
+    return sendSuccess({ id }, "Marked as read");
+  } catch (err) {
+    return handleApiError(err);
+  }
+}

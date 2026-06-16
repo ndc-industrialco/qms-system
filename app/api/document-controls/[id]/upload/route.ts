@@ -44,7 +44,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       buffer: fileBuffer,
       name: file.name,
       type: file.type,
-    });
+    }, session.user.authUserId);
 
     return sendSuccess(doc, 'Document revision uploaded successfully');
   } catch (err) {

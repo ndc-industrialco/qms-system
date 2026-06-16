@@ -13,7 +13,7 @@ const updateSchema = z.object({
   emailGroup: z.string().max(100).nullable().optional(),
   isActive: z.boolean().optional(),
 });
-const paramSchema = z.object({ id: z.string().uuid() });
+const paramSchema = z.object({ id: z.string().min(1) });
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -22,11 +22,11 @@ export async function PATCH(
   { params }: Params,
 ) {
   try {
-    await requireRole("IT", "QMS", "MR");
+    const session = await requireRole("IT");
     const { id } = paramSchema.parse(await params);
     const body = await req.json();
     const validated = updateSchema.parse(body);
-    const dept = await deptService.updateDepartment(id, validated);
+    const dept = await deptService.updateDepartment(id, validated, session.user.accessToken);
     return sendSuccess(dept, "Department updated successfully");
   } catch (err) {
     return handleApiError(err);
@@ -38,9 +38,9 @@ export async function DELETE(
   { params }: Params,
 ) {
   try {
-    await requireRole("IT", "QMS", "MR");
+    const session = await requireRole("IT");
     const { id } = paramSchema.parse(await params);
-    await deptService.deleteDepartment(id);
+    await deptService.deleteDepartment(id, session.user.accessToken);
     return sendSuccess({ id }, "Department deleted successfully");
   } catch (err) {
     return handleApiError(err);

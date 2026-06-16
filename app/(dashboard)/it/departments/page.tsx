@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 const deptService = new DepartmentService();
 
 export default async function ItDepartmentsPage() {
-  await requireRole("IT");
-  const departments = await deptService.getAllDepartments();
+  const session = await requireRole("IT");
+  const departments = await deptService.getAllDepartments(session.user.accessToken);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

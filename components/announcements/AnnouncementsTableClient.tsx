@@ -83,7 +83,7 @@ export default function AnnouncementsTableClient({ rows: initialRows }: { rows: 
         (r: AnnouncementRow) =>
           r.title.toLowerCase().includes(q) ||
           r.sourceSystem.toLowerCase().includes(q) ||
-          (r.createdBy.name ?? "").toLowerCase().includes(q),
+          (r.createdByName ?? "").toLowerCase().includes(q),
       );
     }
     // Sort

@@ -33,7 +33,7 @@ export default async function DarEditPage({ params }: Props) {
   if (!isPrivileged && dar.status !== "DRAFT") redirect(`/dar/${id}`);
 
   const [departments, savedSig] = await Promise.all([
-    deptService.getActiveDepartments(),
+    deptService.getActiveDepartments(session.user.accessToken),
     darService.getSavedSignature(session.user.id),
   ]);
   const isDraft = dar.status === "DRAFT";

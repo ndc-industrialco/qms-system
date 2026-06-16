@@ -34,7 +34,7 @@ export default function MrManagementClient({ initialUsers }: Props) {
     const q = params.search.toLowerCase().trim();
     if (!q) return initialUsers;
     return initialUsers.filter((u) =>
-      [u.name, u.email, u.department?.name].join(" ").toLowerCase().includes(q),
+      [u.name, u.id, u.department?.name].join(" ").toLowerCase().includes(q),
     );
   }, [initialUsers, params.search]);
 
@@ -88,7 +88,7 @@ export default function MrManagementClient({ initialUsers }: Props) {
             {mrUsers.map((u) => (
               <div key={u.id} className="flex items-center gap-2 bg-white border border-warning/30 rounded-lg px-3 py-2">
                 <div className="w-6 h-6 rounded-full bg-warning/20 text-warning flex items-center justify-center text-[10px] font-bold shrink-0">
-                  {(u.name ?? u.email).charAt(0).toUpperCase()}
+                  {(u.name ?? u.email ?? u.employeeId ?? "?").charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <p className="text-[12px] font-semibold text-neutral">{u.name ?? u.email}</p>

@@ -105,10 +105,10 @@ export default function AnnouncementCard({ row: a, onView, onEdit, onDelete, onT
         <div className="flex items-center gap-1.5 shrink-0">
           <div className="w-5 h-5 rounded-full bg-[#0F1059]/10 flex items-center justify-center">
             <span className="text-[9px] font-bold text-[#0F1059]">
-              {(a.createdBy.name ?? "?").charAt(0).toUpperCase()}
+              {(a.createdByName ?? "?").charAt(0).toUpperCase()}
             </span>
           </div>
-          <span className="truncate max-w-24">{a.createdBy.name}</span>
+          <span className="truncate max-w-24">{a.createdByName}</span>
         </div>
       </div>
 
