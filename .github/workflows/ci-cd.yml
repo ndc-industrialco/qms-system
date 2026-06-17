@@ -120,15 +120,17 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.docker.outputs.image_tag }}
         run: |
-          set -e
-          cd /opt/qms-system
-          export IMAGE_TAG=${IMAGE_TAG}
+            set -e
+            cd /opt/qms-system
 
-          docker compose run --rm migrate
-          docker compose up -d --remove-orphans qms-system
-          docker image prune -f
+            export IMAGE_TAG=${IMAGE_TAG}
 
-          echo "✅ Deploy complete — $IMAGE_TAG"
+            docker compose pull qms-system
+            docker compose up -d --remove-orphans qms-system
+
+            docker image prune -f
+
+            echo "✅ Deploy complete — $IMAGE_TAG"
       - name: Health check
         run: |
           for i in $(seq 1 12); do
