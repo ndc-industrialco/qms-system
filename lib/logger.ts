@@ -17,7 +17,7 @@ function write(level: LogLevel, message: string, meta?: LogMeta): void {
 const payload = {
   timestamp: new Date().toISOString(),
   level,
-  service: process.env.APP_NAME ?? "auth-center",
+  service: process.env.APP_NAME ?? "qms-system",
   message,
   ...meta,
 };
