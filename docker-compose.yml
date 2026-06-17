@@ -15,10 +15,10 @@ services:
       timeout: 5s
       retries: 5
 
-  qms:
+  qms-system:
     image: ghcr.io/ndc-industrialco/qms-system:${IMAGE_TAG:-latest}
     pull_policy: always
-    container_name: qms system
+    container_name: qms-system
     restart: unless-stopped
     depends_on:
       redis:
