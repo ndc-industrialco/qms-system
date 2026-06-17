@@ -86,10 +86,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Safe same-site redirect only
+    // Use NEXTAUTH_URL as base to avoid resolving against 0.0.0.0 (Docker bind address)
+    const appBase = process.env.NEXTAUTH_URL ?? req.nextUrl.origin;
     const redirectTo = state.startsWith("/") && !state.startsWith("//") ? state : "/";
-    return NextResponse.redirect(new URL(redirectTo, req.url));
+    return NextResponse.redirect(new URL(redirectTo, appBase));
   } catch (err) {
     logger.error("[auth-center/callback] token verification failed", err);
-    return NextResponse.redirect(new URL("/auth/error?error=AuthCenterTokenInvalid", req.url));
+    const appBase = process.env.NEXTAUTH_URL ?? req.nextUrl.origin;
+    return NextResponse.redirect(new URL("/auth/error?error=AuthCenterTokenInvalid", appBase));
   }
 }
