@@ -14,12 +14,13 @@ function toErrorMeta(error: unknown): LogMeta {
 }
 
 function write(level: LogLevel, message: string, meta?: LogMeta): void {
-  const payload = {
-    timestamp: new Date().toISOString(),
-    level,
-    message,
-    ...meta,
-  };
+const payload = {
+  timestamp: new Date().toISOString(),
+  level,
+  service: process.env.APP_NAME ?? "auth-center",
+  message,
+  ...meta,
+};
   const line = JSON.stringify(payload);
 
   if (level === "error") {
