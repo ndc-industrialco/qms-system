@@ -9,7 +9,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryFolderGrid } from './CategoryFolderGrid';
-import { CategoryDrawer } from './CategoryDrawer';
+import { CategoryModal } from './CategoryModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import PageHeader from '@/components/common/PageHeader';
 import FilterBar from '@/components/common/FilterBar';
@@ -25,7 +25,7 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('order-asc');
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<DocumentCategorySummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DocumentCategorySummary | null>(null);
 
@@ -59,12 +59,12 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
 
   const handleAdd = () => {
     setEditingCategory(null);
-    setDrawerOpen(true);
+    setModalOpen(true);
   };
 
   const handleEdit = (cat: DocumentCategorySummary) => {
     setEditingCategory(cat);
-    setDrawerOpen(true);
+    setModalOpen(true);
   };
 
   const categories: DocumentCategorySummary[] = useMemo(() => data?.data ?? [], [data?.data]);
@@ -163,10 +163,10 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
         )}
       </div>
 
-      {/* Category Drawer */}
-      <CategoryDrawer
-        open={drawerOpen}
-        onClose={() => { setDrawerOpen(false); setEditingCategory(null); }}
+      {/* Category Modal */}
+      <CategoryModal
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setEditingCategory(null); }}
         departmentId={department.id}
         category={editingCategory}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['document-categories', department.id] })}

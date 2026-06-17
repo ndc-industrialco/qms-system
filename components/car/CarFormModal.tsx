@@ -43,7 +43,7 @@ const SOURCE_TYPES: CarSourceType[] = ["I", "C", "N", "O"];
 
 const INPUT_CLASS = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-colors";
 
-export default function CarFormDrawer({ open, onClose, editCar, onSuccess }: Props) {
+export default function CarFormModal({ open, onClose, editCar, onSuccess }: Props) {
   const t = useT();
   const qc = useQueryClient();
 

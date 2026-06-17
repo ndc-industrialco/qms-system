@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import CarFormDrawer from "./CarFormDrawer";
+import CarFormModal from "./CarFormModal";
 
-export default function CarFormDrawerTrigger() {
+export default function CarFormModalTrigger() {
   const t = useT();
   const [open, setOpen] = useState(false);
 
@@ -16,7 +16,7 @@ export default function CarFormDrawerTrigger() {
         <Plus className="w-4 h-4 mr-1.5" />
         {t("car.form.btnCreate")}
       </Button>
-      <CarFormDrawer open={open} onClose={() => setOpen(false)} />
+      <CarFormModal open={open} onClose={() => setOpen(false)} />
     </>
   );
 }

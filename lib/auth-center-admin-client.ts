@@ -41,54 +41,6 @@ function getForwardedToken(options?: AuthCenterClientAuthOptions): string | null
   return options?.accessToken?.trim() || null;
 }
 
-/**
- * Get a machine-to-machine token for QMS to call Auth Center admin APIs.
- * Compatibility fallback only: logs in as the QMS admin service account via
- * POST /api/auth/login/local.
- * Requires AUTH_CENTER_ADMIN_EMPLOYEE_ID and AUTH_CENTER_ADMIN_PASSWORD in .env.
- * The service account must have ADMIN or QMS_ADMIN role in Auth Center.
- *
- * IMPORTANT:
- * - AUTH_CENTER_CLIENT_ID / AUTH_CENTER_CLIENT_SECRET are app credentials
- * - /api/auth/login/local expects an employeeId + password for a real Auth Center user
- * Do not use CLIENT_ID/SECRET as a fallback here.
- */
-async function getM2MToken(): Promise<string> {
-  const base = getBaseUrl();
-  const appId = getAppId();
-
-  const employeeId = process.env.AUTH_CENTER_ADMIN_EMPLOYEE_ID?.trim();
-  const password = process.env.AUTH_CENTER_ADMIN_PASSWORD?.trim();
-
-  if (!employeeId || !password) {
-    const hasClientCredentials =
-      Boolean(process.env.AUTH_CENTER_CLIENT_ID?.trim()) &&
-      Boolean(process.env.AUTH_CENTER_CLIENT_SECRET?.trim());
-
-    throw new Error(
-      hasClientCredentials
-        ? "AUTH_CENTER_ADMIN_EMPLOYEE_ID and AUTH_CENTER_ADMIN_PASSWORD must be configured for admin operations. AUTH_CENTER_CLIENT_ID/SECRET are app credentials and cannot be used with /api/auth/login/local."
-        : "AUTH_CENTER_ADMIN_EMPLOYEE_ID and AUTH_CENTER_ADMIN_PASSWORD must be configured for admin operations.",
-    );
-  }
-
-  const res = await fetch(`${base}/api/auth/login/local?appId=${encodeURIComponent(appId)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ employeeId, password, appId }),
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Auth Center M2M login failed (${res.status}): ${text}`);
-  }
-
-  const json = await res.json() as { data?: { accessToken?: string }; accessToken?: string };
-  const token = json.data?.accessToken ?? json.accessToken;
-  if (!token) throw new Error("Auth Center M2M login response missing accessToken");
-  return token;
-}
 
 function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };

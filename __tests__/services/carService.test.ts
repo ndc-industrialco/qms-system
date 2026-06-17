@@ -140,11 +140,10 @@ describe("CarService", () => {
       expect.any(Date),
       expect.anything()
     );
-    expect(carRepo.createNotificationLog).toHaveBeenCalledWith({
-      carMasterId: "car-1",
-      type: "ISSUED",
-      recipient: "qa@example.com",
-    });
+    expect(carRepo.createNotificationLog).toHaveBeenCalledWith(
+      { carMasterId: "car-1", type: "ISSUED", recipient: "qa@example.com" },
+      expect.anything(),
+    );
     expect(result.carNo).toBe("C26-001");
   });
 });

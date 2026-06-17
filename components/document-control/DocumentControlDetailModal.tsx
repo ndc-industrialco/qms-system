@@ -15,12 +15,12 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
-import { DocumentControlDrawer } from './DocumentControlDrawer';
+import { DocumentControlModal } from './DocumentControlModal';
 import { UploadRevisionDialog } from './UploadRevisionDialog';
 import { formatDate, formatBytes } from '@/lib/formatters';
 import type { DocumentControlDetail } from '@/types/documentControl';
 
-interface DocumentControlDetailDrawerProps {
+interface DocumentControlDetailModalProps {
   documentId: string | null;
   open: boolean;
   onClose: () => void;
@@ -29,16 +29,16 @@ interface DocumentControlDetailDrawerProps {
   onSuccess?: () => void;
 }
 
-export function DocumentControlDetailDrawer({
+export function DocumentControlDetailModal({
   documentId,
   open,
   onClose,
   canEdit,
   canDelete,
-}: DocumentControlDetailDrawerProps) {
+}: DocumentControlDetailModalProps) {
   const t = useT();
   const queryClient = useQueryClient();
-  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -183,7 +183,7 @@ export function DocumentControlDetailDrawer({
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => setEditDrawerOpen(true)}
+                        onClick={() => setEditModalOpen(true)}
                         className="bg-[#0F1059] hover:bg-[#161875] text-white h-9 rounded-xl"
                       >
                         {t('documentControl.button.edit')}
@@ -355,11 +355,11 @@ export function DocumentControlDetailDrawer({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Drawer (stacks on top) */}
+      {/* Edit Modal (stacks on top) */}
       {document && (
-        <DocumentControlDrawer
-          open={editDrawerOpen}
-          onClose={() => setEditDrawerOpen(false)}
+        <DocumentControlModal
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
           document={document}
           onSuccess={handleSuccess}
         />

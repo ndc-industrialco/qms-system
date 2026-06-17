@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { CarService } from "@/services/carService";
 import CarListTable from "@/components/car/CarListTable";
-import CarFormDrawerTrigger from "@/components/car/CarFormDrawerTrigger";
+import CarFormModalTrigger from "@/components/car/CarFormModalTrigger";
 import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
 
@@ -24,7 +24,7 @@ export default async function QmsCarListPage() {
       <PageHeader
         title="CAR - คำร้องขอแก้ไข"
         subtitle="Corrective Action Requests"
-        actions={role === "QMS" || role === "IT" ? <CarFormDrawerTrigger /> : undefined}
+        actions={role === "QMS" || role === "IT" ? <CarFormModalTrigger /> : undefined}
       />
       <CarListTable initialData={cars} isPrivileged />
     </div>

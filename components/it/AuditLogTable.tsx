@@ -40,7 +40,7 @@ function ActionBadge({ action }: { action: string }) {
   );
 }
 
-function DetailDrawer({ row, onClose }: {
+function DetailModal({ row, onClose }: {
   row: { before: unknown; after: unknown; metadata: unknown; resourceId: string };
   onClose: () => void;
 }) {
@@ -342,9 +342,9 @@ export default function AuditLogTable() {
         />
       )}
 
-      {/* ── Detail Drawer ── */}
+      {/* ── Detail Modal ── */}
       {detailRow && (
-        <DetailDrawer row={detailRow} onClose={() => setDetailRow(null)} />
+        <DetailModal row={detailRow} onClose={() => setDetailRow(null)} />
       )}
     </div>
   );

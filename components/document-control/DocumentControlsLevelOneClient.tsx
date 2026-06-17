@@ -8,7 +8,7 @@ import { useT } from '@/lib/i18n';
 import PageHeader from '@/components/common/PageHeader';
 import FilterBar from '@/components/common/FilterBar';
 import { DepartmentFolderGrid } from './DepartmentFolderGrid';
-import { DepartmentDrawer } from './DepartmentDrawer';
+import { DepartmentModal } from './DepartmentModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
 
 interface DepartmentCard {
@@ -32,7 +32,7 @@ export function DocumentControlsLevelOneClient({ departments, canManage }: Props
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sortBy, setSortBy] = useState('name-asc');
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<DepartmentCard | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DepartmentCard | null>(null);
 
@@ -85,12 +85,12 @@ export function DocumentControlsLevelOneClient({ departments, canManage }: Props
 
   const handleAdd = () => {
     setEditingDepartment(null);
-    setDrawerOpen(true);
+    setModalOpen(true);
   };
 
   const handleEdit = (dept: DepartmentCard) => {
     setEditingDepartment(dept);
-    setDrawerOpen(true);
+    setModalOpen(true);
   };
 
   const handleSuccess = () => {
@@ -154,11 +154,11 @@ export function DocumentControlsLevelOneClient({ departments, canManage }: Props
         />
       </div>
 
-      {/* Department Drawer */}
-      <DepartmentDrawer
-        open={drawerOpen}
+      {/* Department Modal */}
+      <DepartmentModal
+        open={modalOpen}
         onClose={() => {
-          setDrawerOpen(false);
+          setModalOpen(false);
           setEditingDepartment(null);
         }}
         department={editingDepartment}

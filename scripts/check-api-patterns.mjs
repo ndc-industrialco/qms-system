@@ -61,6 +61,16 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/users/assignees/route.ts",
   // FormData with inline file validation (no Zod needed)
   "app/api/sharepoint/upload-file/route.ts",
+  // Auth Center OAuth callback — token validated inline via handleAuthCenterCallback
+  "app/api/auth/center/callback/route.ts",
+  // Health probe — no user input
+  "app/api/auth/center/health/route.ts",
+  // Notification routes — no body/query params, auth-only
+  "app/api/notifications/route.ts",
+  "app/api/notifications/read-all/route.ts",
+  "app/api/notifications/[id]/read/route.ts",
+  // Deprecated endpoint — returns 410 with no body
+  "app/api/qms/mr/[id]/route.ts",
 ]);
 
 const NO_ERROR_HANDLER_ALLOWLIST = new Set([
@@ -75,6 +85,10 @@ const NO_ERROR_HANDLER_ALLOWLIST = new Set([
   "app/api/sharepoint/get-file/route.ts",
   "app/api/sharepoint/upload-file/route.ts",
   "app/api/dar/attachments/temp/route.ts",
+  // Auth Center OAuth callback — redirects on error, no JSON envelope
+  "app/api/auth/center/callback/route.ts",
+  // Health probe — no standard envelope needed
+  "app/api/auth/center/health/route.ts",
 ]);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

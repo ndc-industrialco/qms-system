@@ -100,7 +100,7 @@ function ReadField({ value }: { value: string }) {
   );
 }
 
-function DrawerSkeleton() {
+function ModalSkeleton() {
   return (
     <div className="space-y-4 p-6">
       <Skeleton className="h-6 w-2/3" />
@@ -111,7 +111,7 @@ function DrawerSkeleton() {
   );
 }
 
-export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenChange, userRole, userId }: Props) {
+export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenChange, userRole, userId }: Props) {
   const t = useT();
   const privileged = isPrivileged(userRole);
 
@@ -328,7 +328,7 @@ export default function KpiMonthlyDetailDrawer({ kpiId, reportId, open, onOpenCh
         </DialogHeader>
 
         {isLoading || !report ? (
-          <DrawerSkeleton />
+          <ModalSkeleton />
         ) : (
           <>
             {/* Report meta strip */}

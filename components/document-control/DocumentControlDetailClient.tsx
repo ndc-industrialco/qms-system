@@ -7,7 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
-import { DocumentControlDrawer } from './DocumentControlDrawer';
+import { DocumentControlModal } from './DocumentControlModal';
 import { UploadRevisionDialog } from './UploadRevisionDialog';
 import { formatDate, formatBytes } from '@/lib/formatters';
 import {
@@ -33,7 +33,7 @@ export function DocumentControlDetailClient({
 }: DocumentControlDetailClientProps) {
   const t = useT();
   const router = useRouter();
-  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -91,7 +91,7 @@ export function DocumentControlDetailClient({
                   {t('documentControl.button.uploadRevision')}
                 </Button>
                 <Button
-                  onClick={() => setEditDrawerOpen(true)}
+                  onClick={() => setEditModalOpen(true)}
                   className="bg-[#0F1059] hover:bg-[#161875] text-white h-11 rounded-xl"
                 >
                   {t('documentControl.button.edit')}
@@ -290,10 +290,10 @@ export function DocumentControlDetailClient({
         </div>
       </div>
 
-      {/* Edit Drawer */}
-      <DocumentControlDrawer
-        open={editDrawerOpen}
-        onClose={() => setEditDrawerOpen(false)}
+      {/* Edit Modal */}
+      <DocumentControlModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
         document={document}
         onSuccess={() => router.refresh()}
       />

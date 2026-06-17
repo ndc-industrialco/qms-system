@@ -32,7 +32,7 @@ function FieldError({ message }: { message?: string }) {
   return <p className="text-rose-600 text-xs mt-1">{message}</p>;
 }
 
-export default function KpiObjectiveFormDrawer({ open, onOpenChange, objective, onSubmit }: Props) {
+export default function KpiObjectiveFormModal({ open, onOpenChange, objective, onSubmit }: Props) {
   const t = useT();
   const isEdit = !!objective;
   const [customUnit, setCustomUnit] = useState("");

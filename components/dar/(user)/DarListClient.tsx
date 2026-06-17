@@ -8,8 +8,8 @@ import type { DarStatus, DarObjective, DarDocType } from "@/types/dar";
 import DarListHeader from "@/components/dar/DarListHeader";
 import DarTable from "@/components/dar/DarTable";
 import DarCardList from "@/components/dar/DarCardList";
-import DarDrawer from "@/components/dar/DarDrawer";
-import DarEditDrawer from "@/components/dar/DarEditDrawer";
+import DarModal from "@/components/dar/DarModal";
+import DarEditModal from "@/components/dar/DarEditModal";
 import FilterBar from "@/components/common/FilterBar";
 import Pagination from "@/components/common/Pagination";
 import EmptyState from "@/components/common/EmptyState";
@@ -65,7 +65,7 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
   });
   const dars = (queryResult.data ?? []) as DarSummary[];
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editDarId, setEditDarId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("requestDate");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -147,7 +147,7 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
 
   return (
     <>
-      <DarListHeader onNewRequest={() => setDrawerOpen(true)} />
+      <DarListHeader onNewRequest={() => setModalOpen(true)} />
 
       {!isAllEmpty && (
         <FilterBar
@@ -213,13 +213,13 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
         </>
       )}
 
-      <DarDrawer
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+      <DarModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
         requesterInfo={requesterInfo}
       />
 
-      <DarEditDrawer
+      <DarEditModal
         darId={editDarId}
         onClose={() => setEditDarId(null)}
       />

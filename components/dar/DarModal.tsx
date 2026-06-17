@@ -20,7 +20,7 @@ type Props = {
   requesterInfo: RequesterInfo;
 };
 
-export default function DarDrawer({ isOpen, onClose, requesterInfo }: Props) {
+export default function DarModal({ isOpen, onClose, requesterInfo }: Props) {
   const t = useT();
   const [tempId] = useState(() => crypto.randomUUID());
 

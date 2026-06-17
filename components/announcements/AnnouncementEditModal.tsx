@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useT } from "@/lib/i18n";
 import type { AnnouncementRow } from "@/services/announcementService";
 import { useEditAnnouncement } from "@/hooks/use-edit-announcement";
@@ -19,7 +18,7 @@ type Props = {
 const inputCls = "w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-[#0F1059] focus:bg-white transition-colors";
 const labelCls = "text-slate-800 text-sm font-semibold mb-2 block";
 
-export default function AnnouncementEditDrawer({ item, open, onClose, onSaved }: Props) {
+export default function AnnouncementEditModal({ item, open, onClose, onSaved }: Props) {
   const t = useT();
   const { form, setForm, bgImageFile, setBgImageFile, clearBgImage, setClearBgImage, loading, handleSave } = useEditAnnouncement(item, onSaved);
   const isTh = t("common.cancel") === "ยกเลิก";

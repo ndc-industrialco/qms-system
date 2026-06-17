@@ -12,7 +12,7 @@ import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
 import CarVerifyForm from "./CarVerifyForm";
 import CarRespondForm from "./CarRespondForm";
-import CarFormDrawer from "./CarFormDrawer";
+import CarFormModal from "./CarFormModal";
 import type { CarDetail } from "@/types/car";
 import { CAR_SOURCE_LABELS } from "@/types/car";
 
@@ -259,8 +259,8 @@ export default function CarDetailClient({
         </div>
       )}
 
-      {/* Edit drawer */}
-      <CarFormDrawer open={showEdit} onClose={() => setShowEdit(false)} editCar={car} />
+      {/* Edit modal */}
+      <CarFormModal open={showEdit} onClose={() => setShowEdit(false)} editCar={car} />
     </div>
   );
 }

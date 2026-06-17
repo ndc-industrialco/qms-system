@@ -20,6 +20,14 @@ const eslintConfig = [
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["warn", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+      }],
+    },
+  },
+  {
     // Architecture guardrails — apply to all TS/JS source files
     files: ["app/api/**/*.ts", "services/**/*.ts"],
     plugins: {

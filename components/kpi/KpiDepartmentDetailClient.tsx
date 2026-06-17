@@ -10,7 +10,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import ConfirmModal from "@/components/common/ConfirmModal";
-import KpiObjectiveFormDrawer from "@/components/kpi/KpiObjectiveFormDrawer";
+import KpiObjectiveFormModal from "@/components/kpi/KpiObjectiveFormModal";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
 import KpiObjectiveAssignDialog, { type ReviewerCandidate } from "@/components/kpi/KpiObjectiveAssignDialog";
 import {
@@ -100,7 +100,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const { data: resp, isLoading } = useKpiById(kpiId);
   const kpi = resp?.data;
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<KPIObjective | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -241,7 +241,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
             )}
             {canEdit && (
               <Button
-                onClick={() => { setEditing(null); setDrawerOpen(true); }}
+                onClick={() => { setEditing(null); setModalOpen(true); }}
                 variant="outline"
                 className="rounded-xl border-slate-200"
               >
@@ -427,7 +427,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0 text-slate-400 hover:text-primary hover:bg-slate-100"
-                      onClick={() => { setEditing(obj); setDrawerOpen(true); }}
+                      onClick={() => { setEditing(obj); setModalOpen(true); }}
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
@@ -447,10 +447,10 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
         </div>
       )}
 
-      {/* Objective Form Drawer */}
-      <KpiObjectiveFormDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
+      {/* Objective Form Modal */}
+      <KpiObjectiveFormModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
         objective={editing}
         onSubmit={async (values) => {
           try {

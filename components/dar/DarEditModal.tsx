@@ -15,7 +15,7 @@ type Props = {
   onClose: () => void;
 };
 
-export default function DarEditDrawer({ darId, onClose }: Props) {
+export default function DarEditModal({ darId, onClose }: Props) {
   const t = useT();
   const isOpen = darId !== null;
 

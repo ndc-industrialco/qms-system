@@ -6,10 +6,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { AnnouncementRow } from "@/services/announcementService";
 import AnnouncementsTable from "@/components/announcements/AnnouncementsTable";
-import AnnouncementViewDrawer from "@/components/announcements/AnnouncementViewDrawer";
-import AnnouncementEditDrawer from "@/components/announcements/AnnouncementEditDrawer";
+import AnnouncementViewModal from "@/components/announcements/AnnouncementViewModal";
+import AnnouncementEditModal from "@/components/announcements/AnnouncementEditModal";
 import AnnouncementDeleteModal from "@/components/announcements/AnnouncementDeleteModal";
-import AnnouncementCreateDrawer from "@/components/announcements/AnnouncementCreateDrawer";
+import AnnouncementCreateModal from "@/components/announcements/AnnouncementCreateModal";
 import AnnouncementCard from "@/components/announcements/AnnouncementCard";
 import PageHeader from "@/components/common/PageHeader";
 import FilterBar from "@/components/common/FilterBar";
@@ -343,11 +343,11 @@ export default function AnnouncementsTableClient({ rows: initialRows }: { rows: 
         </div>
       )}
 
-      {/* Drawers & Modals */}
-      <AnnouncementViewDrawer item={viewItem} open={viewOpen} onClose={() => setViewOpen(false)} onEdit={(item) => { setViewOpen(false); handleEdit(item); }} />
-      <AnnouncementEditDrawer item={editItem} open={editOpen} onClose={() => setEditOpen(false)} onSaved={handleSaved} />
+      {/* Modals */}
+      <AnnouncementViewModal item={viewItem} open={viewOpen} onClose={() => setViewOpen(false)} onEdit={(item) => { setViewOpen(false); handleEdit(item); }} />
+      <AnnouncementEditModal item={editItem} open={editOpen} onClose={() => setEditOpen(false)} onSaved={handleSaved} />
       <AnnouncementDeleteModal item={deleteItem} open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onDeleted={handleDeleted} />
-      <AnnouncementCreateDrawer open={createOpen} onClose={() => setCreateOpen(false)} onCreated={handleCreated} />
+      <AnnouncementCreateModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={handleCreated} />
 
 
     </div>

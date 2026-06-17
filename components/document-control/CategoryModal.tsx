@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import type { DocumentCategorySummary } from '@/types/documentControl';
 
-interface CategoryDrawerProps {
+interface CategoryModalProps {
   open: boolean;
   onClose: () => void;
   departmentId: string;
@@ -22,7 +22,7 @@ interface CategoryDrawerProps {
   onSuccess?: () => void;
 }
 
-export function CategoryDrawer({ open, onClose, departmentId, category, onSuccess }: CategoryDrawerProps) {
+export function CategoryModal({ open, onClose, departmentId, category, onSuccess }: CategoryModalProps) {
   const t = useT();
 
   const {

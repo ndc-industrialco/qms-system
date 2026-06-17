@@ -19,14 +19,14 @@ const departmentSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-interface DepartmentDrawerProps {
+interface DepartmentModalProps {
   open: boolean;
   onClose: () => void;
   department?: { id: string; name: string; emailGroup?: string | null; isActive?: boolean } | null;
   onSuccess?: () => void;
 }
 
-export function DepartmentDrawer({ open, onClose, department, onSuccess }: DepartmentDrawerProps) {
+export function DepartmentModal({ open, onClose, department, onSuccess }: DepartmentModalProps) {
   const t = useT();
 
   const {

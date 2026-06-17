@@ -15,50 +15,46 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ndc-industrialco/qms-system
 
 jobs:
   ci:
-    name: Continuous Integration
+    name: CI — Lint / Test / Build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Validate Prisma Schema
-        run: npx prisma validate
+      - name: Validate & generate Prisma
+        run: |
+          npx prisma validate
+          npx prisma generate
 
-      - name: Generate Prisma Client
-        run: npx prisma generate
+      - name: Lint
+        run: npm run lint
 
       - name: Check API patterns
         run: npm run check:api
 
-      - name: Run tests
+      - name: Test
         run: npm test
 
-      - name: Lint codebase
-        run: npm run lint
-
-      - name: Build Next.js application
+      - name: Build
         env:
           DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
           DIRECT_DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
           NEXTAUTH_URL: http://localhost:3000
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'dummy-auth-secret-key-at-least-thirty-two-characters-long' }}
-        run: npm run build
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'dummy-auth-secret-for-ci-build-at-least-32-chars' }}
+        run: npm run build -- --no-lint
 
-  docker-build-push:
+  docker:
     name: Build & Push Docker Image
     needs: ci
     runs-on: ubuntu-latest
@@ -66,42 +62,33 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convert IMAGE_NAME to lowercase
-        id: prep
-        run: |
-          echo "image_lower_name=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
-
-      - name: Extract Docker metadata
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ steps.prep.outputs.image_lower_name }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=long
+            type=sha,format=short
             type=raw,value=latest,enable={{is_default_branch}}
 
-
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -111,3 +98,43 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  deploy:
+    name: CD — Deploy to On-Prem
+    needs: docker
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull & deploy
+        env:
+          IMAGE_TAG: ${{ needs.docker.outputs.image_tag }}
+        run: |
+          set -e
+          cd /opt/qms-system
+          export IMAGE_TAG=${IMAGE_TAG}
+          docker compose pull migrate qms-system
+          docker compose run --rm migrate
+          docker compose up -d --remove-orphans qms-system
+          docker image prune -f
+
+          echo "✅ Deploy complete — $IMAGE_TAG"
+      - name: Health check
+        run: |
+          for i in $(seq 1 12); do
+            status=$(curl -sf -o /dev/null -w "%{http_code}" "${{ secrets.APP_URL }}/api/health/ready" || echo "000")
+            [ "$status" = "200" ] && echo "Healthy" && exit 0
+            echo "Attempt $i: $status — waiting 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 2 minutes" && exit 1

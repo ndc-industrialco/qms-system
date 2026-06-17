@@ -14,7 +14,7 @@ type Params = { params: Promise<{ id: string }> };
 export async function PATCH(_req: NextRequest, { params }: Params) {
   try {
     await requireRole("QMS", "IT", "MR");
-    const { id } = await params;
+    await params;
 
     return NextResponse.json(
       { data: null, error: "Role management is now handled by Auth Center. Use /api/it/users/[id]/role endpoint." },

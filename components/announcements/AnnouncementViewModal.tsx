@@ -13,7 +13,7 @@ type Props = {
   onEdit: (item: AnnouncementRow) => void;
 };
 
-export default function AnnouncementViewDrawer({ item, open, onClose, onEdit }: Props) {
+export default function AnnouncementViewModal({ item, open, onClose, onEdit }: Props) {
   const t = useT();
 
   if (!open) return null;

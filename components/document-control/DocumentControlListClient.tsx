@@ -8,8 +8,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
-import { DocumentControlDrawer } from './DocumentControlDrawer';
-import { DocumentControlDetailDrawer } from './DocumentControlDetailDrawer';
+import { DocumentControlModal } from './DocumentControlModal';
+import { DocumentControlDetailModal } from './DocumentControlDetailModal';
 import { UploadRevisionDialog } from './UploadRevisionDialog';
 import { formatDate } from '@/lib/formatters';
 import PageHeader from '@/components/common/PageHeader';
@@ -49,9 +49,9 @@ const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'OBSOLETE'];
 export function DocumentControlListClient({ department, category, canCreate }: DocumentControlListClientProps) {
   const t = useT();
   const queryClient = useQueryClient();
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
-  const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [uploadDocId, setUploadDocId] = useState<string | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
 
@@ -91,7 +91,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
 
   const openDetail = (id: string) => {
     setSelectedDocId(id);
-    setDetailDrawerOpen(true);
+    setDetailModalOpen(true);
   };
 
   const openUpload = (e: React.MouseEvent, id: string) => {
@@ -178,7 +178,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
           subtitle={t('documentControl.list')}
           actions={
             canCreate && (
-              <Button onClick={() => setDrawerOpen(true)} className="gap-1.5">
+              <Button onClick={() => setModalOpen(true)} className="gap-1.5">
                 <Plus className="w-4 h-4" />
                 {t('documentControl.button.create')}
               </Button>
@@ -375,10 +375,10 @@ export function DocumentControlListClient({ department, category, canCreate }: D
         )}
       </div>
 
-      {/* Create Drawer */}
-      <DocumentControlDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+      {/* Create Modal */}
+      <DocumentControlModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
         categoryId={category.id}
         departmentId={department.id}
         onSuccess={() => {
@@ -387,11 +387,11 @@ export function DocumentControlListClient({ department, category, canCreate }: D
         }}
       />
 
-      {/* Detail Drawer */}
-      <DocumentControlDetailDrawer
+      {/* Detail Modal */}
+      <DocumentControlDetailModal
         documentId={selectedDocId}
-        open={detailDrawerOpen}
-        onClose={() => setDetailDrawerOpen(false)}
+        open={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
         canEdit={canCreate}
         canDelete={canCreate}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['documents', category.id] })}

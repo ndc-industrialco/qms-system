@@ -23,7 +23,7 @@ interface Props {
 const inputBase = "w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors";
 const labelBase = "text-slate-800 text-sm font-semibold mb-2 block";
 
-export function KpiMasterFormDrawer({ open, onOpenChange, kpi }: Props) {
+export function KpiMasterFormModal({ open, onOpenChange, kpi }: Props) {
   const t = useT();
   const createMutation = useCreateKpi();
   const updateMutation = useUpdateKpi();
@@ -69,7 +69,7 @@ export function KpiMasterFormDrawer({ open, onOpenChange, kpi }: Props) {
           <DialogDescription className="sr-only">{isEdit ? "Edit KPI" : "Add KPI"}</DialogDescription>
         </DialogHeader>
 
-        <form id="kpi-drawer-form" className="px-6 py-6 space-y-4 max-h-[60vh] overflow-y-auto" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="kpi-modal-form" className="px-6 py-6 space-y-4 max-h-[60vh] overflow-y-auto" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelBase}>{t("kpi.form.year")} <span className="text-rose-600">*</span></label>
@@ -101,7 +101,7 @@ export function KpiMasterFormDrawer({ open, onOpenChange, kpi }: Props) {
             className="bg-white text-slate-700 border border-slate-200 rounded-xl px-4 py-2 text-sm hover:bg-slate-50 transition-colors disabled:opacity-50">
             {t("common.cancel")}
           </button>
-          <button type="submit" form="kpi-drawer-form" disabled={isPending}
+          <button type="submit" form="kpi-modal-form" disabled={isPending}
             className="bg-primary text-white rounded-xl px-5 py-2 text-sm hover:bg-[#161875] transition-colors disabled:opacity-60 flex items-center gap-2 min-w-22.5 justify-center">
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             {t("common.save")}

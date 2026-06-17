@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import type { DocumentControlDetail, DocControlStatus } from '@/types/documentControl';
 
-interface DocumentControlDrawerProps {
+interface DocumentControlModalProps {
   open: boolean;
   onClose: () => void;
   /** Passed from URL context when creating a new document */
@@ -40,14 +40,14 @@ interface DocumentControlDrawerProps {
 
 const STATUSES = ['DRAFT', 'ACTIVE', 'OBSOLETE'];
 
-export function DocumentControlDrawer({
+export function DocumentControlModal({
   open,
   onClose,
   categoryId,
   departmentId,
   document,
   onSuccess,
-}: DocumentControlDrawerProps) {
+}: DocumentControlModalProps) {
   const t = useT();
 
   const {

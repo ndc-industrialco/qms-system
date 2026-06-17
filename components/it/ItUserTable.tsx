@@ -235,7 +235,6 @@ export default function ItUserTable({ users, departments, authCenterMode = false
       if (filterMs365 === "no" && isM365Linked(u)) return false;
       return true;
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [users, search, filterRole, filterDept, filterMs365]);
 
   const sorted = useMemo(() => {

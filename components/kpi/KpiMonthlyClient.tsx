@@ -6,7 +6,7 @@ import { useUrlFilters } from "@/hooks/use-url-filters";
 import { useKpiList } from "@/hooks/api/use-kpi";
 import { useKpiMonthlyList } from "@/hooks/api/use-kpi-monthly";
 import { KpiMonthlyTable } from "@/components/kpi/KpiMonthlyTable";
-import KpiMonthlyDetailDrawer from "@/components/kpi/KpiMonthlyDetailDrawer";
+import KpiMonthlyDetailModal from "@/components/kpi/KpiMonthlyDetailModal";
 import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -234,14 +234,14 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
   });
 
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i + 1);
 
   useEffect(() => {
     if (!params.mReport) return;
     setSelectedReportId(params.mReport);
-    setDrawerOpen(true);
+    setModalOpen(true);
   }, [params.mReport]);
 
   function handleYearChange(value: string) {
@@ -254,7 +254,7 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
 
   function handleBackToDepartments() {
     setParams({ mKpi: "", mMonth: "", mStatus: "", mPage: "", mReport: "" });
-    setDrawerOpen(false);
+    setModalOpen(false);
     setSelectedReportId(null);
   }
 
@@ -344,7 +344,7 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
           onPageChange={(p) => setParam("mPage", String(p))}
           onRowClick={(row) => {
             setSelectedReportId(row.id);
-            setDrawerOpen(true);
+            setModalOpen(true);
           }}
         />
       ) : (
@@ -355,11 +355,11 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
         />
       )}
 
-      <KpiMonthlyDetailDrawer
+      <KpiMonthlyDetailModal
         kpiId={selectedKpiId}
-        reportId={drawerOpen ? selectedReportId : null}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
+        reportId={modalOpen ? selectedReportId : null}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
         userRole={userRole}
         userId={userId}
       />

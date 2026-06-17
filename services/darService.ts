@@ -68,7 +68,7 @@ export class DarService {
   private async resolveDesignatedUser(
     authConfigKey: string,
     localConfigKey: string,
-    fallbackRoleFinder?: never,
+    _fallbackRoleFinder?: never,
   ): Promise<{ authUserId: string } | null> {
     const authUserKey = await this.configRepo.findValueByKey(authConfigKey);
     if (authUserKey) return { authUserId: authUserKey };
@@ -81,7 +81,7 @@ export class DarService {
   private approvalSignatureRepo = new ApprovalSignatureRepository();
   private qmsProcessingRepo = new QmsProcessingRepository();
 
-  private async getIdentitySnapshot(authUserId: string, tx?: Prisma.TransactionClient): Promise<IdentitySnapshot | null> {
+  private async getIdentitySnapshot(authUserId: string, _tx?: Prisma.TransactionClient): Promise<IdentitySnapshot | null> {
     const { getUserSnapshot } = await import("@/lib/userSnapshotCache");
     const cached = await getUserSnapshot(authUserId);
     if (cached) {
