@@ -123,7 +123,7 @@ jobs:
           set -e
           cd /opt/qms-system
           export IMAGE_TAG=${IMAGE_TAG}
-          docker compose pull migrate qms-system
+
           docker compose run --rm migrate
           docker compose up -d --remove-orphans qms-system
           docker image prune -f
