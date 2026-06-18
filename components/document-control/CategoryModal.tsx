@@ -8,10 +8,10 @@ import { useT } from '@/lib/i18n';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { createDocumentCategorySchema, updateDocumentCategorySchema } from '@/schemas/documentCategorySchema';
+import ResponsiveFormOverlay from '@/components/common/ResponsiveFormOverlay';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import type { DocumentCategorySummary } from '@/types/documentControl';
 
 interface CategoryModalProps {
@@ -99,18 +99,24 @@ export function CategoryModal({ open, onClose, departmentId, category, onSuccess
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-          <DialogTitle>
-            {category ? t('documentCategory.editTitle') : t('documentCategory.new')}
-          </DialogTitle>
-          <DialogDescription>
-            {category ? category.name : t('documentCategory.emptyDesc')}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+    <ResponsiveFormOverlay
+      open={open}
+      onOpenChange={(value) => { if (!value) onClose(); }}
+      title={category ? t('documentCategory.editTitle') : t('documentCategory.new')}
+      description={category ? category.name : t('documentCategory.emptyDesc')}
+      desktopContentClassName="w-[min(96vw,48rem)] max-w-xl"
+      bodyClassName="px-4 py-5 md:px-6 md:py-4"
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="h-11">
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" form="category-form" disabled={isLoading} className="h-11 flex-1 bg-primary hover:bg-primary/90">
+            {isLoading ? t('common.loading') : t('common.save')}
+          </Button>
+        </>
+      }
+    >
           <form id="category-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-1.5">
               <Label htmlFor="cat-name" className="text-slate-800 text-sm font-semibold">
@@ -153,17 +159,6 @@ export function CategoryModal({ open, onClose, departmentId, category, onSuccess
               />
             </div>
           </form>
-        </div>
-
-        <DialogFooter className="px-6 py-4 border-t border-slate-100">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="h-11">
-            {t('common.cancel')}
-          </Button>
-          <Button type="submit" form="category-form" disabled={isLoading} className="bg-primary hover:bg-primary/90 h-11 flex-1">
-            {isLoading ? t('common.loading') : t('common.save')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }

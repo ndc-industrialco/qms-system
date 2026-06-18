@@ -7,6 +7,7 @@ import { useT } from '@/lib/i18n';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { uploadRevisionSchema } from '@/schemas/documentControlSchema';
+import ResponsiveFormOverlay from '@/components/common/ResponsiveFormOverlay';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,15 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
-
 interface UploadRevisionDialogProps {
   open: boolean;
   onClose: () => void;
@@ -110,18 +102,36 @@ export function UploadRevisionDialog({
   const isLoading = uploadMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-[480px] rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-[#0F1059] font-bold text-xl">
-            {t('documentControl.button.uploadRevision')}
-          </DialogTitle>
-          <DialogDescription>
-            {t('documentControl.uploadRevisionDesc')}
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
+    <ResponsiveFormOverlay
+      open={open}
+      onOpenChange={(value) => { if (!value) onClose(); }}
+      title={t('documentControl.button.uploadRevision')}
+      description={t('documentControl.uploadRevisionDesc')}
+      desktopContentClassName="w-[min(96vw,48rem)] max-w-xl rounded-2xl"
+      bodyClassName="px-4 py-5 md:px-6 md:py-4"
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isLoading}
+            className="h-11 rounded-xl"
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            form="upload-revision-form"
+            disabled={isLoading}
+            className="h-11 flex-1 rounded-xl bg-primary text-white font-medium hover:bg-primary/90"
+          >
+            {isLoading ? t('common.loading') : t('common.save')}
+          </Button>
+        </>
+      }
+    >
+        <form id="upload-revision-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
           {/* File Input */}
           <div className="space-y-1.5">
             <Label htmlFor="file-upload" className="text-slate-800 text-sm font-semibold">
@@ -201,26 +211,7 @@ export function UploadRevisionDialog({
             </Select>
           </div>
 
-          <DialogFooter className="pt-4 border-t border-slate-100 flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-              className="h-11 rounded-xl"
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-primary hover:bg-primary/90 h-11 flex-1 rounded-xl text-white font-medium"
-            >
-              {isLoading ? t('common.loading') : t('common.save')}
-            </Button>
-          </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }

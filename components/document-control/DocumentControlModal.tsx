@@ -8,6 +8,7 @@ import { useT } from '@/lib/i18n';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { createDocumentControlSchema, updateDocumentControlSchema } from '@/schemas/documentControlSchema';
+import ResponsiveFormOverlay from '@/components/common/ResponsiveFormOverlay';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -18,14 +19,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import type { DocumentControlDetail, DocControlStatus } from '@/types/documentControl';
 
 interface DocumentControlModalProps {
@@ -149,18 +142,29 @@ export function DocumentControlModal({
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-          <DialogTitle>
-            {document ? t('documentControl.editTitle') : t('documentControl.new')}
-          </DialogTitle>
-          <DialogDescription>
-            {document ? document.docNumber : t('documentControl.emptyDesc')}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+    <ResponsiveFormOverlay
+      open={open}
+      onOpenChange={(value) => { if (!value) onClose(); }}
+      title={document ? t('documentControl.editTitle') : t('documentControl.new')}
+      description={document ? document.docNumber : t('documentControl.emptyDesc')}
+      desktopContentClassName="w-[min(96vw,56rem)] max-w-2xl"
+      bodyClassName="px-4 py-5 md:px-6 md:py-4"
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="h-11">
+            {t('common.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            form="doc-control-form"
+            disabled={isLoading}
+            className="h-11 flex-1 bg-primary hover:bg-primary/90"
+          >
+            {isLoading ? t('common.loading') : t('common.save')}
+          </Button>
+        </>
+      }
+    >
           <form id="doc-control-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
             {/* Document Number */}
@@ -236,22 +240,6 @@ export function DocumentControlModal({
               )}
             </div>
           </form>
-        </div>
-
-        <DialogFooter className="px-6 py-4 border-t border-slate-100">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="h-11">
-            {t('common.cancel')}
-          </Button>
-          <Button
-            type="submit"
-            form="doc-control-form"
-            disabled={isLoading}
-            className="bg-primary hover:bg-primary/90 h-11 flex-1"
-          >
-            {isLoading ? t('common.loading') : t('common.save')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }

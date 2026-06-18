@@ -77,7 +77,7 @@ function makeDetailRaw(overrides: Record<string, unknown> = {}) {
     updatedAt: new Date("2026-06-01T00:00:00.000Z"),
     issuer: { id: "issuer-1", name: "Alice", employeeId: "E001", department: { id: "dept-qms", name: "QMS" } },
     targetDepartment: { id: "dept-1", name: "QA", emailGroup: "qa@example.com" },
-    targetEmailGroup: "qa@example.com",
+    targetEmailGroups: ["qa@example.com"],
     response: null,
     verifications: [],
     mrSignature: null,
@@ -102,11 +102,14 @@ describe("CarService", () => {
       meta: { page: 2, limit: 20, total: 41 },
     } as never);
 
-    const result = await service.listCars({ page: 2, limit: 20, search: "batch" }, {});
+    const result = await service.listCars(
+      { page: 2, limit: 20, search: "batch", scope: "mine" },
+      { scope: "mine", issuerAuthUserId: "auth-user-1" }
+    );
 
     expect(carRepo.paginateSummaries).toHaveBeenCalledWith(
-      { page: 2, limit: 20, search: "batch" },
-      {}
+      { page: 2, limit: 20, search: "batch", scope: "mine" },
+      { scope: "mine", issuerAuthUserId: "auth-user-1" }
     );
     expect(result.meta).toEqual({ page: 2, limit: 20, total: 41 });
     expect(result.data[0]).toMatchObject({
@@ -118,11 +121,26 @@ describe("CarService", () => {
     });
   });
 
+  it("rejects mine scope without Auth Center user id", async () => {
+    await expect(
+      service.listCars({ page: 1, limit: 20, scope: "mine" }, { scope: "mine" })
+    ).rejects.toThrow("Auth Center user scope is required");
+  });
+
+  it("rejects department scope without Auth Center department id", async () => {
+    await expect(
+      service.listCars(
+        { page: 1, limit: 20, scope: "my-department" },
+        { scope: "my-department", issuerAuthUserId: "auth-user-1" }
+      )
+    ).rejects.toThrow("Auth Center department scope is required");
+  });
+
   it("issues car through repository boundary and records notification", async () => {
     vi.mocked(carRepo.findForIssue).mockResolvedValue({
       id: "car-1",
       status: "DRAFT",
-      targetEmailGroup: "qa@example.com",
+      targetEmailGroups: ["qa@example.com"],
       targetDepartmentId: "dept-1",
       issuerId: "issuer-1",
       carNo: "C26-001",
@@ -144,6 +162,6 @@ describe("CarService", () => {
       { carMasterId: "car-1", type: "ISSUED", recipient: "qa@example.com" },
       expect.anything(),
     );
-    expect(result.carNo).toBe("C26-001");
+    expect(result.car.carNo).toBe("C26-001");
   });
 });

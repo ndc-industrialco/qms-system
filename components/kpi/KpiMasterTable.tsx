@@ -3,9 +3,10 @@
 import { useT } from "@/lib/i18n";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { ActionIconButton, ActionPillButton } from "@/components/common/ActionButtons";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/common/EmptyState";
-import { Calendar, Briefcase, Pencil, Trash2, ChevronLeft, ChevronRight, UserCheck, UserCog } from "lucide-react";
+import { Calendar, Briefcase, ChevronLeft, ChevronRight, UserCheck, UserCog } from "lucide-react";
 import type { KpiWithUsers } from "@/hooks/api/use-kpi";
 
 interface Props {
@@ -85,12 +86,8 @@ export function KpiMasterTable({ data, isLoading, onEdit, onDelete, canEdit, met
 
             {canEdit && (
               <div className="flex gap-2 pt-2 border-t border-slate-100">
-                <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-slate-600 border-slate-200 hover:bg-slate-50" onClick={() => onEdit(kpi)}>
-                  <Pencil className="w-3.5 h-3.5" />{t("kpi.reference.action.edit")}
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700" onClick={() => onDelete(kpi.id)}>
-                  <Trash2 className="w-3.5 h-3.5" />{t("kpi.reference.action.delete")}
-                </Button>
+                <ActionPillButton tone="edit" label={t("kpi.reference.action.edit")} onClick={() => onEdit(kpi)} className="flex-1 justify-center" />
+                <ActionPillButton tone="delete" label={t("kpi.reference.action.delete")} onClick={() => onDelete(kpi.id)} className="flex-1 justify-center" />
               </div>
             )}
           </div>
@@ -133,12 +130,8 @@ export function KpiMasterTable({ data, isLoading, onEdit, onDelete, canEdit, met
                 {canEdit && (
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1.5">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-primary hover:bg-slate-100" onClick={() => onEdit(kpi)} title={t("kpi.reference.action.edit")}>
-                        <Pencil className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50" onClick={() => onDelete(kpi.id)} title={t("kpi.reference.action.delete")}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                      <ActionIconButton tone="edit" label={t("kpi.reference.action.edit")} onClick={() => onEdit(kpi)} />
+                      <ActionIconButton tone="delete" label={t("kpi.reference.action.delete")} onClick={() => onDelete(kpi.id)} />
                     </div>
                   </TableCell>
                 )}

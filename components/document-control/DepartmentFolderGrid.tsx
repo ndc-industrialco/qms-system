@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FolderOpen, FileText, Plus, Pencil, Trash2 } from "lucide-react";
+import { FolderOpen, FileText, Plus } from "lucide-react";
+import { ActionIconButton } from "@/components/common/ActionButtons";
 import EmptyState from "@/components/common/EmptyState";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
@@ -92,26 +93,24 @@ export function DepartmentFolderGrid({
               {/* Hover actions — raised above Link overlay */}
               {canManage && (
                 <div className="absolute top-3 right-3 z-10 hidden group-hover:flex gap-1">
-                  <button
+                  <ActionIconButton
+                    tone="edit"
+                    label="Edit"
                     onClick={(e) => {
                       e.preventDefault();
                       onEdit(dept);
                     }}
-                    className="w-7 h-7 rounded-lg bg-white border border-base-300 flex items-center justify-center hover:bg-slate-50 shadow-sm"
-                    title="Edit"
-                  >
-                    <Pencil className="w-3.5 h-3.5 text-neutral" />
-                  </button>
-                  <button
+                    className="h-7 w-7 shadow-sm"
+                  />
+                  <ActionIconButton
+                    tone="delete"
+                    label="Delete"
                     onClick={(e) => {
                       e.preventDefault();
                       onDelete(dept);
                     }}
-                    className="w-7 h-7 rounded-lg bg-white border border-base-300 flex items-center justify-center hover:bg-rose-50 hover:border-rose-200 shadow-sm"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-rose-500" />
-                  </button>
+                    className="h-7 w-7 shadow-sm"
+                  />
                 </div>
               )}
             </div>

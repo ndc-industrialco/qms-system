@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
@@ -94,7 +95,9 @@ export function NotificationBell() {
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-            <span className="text-sm font-semibold text-slate-800">การแจ้งเตือน</span>
+            <Link href="/notifications" className="text-sm font-semibold text-slate-800 hover:text-[#0f1059]" onClick={() => setOpen(false)}>
+              การแจ้งเตือน
+            </Link>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead.mutate()}
@@ -143,6 +146,17 @@ export function NotificationBell() {
                 </button>
               ))
             )}
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-slate-100 px-4 py-2.5">
+            <Link
+              href="/notifications"
+              onClick={() => setOpen(false)}
+              className="block text-center text-xs text-[#0f1059] font-medium hover:underline"
+            >
+              ดูการแจ้งเตือนทั้งหมด →
+            </Link>
           </div>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

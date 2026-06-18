@@ -28,7 +28,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const body = await req.json();
     const parsed = schema.parse(body);
 
-    const dar = await darService.assignReviewer(id, { userId: session.user.id, authUserId: session.user.authUserId }, parsed.reviewerUserId);
+    const dar = await darService.assignReviewer(id, { userId: session.user.id, authUserId: session.user.authUserId, accessToken: session.user.accessToken }, parsed.reviewerUserId);
 
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");

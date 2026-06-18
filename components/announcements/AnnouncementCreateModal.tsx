@@ -3,7 +3,7 @@
 import { useT } from "@/lib/i18n";
 import { useCreateAnnouncement } from "@/hooks/use-create-announcement";
 import AnnouncementBgPicker from "@/components/announcements/AnnouncementBgPicker";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -23,20 +23,34 @@ export default function AnnouncementCreateModal({ open, onClose, onCreated }: Pr
   if (!open) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { if (!val) onClose(); }}>
-      <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-slate-100 text-left">
-          <DialogTitle className="text-lg font-semibold text-slate-800 leading-snug pr-8">
-            {t("announcement.createTitle")}
-          </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500 mt-0.5">
-            {t("announcement.createDescription")}
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+    <ResponsiveFormOverlay
+      open={open}
+      onOpenChange={(value) => { if (!value) onClose(); }}
+      title={t("announcement.createTitle")}
+      description={t("announcement.createDescription")}
+      desktopContentClassName="w-[min(96vw,72rem)] max-w-4xl"
+      bodyClassName="space-y-4 px-4 py-5 md:px-6 md:py-6"
+      footerClassName="flex-row justify-end gap-2 sm:justify-end"
+      footer={
+        <>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={loading}
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !form.title.trim() || !form.content.trim()}
+            className="min-w-28"
+          >
+            {loading && <div className="mr-2 h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />}
+            {t("announcement.publish")}
+          </Button>
+        </>
+      }
+    >
           <div>
             <label className={labelCls}>{t("announcement.fieldTitle")} <span className="text-rose-600">*</span></label>
             <input
@@ -145,27 +159,6 @@ export default function AnnouncementCreateModal({ open, onClose, onCreated }: Pr
             onImageChange={setBgImageFile}
             onTextColorChange={(c) => setForm((f) => ({ ...f, textColor: c }))}
           />
-        </div>
-
-        {/* Footer */}
-        <DialogFooter className="px-6 py-4 border-t border-slate-100 flex flex-row justify-end gap-2 sm:justify-end">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={loading}
-          >
-            {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !form.title.trim() || !form.content.trim()}
-            className="min-w-28"
-          >
-            {loading && <div className="w-4 h-4 mr-2 rounded-full border-2 border-white/30 border-t-white animate-spin" />}
-            {t("announcement.publish")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }

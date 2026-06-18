@@ -13,7 +13,7 @@ import AnnouncementCreateModal from "@/components/announcements/AnnouncementCrea
 import AnnouncementCard from "@/components/announcements/AnnouncementCard";
 import PageHeader from "@/components/common/PageHeader";
 import FilterBar from "@/components/common/FilterBar";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle2, Megaphone, Plus, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useUrlFilters } from "@/hooks/use-url-filters";
@@ -172,9 +172,7 @@ export default function AnnouncementsTableClient({ rows: initialRows }: { rows: 
         subtitle="จัดการประกาศและข่าวสารของระบบ"
         actions={
           <Button onClick={() => setCreateOpen(true)} className="gap-1.5">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
+            <Plus className="w-4 h-4" />
             {t("announcement.new")}
           </Button>
         }
@@ -185,9 +183,7 @@ export default function AnnouncementsTableClient({ rows: initialRows }: { rows: 
         {/* Total */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-            </svg>
+            <Megaphone className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
           </div>
           <div className="min-w-0">
             <p className="text-xl sm:text-2xl font-bold text-slate-800 leading-none">{totalCount}</p>
@@ -198,9 +194,7 @@ export default function AnnouncementsTableClient({ rows: initialRows }: { rows: 
         {/* Active */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
           </div>
           <div className="min-w-0">
             <p className="text-xl sm:text-2xl font-bold text-emerald-600 leading-none">{activeCount}</p>
@@ -211,9 +205,7 @@ export default function AnnouncementsTableClient({ rows: initialRows }: { rows: 
         {/* Scrolling */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-3 sm:p-5 flex items-center gap-2 sm:gap-4">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-sky-500" />
           </div>
           <div className="min-w-0">
             <p className="text-xl sm:text-2xl font-bold text-sky-600 leading-none">{scrollingCount}</p>
@@ -289,9 +281,7 @@ export default function AnnouncementsTableClient({ rows: initialRows }: { rows: 
         {paginatedRows.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-              </svg>
+              <Megaphone className="w-6 h-6 text-slate-400" />
             </div>
             <p className="text-slate-800 font-semibold text-base mb-1">{t("announcement.empty")}</p>
             <p className="text-slate-400 text-sm">{t("announcement.emptyDesc")}</p>

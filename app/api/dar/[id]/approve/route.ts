@@ -45,7 +45,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const body = await req.json();
     const parsed = schema.parse(body);
 
-    const dar = await darService.approveDar(id, { userId: session.user.id, authUserId: session.user.authUserId }, {
+    const dar = await darService.approveDar(id, { userId: session.user.id, authUserId: session.user.authUserId, accessToken: session.user.accessToken }, {
       signatureDataUrl: parsed.signatureDataUrl,
       signatureType: parsed.signatureType,
       saveSignature: parsed.saveSignature,

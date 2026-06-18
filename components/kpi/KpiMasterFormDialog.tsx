@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,16 +59,25 @@ export function KpiMasterFormDialog({ open, onOpenChange, kpi }: Props) {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-130">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-[rgb(15,16,89)]">
-            {kpi ? t("kpi.action.edit") : t("kpi.reference.add")}
-          </DialogTitle>
-          <DialogDescription className="sr-only">{kpi ? "Edit KPI" : "Add KPI"}</DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <ResponsiveFormOverlay
+      open={open}
+      onOpenChange={onOpenChange}
+      title={kpi ? t("kpi.action.edit") : t("kpi.reference.add")}
+      description={kpi ? "Edit KPI" : "Add KPI"}
+      desktopContentClassName="w-[min(96vw,72rem)] max-w-4xl"
+      bodyClassName="px-4 py-5 md:px-6 md:py-6"
+      footer={
+        <>
+          <Button type="button" variant="outline" className="border-slate-200" onClick={() => onOpenChange(false)} disabled={isPending}>
+            {t("cancel")}
+          </Button>
+          <Button type="submit" form="kpi-master-dialog-form" className="min-w-22.5 bg-primary hover:bg-[#161875]" disabled={isPending}>
+            {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("save")}...</> : t("save")}
+          </Button>
+        </>
+      }
+    >
+        <form id="kpi-master-dialog-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="kpi-yearly" className="text-sm font-medium text-slate-700">
@@ -115,16 +124,7 @@ export function KpiMasterFormDialog({ open, onOpenChange, kpi }: Props) {
             </div>
           </div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" className="border-slate-200" onClick={() => onOpenChange(false)} disabled={isPending}>
-              {t("cancel")}
-            </Button>
-            <Button type="submit" className="bg-primary hover:bg-[#161875] min-w-22.5" disabled={isPending}>
-              {isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t("save")}...</> : t("save")}
-            </Button>
-          </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }

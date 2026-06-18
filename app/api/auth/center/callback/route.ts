@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
         sub: user.authUserId,
         email: user.email,
         name: user.name,
+        jobTitle: user.jobTitle,
         role: user.role,
         employeeId: user.employeeId,
         departmentId: user.departmentId,

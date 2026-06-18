@@ -19,9 +19,9 @@ interface Props {
 export default function KpiSignatureDialog({ open, title, onOpenChange, onConfirm }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl rounded-2xl bg-black/50 backdrop-blur-sm border-white/10">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-white">{title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
         <SignaturePad

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { createAnnouncement } from "@/lib/actions/announcement";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useT } from "@/lib/i18n";
@@ -29,29 +29,45 @@ export default function PostAnnouncementModal() {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="gap-2 rounded-lg shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          {t("announcement.publishBtn")}
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="max-w-lg p-0 overflow-hidden">
-        <DialogHeader className="px-5 py-4 border-b border-base-300 bg-base-100/50 m-0">
-          <DialogTitle className="text-lg font-bold text-base-content flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <>
+      <Button size="sm" className="gap-2 rounded-lg shadow-sm" onClick={() => setIsOpen(true)}>
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        {t("announcement.publishBtn")}
+      </Button>
+      <ResponsiveFormOverlay
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        title={
+          <span className="flex items-center gap-2 text-base-content">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
               </svg>
-            </div>
+            </span>
             {t("announcement.createTitle")}
-          </DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          </span>
+        }
+        desktopContentClassName="w-[min(96vw,56rem)] max-w-2xl"
+        headerClassName="m-0 border-base-300 bg-base-100/50 px-5 py-4"
+        bodyClassName="px-4 py-5 md:px-5"
+        footer={
+          <>
+            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" form="post-announcement-form" disabled={loading} className="min-w-[120px]">
+              {loading ? (
+                <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin"></span>
+              ) : (
+                t("announcement.publish")
+              )}
+            </Button>
+          </>
+        }
+      >
+        <form id="post-announcement-form" onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-[13px] font-semibold text-base-content mb-1.5">{t("announcement.fieldTitle")}</label>
             <input 
@@ -112,21 +128,8 @@ export default function PostAnnouncementModal() {
               </div>
             </label>
           </div>
-
-          <div className="pt-4 flex justify-end gap-3 border-t border-base-300 mt-6">
-            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button type="submit" disabled={loading} className="min-w-[120px]">
-              {loading ? (
-                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
-              ) : (
-                t("announcement.publish")
-              )}
-            </Button>
-          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveFormOverlay>
+    </>
   );
 }

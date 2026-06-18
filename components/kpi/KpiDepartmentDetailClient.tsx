@@ -5,11 +5,12 @@ import { useT } from "@/lib/i18n";
 import { KPI_UNITS } from "@/lib/kpi-units";
 import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye } from "lucide-react";
+import { Plus, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import ConfirmModal from "@/components/common/ConfirmModal";
+import { ActionIconButton } from "@/components/common/ActionButtons";
 import KpiObjectiveFormModal from "@/components/kpi/KpiObjectiveFormModal";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
 import KpiObjectiveAssignDialog, { type ReviewerCandidate } from "@/components/kpi/KpiObjectiveAssignDialog";
@@ -423,22 +424,16 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                 {/* Edit/Delete: shown for privileged always, for USER only when isDraft */}
                 {canEdit && (
                   <div className="flex gap-1.5 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-slate-400 hover:text-primary hover:bg-slate-100"
+                    <ActionIconButton
+                      tone="edit"
+                      label={t("common.edit")}
                       onClick={() => { setEditing(obj); setModalOpen(true); }}
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                    />
+                    <ActionIconButton
+                      tone="delete"
+                      label={t("common.delete")}
                       onClick={() => { setDeleteTargetId(obj.id); setDeleteConfirmOpen(true); }}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    />
                   </div>
                 )}
               </div>

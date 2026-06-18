@@ -3,7 +3,7 @@
 import { useState } from "react";
 import DarForm from "./DarForm";
 import { useT } from "@/lib/i18n";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { Button } from "@/components/ui/button";
 import { useDepartments } from "@/hooks/api/use-departments";
 
@@ -27,18 +27,14 @@ export default function DarModal({ isOpen, onClose, requesterInfo }: Props) {
   const { data: departments = [], isLoading: depsLoading, isError, refetch } = useDepartments();
 
   return (
-    <Dialog open={isOpen} onOpenChange={(val) => { if (!val) onClose(); }}>
-      <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
-        <DialogHeader className="px-6 py-4 border-b border-slate-100 text-left">
-          <DialogTitle className="text-lg font-semibold text-slate-800 leading-snug pr-8">
-            {t("dar.drawer.title")}
-          </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500 mt-0.5">
-            {t("dar.drawer.subtitle")}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+    <ResponsiveFormOverlay
+      open={isOpen}
+      onOpenChange={(value) => { if (!value) onClose(); }}
+      title={t("dar.drawer.title")}
+      description={t("dar.drawer.subtitle")}
+      desktopContentClassName="w-[min(96vw,72rem)] max-w-4xl"
+      bodyClassName="space-y-4 px-4 py-5 md:px-6 md:py-6"
+    >
           {depsLoading && (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-primary animate-spin" />
@@ -68,8 +64,6 @@ export default function DarModal({ isOpen, onClose, requesterInfo }: Props) {
               requesterInfo={requesterInfo}
             />
           )}
-        </div>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }

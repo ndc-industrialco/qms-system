@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import CarFormModal from "./CarFormModal";
 
-export default function CarFormModalTrigger() {
+interface Props {
+  issuerName?: string | null;
+  defaultIssuerPosition?: string | null;
+}
+
+export default function CarFormModalTrigger({ issuerName, defaultIssuerPosition }: Props) {
   const t = useT();
   const [open, setOpen] = useState(false);
 
@@ -16,7 +21,7 @@ export default function CarFormModalTrigger() {
         <Plus className="w-4 h-4 mr-1.5" />
         {t("car.form.btnCreate")}
       </Button>
-      <CarFormModal open={open} onClose={() => setOpen(false)} />
+      <CarFormModal open={open} onClose={() => setOpen(false)} issuerName={issuerName} defaultIssuerPosition={defaultIssuerPosition} />
     </>
   );
 }

@@ -55,7 +55,6 @@ export type CarMasterMinAggregateOutputType = {
   targetDepartmentId: string | null
   targetAuthDepartmentId: string | null
   targetDepartmentName: string | null
-  targetEmailGroup: string | null
   responseDueAt: Date | null
   reCar: boolean | null
   reCarRefId: string | null
@@ -82,7 +81,6 @@ export type CarMasterMaxAggregateOutputType = {
   targetDepartmentId: string | null
   targetAuthDepartmentId: string | null
   targetDepartmentName: string | null
-  targetEmailGroup: string | null
   responseDueAt: Date | null
   reCar: boolean | null
   reCarRefId: string | null
@@ -110,7 +108,8 @@ export type CarMasterCountAggregateOutputType = {
   targetDepartmentId: number
   targetAuthDepartmentId: number
   targetDepartmentName: number
-  targetEmailGroup: number
+  targetEmailGroups: number
+  targetEmailGroupsCc: number
   responseDueAt: number
   reCar: number
   reCarRefId: number
@@ -149,7 +148,6 @@ export type CarMasterMinAggregateInputType = {
   targetDepartmentId?: true
   targetAuthDepartmentId?: true
   targetDepartmentName?: true
-  targetEmailGroup?: true
   responseDueAt?: true
   reCar?: true
   reCarRefId?: true
@@ -176,7 +174,6 @@ export type CarMasterMaxAggregateInputType = {
   targetDepartmentId?: true
   targetAuthDepartmentId?: true
   targetDepartmentName?: true
-  targetEmailGroup?: true
   responseDueAt?: true
   reCar?: true
   reCarRefId?: true
@@ -204,7 +201,8 @@ export type CarMasterCountAggregateInputType = {
   targetDepartmentId?: true
   targetAuthDepartmentId?: true
   targetDepartmentName?: true
-  targetEmailGroup?: true
+  targetEmailGroups?: true
+  targetEmailGroupsCc?: true
   responseDueAt?: true
   reCar?: true
   reCarRefId?: true
@@ -319,7 +317,8 @@ export type CarMasterGroupByOutputType = {
   targetDepartmentId: string
   targetAuthDepartmentId: string | null
   targetDepartmentName: string | null
-  targetEmailGroup: string | null
+  targetEmailGroups: string[]
+  targetEmailGroupsCc: string[]
   responseDueAt: Date | null
   reCar: boolean
   reCarRefId: string | null
@@ -370,7 +369,8 @@ export type CarMasterWhereInput = {
   targetDepartmentId?: Prisma.StringFilter<"CarMaster"> | string
   targetAuthDepartmentId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   targetDepartmentName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
-  targetEmailGroup?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  targetEmailGroups?: Prisma.StringNullableListFilter<"CarMaster">
+  targetEmailGroupsCc?: Prisma.StringNullableListFilter<"CarMaster">
   responseDueAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
   reCar?: Prisma.BoolFilter<"CarMaster"> | boolean
   reCarRefId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
@@ -405,7 +405,8 @@ export type CarMasterOrderByWithRelationInput = {
   targetDepartmentId?: Prisma.SortOrder
   targetAuthDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   targetDepartmentName?: Prisma.SortOrderInput | Prisma.SortOrder
-  targetEmailGroup?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetEmailGroups?: Prisma.SortOrder
+  targetEmailGroupsCc?: Prisma.SortOrder
   responseDueAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reCar?: Prisma.SortOrder
   reCarRefId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -443,7 +444,8 @@ export type CarMasterWhereUniqueInput = Prisma.AtLeast<{
   targetDepartmentId?: Prisma.StringFilter<"CarMaster"> | string
   targetAuthDepartmentId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   targetDepartmentName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
-  targetEmailGroup?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  targetEmailGroups?: Prisma.StringNullableListFilter<"CarMaster">
+  targetEmailGroupsCc?: Prisma.StringNullableListFilter<"CarMaster">
   responseDueAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
   reCar?: Prisma.BoolFilter<"CarMaster"> | boolean
   reCarRefId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
@@ -478,7 +480,8 @@ export type CarMasterOrderByWithAggregationInput = {
   targetDepartmentId?: Prisma.SortOrder
   targetAuthDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   targetDepartmentName?: Prisma.SortOrderInput | Prisma.SortOrder
-  targetEmailGroup?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetEmailGroups?: Prisma.SortOrder
+  targetEmailGroupsCc?: Prisma.SortOrder
   responseDueAt?: Prisma.SortOrderInput | Prisma.SortOrder
   reCar?: Prisma.SortOrder
   reCarRefId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -514,7 +517,8 @@ export type CarMasterScalarWhereWithAggregatesInput = {
   targetDepartmentId?: Prisma.StringWithAggregatesFilter<"CarMaster"> | string
   targetAuthDepartmentId?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
   targetDepartmentName?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
-  targetEmailGroup?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
+  targetEmailGroups?: Prisma.StringNullableListFilter<"CarMaster">
+  targetEmailGroupsCc?: Prisma.StringNullableListFilter<"CarMaster">
   responseDueAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CarMaster"> | Date | string | null
   reCar?: Prisma.BoolWithAggregatesFilter<"CarMaster"> | boolean
   reCarRefId?: Prisma.StringNullableWithAggregatesFilter<"CarMaster"> | string | null
@@ -542,7 +546,8 @@ export type CarMasterCreateInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -576,7 +581,8 @@ export type CarMasterUncheckedCreateInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   reCarRefId?: string | null
@@ -610,7 +616,8 @@ export type CarMasterUpdateInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -644,7 +651,8 @@ export type CarMasterUncheckedUpdateInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -678,7 +686,8 @@ export type CarMasterCreateManyInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   reCarRefId?: string | null
@@ -706,7 +715,8 @@ export type CarMasterUpdateManyMutationInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -733,7 +743,8 @@ export type CarMasterUncheckedUpdateManyInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -784,7 +795,8 @@ export type CarMasterCountOrderByAggregateInput = {
   targetDepartmentId?: Prisma.SortOrder
   targetAuthDepartmentId?: Prisma.SortOrder
   targetDepartmentName?: Prisma.SortOrder
-  targetEmailGroup?: Prisma.SortOrder
+  targetEmailGroups?: Prisma.SortOrder
+  targetEmailGroupsCc?: Prisma.SortOrder
   responseDueAt?: Prisma.SortOrder
   reCar?: Prisma.SortOrder
   reCarRefId?: Prisma.SortOrder
@@ -816,7 +828,6 @@ export type CarMasterMaxOrderByAggregateInput = {
   targetDepartmentId?: Prisma.SortOrder
   targetAuthDepartmentId?: Prisma.SortOrder
   targetDepartmentName?: Prisma.SortOrder
-  targetEmailGroup?: Prisma.SortOrder
   responseDueAt?: Prisma.SortOrder
   reCar?: Prisma.SortOrder
   reCarRefId?: Prisma.SortOrder
@@ -843,7 +854,6 @@ export type CarMasterMinOrderByAggregateInput = {
   targetDepartmentId?: Prisma.SortOrder
   targetAuthDepartmentId?: Prisma.SortOrder
   targetDepartmentName?: Prisma.SortOrder
-  targetEmailGroup?: Prisma.SortOrder
   responseDueAt?: Prisma.SortOrder
   reCar?: Prisma.SortOrder
   reCarRefId?: Prisma.SortOrder
@@ -862,6 +872,14 @@ export type CarMasterScalarRelationFilter = {
 }
 
 export type CarMasterCreateisoStandardsInput = {
+  set: string[]
+}
+
+export type CarMasterCreatetargetEmailGroupsInput = {
+  set: string[]
+}
+
+export type CarMasterCreatetargetEmailGroupsCcInput = {
   set: string[]
 }
 
@@ -894,6 +912,16 @@ export type EnumCarSourceTypeFieldUpdateOperationsInput = {
 }
 
 export type CarMasterUpdateisoStandardsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type CarMasterUpdatetargetEmailGroupsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type CarMasterUpdatetargetEmailGroupsCcInput = {
   set?: string[]
   push?: string | string[]
 }
@@ -1026,7 +1054,8 @@ export type CarMasterCreateWithoutReCarChildrenInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -1059,7 +1088,8 @@ export type CarMasterUncheckedCreateWithoutReCarChildrenInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   reCarRefId?: string | null
@@ -1097,7 +1127,8 @@ export type CarMasterCreateWithoutReCarRefInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -1130,7 +1161,8 @@ export type CarMasterUncheckedCreateWithoutReCarRefInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -1184,7 +1216,8 @@ export type CarMasterUpdateWithoutReCarChildrenInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1217,7 +1250,8 @@ export type CarMasterUncheckedUpdateWithoutReCarChildrenInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1269,7 +1303,8 @@ export type CarMasterScalarWhereInput = {
   targetDepartmentId?: Prisma.StringFilter<"CarMaster"> | string
   targetAuthDepartmentId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
   targetDepartmentName?: Prisma.StringNullableFilter<"CarMaster"> | string | null
-  targetEmailGroup?: Prisma.StringNullableFilter<"CarMaster"> | string | null
+  targetEmailGroups?: Prisma.StringNullableListFilter<"CarMaster">
+  targetEmailGroupsCc?: Prisma.StringNullableListFilter<"CarMaster">
   responseDueAt?: Prisma.DateTimeNullableFilter<"CarMaster"> | Date | string | null
   reCar?: Prisma.BoolFilter<"CarMaster"> | boolean
   reCarRefId?: Prisma.StringNullableFilter<"CarMaster"> | string | null
@@ -1297,7 +1332,8 @@ export type CarMasterCreateWithoutResponseInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -1330,7 +1366,8 @@ export type CarMasterUncheckedCreateWithoutResponseInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   reCarRefId?: string | null
@@ -1379,7 +1416,8 @@ export type CarMasterUpdateWithoutResponseInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1412,7 +1450,8 @@ export type CarMasterUncheckedUpdateWithoutResponseInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1445,7 +1484,8 @@ export type CarMasterCreateWithoutVerificationsInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -1478,7 +1518,8 @@ export type CarMasterUncheckedCreateWithoutVerificationsInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   reCarRefId?: string | null
@@ -1527,7 +1568,8 @@ export type CarMasterUpdateWithoutVerificationsInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1560,7 +1602,8 @@ export type CarMasterUncheckedUpdateWithoutVerificationsInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1593,7 +1636,8 @@ export type CarMasterCreateWithoutMrSignatureInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -1626,7 +1670,8 @@ export type CarMasterUncheckedCreateWithoutMrSignatureInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   reCarRefId?: string | null
@@ -1675,7 +1720,8 @@ export type CarMasterUpdateWithoutMrSignatureInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1708,7 +1754,8 @@ export type CarMasterUncheckedUpdateWithoutMrSignatureInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1741,7 +1788,8 @@ export type CarMasterCreateWithoutMrResponseReviewInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -1774,7 +1822,8 @@ export type CarMasterUncheckedCreateWithoutMrResponseReviewInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   reCarRefId?: string | null
@@ -1823,7 +1872,8 @@ export type CarMasterUpdateWithoutMrResponseReviewInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1856,7 +1906,8 @@ export type CarMasterUncheckedUpdateWithoutMrResponseReviewInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1889,7 +1940,8 @@ export type CarMasterCreateWithoutNotificationLogsInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -1922,7 +1974,8 @@ export type CarMasterUncheckedCreateWithoutNotificationLogsInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   reCarRefId?: string | null
@@ -1971,7 +2024,8 @@ export type CarMasterUpdateWithoutNotificationLogsInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2004,7 +2058,8 @@ export type CarMasterUncheckedUpdateWithoutNotificationLogsInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reCarRefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2037,7 +2092,8 @@ export type CarMasterCreateManyReCarRefInput = {
   targetDepartmentId: string
   targetAuthDepartmentId?: string | null
   targetDepartmentName?: string | null
-  targetEmailGroup?: string | null
+  targetEmailGroups?: Prisma.CarMasterCreatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterCreatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Date | string | null
   reCar?: boolean
   createdAt?: Date | string
@@ -2064,7 +2120,8 @@ export type CarMasterUpdateWithoutReCarRefInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2097,7 +2154,8 @@ export type CarMasterUncheckedUpdateWithoutReCarRefInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2130,7 +2188,8 @@ export type CarMasterUncheckedUpdateManyWithoutReCarRefInput = {
   targetDepartmentId?: Prisma.StringFieldUpdateOperationsInput | string
   targetAuthDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   targetDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  targetEmailGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetEmailGroups?: Prisma.CarMasterUpdatetargetEmailGroupsInput | string[]
+  targetEmailGroupsCc?: Prisma.CarMasterUpdatetargetEmailGroupsCcInput | string[]
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   reCar?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2206,7 +2265,8 @@ export type CarMasterSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   targetDepartmentId?: boolean
   targetAuthDepartmentId?: boolean
   targetDepartmentName?: boolean
-  targetEmailGroup?: boolean
+  targetEmailGroups?: boolean
+  targetEmailGroupsCc?: boolean
   responseDueAt?: boolean
   reCar?: boolean
   reCarRefId?: boolean
@@ -2242,7 +2302,8 @@ export type CarMasterSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   targetDepartmentId?: boolean
   targetAuthDepartmentId?: boolean
   targetDepartmentName?: boolean
-  targetEmailGroup?: boolean
+  targetEmailGroups?: boolean
+  targetEmailGroupsCc?: boolean
   responseDueAt?: boolean
   reCar?: boolean
   reCarRefId?: boolean
@@ -2271,7 +2332,8 @@ export type CarMasterSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   targetDepartmentId?: boolean
   targetAuthDepartmentId?: boolean
   targetDepartmentName?: boolean
-  targetEmailGroup?: boolean
+  targetEmailGroups?: boolean
+  targetEmailGroupsCc?: boolean
   responseDueAt?: boolean
   reCar?: boolean
   reCarRefId?: boolean
@@ -2300,7 +2362,8 @@ export type CarMasterSelectScalar = {
   targetDepartmentId?: boolean
   targetAuthDepartmentId?: boolean
   targetDepartmentName?: boolean
-  targetEmailGroup?: boolean
+  targetEmailGroups?: boolean
+  targetEmailGroupsCc?: boolean
   responseDueAt?: boolean
   reCar?: boolean
   reCarRefId?: boolean
@@ -2308,7 +2371,7 @@ export type CarMasterSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CarMasterOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carNo" | "carYear" | "sequenceNo" | "status" | "sourceType" | "sourceDetail" | "isoStandards" | "defectDetail" | "nonConformanceRef" | "issuerId" | "issuerAuthUserId" | "issuerName" | "issuerEmployeeId" | "issuerPosition" | "issuedAt" | "targetDepartmentId" | "targetAuthDepartmentId" | "targetDepartmentName" | "targetEmailGroup" | "responseDueAt" | "reCar" | "reCarRefId" | "createdAt" | "updatedAt", ExtArgs["result"]["carMaster"]>
+export type CarMasterOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carNo" | "carYear" | "sequenceNo" | "status" | "sourceType" | "sourceDetail" | "isoStandards" | "defectDetail" | "nonConformanceRef" | "issuerId" | "issuerAuthUserId" | "issuerName" | "issuerEmployeeId" | "issuerPosition" | "issuedAt" | "targetDepartmentId" | "targetAuthDepartmentId" | "targetDepartmentName" | "targetEmailGroups" | "targetEmailGroupsCc" | "responseDueAt" | "reCar" | "reCarRefId" | "createdAt" | "updatedAt", ExtArgs["result"]["carMaster"]>
 export type CarMasterInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reCarRef?: boolean | Prisma.CarMaster$reCarRefArgs<ExtArgs>
   reCarChildren?: boolean | Prisma.CarMaster$reCarChildrenArgs<ExtArgs>
@@ -2357,7 +2420,8 @@ export type $CarMasterPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     targetDepartmentId: string
     targetAuthDepartmentId: string | null
     targetDepartmentName: string | null
-    targetEmailGroup: string | null
+    targetEmailGroups: string[]
+    targetEmailGroupsCc: string[]
     responseDueAt: Date | null
     reCar: boolean
     reCarRefId: string | null
@@ -2812,7 +2876,8 @@ export interface CarMasterFieldRefs {
   readonly targetDepartmentId: Prisma.FieldRef<"CarMaster", 'String'>
   readonly targetAuthDepartmentId: Prisma.FieldRef<"CarMaster", 'String'>
   readonly targetDepartmentName: Prisma.FieldRef<"CarMaster", 'String'>
-  readonly targetEmailGroup: Prisma.FieldRef<"CarMaster", 'String'>
+  readonly targetEmailGroups: Prisma.FieldRef<"CarMaster", 'String[]'>
+  readonly targetEmailGroupsCc: Prisma.FieldRef<"CarMaster", 'String[]'>
   readonly responseDueAt: Prisma.FieldRef<"CarMaster", 'DateTime'>
   readonly reCar: Prisma.FieldRef<"CarMaster", 'Boolean'>
   readonly reCarRefId: Prisma.FieldRef<"CarMaster", 'String'>

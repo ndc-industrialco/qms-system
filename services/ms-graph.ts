@@ -147,9 +147,8 @@ export async function searchEntraGroups(query: string): Promise<GraphGroup[]> {
   const params = new URLSearchParams({
     $select: "id,displayName,mail,description",
     $top: "25",
+    $count: "true",
     $search: `"displayName:${query}" OR "mail:${query}"`,
-    $filter: "mailEnabled eq true",
-    $orderby: "displayName asc",
   });
 
   const res = await fetch(`https://graph.microsoft.com/v1.0/groups?${params.toString()}`, {
@@ -161,7 +160,7 @@ export async function searchEntraGroups(query: string): Promise<GraphGroup[]> {
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Graph API ${res.status}: ${body}`);
+    throw new Error(`Graph searchGroups ${res.status}: ${body}`);
   }
 
   const json = (await res.json()) as { value: GraphGroup[] };

@@ -1,6 +1,7 @@
 ﻿import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { AuditService } from "@/services/auditService";
+import { NotificationService } from "@/services/notificationService";
 import { DarRepository } from "@/repositories/darRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
@@ -43,6 +44,7 @@ type MovedAttachmentResult = {
 type ActorIdentity = {
   userId: string;
   authUserId?: string | null;
+  accessToken?: string | null;
 };
 
 type IdentitySnapshot = {
@@ -492,6 +494,17 @@ export class DarService {
     });
 
     const detail = await this.fetchDarDetail(id);
+
+    // Notify all members of requester's department
+    const darAuthDeptId = (existing as Record<string, unknown>).authDepartmentId as string | null | undefined;
+    if (darAuthDeptId && actor.accessToken) {
+      NotificationService.notifyDeptMembers(
+        darAuthDeptId,
+        actor.accessToken,
+        { title: 'DAR ถูกส่งเพื่อขออนุมัติ', body: `DAR ${detail?.darNo ?? id} ถูกส่งเพื่อขออนุมัติ`, module: 'DAR', resourceId: id, resourceType: 'DAR' },
+      ).catch(() => {});
+    }
+
     return detail!;
   }
 
@@ -546,6 +559,20 @@ export class DarService {
     });
 
     const detail = await this.fetchDarDetail(darId);
+
+    // Notify reviewer in-app
+    const reviewerAuthId = reviewerSnapshot?.authUserId ?? reviewerUserId;
+    if (reviewerAuthId) {
+      NotificationService.createInAppNotification({
+        recipientId: reviewerAuthId,
+        title: 'DAR รอการตรวจสอบจากคุณ',
+        body: `DAR ${dar.darNo ?? darId} รอการตรวจสอบ`,
+        module: 'DAR',
+        resourceId: darId,
+        resourceType: 'DAR',
+      }).catch(() => {});
+    }
+
     return detail!;
   }
 
@@ -738,6 +765,36 @@ export class DarService {
     });
 
     const detail = await this.fetchDarDetail(darId);
+
+    // Notifications based on which step completed
+    if (myStep.stepRole === 'REVIEWER' && mrUser?.authUserId) {
+      NotificationService.createInAppNotification({
+        recipientId: mrUser.authUserId,
+        title: 'DAR รอการอนุมัติจาก MR',
+        body: `DAR ${dar.darNo ?? darId} ผ่าน Reviewer แล้ว`,
+        module: 'DAR', resourceId: darId, resourceType: 'DAR',
+      }).catch(() => {});
+    }
+    if (myStep.stepRole === 'QMS_PROCESSOR') {
+      // Completed — notify requester's dept
+      const completedDeptId = (dar as Record<string, unknown>).authDepartmentId as string | null | undefined;
+      const requesterAuthId = (dar as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
+      if (requesterAuthId) {
+        NotificationService.createInAppNotification({
+          recipientId: requesterAuthId,
+          title: 'DAR ของคุณเสร็จสมบูรณ์แล้ว',
+          body: `DAR ${dar.darNo ?? darId} ถูกดำเนินการเสร็จสิ้นแล้ว`,
+          module: 'DAR', resourceId: darId, resourceType: 'DAR',
+        }).catch(() => {});
+      }
+      if (completedDeptId && actor.accessToken) {
+        NotificationService.notifyDeptMembers(completedDeptId, actor.accessToken, {
+          title: 'DAR เสร็จสมบูรณ์', body: `DAR ${dar.darNo ?? darId} เสร็จสมบูรณ์แล้ว`,
+          module: 'DAR', resourceId: darId, resourceType: 'DAR',
+        }).catch(() => {});
+      }
+    }
+
     return detail!;
   }
 
@@ -785,6 +842,18 @@ export class DarService {
     });
 
     const detail = await this.fetchDarDetail(darId);
+
+    // Notify requester
+    const rejectedRequesterAuthId = (dar as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
+    if (rejectedRequesterAuthId) {
+      NotificationService.createInAppNotification({
+        recipientId: rejectedRequesterAuthId,
+        title: 'DAR ถูกปฏิเสธ',
+        body: `DAR ${dar.darNo ?? darId} ถูกปฏิเสธโดย ${myStep.stepRole}`,
+        module: 'DAR', resourceId: darId, resourceType: 'DAR',
+      }).catch(() => {});
+    }
+
     return detail!;
   }
 

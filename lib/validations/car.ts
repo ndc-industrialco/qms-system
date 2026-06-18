@@ -9,7 +9,8 @@ const carBaseSchema = z.object({
   issuerId: z.string().optional(),
   issuerPosition: z.string().min(1, "กรุณากรอกตำแหน่ง"),
   targetDepartmentId: z.string().min(1, "กรุณาเลือกแผนก"),
-  targetEmailGroup: z.string().optional(),
+  targetEmailGroups: z.array(z.string()).optional().default([]),
+  targetEmailGroupsCc: z.array(z.string()).optional().default([]),
   reCar: z.boolean().optional().default(false),
   reCarRefId: z.string().optional(),
 });
@@ -71,6 +72,7 @@ export const carListQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
   status: z.enum(["DRAFT", "ISSUED", "RESPONDED", "VERIFY_1", "VERIFY_2", "CLOSED", "RE_CAR", "CANCELLED"]).optional(),
   sourceType: z.enum(["I", "C", "N", "O"]).optional(),
+  scope: z.enum(["mine", "my-department", "all"]).optional(),
 });
 
 export type CarCreateInput = z.infer<typeof carCreateSchema>;

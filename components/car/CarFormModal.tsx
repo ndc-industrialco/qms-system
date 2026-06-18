@@ -1,26 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDepartments } from "@/hooks/api/use-departments";
+import { useEmailGroups } from "@/hooks/api/use-email-groups";
 import { toast } from "sonner";
+import { Mail, MailX, Send } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { carCreateSchema, type CarCreateInput } from "@/lib/validations/car";
 import { ISO_STANDARDS, CAR_SOURCE_LABELS } from "@/types/car";
-import type { CarSourceType, CarDetail } from "@/types/car";
-import GraphUserPicker, { type GraphUserResult } from "@/components/shared/GraphUserPicker";
-import GraphGroupPicker, { type GraphGroupResult } from "@/components/shared/GraphGroupPicker";
+import type { CarDetail, CarSourceType } from "@/types/car";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   editCar?: CarDetail;
   onSuccess?: (car: CarDetail) => void;
+  issuerName?: string | null;
+  defaultIssuerPosition?: string | null;
 }
 
 async function saveCar(data: CarCreateInput, editId?: string): Promise<CarDetail> {
@@ -41,23 +44,102 @@ async function saveCar(data: CarCreateInput, editId?: string): Promise<CarDetail
 
 const SOURCE_TYPES: CarSourceType[] = ["I", "C", "N", "O"];
 
-const INPUT_CLASS = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-colors";
+const INPUT_CLASS =
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30";
 
-export default function CarFormModal({ open, onClose, editCar, onSuccess }: Props) {
+function groupShortName(mail: string) {
+  return mail.split("@")[0];
+}
+
+function GroupCheckList({
+  label,
+  groups,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  groups: { id: string; mail: string | null; displayName: string }[];
+  selected: string[];
+  onToggle: (mail: string) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-1 text-xs font-semibold text-slate-600">{label}</p>
+      <div className="max-h-44 overflow-y-auto rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
+        {groups.length === 0 && (
+          <p className="px-3 py-2 text-center text-xs text-slate-400">ไม่มีกลุ่มอีเมล</p>
+        )}
+        {groups.map((g) => {
+          const mail = g.mail!;
+          const checked = selected.includes(mail);
+          return (
+            <label
+              key={mail}
+              className={cn(
+                "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm transition-colors",
+                checked
+                  ? "bg-primary/5 font-medium text-primary"
+                  : "text-slate-700 hover:bg-slate-50"
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => onToggle(mail)}
+                className="h-3.5 w-3.5 rounded border-slate-300 text-primary"
+              />
+              <span className="truncate">{groupShortName(mail)}</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default function CarFormModal({
+  open,
+  onClose,
+  editCar,
+  onSuccess,
+  issuerName,
+  defaultIssuerPosition,
+}: Props) {
   const t = useT();
   const qc = useQueryClient();
+  const [isMobile, setIsMobile] = useState(false);
 
-  const [selectedIssuer, setSelectedIssuer] = useState<GraphUserResult | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<GraphGroupResult | null>(null);
-  const [issuerError, setIssuerError] = useState<string | null>(null);
-  const [groupError, setGroupError] = useState<string | null>(null);
+  const {
+    data: departmentsData,
+    isLoading: departmentsLoading,
+    isError: departmentsError,
+    refetch: refetchDepartments,
+  } = useDepartments();
+  const { data: emailGroupsData } = useEmailGroups();
+  const departments = Array.isArray(departmentsData) ? departmentsData : [];
+  const emailGroups = (Array.isArray(emailGroupsData) ? emailGroupsData : []).filter(
+    (g) => g.mail
+  );
 
-  const { data: departments = [] } = useDepartments();
-
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<CarCreateInput>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<CarCreateInput>({
     resolver: zodResolver(carCreateSchema) as Resolver<CarCreateInput>,
     defaultValues: { sourceType: "I", isoStandards: [], reCar: false },
   });
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const sync = () => setIsMobile(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -68,75 +150,66 @@ export default function CarFormModal({ open, onClose, editCar, onSuccess }: Prop
         isoStandards: editCar.isoStandards,
         defectDetail: editCar.defectDetail,
         nonConformanceRef: editCar.nonConformanceRef,
-        issuerId: editCar.issuer.id,
         issuerPosition: editCar.issuerPosition,
         targetDepartmentId: editCar.targetDepartment.id,
-        targetEmailGroup: editCar.targetEmailGroup ?? undefined,
+        targetEmailGroups: editCar.targetEmailGroups ?? [],
+        targetEmailGroupsCc: editCar.targetEmailGroupsCc ?? [],
         reCar: editCar.reCar,
         reCarRefId: editCar.reCarRefId ?? undefined,
       });
-      setSelectedIssuer(
-        editCar.issuer
-          ? { id: editCar.issuer.id, name: editCar.issuer.name ?? "", email: "", employeeId: editCar.issuer.employeeId, department: null, jobTitle: editCar.issuerPosition }
-          : null
-      );
-      if (editCar.targetEmailGroup) {
-        setSelectedGroup({ id: "", displayName: editCar.targetEmailGroup, mail: editCar.targetEmailGroup, description: null });
-      } else {
-        setSelectedGroup(null);
-      }
     } else {
-      reset({ sourceType: "I", isoStandards: [], reCar: false });
-      setSelectedIssuer(null);
-      setSelectedGroup(null);
+      reset({
+        sourceType: "I",
+        isoStandards: [],
+        reCar: false,
+        issuerPosition: defaultIssuerPosition ?? undefined,
+        targetEmailGroups: [],
+        targetEmailGroupsCc: [],
+      });
     }
-    setIssuerError(null);
-    setGroupError(null);
-  }, [editCar, open, reset]);
-
-  function handleIssuerChange(user: GraphUserResult | null) {
-    setSelectedIssuer(user);
-    setIssuerError(null);
-    if (user) {
-      setValue("issuerId", user.id);
-      if (user.jobTitle) setValue("issuerPosition", user.jobTitle);
-    } else {
-      setValue("issuerId", undefined);
-    }
-  }
-
-  function handleGroupChange(group: GraphGroupResult | null) {
-    setSelectedGroup(group);
-    setGroupError(null);
-    setValue("targetEmailGroup", group?.mail ?? undefined);
-  }
-
-  const selectedDeptId = watch("targetDepartmentId");
-  const selectedDept = departments.find((d) => d.id === selectedDeptId) as (typeof departments[0] & { emailGroup?: string | null }) | undefined;
-  useEffect(() => {
-    if (selectedDept?.emailGroup && !selectedGroup && !editCar) {
-      setSelectedGroup({ id: "", displayName: selectedDept.name, mail: selectedDept.emailGroup, description: null });
-      setValue("targetEmailGroup", selectedDept.emailGroup);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDeptId]);
+  }, [defaultIssuerPosition, editCar, open, reset]);
 
   const selectedIso = watch("isoStandards") ?? [];
   const isReCar = watch("reCar");
+  const selectedTo = watch("targetEmailGroups") ?? [];
+  const selectedCc = watch("targetEmailGroupsCc") ?? [];
 
-  function validate(): boolean {
-    let ok = true;
-    if (!selectedIssuer) { setIssuerError(t("car.form.issuerRequired")); ok = false; }
-    return ok;
+  function toggleGroup(field: "targetEmailGroups" | "targetEmailGroupsCc", mail: string) {
+    const current = field === "targetEmailGroups" ? selectedTo : selectedCc;
+    setValue(
+      field,
+      current.includes(mail) ? current.filter((m) => m !== mail) : [...current, mail]
+    );
   }
 
   const mutation = useMutation({
-    mutationFn: (data: CarCreateInput) => saveCar(data as CarCreateInput, editCar?.id),
-    onSuccess: (car) => {
+    mutationFn: async (data: CarCreateInput) => {
+      const car = await saveCar(data, editCar?.id);
+      if (editCar) return { car, issue: null };
+      // New CAR: auto-issue immediately
+      const res = await fetch(`/api/car/${car.id}/issue`, { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message ?? "Failed to issue CAR");
+      return { car, issue: json.data as { emailQueued: boolean; emailSkipReason?: string } };
+    },
+    onSuccess: ({ car, issue }) => {
       qc.invalidateQueries({ queryKey: ["cars"] });
       if (editCar) qc.invalidateQueries({ queryKey: ["car", editCar.id] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
       onSuccess?.(car);
       onClose();
+      if (issue) {
+        if (issue.emailQueued) {
+          toast.success(`ออก CAR ${car.carNo} แล้ว — ส่งอีเมลแจ้งเตือนแล้ว`, {
+            icon: <Mail className="h-4 w-4 text-green-600" />,
+          });
+        } else {
+          toast.warning(`ออก CAR ${car.carNo} แล้ว — ${issue.emailSkipReason ?? "ไม่ได้ส่งอีเมล"}`, {
+            icon: <MailX className="h-4 w-4 text-amber-500" />,
+            duration: 8000,
+          });
+        }
+      }
     },
     onError: (err) => {
       toast.error((err as Error).message, { duration: Infinity });
@@ -144,65 +217,77 @@ export default function CarFormModal({ open, onClose, editCar, onSuccess }: Prop
   });
 
   function onSubmit(data: CarCreateInput) {
-    if (!validate()) return;
     mutation.mutate(data);
   }
 
-  return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
-        <DialogHeader className="px-6 py-4 border-b border-slate-100">
-          <DialogTitle className="text-lg font-bold text-slate-900">
-            {editCar ? t("car.form.editTitle", { carNo: editCar.carNo }) : t("car.form.createTitle")}
-          </DialogTitle>
-        </DialogHeader>
-
-        <form id="car-form" onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 space-y-6">
-
-          {/* ── ส่วนที่ 1 ── */}
-          <section className="space-y-3">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              {t("car.form.section1")}
-            </h3>
-            <div className="space-y-2">
-              {SOURCE_TYPES.map((type) => (
-                <label key={type} className="flex items-start gap-2 cursor-pointer">
-                  <input type="radio" {...register("sourceType")} value={type} className="mt-0.5 h-4 w-4 text-primary border-slate-300" />
-                  <span className="text-sm text-slate-700">{CAR_SOURCE_LABELS[type]}</span>
-                </label>
-              ))}
-            </div>
-            <input
-              {...register("sourceDetail")}
-              type="text"
-              placeholder={t("car.form.sourceDetailPlaceholder")}
-              className={INPUT_CLASS}
-            />
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" {...register("reCar")} className="h-4 w-4 rounded border-slate-300 text-primary" />
-              <span className="text-sm font-medium text-slate-700">{t("car.form.reCarCheckbox")}</span>
-            </label>
-            {isReCar && (
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">{t("car.form.reCarRefLabel")}</label>
+  const formSections = (
+    <>
+      <form
+        id="car-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex-1 overflow-y-auto p-5 md:p-7 space-y-6"
+      >
+        <section className="space-y-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {t("car.form.section1")}
+          </h3>
+          <div className="space-y-2">
+            {SOURCE_TYPES.map((type) => (
+              <label key={type} className="flex cursor-pointer items-start gap-2">
                 <input
-                  {...register("reCarRefId")}
-                  type="text"
-                  placeholder={t("car.form.reCarRefPlaceholder")}
-                  className={INPUT_CLASS}
+                  type="radio"
+                  {...register("sourceType")}
+                  value={type}
+                  className="mt-0.5 h-4 w-4 border-slate-300 text-primary"
                 />
-              </div>
-            )}
-          </section>
+                <span className="text-sm text-slate-700">{CAR_SOURCE_LABELS[type]}</span>
+              </label>
+            ))}
+          </div>
+          <input
+            {...register("sourceDetail")}
+            type="text"
+            placeholder={t("car.form.sourceDetailPlaceholder")}
+            className={INPUT_CLASS}
+          />
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              {...register("reCar")}
+              className="h-4 w-4 rounded border-slate-300 text-primary"
+            />
+            <span className="text-sm font-medium text-slate-700">
+              {t("car.form.reCarCheckbox")}
+            </span>
+          </label>
+          {isReCar && (
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">
+                {t("car.form.reCarRefLabel")}
+              </label>
+              <input
+                {...register("reCarRefId")}
+                type="text"
+                placeholder={t("car.form.reCarRefPlaceholder")}
+                className={INPUT_CLASS}
+              />
+            </div>
+          )}
+        </section>
 
-          {/* ── ส่วนที่ 2 ── */}
-          <section className="space-y-2">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              {t("car.form.section2")}
-            </h3>
-            {errors.isoStandards && <p className="text-xs text-rose-500">{errors.isoStandards.message}</p>}
+        <section className="space-y-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {t("car.form.section2")}
+          </h3>
+          {errors.isoStandards && (
+            <p className="text-xs text-rose-500">{errors.isoStandards.message}</p>
+          )}
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {ISO_STANDARDS.map((std) => (
-              <label key={std} className="flex items-center gap-2 cursor-pointer">
+              <label
+                key={std}
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2"
+              >
                 <input
                   type="checkbox"
                   value={std}
@@ -210,7 +295,9 @@ export default function CarFormModal({ open, onClose, editCar, onSuccess }: Prop
                   onChange={(e) => {
                     setValue(
                       "isoStandards",
-                      e.target.checked ? [...selectedIso, std] : selectedIso.filter((s) => s !== std)
+                      e.target.checked
+                        ? [...selectedIso, std]
+                        : selectedIso.filter((s) => s !== std)
                     );
                   }}
                   className="h-4 w-4 rounded border-slate-300 text-primary"
@@ -218,105 +305,246 @@ export default function CarFormModal({ open, onClose, editCar, onSuccess }: Prop
                 <span className="text-sm text-slate-700">{std}</span>
               </label>
             ))}
-          </section>
+          </div>
+        </section>
 
-          {/* ── ส่วนที่ 3 ── */}
+        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <section className="space-y-4">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {t("car.form.section3")}
             </h3>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t("car.form.defectLabel")}</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                {t("car.form.defectLabel")}
+              </label>
               <textarea
                 {...register("defectDetail")}
-                rows={3}
+                rows={6}
                 className={cn(INPUT_CLASS, "resize-none")}
               />
-              {errors.defectDetail && <p className="mt-1 text-xs text-rose-500">{errors.defectDetail.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t("car.form.nonConformanceLabel")}</label>
-              <textarea
-                {...register("nonConformanceRef")}
-                rows={2}
-                className={cn(INPUT_CLASS, "resize-none")}
-              />
-              {errors.nonConformanceRef && <p className="mt-1 text-xs text-rose-500">{errors.nonConformanceRef.message}</p>}
-            </div>
-          </section>
-
-          {/* ── ส่วนที่ 4 ── */}
-          <section className="space-y-3">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              {t("car.form.section4")}
-            </h3>
-            <GraphUserPicker
-              label={t("car.form.issuerPickerLabel")}
-              value={selectedIssuer}
-              onChange={handleIssuerChange}
-              placeholder={t("car.form.issuerPickerPlaceholder")}
-              required
-              error={issuerError ?? undefined}
-            />
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t("car.form.issuerPositionLabel")}</label>
-              <input
-                {...register("issuerPosition")}
-                type="text"
-                placeholder={t("car.form.issuerPositionPlaceholder")}
-                className={INPUT_CLASS}
-              />
-              {errors.issuerPosition && <p className="mt-1 text-xs text-rose-500">{errors.issuerPosition.message}</p>}
-            </div>
-          </section>
-
-          {/* ── ส่วนที่ 5 ── */}
-          <section className="space-y-3">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              {t("car.form.section5")}
-            </h3>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t("car.form.deptLabel")}</label>
-              <select
-                {...register("targetDepartmentId")}
-                className={INPUT_CLASS}
-              >
-                <option value="">{t("car.form.deptPlaceholder")}</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-              </select>
-              {errors.targetDepartmentId && (
-                <p className="mt-1 text-xs text-rose-500">{errors.targetDepartmentId.message}</p>
+              {errors.defectDetail && (
+                <p className="mt-1 text-xs text-rose-500">{errors.defectDetail.message}</p>
               )}
             </div>
-
-            <GraphGroupPicker
-              label={t("car.form.groupPickerLabel")}
-              value={selectedGroup}
-              onChange={handleGroupChange}
-              placeholder={t("car.form.groupPickerPlaceholder")}
-              error={groupError ?? undefined}
-            />
-            <input type="hidden" {...register("targetEmailGroup")} />
-            {selectedGroup?.mail && (
-              <p className="text-xs text-slate-500">
-                📧 {t("car.form.groupMailHint")} <span className="font-mono">{selectedGroup.mail}</span>
-              </p>
-            )}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                {t("car.form.nonConformanceLabel")}
+              </label>
+              <textarea
+                {...register("nonConformanceRef")}
+                rows={5}
+                className={cn(INPUT_CLASS, "resize-none")}
+              />
+              {errors.nonConformanceRef && (
+                <p className="mt-1 text-xs text-rose-500">
+                  {errors.nonConformanceRef.message}
+                </p>
+              )}
+            </div>
           </section>
 
-        </form>
+          <div className="space-y-6">
+            <section className="space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {t("car.form.section4")}
+              </h3>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  {t("car.form.issuerPickerLabel")}
+                </label>
+                <div className={cn(INPUT_CLASS, "cursor-not-allowed bg-slate-50 text-slate-500")}>
+                  {issuerName ?? "-"}
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  {t("car.form.issuerPositionLabel")}
+                </label>
+                {defaultIssuerPosition && !editCar ? (
+                  <>
+                    <div
+                      className={cn(
+                        INPUT_CLASS,
+                        "cursor-not-allowed bg-slate-50 text-slate-500"
+                      )}
+                    >
+                      {defaultIssuerPosition}
+                    </div>
+                    <input type="hidden" {...register("issuerPosition")} />
+                  </>
+                ) : (
+                  <>
+                    <input
+                      {...register("issuerPosition")}
+                      type="text"
+                      placeholder={t("car.form.issuerPositionPlaceholder")}
+                      className={INPUT_CLASS}
+                    />
+                    {errors.issuerPosition && (
+                      <p className="mt-1 text-xs text-rose-500">
+                        {errors.issuerPosition.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            </section>
 
-        <DialogFooter className="px-6 py-4 border-t border-slate-100">
-          <Button type="button" variant="outline" onClick={onClose} disabled={mutation.isPending}>
+            <section className="space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {t("car.form.section5")}
+              </h3>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  {t("car.form.deptLabel")}
+                </label>
+                {departmentsLoading ? (
+                  <div className={cn(INPUT_CLASS, "bg-slate-50 text-slate-400")}>
+                    {t("common.loading")}
+                  </div>
+                ) : departmentsError ? (
+                  <div className="space-y-2">
+                    <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                      โหลดรายการแผนกไม่สำเร็จ
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => refetchDepartments()}
+                    >
+                      {t("common.retry")}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <select {...register("targetDepartmentId")} className={INPUT_CLASS}>
+                      <option value="">{t("car.form.deptPlaceholder")}</option>
+                      {departments.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                    {departments.length === 0 ? (
+                      <p className="mt-1 text-xs text-slate-500">
+                        ไม่พบรายการแผนกจาก Auth Center
+                      </p>
+                    ) : null}
+                  </>
+                )}
+                {errors.targetDepartmentId && (
+                  <p className="mt-1 text-xs text-rose-500">
+                    {errors.targetDepartmentId.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm font-semibold text-slate-700">
+                  เลือกกลุ่มที่ต้องการส่งอีเมล
+                </p>
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                  <GroupCheckList
+                    label="To – กลุ่มที่ต้องการส่ง"
+                    groups={emailGroups}
+                    selected={selectedTo}
+                    onToggle={(mail) => toggleGroup("targetEmailGroups", mail)}
+                  />
+                  <GroupCheckList
+                    label="CC – กลุ่มที่ต้องการให้รับรู้"
+                    groups={emailGroups}
+                    selected={selectedCc}
+                    onToggle={(mail) => toggleGroup("targetEmailGroupsCc", mail)}
+                  />
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </form>
+
+      {isMobile ? (
+        <SheetFooter className="border-t border-slate-100 bg-white px-4 py-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={mutation.isPending}
+          >
             {t("common.cancel")}
           </Button>
           <Button type="submit" form="car-form" disabled={mutation.isPending}>
-            {mutation.isPending && <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5" />}
-            {mutation.isPending ? t("car.form.btnSaving") : editCar ? t("car.form.btnSave") : t("car.form.btnCreate2")}
+            {mutation.isPending && (
+              <span className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            )}
+            {mutation.isPending ? (
+              editCar ? t("car.form.btnSaving") : "กำลังออก CAR..."
+            ) : editCar ? (
+              t("car.form.btnSave")
+            ) : (
+              <><Send className="mr-1.5 h-3.5 w-3.5" />ออก CAR</>
+            )}
+          </Button>
+        </SheetFooter>
+      ) : (
+        <DialogFooter className="border-t border-slate-100 bg-white px-6 py-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={mutation.isPending}
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button type="submit" form="car-form" disabled={mutation.isPending}>
+            {mutation.isPending && (
+              <span className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            )}
+            {mutation.isPending ? (
+              editCar ? t("car.form.btnSaving") : "กำลังออก CAR..."
+            ) : editCar ? (
+              t("car.form.btnSave")
+            ) : (
+              <><Send className="mr-1.5 h-3.5 w-3.5" />ออก CAR</>
+            )}
           </Button>
         </DialogFooter>
+      )}
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={(value) => !value && onClose()}>
+        <SheetContent
+          side="bottom"
+          className="flex h-[92vh] flex-col gap-0 rounded-t-3xl p-0"
+        >
+          <SheetHeader className="border-b border-slate-100 px-4 pb-4 pt-2 text-left">
+            <SheetTitle className="pr-10 text-lg font-bold text-slate-900">
+              {editCar
+                ? t("car.form.editTitle", { carNo: editCar.carNo })
+                : t("car.form.createTitle")}
+            </SheetTitle>
+          </SheetHeader>
+          {formSections}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
+      <DialogContent className="flex max-h-[94vh] w-[min(96vw,80rem)] max-w-5xl flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="border-b border-slate-100 px-6 py-4">
+          <DialogTitle className="text-lg font-bold text-slate-900">
+            {editCar
+              ? t("car.form.editTitle", { carNo: editCar.carNo })
+              : t("car.form.createTitle")}
+          </DialogTitle>
+        </DialogHeader>
+        {formSections}
       </DialogContent>
     </Dialog>
   );

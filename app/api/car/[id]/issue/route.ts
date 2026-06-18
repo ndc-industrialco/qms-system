@@ -18,9 +18,14 @@ export async function POST(
     }
 
     const { id } = await params;
-    const car = await carService.issueCar(id, session.user.id, session.user.authUserId);
+    const { car, emailQueued, emailSkipReason } = await carService.issueCar(
+      id,
+      session.user.id,
+      session.user.authUserId,
+      session.user.accessToken
+    );
     return sendSuccess(
-      { carNo: car.carNo, issuedAt: car.issuedAt, responseDueAt: car.responseDueAt },
+      { carNo: car.carNo, issuedAt: car.issuedAt, responseDueAt: car.responseDueAt, emailQueued, emailSkipReason },
       "CAR issued successfully"
     );
   } catch (err) {

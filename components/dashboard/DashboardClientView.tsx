@@ -9,11 +9,14 @@ import type {
   DarAttachment,
   UserRole,
 } from "@/generated/prisma/client";
+import AnnouncementViewModal from "@/components/announcements/AnnouncementViewModal";
+import type { AnnouncementRow } from "@/services/announcementService";
 import HeroBanner from "@/components/dashboard/HeroBanner";
 import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import DashboardAnnouncementsFeed from "@/components/dashboard/DashboardAnnouncementsFeed";
 import DashboardDocsFeed from "@/components/dashboard/DashboardDocsFeed";
 import DashboardKpiWidget from "@/components/dashboard/DashboardKpiWidget";
+import DashboardKpiMonthlySection, { type KpiMatrixRow } from "@/components/dashboard/DashboardKpiMonthlySection";
 import {
   DashboardCarWidget,
   DashboardAttachmentsWidget,
@@ -28,6 +31,8 @@ import {
   FolderOpen,
   ChevronRight,
   Network,
+  FileText,
+  Megaphone,
 } from "lucide-react";
 
 type RecentAttachment = DarAttachment;
@@ -44,6 +49,7 @@ interface Props {
   kpiNg: number;
   kpiPending: number;
   kpiTotal: number;
+  kpiMonthlyMatrix: { year: number; noKpiDepartments: string[]; matrix: KpiMatrixRow[] };
 }
 
 function getDeptIcon(name: string) {
@@ -89,10 +95,12 @@ export default function DashboardClientView({
   kpiNg,
   kpiPending,
   kpiTotal,
+  kpiMonthlyMatrix,
 }: Props) {
   const t = useT();
   const [deptFilter, setDeptFilter] = useState("");
   const [deptSelected, setDeptSelected] = useState("all");
+  const [viewItem, setViewItem] = useState<AnnouncementRow | null>(null);
   const previewDepartments = useMemo(() => {
     const q = deptFilter.trim().toLowerCase();
     return departments.filter((dept) => {
@@ -178,20 +186,7 @@ export default function DashboardClientView({
           <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-base font-semibold text-[rgb(15,16,89)] flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-                  />
-                </svg>
+                <Megaphone className="w-4 h-4" />
                 {t("dashboard.announcements.title")}
               </h2>
               {canManage && (
@@ -206,31 +201,25 @@ export default function DashboardClientView({
             <DashboardAnnouncementsFeed
               announcements={announcements}
               canManage={canManage}
+              onView={(a) => setViewItem(a as unknown as AnnouncementRow)}
             />
           </div>
 
           <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100">
               <h2 className="text-base font-semibold text-[rgb(15,16,89)] flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
+                <FileText className="w-4 h-4" />
                 {t("dashboard.recentDocuments.title")}
               </h2>
             </div>
             <DashboardDocsFeed docs={recentPublicDocs} />
           </div>
+
+          <DashboardKpiMonthlySection
+            year={kpiMonthlyMatrix.year}
+            noKpiDepartments={kpiMonthlyMatrix.noKpiDepartments}
+            matrix={kpiMonthlyMatrix.matrix}
+          />
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-6">
@@ -257,6 +246,13 @@ export default function DashboardClientView({
           <DashboardAttachmentsWidget recentAttachments={recentAttachments} />
         </div>
       </div>
+
+      <AnnouncementViewModal
+        item={viewItem}
+        open={!!viewItem}
+        onClose={() => setViewItem(null)}
+        {...(canManage ? { onEdit: () => { setViewItem(null); window.location.href = "/qms/announcements"; } } : {})}
+      />
     </div>
   );
 }

@@ -5,25 +5,32 @@ import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth } from '@/lib/auth';
 import { rejectReportSchema } from '@/schemas/kpiSchema';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
-import { UserRepository } from '@/repositories/userRepository';
+import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { sendKpiMonthlyResultEmail } from '@/services/email';
 
 const service = new KpiMonthlyService();
-const userRepo = new UserRepository();
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   try {
     const session = await requireAuth();
     const { reportId } = await params;
     const { reason } = rejectReportSchema.parse(await request.json());
-    const updated = await service.rejectReport(reportId, reason, { userId: session.user.id, role: session.user.role, departmentId: session.user.authDepartmentId ?? session.user.departmentId });
+    const updated = await service.rejectReport(reportId, reason, {
+      userId: session.user.id,
+      authUserId: session.user.authUserId,
+      role: session.user.role,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
+      accessToken: session.user.accessToken,
+    });
 
     const detail = await service.getReportById(reportId);
-    if (detail.prepareBy) {
-      const preparer = await userRepo.findById(detail.prepareBy);
+    const preparerSig = detail.approvalSignatures?.find((s: { step: string }) => s.step === 'PREPARER');
+    const preparerAuthId = (preparerSig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined;
+    if (preparerAuthId) {
+      const preparer = await getUserSnapshot(preparerAuthId);
       if (preparer?.email) {
         NotificationService.sendEmailOnce(
-          `KPI_MONTHLY:${reportId}:REJECTED:preparer:${preparer.id}`,
+          `KPI_MONTHLY:${reportId}:REJECTED:preparer:${preparerAuthId}`,
           () => sendKpiMonthlyResultEmail({
             to: { name: preparer.name ?? '', email: preparer.email },
             departmentName: detail.kpi.department,
@@ -44,7 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           }),
           preparer.email,
           'Monthly KPI Rejected',
-          preparer.id,
+          preparerAuthId,
           {
             title: "KPI รายเดือนถูกปฏิเสธ",
             body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
@@ -55,6 +62,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         ).catch(() => { /* logged inside NotificationService */ });
       }
     }
+
+    // Notify all dept members
+    NotificationService.notifyDeptMembers(
+      detail.kpi.department,
+      session.user.accessToken,
+      { title: 'KPI รายเดือนถูกปฏิเสธ', body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year} ถูกปฏิเสธ`, module: 'KPI_MONTHLY', resourceId: reportId, resourceType: 'KPI_MONTHLY' },
+    ).catch(() => {});
 
     return sendSuccess(updated, 'Monthly report rejected');
   } catch (error) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -24,9 +25,7 @@ export default function DarListHeader({ onNewRequest }: Props) {
       className="mb-6"
       actions={
         <Button onClick={onNewRequest} className="gap-1.5">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <Plus className="h-4 w-4 shrink-0" />
           <span className="hidden sm:inline">{t.newRequest}</span>
         </Button>
       }

@@ -11,22 +11,23 @@ import type { LegacyQmsRole } from "@/lib/qms-roles";
 async function fetchAuthCenterProfile(
   accessToken: string,
   appId: string,
-): Promise<{ email: string | null; displayName: string | null; department: string | null }> {
+): Promise<{ email: string | null; displayName: string | null; department: string | null; jobTitle: string | null }> {
   const base = (process.env.AUTH_CENTER_URL ?? "").replace(/\/$/, "");
-  if (!base) return { email: null, displayName: null, department: null };
+  if (!base) return { email: null, displayName: null, department: null, jobTitle: null };
 
   try {
     const res = await fetch(
       `${base}/api/auth/me?appId=${encodeURIComponent(appId)}`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
-    if (!res.ok) return { email: null, displayName: null, department: null };
+    if (!res.ok) return { email: null, displayName: null, department: null, jobTitle: null };
 
     const json = await res.json() as {
       data?: {
         email?: string | null;
         displayName?: string | null;
         department?: string | null;
+        jobTitle?: string | null;
       };
     };
     const data = json.data ?? {};
@@ -34,9 +35,10 @@ async function fetchAuthCenterProfile(
       email: data.email ?? null,
       displayName: data.displayName ?? null,
       department: data.department ?? null,
+      jobTitle: data.jobTitle ?? null,
     };
   } catch {
-    return { email: null, displayName: null, department: null };
+    return { email: null, displayName: null, department: null, jobTitle: null };
   }
 }
 
@@ -49,6 +51,7 @@ export async function handleAuthCenterCallback(rawToken: string): Promise<{
   authUserId: string;
   email: string | null;
   name: string | null;
+  jobTitle: string | null;
   employeeId: string | null;
   departmentId: string | null;
   authDepartmentId: string | null;
@@ -79,6 +82,7 @@ export async function handleAuthCenterCallback(rawToken: string): Promise<{
     authUserId: claims.userId,
     email: profile.email ?? null,
     name: profile.displayName ?? null,
+    jobTitle: profile.jobTitle ?? null,
     employeeId: claims.employeeId,
     departmentId: claims.departmentId ?? null,
     authDepartmentId: claims.departmentId ?? null,

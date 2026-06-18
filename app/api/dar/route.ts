@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (action === "SUBMIT") {
-      dar = await darService.submitDar(dar.id, { userId: session.user.id, authUserId: session.user.authUserId });
+      dar = await darService.submitDar(dar.id, { userId: session.user.id, authUserId: session.user.authUserId, accessToken: session.user.accessToken });
     }
 
     revalidateTag("dar-list");

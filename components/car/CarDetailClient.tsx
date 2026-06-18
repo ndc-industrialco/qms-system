@@ -5,8 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
+import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
-import { Pencil, Send, ClipboardCheck } from "lucide-react";
+import { Send, ClipboardCheck } from "lucide-react";
 import CarStatusBadge from "./CarStatusBadge";
 import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
@@ -122,10 +123,11 @@ export default function CarDetailClient({
         </div>
         <div className="flex flex-wrap gap-2">
           {canEdit && (
-            <Button variant="outline" size="sm" onClick={() => setShowEdit(true)}>
-              <Pencil className="w-3.5 h-3.5 mr-1.5" />
-              {t("car.detail.btnEdit")}
-            </Button>
+            <ActionPillButton
+              tone="edit"
+              label={t("car.detail.btnEdit")}
+              onClick={() => setShowEdit(true)}
+            />
           )}
           {canIssue && <CarIssueDialog carId={car.id} carNo={car.carNo} />}
           {canVerify && !showVerify && (

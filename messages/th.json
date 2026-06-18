@@ -1046,7 +1046,7 @@
     "form": {
       "createTitle": "สร้าง CAR ใหม่",
       "editTitle": "แก้ไข CAR {carNo}",
-      "btnCreate": "+ สร้าง CAR ใหม่",
+      "btnCreate": "สร้าง CAR ใหม่",
       "section1": "ส่วนที่ 1 — ประเภทและแหล่งที่มา",
       "section2": "ส่วนที่ 2 — ISO Standards",
       "section3": "ส่วนที่ 3 — รายละเอียด",

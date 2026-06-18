@@ -4,11 +4,10 @@ import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth } from '@/lib/auth';
 import { KpiService } from '@/services/kpiService';
-import { UserRepository } from '@/repositories/userRepository';
+import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { sendKpiApprovalRequestEmail } from '@/services/email';
 
 const service = new KpiService();
-const userRepo = new UserRepository();
 
 export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -17,15 +16,17 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const body = await _request.json().catch(() => ({}));
     const updated = await service.reviewObjectives(id, {
       userId: session.user.id,
+      authUserId: session.user.authUserId,
       role: session.user.role,
       departmentId: session.user.authDepartmentId ?? session.user.departmentId,
+      accessToken: session.user.accessToken,
     }, body);
 
     if (updated.approverUserId) {
-      const approver = await userRepo.findById(updated.approverUserId);
+      const approver = await getUserSnapshot(updated.approverUserId);
       if (approver?.email) {
         NotificationService.sendEmailOnce(
-          `KPI:${id}:REVIEWED:approver:${approver.id}:${(updated.approverToken ?? '').substring(0, 16)}`,
+          `KPI:${id}:REVIEWED:approver:${updated.approverUserId}:${(updated.approverToken ?? '').substring(0, 16)}`,
           () => sendKpiApprovalRequestEmail({
             approver: { name: approver.name ?? '', email: approver.email },
             departmentName: updated.department,
@@ -37,7 +38,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           }),
           approver.email,
           'KPI Approval Request',
-          approver.id,
+          updated.approverUserId,
           {
             title: "มี KPI รอการอนุมัติ",
             body: `KPI ${updated.department} ${updated.yearly}`,

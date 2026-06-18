@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { ChevronDown, ChevronRight, Menu } from "lucide-react";
 import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 import AnnouncementTicker from "./AnnouncementTicker";
@@ -81,9 +82,7 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
               className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-base-200 transition-colors shrink-0 text-base-content"
               aria-label="Toggle menu"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <Menu className="h-5 w-5" />
             </button>
           )}
 
@@ -95,9 +94,7 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
             {crumbs.map((crumb, idx) => (
               <div key={idx} className="flex items-center">
                 {idx > 0 && (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mx-1.5 opacity-50 text-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <ChevronRight className="h-3.5 w-3.5 mx-1.5 opacity-50 text-neutral" />
                 )}
                 <span className={idx === crumbs.length - 1 ? "text-base-content font-bold tracking-wide" : "hover:text-base-content transition-colors cursor-default"}>
                   {crumb}
@@ -141,9 +138,7 @@ export default function DashboardHeader({ role, name, email, image, locale, onLo
                 </div>
               )}
               <span className="text-[13px] font-medium hidden md:block max-w-28 truncate text-base-content">{name}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 hidden md:block text-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown className="h-3 w-3 hidden md:block text-neutral" />
             </button>
           </DropdownMenu.Trigger>
 

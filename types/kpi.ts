@@ -79,6 +79,7 @@ export interface ActorContext {
   departmentId?: string | null;
   email?: string;
   name?: string;
+  accessToken?: string | null;
 }
 
 export interface ListKpiQuery {

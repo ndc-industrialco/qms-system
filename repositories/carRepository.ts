@@ -1,7 +1,7 @@
 import { BaseRepository, PaginatedResult } from "./baseRepository";
 import { CarMaster, Prisma, type CarStatus } from "@/generated/prisma/client";
 import type { CarCreateInput, CarRespondInput, CarUpdateInput, CarVerifyInput } from "@/lib/validations/car";
-import type { CarListQuery } from "@/types/car";
+import type { CarListQuery, CarListScope } from "@/types/car";
 import { ConflictError } from "@/errors/customErrors";
 
 export class CarRepository extends BaseRepository<CarMaster> {
@@ -36,7 +36,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
         targetDepartmentId: true,
         targetAuthDepartmentId: true,
         targetDepartmentName: true,
-        targetEmailGroup: true,
+        targetEmailGroups: true,
+        targetEmailGroupsCc: true,
         responseDueAt: true,
         reCar: true,
         reCarRefId: true,
@@ -156,7 +157,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
 
   async paginateSummaries(
     query: CarListQuery,
-    scope: { departmentId?: string; authDepartmentId?: string | null },
+    scope: { scope: CarListScope; issuerAuthUserId?: string; authDepartmentId?: string | null },
     tx?: Prisma.TransactionClient
   ): Promise<PaginatedResult<Awaited<ReturnType<CarRepository["findManySummary"]>>[number]>> {
     const page = query.page || 1;
@@ -164,14 +165,15 @@ export class CarRepository extends BaseRepository<CarMaster> {
     const skip = (page - 1) * limit;
     const search = query.search?.trim();
 
-    const deptFilter = scope.authDepartmentId
-      ? { targetAuthDepartmentId: scope.authDepartmentId }
-      : scope.departmentId
-        ? { targetDepartmentId: scope.departmentId }
-        : {};
+    const scopedWhere: Prisma.CarMasterWhereInput =
+      scope.scope === "mine"
+        ? { issuerAuthUserId: scope.issuerAuthUserId ?? "__no-auth-user__" }
+        : scope.scope === "my-department"
+          ? { targetAuthDepartmentId: scope.authDepartmentId ?? "__no-auth-department__" }
+          : {};
 
     const where: Prisma.CarMasterWhereInput = {
-      ...deptFilter,
+      ...scopedWhere,
       ...(query.status ? { status: query.status } : {}),
       ...(query.sourceType ? { sourceType: query.sourceType } : {}),
       ...(search
@@ -223,7 +225,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
       select: {
         id: true,
         status: true,
-        targetEmailGroup: true,
+        targetEmailGroups: true,
+        targetEmailGroupsCc: true,
         targetDepartmentId: true,
         targetAuthDepartmentId: true,
         targetDepartmentName: true,
@@ -264,7 +267,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
         issuerId: true,
         issuerAuthUserId: true,
         issuerName: true,
-        targetEmailGroup: true,
+        targetEmailGroups: true,
+        targetEmailGroupsCc: true,
       },
     });
   }
@@ -272,7 +276,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
   async findForClose(id: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id },
-      select: { id: true, status: true, carNo: true },
+      select: { id: true, status: true, carNo: true, issuerAuthUserId: true },
     });
   }
 
@@ -283,9 +287,11 @@ export class CarRepository extends BaseRepository<CarMaster> {
         id: true,
         status: true,
         carNo: true,
-        targetEmailGroup: true,
+        issuerAuthUserId: true,
+        targetEmailGroups: true,
+        targetEmailGroupsCc: true,
         targetDepartmentName: true,
-        response: { select: { plannedCompletionDate: true } },
+        response: { select: { plannedCompletionDate: true, responderAuthUserId: true } },
       },
     });
   }
@@ -363,7 +369,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
         targetDepartmentId: data.targetDepartmentId,
         targetAuthDepartmentId: data.targetAuthDepartmentId ?? null,
         targetDepartmentName: data.targetDepartmentName ?? null,
-        targetEmailGroup: data.targetEmailGroup ?? null,
+        targetEmailGroups: data.targetEmailGroups ?? [],
+        targetEmailGroupsCc: data.targetEmailGroupsCc ?? [],
         reCar: data.reCar ?? false,
         reCarRefId: data.reCarRefId ?? null,
       },
@@ -389,7 +396,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
         targetDepartmentId: input.targetDepartmentId,
         targetAuthDepartmentId: targetAuthDepartmentId ?? null,
         targetDepartmentName: targetDepartmentName ?? null,
-        targetEmailGroup: input.targetEmailGroup ?? null,
+        targetEmailGroups: input.targetEmailGroups ?? [],
+        targetEmailGroupsCc: input.targetEmailGroupsCc ?? [],
         reCar: input.reCar ?? false,
         reCarRefId: input.reCarRefId ?? null,
       },
@@ -518,7 +526,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
       targetDepartmentId: string;
       targetAuthDepartmentId?: string | null;
       targetDepartmentName?: string | null;
-      targetEmailGroup: string | null;
+      targetEmailGroups: string[];
+      targetEmailGroupsCc: string[];
     },
     data: {
       carNo: string;
@@ -552,7 +561,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
         targetDepartmentId: original.targetDepartmentId,
         targetAuthDepartmentId: original.targetAuthDepartmentId ?? null,
         targetDepartmentName: original.targetDepartmentName ?? null,
-        targetEmailGroup: original.targetEmailGroup,
+        targetEmailGroups: original.targetEmailGroups,
+        targetEmailGroupsCc: original.targetEmailGroupsCc,
         reCar: true,
         reCarRefId: original.id,
         issuedAt: data.issuedAt,

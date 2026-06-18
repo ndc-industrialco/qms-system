@@ -10,7 +10,7 @@ type Props = {
   item: AnnouncementRow | null;
   open: boolean;
   onClose: () => void;
-  onEdit: (item: AnnouncementRow) => void;
+  onEdit?: (item: AnnouncementRow) => void;
 };
 
 export default function AnnouncementViewModal({ item, open, onClose, onEdit }: Props) {
@@ -46,7 +46,7 @@ export default function AnnouncementViewModal({ item, open, onClose, onEdit }: P
           >
             {t("common.close")}
           </Button>
-          {item && (
+          {item && onEdit && (
             <Button
               onClick={() => { onClose(); onEdit(item); }}
             >

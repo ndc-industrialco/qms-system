@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocale } from "@/lib/locale-context";
 import Toast from "@/components/common/Toast";
 import ConfirmModal from "@/components/common/ConfirmModal";
+import { ActionPillButton } from "@/components/common/ActionButtons";
 import DepartmentModal from "@/components/it/DepartmentModal";
 import DepartmentMembersModal from "@/components/it/DepartmentMembersModal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/common/PageHeader";
 import Pagination from "@/components/common/Pagination";
 import { useUrlFilters } from "@/hooks/use-url-filters";
+import { Plus } from "lucide-react";
 
 type Props = { departments: DepartmentRow[] };
 
@@ -131,7 +133,7 @@ export default function DepartmentTable({ departments }: Props) {
         subtitle={t.description(departments.length)}
         actions={
           <Button onClick={openCreate} size="sm" className="gap-1.5">
-            <PlusIcon />
+            <Plus className="h-4 w-4" />
             {t.addDept}
           </Button>
         }
@@ -186,27 +188,17 @@ export default function DepartmentTable({ departments }: Props) {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <ActionPillButton
+                      tone="edit"
+                      label={t.edit}
                       onClick={() => openEdit(dept)}
-                      className="text-sky-600 hover:text-sky-700 hover:bg-sky-50"
-                    >
-                      {t.edit}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    />
+                    <ActionPillButton
+                      tone="delete"
+                      label={t.delete}
                       onClick={() => requestDelete(dept)}
-                      disabled={deletingId === dept.id}
-                      className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                    >
-                      {deletingId === dept.id ? (
-                        <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        t.delete
-                      )}
-                    </Button>
+                      loading={deletingId === dept.id}
+                    />
                   </div>
                 </TableCell>
               </TableRow>
@@ -248,18 +240,19 @@ export default function DepartmentTable({ departments }: Props) {
               {t.usersLink(dept._count.users)}
             </button>
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 flex-1" onClick={() => openEdit(dept)}>
-                {t.edit}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 flex-1"
+              <ActionPillButton
+                tone="edit"
+                label={t.edit}
+                className="flex-1 justify-center"
+                onClick={() => openEdit(dept)}
+              />
+              <ActionPillButton
+                tone="delete"
+                label={t.delete}
+                className="flex-1 justify-center"
                 onClick={() => requestDelete(dept)}
-                disabled={deletingId === dept.id}
-              >
-                {deletingId === dept.id ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" /> : t.delete}
-              </Button>
+                loading={deletingId === dept.id}
+              />
             </div>
           </div>
         ))}
@@ -314,13 +307,5 @@ export default function DepartmentTable({ departments }: Props) {
         />
       )}
     </>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-    </svg>
   );
 }

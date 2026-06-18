@@ -1,75 +1,53 @@
 /**
  * Cached Microsoft Graph App-Only Access Token
  *
- * Azure AD Client Credentials tokens have a ~3600s lifetime.
- * This module caches the token in Redis to avoid a round-trip to Azure
- * on every MS Graph call (email send, user fetch, etc.).
+ * Tokens are proxied through Auth Center — QMS does not hold Azure AD credentials.
+ * Auth Center endpoint: GET /api/auth/consumer/graph-token (M2M, ~1h lifetime)
  *
  * Cache key:  graph:app_token
- * TTL:        expires_in - SAFETY_BUFFER_SEC  (derived from actual token response)
- *             Falls back to DEFAULT_TTL_SEC if expires_in is not available.
+ * TTL:        DEFAULT_TTL_SEC (token lifetime is opaque from Auth Center response)
  */
 
 import { redis } from "@/lib/redis";
 import { logger } from "@/lib/logger";
 
 const CACHE_KEY = "graph:app_token";
-/** Safety margin subtracted from expires_in so the cached token never expires mid-request. */
-const SAFETY_BUFFER_SEC = 300; // 5 minutes
-/** Fallback TTL used when expires_in is unavailable or zero. */
-const DEFAULT_TTL_SEC = 3300; // 55 minutes — conservative default
+const DEFAULT_TTL_SEC = 3300; // 55 minutes — safe margin below 1h token lifetime
 const LOCK_KEY = "graph:app_token:lock";
 const LOCK_TTL_SEC = 15;
 const WAIT_STEP_MS = 150;
 const WAIT_MAX_MS = 5000;
 
-interface TokenResponse {
-  access_token: string;
-  expires_in: number;
-}
-
 interface FreshToken {
   token: string;
-  /** Effective cache TTL in seconds, computed from the actual expires_in value. */
   cacheTtlSec: number;
 }
 
 async function fetchFreshToken(): Promise<FreshToken> {
-  const tenantId = process.env.AZURE_AD_TENANT_ID!;
-  const clientId = process.env.AZURE_AD_CLIENT_ID!;
-  const clientSecret = process.env.AZURE_AD_CLIENT_SECRET!;
+  const base = process.env.AUTH_CENTER_URL?.replace(/\/$/, "");
+  const appId = process.env.AUTH_CENTER_APP_ID ?? "qms";
+  const appSecret = process.env.AUTH_CENTER_CLIENT_SECRET;
 
-  const url = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: "client_credentials",
-    scope: "https://graph.microsoft.com/.default",
-  });
+  if (!base || !appSecret) throw new Error("AUTH_CENTER_URL or AUTH_CENTER_CLIENT_SECRET is not configured");
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString(),
+  const res = await fetch(`${base}/api/auth/consumer/graph-token`, {
+    headers: {
+      "x-consumer-app-id": appId,
+      "x-consumer-app-secret": appSecret,
+    },
+    cache: "no-store",
   });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Failed to acquire app-only access token: ${res.status} ${errorText}`);
+    const text = await res.text();
+    throw new Error(`Auth Center graph-token failed: ${res.status} ${text}`);
   }
 
-  const data = (await res.json()) as TokenResponse;
+  const json = await res.json() as { data?: { accessToken: string } };
+  const token = json.data?.accessToken;
+  if (!token) throw new Error("Auth Center graph-token: missing accessToken in response");
 
-  // Derive the effective cache TTL from the actual token lifetime.
-  // Math.max(1, ...) clamps to a minimum of 1 second so Redis expires
-  // the entry almost immediately instead of falling back to DEFAULT_TTL_SEC.
-  // This is intentional: a near-expired token should NOT be cached for 55 minutes.
-  const rawTtl = typeof data.expires_in === "number" && data.expires_in > 0
-    ? data.expires_in
-    : DEFAULT_TTL_SEC + SAFETY_BUFFER_SEC; // treat missing as ~1h
-  const cacheTtlSec = Math.max(1, rawTtl - SAFETY_BUFFER_SEC);
-
-  return { token: data.access_token, cacheTtlSec };
+  return { token, cacheTtlSec: DEFAULT_TTL_SEC };
 }
 
 /**

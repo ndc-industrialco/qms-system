@@ -2,43 +2,18 @@
  * Microsoft Graph API — SharePoint helpers (Edge-Runtime compatible)
  *
  * Uses raw fetch — no Node.js built-ins, no SDK dependencies.
- * Required Azure AD app permissions:
+ * Token is proxied through Auth Center (no Azure AD credentials in this app).
+ * Required Azure AD app permissions (on Auth Center's app registration):
  *   - Sites.ReadWrite.All
  *
  * Environment variables:
- *   AZURE_AD_CLIENT_ID, AZURE_AD_CLIENT_SECRET, AZURE_AD_TENANT_ID
- *   SHAREPOINT_SITE_ID
+ *   SHAREPOINT_SITE_ID  — optional; defaults to "root" (tenant root site)
  */
 
-async function getAccessToken(): Promise<string> {
-  const tenantId = process.env.AZURE_AD_TENANT_ID!;
-  const clientId = process.env.AZURE_AD_CLIENT_ID!;
-  const clientSecret = process.env.AZURE_AD_CLIENT_SECRET!;
+import { getGraphToken } from "@/lib/graph-token";
 
-  const url = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-  const body = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: "client_credentials",
-    scope: "https://graph.microsoft.com/.default",
-  });
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString(),
-  });
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Failed to acquire access token: ${res.status} ${errorText}`);
-  }
-
-  const data = await res.json() as { access_token: string };
-  return data.access_token;
-}
-
-const SITE_ID = () => process.env.SHAREPOINT_SITE_ID!;
+// ponytail: defaults to "root" so SHAREPOINT_SITE_ID is optional
+const SITE_ID = () => process.env.SHAREPOINT_SITE_ID || "root";
 
 export type SpFile = {
   id: string;
@@ -52,7 +27,7 @@ export type SpFile = {
 };
 
 export async function createFolder(folderName: string, parentPath = "root"): Promise<SpFile> {
-  const token = await getAccessToken();
+  const token = await getGraphToken();
   const siteId = SITE_ID();
 
   const endpoint = parentPath === "root"
@@ -82,7 +57,7 @@ export async function uploadFile(
   fileBuffer: Uint8Array,
   folderPath = "root"
 ): Promise<SpFile> {
-  const token = await getAccessToken();
+  const token = await getGraphToken();
   const siteId = SITE_ID();
 
   const endpoint = folderPath === "root"
@@ -104,7 +79,7 @@ export async function uploadFile(
 }
 
 export async function listFiles(folderPath = "root"): Promise<SpFile[]> {
-  const token = await getAccessToken();
+  const token = await getGraphToken();
   const siteId = SITE_ID();
 
   const endpoint = folderPath === "root"
@@ -134,7 +109,7 @@ export type FileInfo = {
 // @microsoft.graph.downloadUrl is an OData annotation — Graph omits it when
 // $select is present (even if listed). Fetch without $select to get all fields.
 export async function getFileInfo(itemId: string): Promise<FileInfo> {
-  const token = await getAccessToken();
+  const token = await getGraphToken();
   const siteId = SITE_ID();
   const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/items/${itemId}`;
 
@@ -178,7 +153,7 @@ export async function getFileStream(
 }
 
 export async function deleteItem(itemId: string): Promise<void> {
-  const token = await getAccessToken();
+  const token = await getGraphToken();
   const siteId = SITE_ID();
   const res = await fetch(
     `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/items/${itemId}`,
@@ -193,7 +168,7 @@ export async function deleteItem(itemId: string): Promise<void> {
 
 // Returns a short-lived embed URL for Office files via the Graph /preview endpoint.
 export async function getOfficePreviewUrl(itemId: string): Promise<string> {
-  const token = await getAccessToken();
+  const token = await getGraphToken();
   const siteId = SITE_ID();
   const res = await fetch(
     `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/items/${itemId}/preview`,

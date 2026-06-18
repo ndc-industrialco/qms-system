@@ -36,6 +36,37 @@ export class NotificationService {
   }
 
   /**
+   * Fan out in-app notifications to all members of a department.
+   * Fire-and-forget: errors are logged but never thrown.
+   */
+  static async notifyDeptMembers(
+    deptCode: string,
+    accessToken: string | null | undefined,
+    data: { title: string; body: string; module: string; resourceId: string; resourceType: string },
+  ): Promise<void> {
+    if (!deptCode || !accessToken) return;
+    try {
+      const { getAuthCenterDepartmentMembers } = await import("@/lib/auth-center-admin-client");
+      const result = await getAuthCenterDepartmentMembers(deptCode, { accessToken });
+      const members = result?.members ?? [];
+      await Promise.all(
+        members
+          .filter((m) => m.id)
+          .map((m) =>
+            notificationRepo.create({
+              recipientId: m.id,
+              recipientAuthUserId: m.id,
+              ...data,
+            }).catch(() => {}),
+          ),
+      );
+      logger.info("[notification] notifyDeptMembers sent", { deptCode, count: members.length });
+    } catch (err) {
+      logger.warn("[notification] notifyDeptMembers failed", { deptCode, error: String(err) });
+    }
+  }
+
+  /**
    * Send an email exactly once per idempotency key.
    *
    * If the key has already been SENT, the call is a no-op.

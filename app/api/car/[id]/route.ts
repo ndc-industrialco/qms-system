@@ -54,16 +54,23 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await requireAuth();
     if (session.user.role !== "QMS" && session.user.role !== "IT") {
-      throw new ForbiddenError("เฉพาะ QMS/IT เท่านั้นที่สามารถยกเลิก CAR ได้");
+      throw new ForbiddenError("เฉพาะ QMS/IT เท่านั้นที่สามารถดำเนินการนี้ได้");
     }
 
     const { id } = await params;
+    const permanent = new URL(req.url).searchParams.get("permanent") === "true";
+
+    if (permanent) {
+      await carService.hardDeleteCar(id, session.user.id, session.user.authUserId);
+      return sendSuccess(null, "CAR deleted permanently");
+    }
+
     await carService.cancelCar(id, session.user.id, session.user.authUserId);
     return sendSuccess(null, "CAR cancelled successfully");
   } catch (err) {

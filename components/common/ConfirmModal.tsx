@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Props = {
@@ -38,9 +39,7 @@ export default function ConfirmModal({
           <div className="flex items-center gap-3">
             {danger && (
               <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                </svg>
+                <AlertTriangle className="h-5 w-5 text-rose-600" />
               </div>
             )}
             <DialogTitle className={danger ? "text-rose-600" : "text-[#0F1059]"}>{title}</DialogTitle>

@@ -8,9 +8,9 @@ const SOURCE_COLORS: Record<string, string> = {
   QMS: "#0F1059", IT: "#1D6A8A", HR: "#7C3AED", GA: "#059669", SAFETY: "#DC2626",
 };
 
-type Props = { announcements: Announcement[]; canManage: boolean };
+type Props = { announcements: Announcement[]; canManage: boolean; onView?: (a: Announcement) => void };
 
-export default function DashboardAnnouncementsFeed({ announcements }: Props) {
+export default function DashboardAnnouncementsFeed({ announcements, onView }: Props) {
   const t = useT();
   const locale = useLocale();
 
@@ -31,7 +31,7 @@ export default function DashboardAnnouncementsFeed({ announcements }: Props) {
         });
 
         return (
-          <div key={a.id} className="group flex gap-0 hover:bg-slate-50 transition-colors duration-150">
+          <div key={a.id} onClick={() => onView?.(a)} className={`group flex gap-0 hover:bg-slate-50 transition-colors duration-150 ${onView ? "cursor-pointer" : ""}`}>
             <div className="w-0.75 shrink-0 rounded-r-sm my-3 ml-5 transition-all duration-200 group-hover:w-1"
               style={{ background: color }} />
 

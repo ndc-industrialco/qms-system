@@ -8,10 +8,10 @@ import { z } from 'zod';
 import { useT } from '@/lib/i18n';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import ResponsiveFormOverlay from '@/components/common/ResponsiveFormOverlay';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 const departmentSchema = z.object({
   name: z.string().min(1, 'ชื่อแผนกต้องไม่ว่างเปล่า').max(100),
@@ -121,18 +121,24 @@ export function DepartmentModal({ open, onClose, department, onSuccess }: Depart
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-          <DialogTitle className="text-[#0F1059] font-bold text-xl">
-            {department ? t('documentDepartment.editTitle') : t('documentDepartment.new')}
-          </DialogTitle>
-          <DialogDescription>
-            {department ? department.name : t('documentDepartment.emptyDesc')}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+    <ResponsiveFormOverlay
+      open={open}
+      onOpenChange={(value) => { if (!value) onClose(); }}
+      title={department ? t('documentDepartment.editTitle') : t('documentDepartment.new')}
+      description={department ? department.name : t('documentDepartment.emptyDesc')}
+      desktopContentClassName="w-[min(96vw,48rem)] max-w-xl"
+      bodyClassName="px-4 py-5 md:px-6 md:py-4"
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="h-11 rounded-xl">
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" form="department-form" disabled={isLoading} className="h-11 flex-1 rounded-xl bg-primary text-white font-medium hover:bg-primary/90">
+            {isLoading ? t('common.loading') : t('common.save')}
+          </Button>
+        </>
+      }
+    >
           <form id="department-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-1.5">
               <Label htmlFor="dept-name" className="text-slate-800 text-sm font-semibold">
@@ -176,17 +182,6 @@ export function DepartmentModal({ open, onClose, department, onSuccess }: Depart
               </Label>
             </div>
           </form>
-        </div>
-
-        <DialogFooter className="px-6 py-4 border-t border-slate-100">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="h-11 rounded-xl">
-            {t('common.cancel')}
-          </Button>
-          <Button type="submit" form="department-form" disabled={isLoading} className="bg-primary hover:bg-primary/90 h-11 flex-1 rounded-xl text-white font-medium">
-            {isLoading ? t('common.loading') : t('common.save')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }

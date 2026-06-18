@@ -27,9 +27,9 @@ export class DepartmentService {
 
   // ─── Public active list (used by business forms) ───────────────────────────
 
-  async getActiveDepartments(accessToken?: string | null): Promise<{ id: string; name: string }[]> {
+  async getActiveDepartments(accessToken?: string | null): Promise<{ id: string; name: string; emailGroup: string | null }[]> {
     const depts = await getDepartments(accessToken);
-    return depts.map((d) => ({ id: d.code, name: d.displayName, authDepartmentId: d.code }));
+    return depts.map((d) => ({ id: d.code, name: d.displayName, emailGroup: d.emailGroup ?? null }));
   }
 
   // ─── Admin list (IT admin page) ────────────────────────────────────────────

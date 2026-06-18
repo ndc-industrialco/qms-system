@@ -3,6 +3,14 @@ import type { PaginatedResult } from "@/repositories/baseRepository";
 
 export type { CarStatus, CarSourceType, VerificationResult };
 
+export type CarListScope = "mine" | "my-department" | "all";
+
+export const CAR_SCOPE_LABELS: Record<CarListScope, string> = {
+  mine: "CAR ที่ฉันออก",
+  "my-department": "CAR แผนกของฉัน",
+  all: "CAR ทุกแผนก",
+};
+
 export const CAR_STATUS_LABELS: Record<CarStatus, string> = {
   DRAFT: "ฉบับร่าง",
   ISSUED: "ออก CAR แล้ว",
@@ -125,7 +133,8 @@ export type CarDetail = {
   updatedAt: string;
   issuer: { id: string; name: string | null; employeeId: string | null; department: { id: string; name: string } | null };
   targetDepartment: { id: string; name: string; emailGroup: string | null };
-  targetEmailGroup: string | null;
+  targetEmailGroups: string[];
+  targetEmailGroupsCc: string[];
   response: CarResponseDetail | null;
   verifications: CarVerificationDetail[];
   mrSignature: CarMrSignatureDetail | null;
@@ -142,6 +151,7 @@ export type CarSummary = {
   issuedAt: string | null;
   responseDueAt: string | null;
   createdAt: string;
+  targetAuthDepartmentId?: string | null;
   issuer: { id: string; name: string | null };
   targetDepartment: { id: string; name: string };
   verificationCount: number;
@@ -153,6 +163,7 @@ export type CarListQuery = {
   search?: string;
   status?: CarStatus;
   sourceType?: CarSourceType;
+  scope?: CarListScope;
 };
 
 export type CarListResponse = PaginatedResult<CarSummary>;

@@ -4,11 +4,10 @@ import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth } from '@/lib/auth';
 import { KpiService } from '@/services/kpiService';
-import { UserRepository } from '@/repositories/userRepository';
+import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { sendKpiResultEmail } from '@/services/email';
 
 const service = new KpiService();
-const userRepo = new UserRepository();
 
 export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -17,39 +16,47 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const body = await _request.json().catch(() => ({}));
     const updated = await service.approveObjectives(id, {
       userId: session.user.id,
+      authUserId: session.user.authUserId,
       role: session.user.role,
       departmentId: session.user.authDepartmentId ?? session.user.departmentId,
+      accessToken: session.user.accessToken,
     }, body);
 
-    const recipients = [updated.reviewerUserId, updated.approverUserId].filter(Boolean) as string[];
-    if (recipients.length > 0) {
-      const users = await Promise.all(recipients.map((uid) => userRepo.findById(uid)));
-      for (const u of users.filter((u): u is NonNullable<typeof u> => Boolean(u?.email))) {
-        NotificationService.sendEmailOnce(
-          `KPI:${id}:APPROVED:notify:${u.id}`,
-          () => sendKpiResultEmail({
-            to: { name: u.name ?? '', email: u.email },
-            departmentName: updated.department,
-            year: updated.yearly,
-            status: 'APPROVED',
-            actorName: session.user.name ?? '',
-            kpiId: id,
-            objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
-            senderEmail: session.user.email ?? undefined,
-          }),
-          u.email,
-          'KPI Approved',
-          u.id,
-          {
-            title: "KPI ได้รับการอนุมัติ",
-            body: `KPI ${updated.department} ${updated.yearly}`,
-            module: "KPI",
-            resourceId: id,
-            resourceType: "KPI",
-          },
-        ).catch(() => { /* logged inside NotificationService */ });
-      }
+    const notifyAuthIds = [updated.reviewerUserId, updated.approverUserId].filter(Boolean) as string[];
+    for (const authId of notifyAuthIds) {
+      const u = await getUserSnapshot(authId);
+      if (!u?.email) continue;
+      NotificationService.sendEmailOnce(
+        `KPI:${id}:APPROVED:notify:${authId}`,
+        () => sendKpiResultEmail({
+          to: { name: u.name ?? '', email: u.email },
+          departmentName: updated.department,
+          year: updated.yearly,
+          status: 'APPROVED',
+          actorName: session.user.name ?? '',
+          kpiId: id,
+          objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
+          senderEmail: session.user.email ?? undefined,
+        }),
+        u.email,
+        'KPI Approved',
+        authId,
+        {
+          title: "KPI ได้รับการอนุมัติ",
+          body: `KPI ${updated.department} ${updated.yearly}`,
+          module: "KPI",
+          resourceId: id,
+          resourceType: "KPI",
+        },
+      ).catch(() => { /* logged inside NotificationService */ });
     }
+
+    // Notify all dept members
+    NotificationService.notifyDeptMembers(
+      updated.department,
+      session.user.accessToken,
+      { title: 'KPI ได้รับการอนุมัติ', body: `KPI ${updated.department} ${updated.yearly} ได้รับการอนุมัติ`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
+    ).catch(() => {});
 
     return sendSuccess(updated, 'KPI approved successfully');
   } catch (error) {

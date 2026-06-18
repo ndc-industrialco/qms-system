@@ -2,10 +2,12 @@
 
 import type { DarItemInput } from "@/types/dar";
 import { useT } from "@/lib/i18n";
+import { ActionIconButton } from "@/components/common/ActionButtons";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
 
 type ItemRow = Omit<DarItemInput, "itemNo">;
 
@@ -35,9 +37,7 @@ export default function DarItemsSection({ items, onChange, errors }: Props) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm md:text-base font-bold text-slate-800">{t("sectionItems")} <span className="text-rose-500">*</span></h2>
         <Button variant="ghost" size="sm" onClick={addRow} className="gap-1 h-8 px-2 text-slate-600">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <Plus className="h-4 w-4" />
           {t("addItem")}
         </Button>
       </div>
@@ -93,17 +93,12 @@ export default function DarItemsSection({ items, onChange, errors }: Props) {
                     />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
+                    <ActionIconButton
+                      tone="delete"
+                      label={t("common.delete")}
                       onClick={() => removeRow(idx)}
-                      className="h-8 w-8 text-rose-500 hover:bg-rose-50 hover:text-rose-600"
                       disabled={items.length === 1}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </Button>
+                    />
                   </TableCell>
                 </TableRow>
               ))}

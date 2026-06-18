@@ -1,21 +1,30 @@
 ﻿"use client";
 
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { ClipboardList } from "lucide-react";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import FilterBar from "@/components/common/FilterBar";
 import Pagination from "@/components/common/Pagination";
 import { Button } from "@/components/ui/button";
+import { ActionIconButton, ActionPillButton } from "@/components/common/ActionButtons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import CarStatusBadge from "./CarStatusBadge";
-import { CAR_SOURCE_LABELS, CAR_STATUS_LABELS, type CarListResponse, type CarSourceType, type CarStatus } from "@/types/car";
+import CarFormModal from "./CarFormModal";
+import { CAR_SCOPE_LABELS, CAR_SOURCE_LABELS, CAR_STATUS_LABELS, type CarDetail, type CarListResponse, type CarListScope, type CarSourceType, type CarStatus, type CarSummary } from "@/types/car";
 
 interface Props {
   initialData?: CarListResponse;
   isPrivileged?: boolean;
+  canEditDelete?: boolean;
+  initialScope?: CarListScope;
+  allowAllScope?: boolean;
+  myAuthDeptId?: string | null;
 }
 
 type CarListQuery = {
@@ -24,6 +33,7 @@ type CarListQuery = {
   search?: string;
   status?: string;
   sourceType?: string;
+  scope: CarListScope;
 };
 
 const PAGE_SIZE = 20;
@@ -37,6 +47,7 @@ async function fetchCars(query: CarListQuery): Promise<CarListResponse> {
   if (query.search) params.set("search", query.search);
   if (query.status) params.set("status", query.status);
   if (query.sourceType) params.set("sourceType", query.sourceType);
+  params.set("scope", query.scope);
 
   const res = await fetch(`/api/car?${params.toString()}`);
   if (!res.ok) throw new Error("Failed to fetch CARs");
@@ -81,33 +92,108 @@ function TableSkeleton() {
   );
 }
 
-export default function CarListTable({ initialData, isPrivileged = false }: Props) {
+export default function CarListTable({
+  initialData,
+  isPrivileged = false,
+  canEditDelete = false,
+  initialScope = "my-department",
+  allowAllScope = false,
+  myAuthDeptId,
+}: Props) {
   const t = useT();
+  const queryClient = useQueryClient();
+  const [editCar, setEditCar] = useState<CarDetail | null>(null);
+  const [editLoadingId, setEditLoadingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CarSummary | null>(null);
+  const [hardDeleteTarget, setHardDeleteTarget] = useState<CarSummary | null>(null);
+
+  async function handleEdit(car: CarSummary) {
+    setEditLoadingId(car.id);
+    try {
+      const res = await fetch(`/api/car/${car.id}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message ?? "Failed to load CAR");
+      setEditCar(json.data);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load CAR");
+    } finally {
+      setEditLoadingId(null);
+    }
+  }
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/car/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.message ?? "Failed to cancel CAR");
+      }
+    },
+    onSuccess: () => {
+      toast.success("ยกเลิก CAR สำเร็จ");
+      setDeleteTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["cars"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const hardDeleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/car/${id}?permanent=true`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.message ?? "Failed to delete CAR");
+      }
+    },
+    onSuccess: () => {
+      toast.success("ลบ CAR สำเร็จ");
+      setHardDeleteTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["cars"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
-    keys: ["search", "status", "sourceType", "page"] as const,
+    keys: ["scope", "search", "status", "sourceType", "page"] as const,
     searchKey: "search",
     debounceMs: 300,
   });
 
   const page = Math.max(1, Number(params.page || "1"));
+  const scope = (params.scope || initialScope) as CarListScope;
   const query = {
     page,
     limit: PAGE_SIZE,
     search: params.search || undefined,
     status: params.status || undefined,
     sourceType: params.sourceType || undefined,
+    scope,
   };
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery({
-    queryKey: ["cars", isPrivileged ? "privileged" : "department", query.search, query.status, query.sourceType, query.page, query.limit],
+    queryKey: ["cars", isPrivileged ? "privileged" : "user", query.scope, query.search, query.status, query.sourceType, query.page, query.limit],
     queryFn: () => fetchCars(query),
     initialData,
   });
 
-  const cars = data?.data ?? [];
+  const rawCars = data?.data ?? [];
   const total = data?.meta.total ?? 0;
   const totalPages = data?.meta.total ? Math.ceil(data.meta.total / data.meta.limit) : 0;
   const basePath = isPrivileged ? "/qms/car" : "/car";
+  const scopeOptions = allowAllScope
+    ? (["mine", "my-department", "all"] as const)
+    : (["mine", "my-department"] as const);
+
+  function isMyDept(car: (typeof rawCars)[number]) {
+    if (myAuthDeptId) return car.targetAuthDepartmentId === myAuthDeptId;
+    return false;
+  }
+
+  const shouldGroupByMyDepartment = scope === "all" && Boolean(myAuthDeptId);
+  const cars = shouldGroupByMyDepartment
+    ? [...rawCars].sort((a, b) => Number(isMyDept(b)) - Number(isMyDept(a)))
+    : rawCars;
+
+  const myDeptBoundary = cars.findIndex((c) => !isMyDept(c));
 
   if (isLoading && !initialData) {
     return <TableSkeleton />;
@@ -136,6 +222,16 @@ export default function CarListTable({ initialData, isPrivileged = false }: Prop
         searchPlaceholder={`${t("common.search")} CAR`}
         filters={[
           {
+            key: "scope",
+            label: "ขอบเขต",
+            allLabel: "เลือกขอบเขต",
+            options: scopeOptions.map((value) => ({
+              value,
+              label: CAR_SCOPE_LABELS[value],
+            })),
+            minWidth: "12rem",
+          },
+          {
             key: "status",
             label: t("car.list.colStatus"),
             allLabel: "All statuses",
@@ -155,6 +251,7 @@ export default function CarListTable({ initialData, isPrivileged = false }: Prop
           },
         ]}
         filterValues={{
+          scope,
           status: params.status || "",
           sourceType: params.sourceType || "",
         }}
@@ -181,14 +278,17 @@ export default function CarListTable({ initialData, isPrivileged = false }: Prop
       ) : (
         <>
           <div className="lg:hidden space-y-3">
-            {cars.map((car) => {
+            {shouldGroupByMyDepartment && myDeptBoundary !== 0 && (
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-1">แผนกของฉัน</p>
+            )}
+            {cars.map((car, idx) => {
               const isOverdue = !!car.responseDueAt && new Date(car.responseDueAt) < new Date() && car.status === "ISSUED";
               return (
-                <Link
-                  key={car.id}
-                  href={`${basePath}/${car.id}`}
-                  className="block bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4"
-                >
+                <React.Fragment key={car.id}>
+                  {shouldGroupByMyDepartment && idx === myDeptBoundary && myDeptBoundary > 0 && (
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-1 pt-2">แผนกอื่นๆ</p>
+                  )}
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="min-w-0">
                       <p className="font-mono font-semibold text-blue-600 truncate">{car.carNo}</p>
@@ -197,7 +297,7 @@ export default function CarListTable({ initialData, isPrivileged = false }: Prop
                     <CarStatusBadge status={car.status} />
                   </div>
                   <p className="text-sm font-medium text-slate-800 line-clamp-2 mb-3">{car.defectDetail}</p>
-                  <div className="space-y-1.5 text-xs">
+                  <div className="space-y-1.5 text-xs mb-3">
                     <p className="text-slate-500">
                       {t("car.list.colDept")}: <span className="text-slate-700">{car.targetDepartment.name}</span>
                     </p>
@@ -211,7 +311,33 @@ export default function CarListTable({ initialData, isPrivileged = false }: Prop
                       {t("car.list.colDueAt")}: <span>{formatDate(car.responseDueAt)}</span>
                     </p>
                   </div>
-                </Link>
+                  <div className="flex items-center gap-1 border-t border-slate-100 pt-3">
+                    <ActionPillButton tone="view" label="ดูรายละเอียด" asChild>
+                      <Link href={`${basePath}/${car.id}`} />
+                    </ActionPillButton>
+                    {canEditDelete && (
+                      <>
+                        <ActionPillButton
+                          tone="edit"
+                          label="แก้ไข"
+                          onClick={() => handleEdit(car)}
+                          loading={editLoadingId === car.id}
+                        />
+                        <ActionPillButton
+                          tone="cancel"
+                          label="ยกเลิก"
+                          onClick={() => setDeleteTarget(car)}
+                        />
+                        <ActionPillButton
+                          tone="delete"
+                          label="ลบ"
+                          onClick={() => setHardDeleteTarget(car)}
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+                </React.Fragment>
               );
             })}
           </div>
@@ -228,12 +354,24 @@ export default function CarListTable({ initialData, isPrivileged = false }: Prop
                     <TableHead className="text-center">{t("car.list.colStatus")}</TableHead>
                     <TableHead className="text-center">{t("car.list.colIssuedAt")}</TableHead>
                     <TableHead className="text-center">{t("car.list.colDueAt")}</TableHead>
+                    <TableHead className="text-center w-24">การจัดการ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {cars.map((car) => {
+                  {cars.map((car, idx) => {
                     const isOverdue = !!car.responseDueAt && new Date(car.responseDueAt) < new Date() && car.status === "ISSUED";
                     return (
+                      <React.Fragment key={car.id}>
+                        {shouldGroupByMyDepartment && idx === 0 && myDeptBoundary !== 0 && (
+                          <TableRow key="label-mine">
+                            <TableCell colSpan={8} className="py-1.5 px-4 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">แผนกของฉัน</TableCell>
+                          </TableRow>
+                        )}
+                        {shouldGroupByMyDepartment && idx === myDeptBoundary && myDeptBoundary > 0 && (
+                          <TableRow key="label-others">
+                            <TableCell colSpan={8} className="py-1.5 px-4 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide border-t border-slate-200">แผนกอื่นๆ</TableCell>
+                          </TableRow>
+                        )}
                       <TableRow key={car.id} className="hover:bg-slate-50 transition-colors">
                         <TableCell>
                           <Link href={`${basePath}/${car.id}`} className="font-mono font-semibold text-blue-600 hover:underline">
@@ -254,7 +392,35 @@ export default function CarListTable({ initialData, isPrivileged = false }: Prop
                         <TableCell className={`text-xs text-center font-mono ${isOverdue ? "text-rose-600 font-semibold" : "text-slate-500"}`}>
                           {formatDate(car.responseDueAt)}
                         </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <ActionIconButton tone="view" label="ดูรายละเอียด" asChild>
+                              <Link href={`${basePath}/${car.id}`} />
+                            </ActionIconButton>
+                            {canEditDelete && (
+                              <>
+                                <ActionIconButton
+                                  tone="edit"
+                                  label="แก้ไข"
+                                  onClick={() => handleEdit(car)}
+                                  loading={editLoadingId === car.id}
+                                />
+                                <ActionIconButton
+                                  tone="cancel"
+                                  label="ยกเลิก"
+                                  onClick={() => setDeleteTarget(car)}
+                                />
+                                <ActionIconButton
+                                  tone="delete"
+                                  label="ลบ"
+                                  onClick={() => setHardDeleteTarget(car)}
+                                />
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
                       </TableRow>
+                      </React.Fragment>
                     );
                   })}
                 </TableBody>
@@ -275,7 +441,68 @@ export default function CarListTable({ initialData, isPrivileged = false }: Prop
       {isFetching && !isLoading ? (
         <p className="text-xs text-slate-400 text-right">{t("common.loading")}</p>
       ) : null}
+
+      {editCar && (
+        <CarFormModal
+          open
+          onClose={() => setEditCar(null)}
+          editCar={editCar}
+          onSuccess={() => {
+            setEditCar(null);
+            queryClient.invalidateQueries({ queryKey: ["cars"] });
+          }}
+        />
+      )}
+
+      <Dialog open={!!hardDeleteTarget} onOpenChange={(open) => !open && setHardDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการลบ CAR</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-600">
+            คุณต้องการ<span className="font-semibold text-rose-600">ลบถาวร</span>{" "}
+            <span className="font-mono font-semibold text-slate-800">{hardDeleteTarget?.carNo}</span>{" "}
+            ออกจากระบบ? การกระทำนี้<span className="font-semibold">ไม่สามารถย้อนกลับได้</span>
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHardDeleteTarget(null)}>
+              ยกเลิก
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => hardDeleteTarget && hardDeleteMutation.mutate(hardDeleteTarget.id)}
+              disabled={hardDeleteMutation.isPending}
+            >
+              {hardDeleteMutation.isPending ? "กำลังลบ..." : "ลบถาวร"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการยกเลิก CAR</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-600">
+            คุณต้องการยกเลิก{" "}
+            <span className="font-mono font-semibold text-slate-800">{deleteTarget?.carNo}</span>{" "}
+            ใช่หรือไม่?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              ยกเลิก
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "กำลังยกเลิก..." : "ยืนยันยกเลิก"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-

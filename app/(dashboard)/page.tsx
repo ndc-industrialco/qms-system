@@ -32,11 +32,12 @@ export default async function CompanyCenterDashboard() {
     kpiNgCount,
     kpiPendingCount,
     kpiTotal,
+    approvedKpisRaw,
   ] = await Promise.all([
     db.announcement.findMany({
-      where: { ...activeFilter, displayType: "LIST" },
+      where: activeFilter,
       orderBy: { createdAt: "desc" },
-      take: 5,
+      take: 10,
     }),
 
     db.announcement.findMany({
@@ -77,9 +78,29 @@ export default async function CompanyCenterDashboard() {
     }),
 
     db.kPI.count({ where: { yearly: currentYear } }),
+
+    db.kPI.findMany({
+      where: { yearly: currentYear, status: 'APPROVED' },
+      select: {
+        id: true,
+        department: true,
+        monthlyReports: { select: { month: true, status: true } },
+      },
+    }),
   ]);
 
   const canManage = ["QMS", "IT", "MR"].includes(session.user.role);
+
+  const KPI_MONTHS_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const approvedDeptNames = new Set(approvedKpisRaw.map((k) => k.department.toLowerCase()));
+  const noKpiDepartments = departmentList
+    .filter((d) => !approvedDeptNames.has(d.displayName.toLowerCase()) && !approvedDeptNames.has(d.code.toLowerCase()))
+    .map((d) => d.displayName);
+  const kpiMatrix = approvedKpisRaw.map((kpi) => {
+    const months: Record<string, string | null> = Object.fromEntries(KPI_MONTHS_ORDER.map((m) => [m, null]));
+    for (const r of kpi.monthlyReports) months[r.month] = r.status;
+    return { department: kpi.department, kpiId: kpi.id, months };
+  });
   const docStatsByDepartment = new Map(
     departmentDocStats
       .filter((row) => row.departmentId)
@@ -113,6 +134,7 @@ export default async function CompanyCenterDashboard() {
       kpiNg={kpiNgCount}
       kpiPending={kpiPendingCount}
       kpiTotal={kpiTotal}
+      kpiMonthlyMatrix={{ year: currentYear, noKpiDepartments, matrix: kpiMatrix }}
     />
   );
 }

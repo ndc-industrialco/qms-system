@@ -7,6 +7,9 @@ import { KpiCorrectiveActionRepository } from '@/repositories/kpiCorrectiveActio
 import { KpiObjectiveRepository } from '@/repositories/kpiObjectiveRepository';
 import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRepository';
 import { UserRepository } from '@/repositories/userRepository';
+import { UserPreferenceRepository } from '@/repositories/userPreferenceRepository';
+import { getUserSnapshot } from '@/lib/userSnapshotCache';
+import { NotificationService } from '@/services/notificationService';
 import { ActorContext, CreateMonthlyReportDTO, CreateCorrectiveActionDTO, ListMonthlyQuery, UpdateMonthlyDetailDTO, UpdateMonthlyReportDTO } from '@/types/kpi';
 import type { MonthlyStatus, SignatureType } from '@/generated/prisma/client';
 import { ALLOWED_MIME, MAX_FILE_SIZE, hasValidMagicBytes } from '@/lib/fileValidation';
@@ -20,6 +23,7 @@ export class KpiMonthlyService {
   private objectiveRepo = new KpiObjectiveRepository();
   private approvalSignatureRepo = new ApprovalSignatureRepository();
   private userRepo = new UserRepository();
+  private userPrefRepo = new UserPreferenceRepository();
 
   async createMonthlyReport(dto: CreateMonthlyReportDTO) {
     const existing = await this.reportRepo.findByCompositeKey(dto.kpiId, dto.month, dto.year);
@@ -143,8 +147,8 @@ export class KpiMonthlyService {
         signaturePath: sigBody?.signatureDataUrl,
       }, tx);
 
-      if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
-        await this.userRepo.saveSignature(actor.userId, {
+      if (sigBody?.saveSignature && sigBody.signatureDataUrl && actor.authUserId) {
+        await this.userPrefRepo.upsertSignature(actor.authUserId, {
           savedSignatureUrl: sigBody.signatureDataUrl,
           signatureType: sigBody.signatureType || 'DRAW',
         }, tx);
@@ -203,8 +207,8 @@ export class KpiMonthlyService {
         signaturePath: sigBody?.signatureDataUrl,
       }, tx);
 
-      if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
-        await this.userRepo.saveSignature(actor.userId, {
+      if (sigBody?.saveSignature && sigBody.signatureDataUrl && actor.authUserId) {
+        await this.userPrefRepo.upsertSignature(actor.authUserId, {
           savedSignatureUrl: sigBody.signatureDataUrl,
           signatureType: sigBody.signatureType || 'DRAW',
         }, tx);
@@ -248,8 +252,8 @@ export class KpiMonthlyService {
         signaturePath: sigBody?.signatureDataUrl,
       }, tx);
 
-      if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
-        await this.userRepo.saveSignature(actor.userId, {
+      if (sigBody?.saveSignature && sigBody.signatureDataUrl && actor.authUserId) {
+        await this.userPrefRepo.upsertSignature(actor.authUserId, {
           savedSignatureUrl: sigBody.signatureDataUrl,
           signatureType: sigBody.signatureType || 'DRAW',
         }, tx);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import DarForm from "./DarForm";
 import { useT } from "@/lib/i18n";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { Button } from "@/components/ui/button";
 import ConfirmModal from "@/components/common/ConfirmModal";
 import { useDarDetail, useDeleteDar } from "@/hooks/api/use-dar";
@@ -47,44 +47,40 @@ export default function DarEditModal({ darId, onClose }: Props) {
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(val) => {
-        if (!val) {
-          if (showDeleteConfirm) setShowDeleteConfirm(false);
-          else onClose();
-        }
-      }}>
-        <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
-          <DialogHeader className="px-6 py-4 border-b border-slate-100 text-left">
-            <div className="flex items-center justify-between pr-8">
-              <div>
-                <DialogTitle className="text-lg font-semibold text-slate-800 leading-snug">
-                  {t("dar.editDrawer.title")}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-slate-500 mt-0.5">
-                  {dar?.darNo
-                    ? `${t("dar.editDrawer.darNoPrefix")} ${dar.darNo}`
-                    : t("dar.editDrawer.draft")}
-                </DialogDescription>
-              </div>
+      <ResponsiveFormOverlay
+        open={isOpen}
+        onOpenChange={(value) => {
+          if (!value) {
+            if (showDeleteConfirm) setShowDeleteConfirm(false);
+            else onClose();
+          }
+        }}
+        title={t("dar.editDrawer.title")}
+        description={dar?.darNo
+          ? `${t("dar.editDrawer.darNoPrefix")} ${dar.darNo}`
+          : t("dar.editDrawer.draft")}
+        desktopContentClassName="w-[min(96vw,72rem)] max-w-4xl"
+        bodyClassName="space-y-4 px-4 py-5 md:px-6 md:py-6"
+      >
+          <div className="flex items-center justify-between">
+            <div />
+            {dar?.status === "DRAFT" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+                aria-label={t("dar.editDrawer.deleteLabel")}
+                className="text-rose-600 border-rose-200 hover:bg-rose-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span className="hidden sm:inline">{t("common.delete")}</span>
+              </Button>
+            )}
+          </div>
 
-              {dar?.status === "DRAFT" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  aria-label={t("dar.editDrawer.deleteLabel")}
-                  className="text-rose-600 border-rose-200 hover:bg-rose-50"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  <span className="hidden sm:inline">{t("common.delete")}</span>
-                </Button>
-              )}
-            </div>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+          <div className="space-y-4">
             {loading && (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-primary animate-spin" />
@@ -121,8 +117,7 @@ export default function DarEditModal({ darId, onClose }: Props) {
               />
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+      </ResponsiveFormOverlay>
 
       {showDeleteConfirm && (
         <ConfirmModal

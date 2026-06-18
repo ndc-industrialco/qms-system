@@ -605,7 +605,8 @@ model CarMaster {
   targetDepartmentId     String
   targetAuthDepartmentId String?              @map("target_auth_department_id")
   targetDepartmentName   String?              @map("target_department_name")
-  targetEmailGroup       String?
+  targetEmailGroups      String[]
+  targetEmailGroupsCc    String[]             @default([]) @map("target_email_groups_cc")
   responseDueAt      DateTime?
   reCar              Boolean              @default(false)
   reCarRefId         String?

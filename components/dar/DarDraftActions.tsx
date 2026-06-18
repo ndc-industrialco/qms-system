@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -39,18 +41,12 @@ export default function DarDraftActions({ darId }: Props) {
   return (
     <>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <ActionPillButton
+          tone="delete"
+          label={t("deleteDraft")}
           onClick={() => setShowConfirm(true)}
-          className="h-11 min-w-11 inline-flex items-center gap-1.5 px-3 rounded-xl text-sm font-medium
-                     text-rose-600 border border-rose-200 hover:bg-rose-50 transition-colors
-                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-          {t("deleteDraft")}
-        </button>
+          className="h-11 min-w-11 px-3 text-sm"
+        />
       </div>
 
       <Dialog open={showConfirm} onOpenChange={(open) => !deleting && setShowConfirm(open)}>
@@ -58,9 +54,7 @@ export default function DarDraftActions({ darId }: Props) {
           <DialogHeader>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+                <Trash2 className="h-5 w-5 text-rose-600" />
               </div>
               <DialogTitle className="text-base">{t("confirmDeleteDraft")}</DialogTitle>
             </div>

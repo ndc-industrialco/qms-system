@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type PaginationProps = {
@@ -46,9 +47,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, clas
         )}
         aria-label="Previous page"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
+        <ChevronLeft className="w-4 h-4" />
       </button>
 
       {pages.map((p, idx) =>
@@ -83,9 +82,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, clas
         )}
         aria-label="Next page"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        <ChevronRight className="w-4 h-4" />
       </button>
     </div>
   );

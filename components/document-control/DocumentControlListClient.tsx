@@ -16,6 +16,7 @@ import PageHeader from '@/components/common/PageHeader';
 import FilterBar from '@/components/common/FilterBar';
 import EmptyState from '@/components/common/EmptyState';
 import Pagination from '@/components/common/Pagination';
+import { ActionIconButton } from '@/components/common/ActionButtons';
 import { useUrlFilters } from '@/hooks/use-url-filters';
 import {
   Plus, ChevronRight, Hash, Download, Upload, Eye, Home,
@@ -329,13 +330,11 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-0.5">
-                          <button
+                          <ActionIconButton
+                            tone="view"
+                            label="View"
                             onClick={(e) => { e.stopPropagation(); openDetail(doc.id); }}
-                            title="View"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#0F1059]/[0.06] text-neutral transition-colors"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
+                          />
                           {canCreate && (
                             <button
                               onClick={(e) => openUpload(e, doc.id)}

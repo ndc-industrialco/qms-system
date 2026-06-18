@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 export interface Department {
   id: string;
   name: string;
+  emailGroup: string | null;
 }
 
 async function fetchDepartments(): Promise<Department[]> {

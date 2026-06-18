@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Mail, MailX } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,12 +15,17 @@ interface Props {
   onSuccess?: () => void;
 }
 
-async function issueCar(carId: string): Promise<void> {
+interface IssueResult {
+  carNo: string;
+  emailQueued: boolean;
+  emailSkipReason?: string;
+}
+
+async function issueCar(carId: string): Promise<IssueResult> {
   const res = await fetch(`/api/car/${carId}/issue`, { method: "POST" });
-  if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
-    throw new Error(json.message ?? "Failed to issue CAR");
-  }
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.message ?? "Failed to issue CAR");
+  return json.data as IssueResult;
 }
 
 export default function CarIssueDialog({ carId, carNo, onSuccess }: Props) {
@@ -29,11 +35,24 @@ export default function CarIssueDialog({ carId, carNo, onSuccess }: Props) {
 
   const mutation = useMutation({
     mutationFn: () => issueCar(carId),
-    onSuccess: () => {
+    onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ["cars"] });
       qc.invalidateQueries({ queryKey: ["car", carId] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
       setOpen(false);
       onSuccess?.();
+
+      if (result.emailQueued) {
+        toast.success(`ออก CAR ${result.carNo} แล้ว — ส่งอีเมลแจ้งเตือนแล้ว`, {
+          icon: <Mail className="h-4 w-4 text-green-600" />,
+          duration: 5000,
+        });
+      } else {
+        toast.warning(
+          `ออก CAR ${result.carNo} แล้ว — ไม่ได้ส่งอีเมล: ${result.emailSkipReason ?? "ไม่ทราบสาเหตุ"}`,
+          { icon: <MailX className="h-4 w-4 text-amber-500" />, duration: 8000 }
+        );
+      }
     },
     onError: (err) => {
       toast.error((err as Error).message, { duration: Infinity });

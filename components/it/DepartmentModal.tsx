@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import type { DepartmentRow } from "@/types/department";
 import type { GraphGroup } from "@/services/ms-graph";
 import { useLocale } from "@/lib/locale-context";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -144,13 +144,25 @@ export default function DepartmentModal({ mode, department, onClose, onSuccess }
   }
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{mode === "create" ? t.titleCreate : t.titleEdit}</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-4">
+    <ResponsiveFormOverlay
+      open={true}
+      onOpenChange={(value) => { if (!value) onClose(); }}
+      title={mode === "create" ? t.titleCreate : t.titleEdit}
+      desktopContentClassName="w-[min(96vw,48rem)] max-w-xl"
+      bodyClassName="px-4 py-5 md:px-6 md:py-5"
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            {t.cancel}
+          </Button>
+          <Button type="submit" form="it-department-form" disabled={loading}>
+            {loading && <span className="mr-1.5 h-3 w-3 rounded-full border-2 border-current border-t-transparent animate-spin" />}
+            {mode === "create" ? t.add : t.save}
+          </Button>
+        </>
+      }
+    >
+        <form id="it-department-form" onSubmit={handleSubmit} className="mt-1 flex flex-col gap-3">
           {/* Department name */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[14px] font-medium text-slate-700">
@@ -242,19 +254,8 @@ export default function DepartmentModal({ mode, department, onClose, onSuccess }
               <span className="text-[13px]">{error}</span>
             </div>
           )}
-
-          <div className="flex justify-end gap-2 mt-6">
-            <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={loading}>
-              {t.cancel}
-            </Button>
-            <Button type="submit" size="sm" disabled={loading}>
-              {loading && <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5" />}
-              {mode === "create" ? t.add : t.save}
-            </Button>
-          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }
 

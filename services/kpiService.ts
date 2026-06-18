@@ -1,7 +1,7 @@
 import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
 import { AuditService } from '@/services/auditService';
 import { NotificationService } from '@/services/notificationService';
-import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail } from '@/services/email';
+import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail } from '@/services/email';
 import { ActionTokenService } from '@/services/actionTokenService';
 import { ApprovalModule, ApprovalStep } from '@/generated/prisma/client';
 import { db } from '@/lib/db';
@@ -313,6 +313,26 @@ export class KpiService {
         })
       : undefined;
 
+    // Notify approver
+    if (kpi.approverUserId && kpi.approverEmail && approverToken) {
+      NotificationService.sendEmailOnce(
+        `KPI:${id}:REVIEWED:approver:${kpi.approverUserId}`,
+        () => sendKpiObjectiveApproverRequestEmail({
+          approver: { name: kpi.approver ?? '', email: kpi.approverEmail! },
+          reviewerName: actor.name ?? '',
+          departmentName: kpi.department,
+          objectives: kpi.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
+          year: kpi.yearly,
+          actionToken: approverToken,
+          senderEmail: actor.email,
+        }),
+        kpi.approverEmail,
+        'KPI Approval Request',
+        kpi.approverUserId,
+        { title: 'มี KPI รอการอนุมัติ', body: `KPI ${kpi.department} ${kpi.yearly}`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
+      ).catch(() => {});
+    }
+
     return { ...updated, objectives: kpi.objectives, approverToken };
   }
 
@@ -379,6 +399,32 @@ export class KpiService {
     // Approved — no more actions needed, revoke any remaining tokens
     await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
 
+    // Notify preparer
+    const preparerSig = signatures.find((s) => s.step === 'PREPARER');
+    const preparerAuthId = (preparerSig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined;
+    if (preparerAuthId) {
+      const preparer = await getUserSnapshot(preparerAuthId);
+      if (preparer?.email) {
+        NotificationService.sendEmailOnce(
+          `KPI:${id}:APPROVED:preparer:${preparerAuthId}`,
+          () => sendKpiResultEmail({
+            to: { name: preparer.name ?? '', email: preparer.email },
+            departmentName: kpi.department,
+            year: kpi.yearly,
+            status: 'APPROVED',
+            actorName: actor.name ?? '',
+            kpiId: id,
+            objectives: kpi.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
+            senderEmail: actor.email,
+          }),
+          preparer.email,
+          'KPI Approved',
+          preparerAuthId,
+          { title: 'KPI ได้รับการอนุมัติแล้ว', body: `KPI ${kpi.department} ${kpi.yearly} ได้รับการอนุมัติ`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
+        ).catch(() => {});
+      }
+    }
+
     return { ...updated, objectives: kpi.objectives };
   }
 
@@ -435,12 +481,13 @@ export class KpiService {
 
     // Send notifications outside transaction — idempotent via NotificationService
     if (notifyUserIds.length > 0) {
-      const users = await Promise.all(notifyUserIds.map((uid) => this.userRepo.findById(uid)));
-      const recipients = users.filter((u): u is NonNullable<typeof u> => Boolean(u?.email));
-
-      for (const u of recipients) {
+      const snapshots = await Promise.all(notifyUserIds.map((uid) => getUserSnapshot(uid)));
+      for (let i = 0; i < notifyUserIds.length; i++) {
+        const u = snapshots[i];
+        const authId = notifyUserIds[i];
+        if (!u?.email) continue;
         NotificationService.sendEmailOnce(
-          `KPI:${id}:RECALLED:notify:${u.id}`,
+          `KPI:${id}:RECALLED:notify:${authId}`,
           () => sendKpiRecallEmail({
             to: { name: u.name ?? '', email: u.email },
             departmentName: kpi.department,
@@ -451,7 +498,7 @@ export class KpiService {
           }),
           u.email,
           'KPI Recalled',
-          u.id,
+          authId,
           {
             title: "KPI ถูก Recall",
             body: `KPI ${kpi.department} ${kpi.yearly}`,
@@ -509,6 +556,32 @@ export class KpiService {
 
     // Revoke all tokens — preparer must re-submit to get a new reviewer link
     await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
+
+    // Notify preparer
+    const rejectSignatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
+    const rejectPreparerSig = rejectSignatures.find((s) => s.step === 'PREPARER');
+    const rejectPreparerAuthId = (rejectPreparerSig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined;
+    if (rejectPreparerAuthId) {
+      const preparer = await getUserSnapshot(rejectPreparerAuthId);
+      if (preparer?.email) {
+        NotificationService.sendEmailOnce(
+          `KPI:${id}:REJECTED:preparer:${rejectPreparerAuthId}`,
+          () => sendKpiRejectedPreparerEmail({
+            to: { name: preparer.name ?? '', email: preparer.email },
+            departmentName: kpi.department,
+            year: kpi.yearly,
+            actorName: actor.name ?? '',
+            kpiId: id,
+            objectives: kpi.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
+            senderEmail: actor.email,
+          }),
+          preparer.email,
+          'KPI Rejected',
+          rejectPreparerAuthId,
+          { title: 'KPI ถูกปฏิเสธ', body: `KPI ${kpi.department} ${kpi.yearly} ถูกปฏิเสธ`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
+        ).catch(() => {});
+      }
+    }
 
     return { ...updated, objectives: kpi.objectives };
   }

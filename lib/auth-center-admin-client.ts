@@ -511,3 +511,36 @@ export async function deleteAuthCenterDepartment(code: string, options?: AuthCen
     throw new Error(`Auth Center delete department failed (${res.status}): ${text}`);
   }
 }
+
+export type AuthCenterEmailGroup = {
+  id: string;
+  entraGroupId: string | null;
+  displayName: string;
+  mail: string | null;
+  description: string | null;
+};
+
+export async function searchAuthCenterEmailGroups(
+  q: string,
+  options?: AuthCenterClientAuthOptions
+): Promise<AuthCenterEmailGroup[]> {
+  const base = getBaseUrl();
+  const appId = getAppId();
+
+  const url = new URL(`${base}/api/auth/consumer/groups`);
+  url.searchParams.set("appId", appId);
+  if (q.trim()) url.searchParams.set("q", q.trim());
+
+  const res = await fetch(url.toString(), {
+    headers: await resolveAuthHeaders(options),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Auth Center groups search failed (${res.status}): ${text}`);
+  }
+
+  const json = await res.json() as { data?: AuthCenterEmailGroup[] };
+  return json.data ?? [];
+}
+

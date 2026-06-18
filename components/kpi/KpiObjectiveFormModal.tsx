@@ -7,7 +7,7 @@ import { z } from "zod";
 import { createKpiObjectiveSchema } from "@/schemas/kpiSchema";
 import { useT } from "@/lib/i18n";
 import { KPI_UNITS, isPresetUnit } from "@/lib/kpi-units";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -73,15 +73,24 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
   }, [open, objective, reset]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
-        <DialogHeader className="px-6 py-4 border-b border-slate-100">
-          <DialogTitle className="text-base font-semibold text-slate-800">
-            {isEdit ? t("kpi.objective.editTitle") : t("kpi.objective.createTitle")}
-          </DialogTitle>
-        </DialogHeader>
-
-        <form id="kpi-objective-form" className="flex-1 overflow-y-auto px-6 py-6 space-y-5"
+    <ResponsiveFormOverlay
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEdit ? t("kpi.objective.editTitle") : t("kpi.objective.createTitle")}
+      desktopContentClassName="w-[min(96vw,64rem)] max-w-3xl"
+      bodyClassName="space-y-5 px-4 py-5 md:px-6 md:py-6"
+      footer={
+        <>
+          <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+            {t("common.cancel")}
+          </Button>
+          <Button type="submit" form="kpi-objective-form" className="rounded-xl bg-primary hover:bg-[#161875]" disabled={isSubmitting}>
+            {isSubmitting ? t("common.loading") : t("common.save")}
+          </Button>
+        </>
+      }
+    >
+        <form id="kpi-objective-form" className="space-y-5"
           onSubmit={handleSubmit(async (values) => {
             const finalUnit = values.unit === "other" ? (customUnit.trim() || undefined) : values.unit;
             await onSubmit({ ...values, unit: finalUnit });
@@ -194,16 +203,6 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
             <input type="text" className={cn(inputBase, inputDefault)} {...register("referenceDocuments")} />
           </div>
         </form>
-
-        <DialogFooter className="px-6 py-4 border-t border-slate-100">
-          <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-            {t("common.cancel")}
-          </Button>
-          <Button type="submit" form="kpi-objective-form" className="rounded-xl bg-primary hover:bg-[#161875]" disabled={isSubmitting}>
-            {isSubmitting ? t("common.loading") : t("common.save")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveFormOverlay>
   );
 }

@@ -4,7 +4,9 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useT } from "@/lib/i18n";
+import { useDepartments } from "@/hooks/api/use-departments";
 import PageHeader from "@/components/common/PageHeader";
+import { ActionIconButton } from "@/components/common/ActionButtons";
 import { useKpiList, useCreateKpi } from "@/hooks/api/use-kpi";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,8 +28,6 @@ import {
   User,
   UserCheck,
   UserCog,
-  Pencil,
-  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -285,25 +285,17 @@ function DepartmentPanel({ depts, year, onRefresh, onNavigateKpi }: DeptPanelPro
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-sky-600 hover:text-sky-700 hover:bg-sky-50"
+                        <ActionIconButton
+                          tone="edit"
+                          label={t("common.edit")}
                           onClick={() => { setSelected(d); setModalMode("edit"); }}
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                        />
+                        <ActionIconButton
+                          tone="delete"
+                          label={t("common.delete")}
                           onClick={() => requestDelete(d)}
-                          disabled={deletingId === d.id}
-                        >
-                          {deletingId === d.id
-                            ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                            : <Trash2 className="w-3.5 h-3.5" />}
-                        </Button>
+                          loading={deletingId === d.id}
+                        />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -325,25 +317,17 @@ function DepartmentPanel({ depts, year, onRefresh, onNavigateKpi }: DeptPanelPro
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 text-sky-600 hover:text-sky-700 hover:bg-sky-50"
+                  <ActionIconButton
+                    tone="edit"
+                    label={t("common.edit")}
                     onClick={() => { setSelected(d); setModalMode("edit"); }}
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                  />
+                  <ActionIconButton
+                    tone="delete"
+                    label={t("common.delete")}
                     onClick={() => requestDelete(d)}
-                    disabled={deletingId === d.id}
-                  >
-                    {deletingId === d.id
-                      ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      : <Trash2 className="w-3.5 h-3.5" />}
-                  </Button>
+                    loading={deletingId === d.id}
+                  />
                 </div>
               </div>
             ))}
@@ -474,14 +458,7 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
     return !!userDepartmentId && deptId === userDepartmentId;
   }
 
-  const { data: deptResp, isLoading: deptLoading } = useQuery<{ data: Department[] }>({
-    queryKey: ["departments"],
-    queryFn: async () => {
-      const res = await fetch("/api/departments");
-      if (!res.ok) throw new Error("Failed to load departments");
-      return res.json();
-    },
-  });
+  const { data: deptData, isLoading: deptLoading } = useDepartments();
 
   // Full department list (with _count) for management panel — privileged only
   const { data: allDeptsResp } = useQuery<{ data: Department[] }>({
@@ -501,7 +478,7 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
 
   const { data: kpiResp, isLoading: kpiLoading } = useKpiList({ yearly: year, limit: 100 });
 
-  const allDepts: Department[] = deptResp?.data ?? [];
+  const allDepts: Department[] = deptData ?? [];
   const allKpis = (kpiResp?.data ?? []) as KpiWithObjectives[];
 
   const createMutation = useCreateKpi();
@@ -759,7 +736,7 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
       )}
 
       {/* Error state */}
-      {!isLoading && !deptResp && (
+      {!isLoading && !deptData && (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-6">
           <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center mb-4 text-rose-600">
             <ShieldAlert className="w-6 h-6" />

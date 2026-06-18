@@ -4,29 +4,34 @@ import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth } from '@/lib/auth';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
-import { UserRepository } from '@/repositories/userRepository';
+import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { sendKpiMonthlyApprovalRequestEmail } from '@/services/email';
 import { ActionTokenService } from '@/services/actionTokenService';
 import { ApprovalModule, ApprovalStep } from '@/generated/prisma/client';
 
 const service = new KpiMonthlyService();
-const userRepo = new UserRepository();
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   try {
     const session = await requireAuth();
     const { reportId } = await params;
     const body = await _req.json().catch(() => ({}));
-    const updated = await service.submitReport(reportId, { userId: session.user.id, role: session.user.role, departmentId: session.user.authDepartmentId ?? session.user.departmentId }, body);
+    const updated = await service.submitReport(reportId, {
+      userId: session.user.id,
+      authUserId: session.user.authUserId,
+      role: session.user.role,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
+      accessToken: session.user.accessToken,
+    }, body);
 
     const detail = await service.getReportById(reportId);
-    
+
     // Fallback to KPI's reviewer if not provided in body
     const reviewerId = body.reviewerUserId || detail.kpi.reviewerUserId;
     if (reviewerId) {
-      const [reviewer, preparer] = await Promise.all([
-        userRepo.findById(reviewerId),
-        userRepo.findByAuthUserId(session.user.id),
+      const [reviewer, preparerSnapshot] = await Promise.all([
+        getUserSnapshot(reviewerId),
+        getUserSnapshot(session.user.id),
       ]);
       if (reviewer?.email) {
         await ActionTokenService.revokeByDocument(ApprovalModule.KPI_MONTHLY, reportId);
@@ -39,13 +44,13 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
         });
 
         NotificationService.sendEmailOnce(
-          `KPI_MONTHLY:${reportId}:SUBMITTED:reviewer:${reviewer.id}:${reviewerToken.substring(0, 16)}`,
+          `KPI_MONTHLY:${reportId}:SUBMITTED:reviewer:${reviewerId}:${reviewerToken.substring(0, 16)}`,
           () => sendKpiMonthlyApprovalRequestEmail({
             approver: { name: reviewer.name ?? '', email: reviewer.email },
             departmentName: detail.kpi.department,
             month: detail.month,
             year: detail.year,
-            preparerName: preparer?.name ?? session.user.name ?? '',
+            preparerName: preparerSnapshot?.name ?? session.user.name ?? '',
             details: detail.details.map((d) => ({
               objective: d.kpiObjective.objective,
               target: d.kpiObjective.target,
@@ -58,7 +63,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           }),
           reviewer.email,
           'Monthly KPI Review Request',
-          reviewer.id,
+          reviewerId,
           {
             title: "มี KPI รายเดือนรอการ Review",
             body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
