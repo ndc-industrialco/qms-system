@@ -32,7 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         NotificationService.sendEmailOnce(
           `KPI_MONTHLY:${reportId}:REJECTED:preparer:${preparerAuthId}`,
           () => sendKpiMonthlyResultEmail({
-            to: { name: preparer.name ?? '', email: preparer.email },
+            to: { name: preparer.name ?? '', email: preparer.email! },
             departmentName: detail.kpi.department,
             month: detail.month,
             year: detail.year,

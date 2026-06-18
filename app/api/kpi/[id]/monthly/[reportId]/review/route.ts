@@ -46,7 +46,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           NotificationService.sendEmailOnce(
             `KPI_MONTHLY:${reportId}:REVIEWED:approver:${approverAuthId}:${approverToken.substring(0, 16)}`,
             () => sendKpiMonthlyApprovalRequestEmail({
-              approver: { name: approver.name ?? '', email: approver.email },
+              approver: { name: approver.name ?? '', email: approver.email! },
               departmentName: detail.kpi.department,
               month: detail.month,
               year: detail.year,
@@ -83,7 +83,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
         NotificationService.sendEmailOnce(
           `KPI_MONTHLY:${reportId}:APPROVED:preparer:${preparerAuthIdApproved}`,
           () => sendKpiMonthlyResultEmail({
-            to: { name: preparer.name ?? '', email: preparer.email },
+            to: { name: preparer.name ?? '', email: preparer.email! },
             departmentName: detail.kpi.department,
             month: detail.month,
             year: detail.year,
@@ -101,7 +101,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           }),
           preparer.email,
           'Monthly KPI Approved',
-          preparerAuthIdApproved,
+          preparerAuthIdApproved ?? undefined,
           {
             title: "KPI รายเดือนได้รับการอนุมัติ",
             body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,

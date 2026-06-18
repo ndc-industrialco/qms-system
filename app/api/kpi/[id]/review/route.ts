@@ -28,7 +28,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
         NotificationService.sendEmailOnce(
           `KPI:${id}:REVIEWED:approver:${updated.approverUserId}:${(updated.approverToken ?? '').substring(0, 16)}`,
           () => sendKpiApprovalRequestEmail({
-            approver: { name: approver.name ?? '', email: approver.email },
+            approver: { name: approver.name ?? '', email: approver.email! },
             departmentName: updated.department,
             year: updated.yearly,
             reviewerName: session.user.name ?? '',

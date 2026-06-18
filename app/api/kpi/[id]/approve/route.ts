@@ -29,7 +29,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       NotificationService.sendEmailOnce(
         `KPI:${id}:APPROVED:notify:${authId}`,
         () => sendKpiResultEmail({
-          to: { name: u.name ?? '', email: u.email },
+          to: { name: u.name ?? '', email: u.email! },
           departmentName: updated.department,
           year: updated.yearly,
           status: 'APPROVED',

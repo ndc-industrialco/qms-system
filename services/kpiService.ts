@@ -408,7 +408,7 @@ export class KpiService {
         NotificationService.sendEmailOnce(
           `KPI:${id}:APPROVED:preparer:${preparerAuthId}`,
           () => sendKpiResultEmail({
-            to: { name: preparer.name ?? '', email: preparer.email },
+            to: { name: preparer.name ?? '', email: preparer.email! },
             departmentName: kpi.department,
             year: kpi.yearly,
             status: 'APPROVED',
@@ -489,7 +489,7 @@ export class KpiService {
         NotificationService.sendEmailOnce(
           `KPI:${id}:RECALLED:notify:${authId}`,
           () => sendKpiRecallEmail({
-            to: { name: u.name ?? '', email: u.email },
+            to: { name: u.name ?? '', email: u.email! },
             departmentName: kpi.department,
             year: kpi.yearly,
             preparerName: actor.name ?? '',
@@ -567,7 +567,7 @@ export class KpiService {
         NotificationService.sendEmailOnce(
           `KPI:${id}:REJECTED:preparer:${rejectPreparerAuthId}`,
           () => sendKpiRejectedPreparerEmail({
-            to: { name: preparer.name ?? '', email: preparer.email },
+            to: { name: preparer.name ?? '', email: preparer.email! },
             departmentName: kpi.department,
             year: kpi.yearly,
             actorName: actor.name ?? '',

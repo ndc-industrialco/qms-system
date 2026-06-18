@@ -46,7 +46,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
         NotificationService.sendEmailOnce(
           `KPI_MONTHLY:${reportId}:SUBMITTED:reviewer:${reviewerId}:${reviewerToken.substring(0, 16)}`,
           () => sendKpiMonthlyApprovalRequestEmail({
-            approver: { name: reviewer.name ?? '', email: reviewer.email },
+            approver: { name: reviewer.name ?? '', email: reviewer.email! },
             departmentName: detail.kpi.department,
             month: detail.month,
             year: detail.year,

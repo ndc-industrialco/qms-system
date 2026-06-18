@@ -33,7 +33,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       NotificationService.sendEmailOnce(
         `KPI:${id}:REJECTED:notify:${authId}`,
         () => sendKpiResultEmail({
-          to: { name: u.name ?? '', email: u.email },
+          to: { name: u.name ?? '', email: u.email! },
           departmentName: updated.department,
           year: updated.yearly,
           status: 'REJECTED',
@@ -62,7 +62,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
         NotificationService.sendEmailOnce(
           `KPI:${id}:REJECTED:preparer:${preparerAuthId}`,
           () => sendKpiRejectedPreparerEmail({
-            to: { name: preparer.name ?? '', email: preparer.email },
+            to: { name: preparer.name ?? '', email: preparer.email! },
             departmentName: updated.department,
             year: updated.yearly,
             actorName: session.user.name ?? '',
