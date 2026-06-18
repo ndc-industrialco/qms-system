@@ -558,7 +558,7 @@ export class KpiService {
     await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
 
     // Notify preparer
-    const rejectSignatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
+    const rejectSignatures = await this.approvalSignatureRepo.findByDocument('KPI', id) ?? [];
     const rejectPreparerSig = rejectSignatures.find((s) => s.step === 'PREPARER');
     const rejectPreparerAuthId = (rejectPreparerSig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined;
     if (rejectPreparerAuthId) {
