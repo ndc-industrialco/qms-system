@@ -422,6 +422,10 @@
     "uploadFail": "อัปเดตไฟล์แนบไม่สำเร็จ",
     "saveFail": "บันทึกประกาศไม่สำเร็จ",
     "createDescription": "กรอกรายละเอียดประกาศด้านล่าง",
+    "allTitle": "ประกาศทั้งหมด",
+    "fieldEmailGroups": "ส่งอีเมลแจ้งกลุ่ม (MS365)",
+    "emailGroupsPlaceholder": "ค้นหากลุ่ม Email MS365...",
+    "emailGroupsHint": "เว้นว่างหากไม่ต้องการส่งอีเมล",
     "bg": {
       "background": "พื้นหลัง",
       "colorTab": "สี",
@@ -918,6 +922,7 @@
     "announcements": {
       "title": "ข่าวสารและประกาศ",
       "manage": "จัดการ",
+      "viewAll": "ดูทั้งหมด",
       "empty": "ไม่มีข่าวสารในขณะนี้"
     },
     "recentDocuments": {

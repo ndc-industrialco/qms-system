@@ -3,6 +3,7 @@
 import { useT } from "@/lib/i18n";
 import { useCreateAnnouncement } from "@/hooks/use-create-announcement";
 import AnnouncementBgPicker from "@/components/announcements/AnnouncementBgPicker";
+import GraphGroupPicker, { type GraphGroupResult } from "@/components/shared/GraphGroupPicker";
 import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -148,6 +149,16 @@ export default function AnnouncementCreateModal({ open, onClose, onCreated }: Pr
                 {file.name} ({(file.size / 1024).toFixed(1)} KB)
               </p>
             )}
+          </div>
+
+          <div>
+            <GraphGroupPicker
+              label={t("announcement.fieldEmailGroups")}
+              value={form.emailGroupMails.map((mail) => ({ id: mail, displayName: mail, mail, description: null }))}
+              onChange={(groups: GraphGroupResult[]) => setForm((f) => ({ ...f, emailGroupMails: groups.map((g) => g.mail ?? g.id) }))}
+              placeholder={t("announcement.emailGroupsPlaceholder")}
+            />
+            <p className="text-slate-400 text-xs mt-1">{t("announcement.emailGroupsHint")}</p>
           </div>
 
           <AnnouncementBgPicker

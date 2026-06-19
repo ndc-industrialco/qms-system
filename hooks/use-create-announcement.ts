@@ -13,6 +13,7 @@ export type CreateFormData = {
   pushToCompanyCenter: boolean;
   bgColor: string;
   textColor: string;
+  emailGroupMails: string[];
 };
 
 const EMPTY_FORM: CreateFormData = {
@@ -25,6 +26,7 @@ const EMPTY_FORM: CreateFormData = {
   pushToCompanyCenter: true,
   bgColor: "#0F1059",
   textColor: "#FFFFFF",
+  emailGroupMails: [],
 };
 
 export function useCreateAnnouncement(
@@ -63,6 +65,9 @@ export function useCreateAnnouncement(
       if (form.endDate) formData.append("endDate", new Date(form.endDate).toISOString());
       formData.append("bgColor", form.bgColor);
       formData.append("textColor", form.textColor);
+      if (form.emailGroupMails.length) {
+        formData.append("emailGroupMails", JSON.stringify(form.emailGroupMails));
+      }
 
       // Upload attachment
       if (file) {

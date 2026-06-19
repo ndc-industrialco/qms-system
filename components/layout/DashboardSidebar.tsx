@@ -79,6 +79,12 @@ function getSections(
       icon: <CalendarDays className="h-[18px] w-[18px] shrink-0" />,
     },
     {
+      labelTh: "ประกาศทั้งหมด",
+      labelEn: "Announcements",
+      href: "/announcements",
+      icon: <Megaphone className="h-[18px] w-[18px] shrink-0" />,
+    },
+    {
       labelTh: "CAR ของแผนก",
       labelEn: "CAR (My Dept)",
       href: "/car",

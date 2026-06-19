@@ -422,6 +422,10 @@
     "uploadFail": "Failed to upload file",
     "saveFail": "Failed to save announcement",
     "createDescription": "Fill in the announcement details below",
+    "allTitle": "All Announcements",
+    "fieldEmailGroups": "Email Groups (MS365)",
+    "emailGroupsPlaceholder": "Search MS365 email groups...",
+    "emailGroupsHint": "Leave empty to skip email notification",
     "bg": {
       "background": "Background",
       "colorTab": "Color",
@@ -918,6 +922,7 @@
     "announcements": {
       "title": "Announcements",
       "manage": "Manage",
+      "viewAll": "View All",
       "empty": "No announcements at this time"
     },
     "recentDocuments": {
