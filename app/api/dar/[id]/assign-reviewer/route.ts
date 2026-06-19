@@ -67,7 +67,7 @@ export async function POST(req: NextRequest, { params }: Params) {
             spWebUrl: a.spWebUrl,
           })),
           actionToken: reviewerToken,
-          senderEmail: dar.requester.email ?? session.user.email ?? undefined,
+          senderAccessToken: session.user.accessToken,
         }),
         reviewerEmail,
         'DAR Reviewer Assigned',

@@ -23,17 +23,60 @@ vi.mock("@/services/actionTokenService", () => ({
   ActionTokenService: { issue: vi.fn().mockResolvedValue("token-1") },
 }));
 
+vi.mock("@/services/carNotificationService", () => ({
+  notifyCarUser: vi.fn().mockResolvedValue(undefined),
+  canReceiveEmail: vi.fn().mockReturnValue(true),
+}));
+
+vi.mock("@/services/carReminderService", () => ({
+  CarReminderService: {
+    schedule: vi.fn().mockResolvedValue(undefined),
+    cancel: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock("@/lib/userSnapshotCache", () => ({
+  getUserSnapshot: vi.fn().mockResolvedValue({
+    authUserId: "auth-verifier-1",
+    name: "Bob",
+    email: "bob@example.com",
+    employeeId: "E002",
+    m365Linked: true,
+    departmentId: "dept-qms",
+    departmentName: "QMS",
+  }),
+}));
+
 vi.mock("@/repositories/carRepository");
 vi.mock("@/repositories/carSequenceRepository");
 vi.mock("@/repositories/systemConfigRepository");
 
 import { CarService } from "@/services/carService";
 import { CarRepository } from "@/repositories/carRepository";
+import { sendCarVerifyPassEmail, sendCarVerify2NotifyEmail } from "@/services/carEmailService";
+import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 
 type MockClass<T> = { mock: { instances: T[] } };
 
 function getInstance<T>(Cls: unknown): T {
   return (Cls as MockClass<T>).mock.instances[0];
+}
+
+function makeForVerifyRaw(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "car-1",
+    carNo: "C26-001",
+    status: "VERIFY_1",
+    targetDepartmentId: "dept-1",
+    targetAuthDepartmentId: "dept-1",
+    targetDepartmentName: "QA",
+    issuerId: "issuer-1",
+    issuerAuthUserId: "auth-issuer-1",
+    issuerName: "Alice",
+    targetEmailGroups: ["qa@example.com"],
+    targetEmailGroupsCc: [],
+    ...overrides,
+  };
 }
 
 function makeSummaryRaw(overrides: Record<string, unknown> = {}) {
@@ -90,10 +133,13 @@ describe("CarService", () => {
   let service: CarService;
   let carRepo: CarRepository;
 
+  let configRepo: SystemConfigRepository;
+
   beforeEach(() => {
     vi.clearAllMocks();
     service = new CarService();
     carRepo = getInstance<CarRepository>(CarRepository);
+    configRepo = getInstance<SystemConfigRepository>(SystemConfigRepository);
   });
 
   it("maps paginated car list results", async () => {
@@ -163,5 +209,99 @@ describe("CarService", () => {
       expect.anything(),
     );
     expect(result.car.carNo).toBe("C26-001");
+  });
+
+  describe("verifyCar", () => {
+    function setupVerify(overrides: Record<string, unknown> = {}) {
+      vi.mocked(carRepo.findForVerify).mockResolvedValue(makeForVerifyRaw(overrides) as never);
+      vi.mocked(carRepo.createVerificationAndSetStatus).mockResolvedValue({} as never);
+      vi.mocked(carRepo.createNotificationLog).mockResolvedValue({} as never);
+      vi.mocked(carRepo.findDetailById).mockResolvedValue(makeDetailRaw() as never);
+    }
+
+    it("PASSED round=1 → status CLOSED, issues ActionToken, queues MR email", async () => {
+      setupVerify();
+      vi.mocked(configRepo.findValueByKey).mockImplementation(async (key) => {
+        if (key === "CURRENT_MR_AUTH_USER_ID") return "mr-auth-1";
+        if (key === "CURRENT_MR_EMAIL") return "mr@example.com";
+        return null;
+      });
+
+      await service.verifyCar("car-1", "verifier-1", { round: 1, result: "PASSED", findings: "OK", verifierPosition: "QMS Officer" }, "auth-verifier-1");
+
+      expect(carRepo.createVerificationAndSetStatus).toHaveBeenCalledWith(
+        "car-1",
+        expect.objectContaining({ round: 1, result: "PASSED" }),
+        "verifier-1",
+        expect.any(Object),
+        "CLOSED",
+        expect.anything()
+      );
+      // ActionToken issued for MR
+      const { ActionTokenService } = await import("@/services/actionTokenService");
+      expect(ActionTokenService.issue).toHaveBeenCalledWith(
+        expect.objectContaining({ module: "CAR", role: "APPROVER_MR" })
+      );
+      // MR verify-pass email queued
+      expect(sendCarVerifyPassEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ carId: "car-1", carNo: "C26-001", mrEmail: "mr@example.com" })
+      );
+    });
+
+    it("FAILED round=1 → status VERIFY_2, sends Verify2Notify email to dept", async () => {
+      setupVerify();
+      vi.mocked(configRepo.findValueByKey).mockResolvedValue(null);
+
+      await service.verifyCar(
+        "car-1",
+        "verifier-1",
+        { round: 1, result: "FAILED", findings: "Not fixed", nextDueDate: "2026-07-15", verifierPosition: "QMS Officer" },
+        "auth-verifier-1"
+      );
+
+      expect(carRepo.createVerificationAndSetStatus).toHaveBeenCalledWith(
+        "car-1",
+        expect.objectContaining({ round: 1, result: "FAILED" }),
+        "verifier-1",
+        expect.any(Object),
+        "VERIFY_2",
+        expect.anything()
+      );
+      expect(sendCarVerify2NotifyEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ carId: "car-1", targetEmail: "qa@example.com" })
+      );
+    });
+
+    it("FAILED round=2 → status RE_CAR, no email sent", async () => {
+      setupVerify({ status: "VERIFY_2" });
+      vi.mocked(configRepo.findValueByKey).mockResolvedValue(null);
+
+      await service.verifyCar(
+        "car-1",
+        "verifier-1",
+        { round: 2, result: "FAILED", findings: "Still not fixed", verifierPosition: "QMS Officer" },
+        "auth-verifier-1"
+      );
+
+      expect(carRepo.createVerificationAndSetStatus).toHaveBeenCalledWith(
+        "car-1",
+        expect.objectContaining({ round: 2, result: "FAILED" }),
+        "verifier-1",
+        expect.any(Object),
+        "RE_CAR",
+        expect.anything()
+      );
+      expect(sendCarVerifyPassEmail).not.toHaveBeenCalled();
+      expect(sendCarVerify2NotifyEmail).not.toHaveBeenCalled();
+    });
+
+    it("rejects wrong status for round", async () => {
+      // Status is VERIFY_1 but we request round=2 → should throw
+      vi.mocked(carRepo.findForVerify).mockResolvedValue(makeForVerifyRaw({ status: "VERIFY_1" }) as never);
+
+      await expect(
+        service.verifyCar("car-1", "verifier-1", { round: 2, result: "FAILED", findings: "x", verifierPosition: "QMS" })
+      ).rejects.toThrow("VERIFY_2");
+    });
   });
 });

@@ -34,7 +34,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
             reviewerName: session.user.name ?? '',
             objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
             actionToken: updated.approverToken ?? '',
-            senderEmail: session.user.email ?? undefined,
+            senderAccessToken: session.user.accessToken,
           }),
           approver.email,
           'KPI Approval Request',

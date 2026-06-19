@@ -1,8 +1,7 @@
 /**
- * Microsoft Graph API - Send Mail (app-only)
+ * Microsoft Graph API - Send Mail (delegated /me/sendMail)
  */
 
-import { getGraphToken } from "@/lib/graph-token";
 import { graphFetch } from "@/lib/graphFetch";
 import { logger } from "@/lib/logger";
 
@@ -15,18 +14,14 @@ interface SendMailOptions {
   to: MailRecipient[];
   subject: string;
   bodyHtml: string;
-  senderEmail: string | undefined;
+  senderAccessToken?: string | null;
 }
 
 async function sendMail(opts: SendMailOptions): Promise<void> {
-  const sender = opts.senderEmail;
-  if (!sender) {
-    logger.warn("[email] No sender address - mail skipped", { subject: opts.subject });
+  if (!opts.senderAccessToken) {
+    logger.warn("[email] No sender token — mail skipped", { subject: opts.subject });
     return;
   }
-  logger.info("[email] Sending mail", { from: sender, to: opts.to.map(r => r.email), subject: opts.subject });
-
-  const token = await getGraphToken();
 
   const payload = {
     message: {
@@ -39,10 +34,10 @@ async function sendMail(opts: SendMailOptions): Promise<void> {
     saveToSentItems: false,
   };
 
-  const res = await graphFetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(sender)}/sendMail`, {
+  const res = await graphFetch("https://graph.microsoft.com/v1.0/me/sendMail", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${opts.senderAccessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
@@ -238,12 +233,12 @@ export async function sendReviewerAssignedEmail(opts: {
   items: DarEmailItem[];
   attachments: DarEmailAttachment[];
   actionToken: string;
-  senderEmail?: string;
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.reviewer],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[DAR] Review Required - ${opts.darNo}`,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอเอกสาร DAR ${opts.darNo} รอตรวจสอบ`,
@@ -279,12 +274,12 @@ export async function sendMrApprovalRequestEmail(opts: {
   items: DarEmailItem[];
   attachments: DarEmailAttachment[];
   actionToken: string;
-  senderEmail?: string;
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.mr],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[DAR] MR Approval Required - ${opts.darNo}`,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอ DAR ${opts.darNo} รออนุมัติ MR`,
@@ -308,12 +303,12 @@ export async function sendQmsApprovalRequestEmail(opts: {
   darNo: string;
   darId: string;
   actionToken: string;
-  senderEmail?: string;
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.qms],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[DAR] QMS Approval Required - ${opts.darNo}`,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอ DAR ${opts.darNo} รออนุมัติ QMS`,
@@ -336,12 +331,12 @@ export async function sendApprovalNotificationEmail(opts: {
   approverName: string;
   stepLabel: string;
   nextStepLabel: string;
-  senderEmail?: string;
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/dar/${opts.darId}`);
   await sendMail({
     to: [opts.to],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[DAR] ${opts.darNo} - ${opts.stepLabel} Approved`,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอ DAR ${opts.darNo} อนุมัติแล้ว`,
@@ -364,12 +359,12 @@ export async function sendRejectionEmail(opts: {
   darId: string;
   rejectorName: string;
   reason: string;
-  senderEmail?: string;
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/dar/${opts.darId}`);
   await sendMail({
     to: [opts.to],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[DAR] ${opts.darNo} - Rejected`,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอ DAR ${opts.darNo} ถูกปฏิเสธ`,
@@ -394,12 +389,12 @@ export async function sendKpiObjectiveReviewerAssignedEmail(opts: {
   objectives: KpiObjectiveRow[];
   year: number;
   actionToken: string;
-  senderEmail: string | undefined;
+  senderAccessToken?: string | null;
 }) {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.reviewer],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[KPI] Review Required - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI ${opts.departmentName} ปี ${opts.year} รอตรวจสอบ`,
@@ -426,12 +421,12 @@ export async function sendKpiObjectiveApproverRequestEmail(opts: {
   objectives?: KpiObjectiveRow[];
   year: number;
   actionToken: string;
-  senderEmail?: string;
+  senderAccessToken?: string | null;
 }) {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.approver],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[KPI] Approval Required - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI ${opts.departmentName} ปี ${opts.year} รออนุมัติ`,
@@ -457,12 +452,12 @@ export async function sendKpiApprovalRequestEmail(opts: {
   reviewerName?: string;
   objectives?: KpiObjectiveRow[];
   actionToken: string;
-  senderEmail: string | undefined;
+  senderAccessToken?: string | null;
 }) {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.approver],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[KPI] Approval Required - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI ${opts.departmentName} ปี ${opts.year} รออนุมัติ`,
@@ -489,13 +484,13 @@ export async function sendKpiResultEmail(opts: {
   actorName: string;
   kpiId?: string;
   objectives?: KpiObjectiveRow[];
-  senderEmail: string | undefined;
+  senderAccessToken?: string | null;
 }) {
   const url = getAppUrl(opts.kpiId ? `/qms/kpi/${opts.kpiId}` : `/qms/kpi`);
   const statusTh = opts.status === "APPROVED" ? "อนุมัติแล้ว" : "ถูกปฏิเสธ";
   await sendMail({
     to: [opts.to],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[KPI] ${opts.status} - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `ผลการอนุมัติ KPI ${opts.departmentName} ปี ${opts.year}`,
@@ -521,12 +516,12 @@ export async function sendKpiRecallEmail(opts: {
   year: number;
   preparerName: string;
   kpiId: string;
-  senderEmail: string | undefined;
+  senderAccessToken?: string | null;
 }) {
   const url = getAppUrl(`/qms/kpi/${opts.kpiId}`);
   await sendMail({
     to: [opts.to],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[KPI] Recalled - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI ${opts.departmentName} ปี ${opts.year} ถูกเรียกคืนแล้ว`,
@@ -551,12 +546,12 @@ export async function sendKpiRejectedPreparerEmail(opts: {
   actorName: string;
   kpiId: string;
   objectives?: KpiObjectiveRow[];
-  senderEmail: string | undefined;
+  senderAccessToken?: string | null;
 }) {
   const url = getAppUrl(`/qms/kpi/${opts.kpiId}`);
   await sendMail({
     to: [opts.to],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[KPI] Rejected - ${opts.departmentName} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI ${opts.departmentName} ปี ${opts.year} ถูกปฏิเสธ`,
@@ -583,12 +578,12 @@ export async function sendKpiMonthlyApprovalRequestEmail(opts: {
   preparerName?: string;
   details?: KpiMonthlyDetailRow[];
   actionToken: string;
-  senderEmail: string | undefined;
+  senderAccessToken?: string | null;
 }) {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
     to: [opts.approver],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[KPI Monthly] Approval Required - ${opts.departmentName} / ${opts.month} ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI รายเดือน ${opts.departmentName} รออนุมัติ`,
@@ -607,6 +602,36 @@ export async function sendKpiMonthlyApprovalRequestEmail(opts: {
   });
 }
 
+export async function sendAnnouncementEmail(opts: {
+  groupEmails: string[];
+  title: string;
+  content: string;
+  sourceSystem: string;
+  senderAccessToken?: string | null;
+  announcementId: string;
+}): Promise<void> {
+  if (!opts.groupEmails.length) return;
+  const url = getAppUrl(`/announcements/${opts.announcementId}`);
+  const to = opts.groupEmails.map((e) => ({ name: e, email: e }));
+  await sendMail({
+    to,
+    senderAccessToken: opts.senderAccessToken,
+    subject: `[${esc(opts.sourceSystem)}] ประกาศใหม่: ${esc(opts.title)}`,
+    bodyHtml: makeBilingualMail({
+      titleTh: `ประกาศใหม่ / New Announcement`,
+      titleEn: `New Announcement`,
+      facts: [
+        { labelTh: "หัวข้อ", labelEn: "Title", value: opts.title },
+        { labelTh: "ระบบ", labelEn: "System", value: opts.sourceSystem },
+      ],
+      detailTh: opts.content,
+      actionLabelTh: "ดูประกาศ",
+      actionLabelEn: "View Announcement",
+      actionUrl: url,
+    }),
+  });
+}
+
 export async function sendKpiMonthlyResultEmail(opts: {
   to: MailRecipient;
   departmentName: string;
@@ -617,13 +642,13 @@ export async function sendKpiMonthlyResultEmail(opts: {
   reason?: string;
   details?: KpiMonthlyDetailRow[];
   reportId?: string;
-  senderEmail: string | undefined;
+  senderAccessToken?: string | null;
 }) {
   const url = getAppUrl(opts.reportId ? `/qms/kpi/monthly/${opts.reportId}` : `/qms/kpi/monthly`);
   const statusTh = opts.status === "APPROVED" ? "อนุมัติแล้ว" : "ถูกปฏิเสธ";
   await sendMail({
     to: [opts.to],
-    senderEmail: opts.senderEmail,
+    senderAccessToken: opts.senderAccessToken,
     subject: `[KPI Monthly] ${opts.status} - ${opts.departmentName} / ${opts.month} ${opts.year}`,
     bodyHtml: makeBilingualMail({
       titleTh: `ผลการอนุมัติ KPI รายเดือน ${opts.departmentName}`,

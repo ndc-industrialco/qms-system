@@ -8,8 +8,10 @@ const repo = new NotificationRepository();
 export async function GET() {
   try {
     const session = await requireAuth();
-    const notifications = await repo.findByRecipient(session.user.id, 30);
-    const unreadCount = await repo.countUnread(session.user.id);
+    // Prefer Auth Center ID (used by notifyCarUser) over local DB ID
+    const recipientId = session.user.authUserId ?? session.user.id;
+    const notifications = await repo.findByRecipient(recipientId, 30);
+    const unreadCount = await repo.countUnread(recipientId);
     return sendSuccess({ notifications, unreadCount }, "OK");
   } catch (err) {
     return handleApiError(err);

@@ -12,6 +12,7 @@ import type { CarCreateInput, CarUpdateInput, CarRespondInput, CarVerifyInput, C
 import type { CarStatus, CarSourceType, VerificationResult } from "@/generated/prisma/client";
 import type { CarListScope } from "@/types/car";
 import { sendCarIssuedEmail, sendCarReminderEmail, sendCarRespondedEmail, sendCarMrReviewRequestEmail, sendCarPlanApprovedEmail, sendCarPlanRejectedEmail, sendCarVerifyPassEmail, sendCarVerify2NotifyEmail, sendCarReCarEmail } from "@/services/carEmailService";
+import { CarReminderService } from "@/services/carReminderService";
 import { notifyCarUser, canReceiveEmail } from "@/services/carNotificationService";
 import type { PaginatedResult } from "@/repositories/baseRepository";
 
@@ -510,17 +511,23 @@ export class CarService {
       }, tx);
     });
 
+    // Schedule 3-day reminder (best-effort, non-blocking)
+    CarReminderService.schedule(id).catch((err) =>
+      logger.warn("[CarService.issueCar] Failed to schedule reminder", { carId: id, error: String(err) })
+    );
+
     let emailQueued = false;
     let emailSkipReason: string | undefined;
 
     // Email always follows selected To/CC groups.
+    // If issuer has a delegated M365 token, send from their account; otherwise use MAIL_SENDER.
     if (emailTargets.length === 0) {
       emailSkipReason = "No target email group (To) selected";
       logger.info("[CarService.issueCar] Email skipped - no email targets", { carId: id });
     } else {
       emailQueued = true;
       for (const email of emailTargets) {
-        sendCarIssuedEmail({ carId: id, carNo: car.carNo, targetEmail: email, cc: emailCc }).catch((err) =>
+        sendCarIssuedEmail({ carId: id, carNo: car.carNo, targetEmail: email, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
           logger.error("[CarService.issueCar] Email failed", { email, error: err instanceof Error ? err.message : String(err) })
         );
       }
@@ -587,6 +594,7 @@ export class CarService {
     input: CarRespondInput,
     responderAuthUserId?: string | null,
     responderAuthDepartmentId?: string | null,
+    accessToken?: string | null,
   ): Promise<CarDetail> {
     const car = await this.carRepo.findForRespond(id);
     if (!car) throw new NotFoundError("CAR");
@@ -654,6 +662,9 @@ export class CarService {
       }, tx);
     });
 
+    // Cancel reminder — CAR has been responded to
+    CarReminderService.cancel(id).catch(() => {});
+
     // Send emails after transaction committed (non-blocking)
     if (mrEmail && mrReviewToken && canReceiveEmail(mrSnapshot?.m365Linked)) {
       sendCarMrReviewRequestEmail({
@@ -662,10 +673,11 @@ export class CarService {
         mrEmail,
         token: mrReviewToken,
         plannedCompletionDate: plannedDate,
+        senderAccessToken: accessToken,
       }).catch((err) => logger.error("[CarService.respondToCar] MR review email failed", err));
     }
     if (infoRecipients.length > 0) {
-      sendCarRespondedEmail({ carId: id, carNo: car.carNo, recipients: infoRecipients }).catch((err) =>
+      sendCarRespondedEmail({ carId: id, carNo: car.carNo, recipients: infoRecipients, senderAccessToken: accessToken }).catch((err) =>
         logger.error("[CarService.respondToCar] QMS email failed", err)
       );
     }
@@ -768,6 +780,7 @@ export class CarService {
     verifierId: string,
     input: CarVerifyInput,
     verifierAuthUserId?: string | null,
+    accessToken?: string | null,
   ): Promise<CarDetail> {
     const car = await this.carRepo.findForVerify(id);
     if (!car) throw new NotFoundError("CAR");
@@ -845,12 +858,12 @@ export class CarService {
     // Send emails after transaction committed (non-blocking)
     const mrVerifySnapshot = mrUserForVerify ? await this.getIdentitySnapshot(mrUserForVerify.authUserId) : null;
     if (input.result === "PASSED" && actionTokenValue && mrEmail && canReceiveEmail(mrVerifySnapshot?.m365Linked)) {
-      sendCarVerifyPassEmail({ carId: id, carNo: car.carNo, mrEmail, token: actionTokenValue }).catch((err) =>
+      sendCarVerifyPassEmail({ carId: id, carNo: car.carNo, mrEmail, token: actionTokenValue, senderAccessToken: accessToken }).catch((err) =>
         logger.error("[CarService.verifyCar] MR email failed", err)
       );
     } else if (input.result === "FAILED" && input.round === 1 && deptEmails.length > 0) {
       for (const email of deptEmails) {
-        sendCarVerify2NotifyEmail({ carId: id, carNo: car.carNo, targetEmail: email, nextDueDate: input.nextDueDate!, cc: emailCc }).catch((err) =>
+        sendCarVerify2NotifyEmail({ carId: id, carNo: car.carNo, targetEmail: email, nextDueDate: input.nextDueDate!, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
           logger.error("[CarService.verifyCar] Verify2 email failed", err)
         );
       }
@@ -921,7 +934,7 @@ export class CarService {
     return this.mapDetail(detail);
   }
 
-  async createReCar(originalId: string, actorId: string, actorAuthUserId?: string | null): Promise<{ newCarId: string; newCarNo: string }> {
+  async createReCar(originalId: string, actorId: string, actorAuthUserId?: string | null, accessToken?: string | null): Promise<{ newCarId: string; newCarNo: string }> {
     const original = await this.carRepo.findDetailById(originalId);
     if (!original) throw new NotFoundError("CAR");
     if (original.status !== "RE_CAR") throw new ValidationError("CAR must be in RE_CAR status before creating a Re-CAR.");
@@ -987,7 +1000,7 @@ export class CarService {
 
     // Send email after transaction committed (non-blocking)
     for (const email of emailTargets) {
-      sendCarReCarEmail({ carId: newId, carNo: newCarNo, targetEmail: email, originalCarNo: original.carNo, cc: emailCc }).catch((err) =>
+      sendCarReCarEmail({ carId: newId, carNo: newCarNo, targetEmail: email, originalCarNo: original.carNo, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
         logger.error("[CarService.createReCar] Email failed", err)
       );
     }

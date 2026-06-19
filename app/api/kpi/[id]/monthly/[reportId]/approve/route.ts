@@ -45,7 +45,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
               achievedStatus: d.achievedStatus,
             })),
             reportId: reportId,
-            senderEmail: session.user.email ?? undefined,
+            senderAccessToken: session.user.accessToken,
           }),
           preparer.email,
           'Monthly KPI Approved',

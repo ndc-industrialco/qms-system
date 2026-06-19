@@ -21,7 +21,7 @@ export async function POST(
     const { id } = await params;
     const body = await req.json();
     const input = carVerifySchema.parse(body);
-    const car = await carService.verifyCar(id, session.user.id, input, session.user.authUserId);
+    const car = await carService.verifyCar(id, session.user.id, input, session.user.authUserId, session.user.accessToken);
     return sendSuccess(car, "CAR verification recorded successfully");
   } catch (err) {
     return handleApiError(err);

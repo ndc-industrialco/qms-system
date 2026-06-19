@@ -1,5 +1,4 @@
 import { logger } from "@/lib/logger";
-import { getGraphToken } from "@/lib/graph-token";
 import { graphFetch } from "@/lib/graphFetch";
 
 function esc(value: string): string {
@@ -16,13 +15,19 @@ function getAppUrl(path: string): string {
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-async function sendMail(opts: { to: string; cc?: string[]; subject: string; bodyHtml: string }): Promise<void> {
-  const sender = process.env.MAIL_SENDER;
-  if (!sender) {
-    logger.warn("[carEmail] No MAIL_SENDER configured — mail skipped", { subject: opts.subject });
+async function sendMail(opts: {
+  to: string;
+  cc?: string[];
+  subject: string;
+  bodyHtml: string;
+  /** Delegated MS Graph token (Mail.Send scope) — required; skips if absent */
+  senderAccessToken?: string | null;
+}): Promise<void> {
+  if (!opts.senderAccessToken) {
+    logger.warn("[carEmail] No sender token — mail skipped", { subject: opts.subject, to: opts.to });
     return;
   }
-  const token = await getGraphToken();
+
   const payload = {
     message: {
       subject: opts.subject,
@@ -32,14 +37,11 @@ async function sendMail(opts: { to: string; cc?: string[]; subject: string; body
     },
     saveToSentItems: false,
   };
-  const res = await graphFetch(
-    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(sender)}/sendMail`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }
-  );
+  const res = await graphFetch("https://graph.microsoft.com/v1.0/me/sendMail", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${opts.senderAccessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Graph sendMail ${res.status}: ${text}`);
@@ -77,6 +79,8 @@ export async function sendCarIssuedEmail(opts: {
   carNo: string;
   targetEmail: string;
   cc?: string[];
+  /** Delegated token — sends as the QMS officer who issued the CAR (if m365-linked) */
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
@@ -91,7 +95,7 @@ export async function sendCarIssuedEmail(opts: {
     actionLabel: "ดูรายละเอียด CAR / View CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[CAR] ได้รับคำร้องขอแก้ไข ${opts.carNo}`, bodyHtml: html });
+  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[CAR] ได้รับคำร้องขอแก้ไข ${opts.carNo}`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
 }
 
 export async function sendCarReminderEmail(opts: {
@@ -120,6 +124,7 @@ export async function sendCarRespondedEmail(opts: {
   carId: string;
   carNo: string;
   recipients: string[];
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/qms/car/${opts.carId}`);
   const html = makeCarMailBody({
@@ -134,7 +139,7 @@ export async function sendCarRespondedEmail(opts: {
     actionUrl: url,
   });
   for (const to of opts.recipients) {
-    await sendMail({ to, subject: `[CAR] แผนกตอบกลับ ${opts.carNo} แล้ว`, bodyHtml: html });
+    await sendMail({ to, subject: `[CAR] แผนกตอบกลับ ${opts.carNo} แล้ว`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
   }
 }
 
@@ -143,6 +148,7 @@ export async function sendCarVerifyPassEmail(opts: {
   carNo: string;
   mrEmail: string;
   token: string;
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/approve/car/${opts.carId}/mr?token=${opts.token}`);
   const html = makeCarMailBody({
@@ -157,7 +163,7 @@ export async function sendCarVerifyPassEmail(opts: {
     actionLabel: "ลงนามปิด CAR / Sign to Close CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.mrEmail, subject: `[CAR] กรุณาลงนามปิด CAR ${opts.carNo}`, bodyHtml: html });
+  await sendMail({ to: opts.mrEmail, subject: `[CAR] กรุณาลงนามปิด CAR ${opts.carNo}`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
 }
 
 export async function sendCarVerify2NotifyEmail(opts: {
@@ -166,6 +172,7 @@ export async function sendCarVerify2NotifyEmail(opts: {
   targetEmail: string;
   nextDueDate: string;
   cc?: string[];
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
@@ -180,7 +187,7 @@ export async function sendCarVerify2NotifyEmail(opts: {
     actionLabel: "ดูรายละเอียด CAR / View CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[CAR] กำหนดการติดตามครั้งที่ 2 สำหรับ ${opts.carNo}`, bodyHtml: html });
+  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[CAR] กำหนดการติดตามครั้งที่ 2 สำหรับ ${opts.carNo}`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
 }
 
 export async function sendCarMrReviewRequestEmail(opts: {
@@ -189,6 +196,7 @@ export async function sendCarMrReviewRequestEmail(opts: {
   mrEmail: string;
   token: string;
   plannedCompletionDate: string;
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const approveUrl = getAppUrl(`/approve/car/${opts.carId}/mr-response?token=${opts.token}&action=APPROVED`);
   const rejectUrl = getAppUrl(`/approve/car/${opts.carId}/mr-response?token=${opts.token}&action=REJECTED`);
@@ -208,7 +216,7 @@ export async function sendCarMrReviewRequestEmail(opts: {
   });
   const approveBtn = `<div style="margin-top:10px"><a href="${approveUrl}" style="display:inline-block;padding:10px 18px;background:#16a34a;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700;margin-right:8px">อนุมัติแผน / Approve</a><a href="${rejectUrl}" style="display:inline-block;padding:10px 18px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">ปฏิเสธแผน / Reject</a></div>`;
   const fullHtml = html.replace("</div>\n    <div", approveBtn + "\n    </div>\n    <div");
-  await sendMail({ to: opts.mrEmail, subject: `[CAR] ขอให้ตรวจสอบแผนแก้ไข ${opts.carNo}`, bodyHtml: fullHtml });
+  await sendMail({ to: opts.mrEmail, subject: `[CAR] ขอให้ตรวจสอบแผนแก้ไข ${opts.carNo}`, bodyHtml: fullHtml, senderAccessToken: opts.senderAccessToken });
 }
 
 export async function sendCarPlanApprovedEmail(opts: {
@@ -265,6 +273,7 @@ export async function sendCarReCarEmail(opts: {
   targetEmail: string;
   originalCarNo: string;
   cc?: string[];
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
@@ -279,5 +288,5 @@ export async function sendCarReCarEmail(opts: {
     actionLabel: "ดูรายละเอียด Re-CAR / View Re-CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[Re-CAR] ออก Re-CAR ใหม่ ${opts.carNo}`, bodyHtml: html });
+  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[Re-CAR] ออก Re-CAR ใหม่ ${opts.carNo}`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
 }

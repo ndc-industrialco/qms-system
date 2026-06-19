@@ -8,7 +8,8 @@ const repo = new NotificationRepository();
 export async function PATCH() {
   try {
     const session = await requireAuth();
-    await repo.markAllRead(session.user.id);
+    const recipientId = session.user.authUserId ?? session.user.id;
+    await repo.markAllRead(recipientId);
     return sendSuccess({}, "All marked as read");
   } catch (err) {
     return handleApiError(err);
