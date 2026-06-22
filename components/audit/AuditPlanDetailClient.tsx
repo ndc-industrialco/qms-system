@@ -446,7 +446,7 @@ function FindingsTab({ plan, canCreate, canVerify }: { plan: AuditPlanDetail; ca
   const verifyMutation = useVerifyFinding(plan.id);
   const closeMutation = useCloseFinding(plan.id);
 
-  const respondForm = useForm<AuditCorrectiveActionInput>({ resolver: zodResolver(auditCorrectiveActionSchema) });
+  const respondForm = useForm<AuditCorrectiveActionInput>({ resolver: zodResolver(auditCorrectiveActionSchema) as any });
   const verifyForm = useForm<AuditVerifyInput>({ resolver: zodResolver(auditVerifySchema), defaultValues: { result: "PASS" } });
 
   const STATUS_OPTIONS: { value: FindingStatus | ""; label: string }[] = [
@@ -768,7 +768,7 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
   });
 
   const announceForm = useForm<AuditAnnounceInput>({
-    resolver: zodResolver(auditAnnounceSchema),
+    resolver: zodResolver(auditAnnounceSchema) as any,
     defaultValues: { title: "", message: "", deliveryMode: "LINK", recipientEmails: [] },
   });
 
