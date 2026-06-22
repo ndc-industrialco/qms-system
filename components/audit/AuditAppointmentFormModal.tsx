@@ -57,6 +57,7 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
   const [emailError, setEmailError] = useState<string | null>(null);
   const [reviewer, setReviewer] = useState<GraphUserResult | null>(null);
   const [approver, setApprover] = useState<GraphUserResult | null>(null);
+  const [memberUsers, setMemberUsers] = useState<(GraphUserResult | null)[]>([]);
   const createMutation = useCreateAuditAppointment();
 
   const currentYear = new Date().getFullYear() + 543; // Convert to Buddhist Era
@@ -124,6 +125,25 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
       standards: [],
       orderIndex: memberFields.length,
     });
+    setMemberUsers((prev) => [...prev, null]);
+  }
+
+  function removeMemberWithUser(index: number) {
+    removeMember(index);
+    setMemberUsers((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function pickMemberUser(index: number, user: GraphUserResult | null) {
+    setMemberUsers((prev) => prev.map((u, i) => i === index ? user : u));
+    if (user) {
+      form.setValue(`members.${index}.authUserId`, user.id);
+      form.setValue(`members.${index}.name`, user.name);
+      form.setValue(`members.${index}.department`, user.department ?? "");
+    } else {
+      form.setValue(`members.${index}.authUserId`, "");
+      form.setValue(`members.${index}.name`, "");
+      form.setValue(`members.${index}.department`, "");
+    }
   }
 
   async function handleNext() {
@@ -177,6 +197,7 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
       setStep(0);
       setReviewer(null);
       setApprover(null);
+      setMemberUsers([]);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     }
@@ -188,6 +209,7 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
     setStep(0);
     setReviewer(null);
     setApprover(null);
+    setMemberUsers([]);
   }
 
   return (
@@ -319,53 +341,35 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
                   <div key={field.id} className="rounded-xl border border-slate-200 p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-500">สมาชิกที่ {index + 1}</span>
-                      <button type="button" onClick={() => removeMember(index)} className="text-red-400 hover:text-red-600">
+                      <button type="button" onClick={() => removeMemberWithUser(index)} className="text-red-400 hover:text-red-600">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">ชื่อ-สกุล <span className="text-red-500">*</span></Label>
-                        <Input
-                          {...form.register(`members.${index}.name`)}
-                          placeholder="ชื่อ-สกุล"
-                          className="rounded-lg text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">หน่วยงาน</Label>
-                        <Input
-                          {...form.register(`members.${index}.department`)}
-                          placeholder="ฝ่าย/แผนก"
-                          className="rounded-lg text-sm"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Auth User ID <span className="text-red-500">*</span></Label>
-                        <Input
-                          {...form.register(`members.${index}.authUserId`)}
-                          placeholder="Auth User ID"
-                          className="rounded-lg text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">บทบาท <span className="text-red-500">*</span></Label>
-                        <Select
-                          value={form.watch(`members.${index}.role`)}
-                          onValueChange={(v) => form.setValue(`members.${index}.role`, v)}
-                        >
-                          <SelectTrigger className="rounded-lg text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {MEMBER_ROLES.map((r) => (
-                              <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <GraphUserPicker
+                      label="ชื่อ-สกุล"
+                      value={memberUsers[index] ?? null}
+                      onChange={(u) => pickMemberUser(index, u)}
+                      placeholder="ค้นหาชื่อพนักงาน..."
+                      required
+                    />
+                    {form.formState.errors.members?.[index]?.authUserId && (
+                      <p className="text-xs text-red-500">กรุณาเลือกพนักงาน</p>
+                    )}
+                    <div className="space-y-1">
+                      <Label className="text-xs">บทบาท <span className="text-red-500">*</span></Label>
+                      <Select
+                        value={form.watch(`members.${index}.role`)}
+                        onValueChange={(v) => form.setValue(`members.${index}.role`, v)}
+                      >
+                        <SelectTrigger className="rounded-lg text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MEMBER_ROLES.map((r) => (
+                            <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 ))}

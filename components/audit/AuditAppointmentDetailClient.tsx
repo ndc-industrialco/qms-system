@@ -13,6 +13,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AuditAppointmentStatusBadge } from "./AuditAppointmentStatusBadge";
 import { useAuditAppointment, useSubmitAuditAppointment } from "@/hooks/api/use-audit-appointments";
 import type { AuditAppointmentRow } from "@/types/audit";
@@ -32,7 +33,7 @@ const SIGNOFF_ROLE_LABELS: Record<string, { th: string; en: string }> = {
 
 function fmtDate(iso: string | null) {
   if (!iso) return "-";
-  return new Date(iso).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" });
+  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(iso));
 }
 
 type Props = {
@@ -85,7 +86,7 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
         {/* Main content */}
         <div className="space-y-4">
           {/* Header card */}
-          <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
+          <div className="rounded-2xl bg-white border border-slate-100 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-2">
@@ -99,7 +100,7 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
 
             {appt.standards.length > 0 && (
               <div className="border-t border-slate-100 pt-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">มาตรฐาน</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">มาตรฐาน</p>
                 <div className="flex flex-wrap gap-2">
                   {appt.standards.map((s) => (
                     <span key={s} className="inline-flex items-center rounded-md bg-blue-50 border border-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
@@ -128,7 +129,7 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
 
           {/* Members table */}
           {appt.members.length > 0 && (
-            <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
+            <div className="rounded-2xl bg-white border border-slate-100 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-slate-400" />
                 <h2 className="text-sm font-semibold text-slate-800">
@@ -137,34 +138,34 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
                 </h2>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider pb-2 w-8">#</th>
-                      <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider pb-2">ชื่อ-สกุล</th>
-                      <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider pb-2">หน่วยงาน</th>
-                      <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider pb-2">บทบาท</th>
-                      <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider pb-2">มาตรฐาน</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-8">#</TableHead>
+                      <TableHead>ชื่อ-สกุล</TableHead>
+                      <TableHead>หน่วยงาน</TableHead>
+                      <TableHead>บทบาท</TableHead>
+                      <TableHead>มาตรฐาน</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {appt.members.map((m, i) => (
-                      <tr key={m.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 text-slate-400 text-xs">{i + 1}</td>
-                        <td className="py-3 font-medium text-slate-800">{m.name}</td>
-                        <td className="py-3 text-slate-500 text-xs">{m.department ?? "-"}</td>
-                        <td className="py-3">
+                      <TableRow key={m.id} className="hover:bg-slate-50/60">
+                        <TableCell className="text-slate-400 text-xs">{i + 1}</TableCell>
+                        <TableCell className="font-medium text-slate-800">{m.name}</TableCell>
+                        <TableCell className="text-slate-500 text-xs">{m.department ?? "-"}</TableCell>
+                        <TableCell>
                           <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600">
                             {MEMBER_ROLE_LABELS[m.role] ?? m.role}
                           </span>
-                        </td>
-                        <td className="py-3 text-xs text-slate-500">
+                        </TableCell>
+                        <TableCell className="text-xs text-slate-500">
                           {m.standards.length > 0 ? m.standards.join(", ") : "-"}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}
@@ -174,8 +175,8 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
         <div className="space-y-4">
           {/* Actions */}
           {canSubmit && appt.status === "DRAFT" && (
-            <div className="rounded-2xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">ดำเนินการ</p>
+            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">ดำเนินการ</p>
               <Button
                 className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
                 onClick={handleSubmit}
@@ -189,7 +190,7 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
 
           {/* Signoffs */}
           {appt.signoffs.length > 0 && (
-            <div className="rounded-2xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
+            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-slate-400" />
                 <h3 className="text-sm font-semibold text-slate-800">ประวัติการลงนาม</h3>

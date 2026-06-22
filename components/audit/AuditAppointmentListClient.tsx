@@ -18,14 +18,14 @@ const MEMBER_ROLE_LABELS: Record<string, string> = {
 };
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" });
+  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(iso));
 }
 
 function AppointmentCard({ appt }: { appt: AuditAppointmentRow }) {
   return (
     <Link
       href={`/audit/appointments/${appt.id}`}
-      className="block rounded-2xl bg-white shadow-[0_2px_8px_rgb(0,0,0,0.04)] border border-slate-100 p-5 hover:shadow-[0_4px_16px_rgb(0,0,0,0.08)] transition-all group"
+      className="block rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-all group"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0 flex-1">

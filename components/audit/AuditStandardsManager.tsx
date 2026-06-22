@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAuditStandards,
   useCreateAuditStandard,
@@ -51,9 +52,22 @@ export default function AuditStandardsManager() {
           <p className="text-sm font-semibold text-slate-800">รายการมาตรฐาน</p>
         </div>
         {isLoading ? (
-          <div className="px-6 py-8 text-center text-sm text-slate-400">กำลังโหลด...</div>
+          <div className="px-6 py-4 space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <Skeleton className="h-4 w-40 rounded" />
+                <Skeleton className="h-7 w-7 rounded-lg" />
+              </div>
+            ))}
+          </div>
         ) : standards.length === 0 ? (
-          <div className="px-6 py-8 text-center text-sm text-slate-400">ยังไม่มีมาตรฐาน</div>
+          <div className="flex flex-col items-center justify-center py-12 text-center px-6">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50">
+              <BookOpen className="h-5 w-5 text-slate-400" />
+            </div>
+            <p className="text-sm font-semibold text-slate-800 mb-0.5">ยังไม่มีมาตรฐาน</p>
+            <p className="text-xs text-slate-400">กดปุ่ม "เพิ่ม" เพื่อเพิ่มมาตรฐานใหม่</p>
+          </div>
         ) : (
           <div className="divide-y divide-slate-100">
             {standards.map((s, i) => (
@@ -62,8 +76,11 @@ export default function AuditStandardsManager() {
                   <span className="text-xs font-bold text-slate-300 w-5 text-right">{i + 1}</span>
                   <span className="text-sm font-medium text-slate-700">{s.name}</span>
                 </div>
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="ghost"
+                  aria-label="ลบมาตรฐาน"
                   onClick={() =>
                     deleteMutation.mutate(s.id, {
                       onSuccess: () => toast.success("ลบแล้ว"),
@@ -71,10 +88,10 @@ export default function AuditStandardsManager() {
                     })
                   }
                   disabled={deleteMutation.isPending}
-                  className="rounded-lg p-1.5 text-slate-300 hover:bg-rose-50 hover:text-rose-400 transition-colors"
+                  className="text-slate-300 hover:bg-rose-50 hover:text-rose-400"
                 >
                   <Trash2 className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             ))}
           </div>

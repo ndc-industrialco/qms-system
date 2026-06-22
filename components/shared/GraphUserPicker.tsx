@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 export interface GraphUserResult {
   id: string;
@@ -48,20 +49,36 @@ function useUserSearch(query: string) {
 export default function GraphUserPicker({ label, value, onChange, placeholder, required, error }: Props) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const { results, loading } = useUserSearch(query);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     function handleClick(e: MouseEvent) {
-      if (!inputRef.current?.contains(e.target as Node) && !dropdownRef.current?.contains(e.target as Node)) {
+      if (!containerRef.current?.contains(e.target as Node) && !dropdownRef.current?.contains(e.target as Node)) {
         setOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
+
+  function openDropdown() {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 9999,
+      });
+    }
+    setOpen(true);
+  }
 
   function select(user: GraphUserResult) {
     onChange(user);
@@ -99,13 +116,13 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
           </button>
         </div>
       ) : (
-        <div className="relative">
+        <div className="relative" ref={containerRef}>
           <input
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-            onFocus={() => setOpen(true)}
+            onChange={(e) => { setQuery(e.target.value); openDropdown(); }}
+            onFocus={openDropdown}
             placeholder={placeholder ?? "ค้นหาชื่อ หรืออีเมล..."}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8"
           />
@@ -113,10 +130,11 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">...</span>
           )}
 
-          {open && (
+          {open && createPortal(
             <div
               ref={dropdownRef}
-              className="absolute z-50 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg overflow-hidden"
+              style={dropdownStyle}
+              className="rounded-md border border-gray-200 bg-white shadow-lg overflow-hidden"
             >
               {results.length === 0 ? (
                 <p className="px-3 py-2.5 text-sm text-gray-400 text-center">
@@ -147,7 +165,8 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
                   ))}
                 </ul>
               )}
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       )}
