@@ -314,7 +314,7 @@ export class KpiService {
       : undefined;
 
     // Notify approver
-    if (kpi.approverUserId && kpi.approverEmail && approverToken) {
+    if (kpi.approverUserId && approverToken) {
       NotificationService.sendEmailOnce(
         `KPI:${id}:REVIEWED:approver:${kpi.approverUserId}`,
         () => sendKpiObjectiveApproverRequestEmail({
@@ -326,7 +326,7 @@ export class KpiService {
           actionToken: approverToken,
           senderAccessToken: actor.accessToken,
         }),
-        kpi.approverEmail,
+        kpi.approverEmail ?? '',
         'KPI Approval Request',
         kpi.approverUserId,
         { title: 'มี KPI รอการอนุมัติ', body: `KPI ${kpi.department} ${kpi.yearly}`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
@@ -404,11 +404,10 @@ export class KpiService {
     const preparerAuthId = (preparerSig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined;
     if (preparerAuthId) {
       const preparer = await getUserSnapshot(preparerAuthId);
-      if (preparer?.email) {
         NotificationService.sendEmailOnce(
           `KPI:${id}:APPROVED:preparer:${preparerAuthId}`,
           () => sendKpiResultEmail({
-            to: { name: preparer.name ?? '', email: preparer.email! },
+          to: { name: preparer?.name ?? '', email: preparer?.email ?? '' },
             departmentName: kpi.department,
             year: kpi.yearly,
             status: 'APPROVED',
@@ -417,12 +416,11 @@ export class KpiService {
             objectives: kpi.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
             senderAccessToken: actor.accessToken,
           }),
-          preparer.email,
+          preparer?.email ?? '',
           'KPI Approved',
           preparerAuthId,
           { title: 'KPI ได้รับการอนุมัติแล้ว', body: `KPI ${kpi.department} ${kpi.yearly} ได้รับการอนุมัติ`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
         ).catch(() => {});
-      }
     }
 
     return { ...updated, objectives: kpi.objectives };

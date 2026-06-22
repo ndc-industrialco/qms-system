@@ -28,7 +28,7 @@ export async function GET() {
         bgColor: true,
         textColor: true,
         createdAt: true,
-        createdBy: { select: { name: true } },
+        createdByName: true,
       },
     });
     return sendSuccess(rows, "OK");

@@ -1,8 +1,15 @@
 /**
- * Microsoft Graph API - Send Mail (delegated /me/sendMail)
+ * Mail sending via Auth Center delegated proxy.
+ *
+ * Flow: QMS passes the Auth Center JWT (session.user.accessToken) to
+ * POST <AUTH_CENTER_URL>/api/auth/mail/send — Auth Center looks up the
+ * sender's Entra UPN and sends via /users/{upn}/sendMail with its own
+ * app-only Graph token.  Email appears FROM the logged-in user.
+ *
+ * Requires canSendDelegatedMail = true in the Auth Center JWT.
+ * Skips silently if accessToken is missing (local-credential users).
  */
 
-import { graphFetch } from "@/lib/graphFetch";
 import { logger } from "@/lib/logger";
 
 export interface MailRecipient {
@@ -12,40 +19,58 @@ export interface MailRecipient {
 
 interface SendMailOptions {
   to: MailRecipient[];
+  cc?: MailRecipient[];
   subject: string;
   bodyHtml: string;
+  /** Auth Center JWT from session.user.accessToken */
   senderAccessToken?: string | null;
+  attachments?: Array<{
+    name: string;
+    contentType: string;
+    contentBytes: string; // base64
+  }>;
 }
 
 async function sendMail(opts: SendMailOptions): Promise<void> {
   if (!opts.senderAccessToken) {
-    logger.warn("[email] No sender token — mail skipped", { subject: opts.subject });
+    logger.warn("[email] No Auth Center token — mail skipped (local-credential user?)", { subject: opts.subject });
     return;
   }
 
-  const payload = {
-    message: {
-      subject: opts.subject,
-      body: { contentType: "HTML", content: opts.bodyHtml },
-      toRecipients: opts.to.map((r) => ({
-        emailAddress: { address: r.email, name: r.name },
-      })),
-    },
-    saveToSentItems: false,
-  };
+  const base = process.env.AUTH_CENTER_URL?.replace(/\/$/, "");
+  if (!base) {
+    logger.warn("[email] AUTH_CENTER_URL not set — mail skipped", { subject: opts.subject });
+    return;
+  }
 
-  const res = await graphFetch("https://graph.microsoft.com/v1.0/me/sendMail", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${opts.senderAccessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  // Auth Center proxy sends to a single To; loop callers handle multiple recipients
+  for (const recipient of opts.to) {
+    const body: Record<string, unknown> = {
+      toEmail:  recipient.email,
+      toName:   recipient.name,
+      subject:  opts.subject,
+      htmlBody: opts.bodyHtml,
+      ...(opts.cc?.length
+        ? { cc: opts.cc.map((r) => ({ email: r.email, name: r.name })) }
+        : {}),
+      ...(opts.attachments?.length
+        ? { attachments: opts.attachments }
+        : {}),
+    };
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Graph sendMail ${res.status}: ${text}`);
+    const res = await fetch(`${base}/api/auth/mail/send`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${opts.senderAccessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Auth Center sendMail ${res.status}: ${text}`);
+    }
   }
 }
 

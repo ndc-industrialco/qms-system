@@ -46,7 +46,7 @@
 - ดูประกาศ (View Drawer)
 - Announcement Feed / Card แสดงบน Dashboard
 - Ticker (ข่าววิ่ง) สำหรับประกาศล่าสุด
-- **[Pending]** Email Notification เมื่อ Publish ประกาศ (MS Graph sendMail)
+- Email Notification เมื่อ Publish ประกาศ — `sendAnnouncementEmail()` ส่งผ่าน MS Graph delegated-auth พร้อม `GraphGroupPicker` [DONE]
 
 ### Document Control Module (Done — บางส่วน)
 - อัปโหลดเอกสาร (SharePoint integration)
@@ -71,7 +71,7 @@
 - MR Sign-off ปิด CAR
 - CAR Timeline แสดงประวัติทุกขั้นตอน
 - Email Notifications: ออก CAR, ตอบกลับ, ปิด CAR, Re-CAR
-- **[Pending]** Redis Reminder Job: ส่งเมลซ้ำทุก 3 วัน ขณะ status = ISSUED
+- Redis Reminder Job: `carReminderService.ts` + `GET /api/cron/car-reminder` — ส่งเมลซ้ำทุก 3 วัน ขณะ status = ISSUED [DONE]
 
 ---
 
@@ -107,7 +107,7 @@
 - **Resource Types ที่ Track**: KPI, KPI_OBJECTIVE, KPI_MONTHLY_REPORT, DAR, USER, DOCUMENT, DOCUMENT_CATEGORY, CAR
 - **GET** `/api/audit-logs` — ดึง log พร้อม filter
 - **GET** `/api/audit-logs/export` — Export เป็น CSV
-- **[Pending]** Audit Log Viewer UI (กรอง / ค้นหา / แสดง before-after)
+- Audit Log Viewer UI: `/it/audit-logs` + `AuditLogTable` — กรอง / ค้นหา [DONE]
 
 ---
 

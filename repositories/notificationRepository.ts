@@ -38,4 +38,12 @@ export class NotificationRepository {
   async countUnread(recipientId: string) {
     return db.notification.count({ where: { recipientId, isRead: false } });
   }
+
+  async deleteOne(id: string, recipientId: string) {
+    return db.notification.deleteMany({ where: { id, recipientId } });
+  }
+
+  async deleteMany(ids: string[], recipientId: string) {
+    return db.notification.deleteMany({ where: { id: { in: ids }, recipientId } });
+  }
 }

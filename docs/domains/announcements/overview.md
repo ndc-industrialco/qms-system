@@ -1,7 +1,7 @@
 # ANNOUNCEMENTS Domain Overview
 
 **Purpose:** จัดการประกาศภายในองค์กร — สร้าง แก้ไข ลบ และแสดงประกาศในรูปแบบต่างๆ  
-**Status:** PARTIAL (Email Notification on Publish ยังไม่ implement)
+**Status:** COMPLETED
 
 ---
 
@@ -61,9 +61,11 @@
 
 ---
 
-## Pending Features
+## Email Notification on Publish
 
-- [ ] Email Notification เมื่อ Publish ประกาศ (ส่งผ่าน MS Graph sendMail ไปยังทุกคนในองค์กร)
+- `POST /api/announcements` รับ `emailGroupMails[]` (จาก `GraphGroupPicker`)
+- เรียก `sendAnnouncementEmail({ groupEmails, title, content, sourceSystem, senderAccessToken, announcementId })` แบบ fire-and-forget
+- ส่งผ่าน MS Graph delegated-auth (`senderAccessToken` จาก session)
 
 ---
 

@@ -49,6 +49,13 @@ export class ActionTokenRepository {
     });
   }
 
+  async revokeByDocumentAndRecipient(module: ApprovalModule, documentId: string, issuedTo: string) {
+    return this.delegate.updateMany({
+      where: { module, documentId, issuedTo, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
   async cleanupExpired(olderThanDays = 30) {
     const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000);
     return this.delegate.deleteMany({

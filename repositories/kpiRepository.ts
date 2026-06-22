@@ -111,6 +111,24 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     });
   }
 
+  async countPendingReviewByUser(userId: string, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+
+    const reviewedIds = await client.approvalSignature.findMany({
+      where: { module: "KPI", step: "REVIEWER", action: "APPROVED" },
+      select: { documentId: true },
+    });
+    const reviewedIdSet = reviewedIds.map((r) => r.documentId);
+
+    return this.delegate(tx).count({
+      where: {
+        status: "PENDING_REVIEW",
+        reviewerUserId: userId,
+        id: { notIn: reviewedIdSet },
+      },
+    });
+  }
+
   async findPendingApproveByUser(userId: string, take = 10, tx?: Prisma.TransactionClient) {
     const client = this.getClient(tx);
 
@@ -130,6 +148,24 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
       orderBy: [{ yearly: "desc" }, { updatedAt: "desc" }],
       take,
       select: { id: true, department: true, yearly: true, status: true },
+    });
+  }
+
+  async countPendingApproveByUser(userId: string, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+
+    const reviewedIds = await client.approvalSignature.findMany({
+      where: { module: "KPI", step: "REVIEWER", action: "APPROVED" },
+      select: { documentId: true },
+    });
+    const reviewedIdSet = reviewedIds.map((r) => r.documentId);
+
+    return this.delegate(tx).count({
+      where: {
+        status: "PENDING_REVIEW",
+        approverUserId: userId,
+        id: { in: reviewedIdSet },
+      },
     });
   }
 

@@ -1,24 +1,21 @@
 "use client";
 
+import { useMemo, type ReactNode } from "react";
 import Link from "next/link";
+import { Clock3, ShieldAlert, CheckCircle2, ClipboardList, PenSquare } from "lucide-react";
+import type { UserRole } from "@/generated/prisma/client";
 import { useAppQuery } from "@/hooks/use-app-query";
 import { useT } from "@/lib/i18n";
 import { useLocale } from "@/lib/locale-context";
+import { fmtDate } from "@/lib/formatters";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import PageHeader from "@/components/common/PageHeader";
 import FilterBar from "@/components/common/FilterBar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import * as Tabs from "@radix-ui/react-tabs";
-import { ClipboardList, FileCheck, Clock, ShieldAlert, ShieldCheck } from "lucide-react";
-import { useMemo } from "react";
-import type { UserRole } from "@/generated/prisma/client";
-import { isPrivilegedRole } from "@/lib/permissions";
 import { ApproveSkeleton } from "./components/ApproveSkeleton";
 import { RoleBanner } from "./components/RoleBanner";
 import { EmptyState } from "./components/EmptyState";
-import { fmtDate } from "@/lib/formatters";
 
 type PendingDarItem = {
   darId: string;
@@ -39,14 +36,58 @@ type PendingKpiItem = {
   source: "OBJECTIVE" | "MONTHLY";
 };
 
+type PendingCarItem = {
+  id: string;
+  carNo: string;
+  status: string;
+  targetDepartment: string | null;
+  defectDetail: string;
+  issuedAt: string | null;
+  responseDueAt: string | null;
+  updatedAt: string;
+  actionType: "MR_REVIEW" | "MR_SIGN";
+};
+
+type PendingAuditItem = {
+  id: string;
+  auditNo: string;
+  title: string;
+  auditType: string;
+  status: string;
+  updatedAt: string;
+};
+
 type PendingSummary = {
   totalPending: number;
   pendingDarCount: number;
   pendingKpiReviewCount: number;
   pendingKpiApproveCount: number;
+  pendingCarReviewCount: number;
+  pendingCarSignCount: number;
+  pendingAuditReviewCount: number;
+  pendingAuditApproveCount: number;
   pendingDarItems: PendingDarItem[];
   pendingKpiReviewItems: PendingKpiItem[];
   pendingKpiApproveItems: PendingKpiItem[];
+  pendingCarReviewItems: PendingCarItem[];
+  pendingCarSignItems: PendingCarItem[];
+  pendingAuditReviewItems: PendingAuditItem[];
+  pendingAuditApproveItems: PendingAuditItem[];
+};
+
+type QueueModule = "dar" | "kpi" | "car" | "audit";
+type QueueRole = "review" | "approval" | "sign-off";
+
+type QueueItem = {
+  id: string;
+  module: QueueModule;
+  role: QueueRole;
+  title: string;
+  subtitle: string;
+  description?: string;
+  href: string;
+  sortDate: string;
+  meta: Array<{ label: string; value: string }>;
 };
 
 type Props = {
@@ -56,14 +97,44 @@ type Props = {
 export default function ApprovePageClient({ userRole }: Props) {
   const t = useT();
   const locale = useLocale();
-  const privileged = isPrivilegedRole(userRole);
+  const copy = locale === "en"
+    ? {
+        pendingReview: "Needs Review",
+        pendingApproval: "Needs Approval",
+        pendingSignOff: "Needs Sign-off",
+        pendingCar: "CAR Pending",
+        pendingAudit: "Audit Pending",
+        allModules: "All Modules",
+        signOff: "Sign-off",
+        items: "items",
+        queueIntro: "Use the cards below to narrow the queue by action type or module.",
+        emptyFiltered: "No approval items match the current filters",
+        moduleDarDesc: "Document action requests",
+        moduleKpiDesc: "Objectives and monthly KPI reports",
+        moduleCarDesc: "MR review and final sign-off",
+        moduleAuditDesc: "Internal and external audit plan approvals",
+      }
+    : {
+        pendingReview: "รอตรวจสอบ",
+        pendingApproval: "รออนุมัติ",
+        pendingSignOff: "รอลงนาม",
+        pendingCar: "CAR รอดำเนินการ",
+        pendingAudit: "Audit รอดำเนินการ",
+        allModules: "ทุกโมดูล",
+        signOff: "ลงนาม",
+        items: "รายการ",
+        queueIntro: "ใช้การ์ดด้านล่างเพื่อโฟกัสคิวตามประเภทการดำเนินการหรือโมดูล",
+        emptyFiltered: "ไม่พบรายการที่ตรงกับตัวกรองปัจจุบัน",
+        moduleDarDesc: "คำขอ DAR ที่รอการดำเนินการ",
+        moduleKpiDesc: "KPI objective และรายงานรายเดือน",
+        moduleCarDesc: "งาน MR review และ sign-off",
+        moduleAuditDesc: "แผนการตรวจสอบภายในและภายนอก",
+      };
 
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
-    keys: ["search", "tab"],
+    keys: ["search", "module", "role"],
     searchKey: "search",
   });
-
-  const activeTab = params.tab || "dar";
 
   const query = useAppQuery<PendingSummary>({
     queryKey: ["approvals", "pending-summary"],
@@ -77,60 +148,200 @@ export default function ApprovePageClient({ userRole }: Props) {
   });
 
   const data = query.data;
-  const totalKpi = (data?.pendingKpiReviewCount ?? 0) + (data?.pendingKpiApproveCount ?? 0);
 
-  const filteredDarItems = useMemo(() => {
-    const items = data?.pendingDarItems ?? [];
-    const searchVal = params.search?.toLowerCase().trim() || "";
-    if (!searchVal) return items;
-    return items.filter(
-      (item) =>
-        item.darNo?.toLowerCase().includes(searchVal) ||
-        item.requesterName?.toLowerCase().includes(searchVal) ||
-        item.darId.toLowerCase().includes(searchVal),
-    );
-  }, [data?.pendingDarItems, params.search]);
+  const queueItems = useMemo<QueueItem[]>(() => {
+    if (!data) return [];
 
-  const filteredKpiReviewItems = useMemo(() => {
-    const items = data?.pendingKpiReviewItems ?? [];
-    const searchVal = params.search?.toLowerCase().trim() || "";
-    if (!searchVal) return items;
-    return items.filter(
-      (item) =>
-        item.department.toLowerCase().includes(searchVal) ||
-        (item.source === "OBJECTIVE" ? t("approve.typeObjective") : t("approve.typeMonthly"))
-          .toLowerCase()
-          .includes(searchVal) ||
-        String(item.year).includes(searchVal) ||
-        (item.month && item.month.toLowerCase().includes(searchVal)),
-    );
-  }, [data?.pendingKpiReviewItems, params.search, t]);
+    const items: QueueItem[] = [];
 
-  const filteredKpiApproveItems = useMemo(() => {
-    const items = data?.pendingKpiApproveItems ?? [];
+    for (const item of data.pendingDarItems) {
+      const isReview = item.stepRole === "REVIEWER";
+      items.push({
+        id: `dar-${item.darId}-${item.stepRole}`,
+        module: "dar",
+        role: isReview ? "review" : "approval",
+        title: item.darNo ?? item.darId,
+        subtitle: isReview ? t("approve.stepReview") : t("approve.stepApprove"),
+        href: `/approve/${item.darId}/${isReview ? "reviewer" : "approver"}?type=dar`,
+        sortDate: item.requestDate,
+        meta: [
+          { label: t("approve.requester"), value: item.requesterName ?? "-" },
+          { label: t("approve.date"), value: fmtDate(item.requestDate, locale) },
+        ],
+      });
+    }
+
+    for (const item of data.pendingKpiReviewItems) {
+      items.push({
+        id: `kpi-review-${item.id}`,
+        module: "kpi",
+        role: "review",
+        title: item.department,
+        subtitle: item.source === "OBJECTIVE" ? t("approve.typeObjective") : t("approve.typeMonthly"),
+        description: item.month ? `${item.month} ${item.year}` : String(item.year),
+        href:
+          item.source === "OBJECTIVE"
+            ? `/approve/${item.kpiId}/reviewer?type=kpi`
+            : `/approve/${item.id}/reviewer?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`,
+        sortDate: `${item.year}-${item.month ? String(item.month).padStart(2, "0") : "12"}-01T00:00:00.000Z`,
+        meta: [
+          { label: t("approve.department"), value: item.department },
+          { label: t("approve.period"), value: item.month ? `${item.month} ${item.year}` : String(item.year) },
+        ],
+      });
+    }
+
+    for (const item of data.pendingKpiApproveItems) {
+      items.push({
+        id: `kpi-approve-${item.id}`,
+        module: "kpi",
+        role: "approval",
+        title: item.department,
+        subtitle: item.source === "OBJECTIVE" ? t("approve.typeObjective") : t("approve.typeMonthly"),
+        description: item.month ? `${item.month} ${item.year}` : String(item.year),
+        href:
+          item.source === "OBJECTIVE"
+            ? `/approve/${item.kpiId}/approver?type=kpi`
+            : `/approve/${item.id}/approver?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`,
+        sortDate: `${item.year}-${item.month ? String(item.month).padStart(2, "0") : "12"}-01T00:00:00.000Z`,
+        meta: [
+          { label: t("approve.department"), value: item.department },
+          { label: t("approve.period"), value: item.month ? `${item.month} ${item.year}` : String(item.year) },
+        ],
+      });
+    }
+
+    for (const item of data.pendingCarReviewItems) {
+      items.push({
+        id: `car-review-${item.id}`,
+        module: "car",
+        role: "review",
+        title: item.carNo,
+        subtitle: item.targetDepartment ?? "CAR",
+        description: item.defectDetail,
+        href: `/approve/car/${item.id}/mr-response`,
+        sortDate: item.updatedAt,
+        meta: [
+          { label: t("approve.department"), value: item.targetDepartment ?? "-" },
+          { label: t("approve.date"), value: fmtDate(item.updatedAt, locale) },
+        ],
+      });
+    }
+
+    for (const item of data.pendingCarSignItems) {
+      items.push({
+        id: `car-sign-${item.id}`,
+        module: "car",
+        role: "sign-off",
+        title: item.carNo,
+        subtitle: item.targetDepartment ?? "CAR",
+        description: item.defectDetail,
+        href: `/approve/car/${item.id}/mr`,
+        sortDate: item.updatedAt,
+        meta: [
+          { label: t("approve.department"), value: item.targetDepartment ?? "-" },
+          { label: t("approve.date"), value: fmtDate(item.updatedAt, locale) },
+        ],
+      });
+    }
+
+    for (const item of (data.pendingAuditReviewItems ?? [])) {
+      items.push({
+        id: `audit-review-${item.id}`,
+        module: "audit",
+        role: "review",
+        title: item.auditNo,
+        subtitle: item.title,
+        description: item.auditType === "INTERNAL" ? "Internal Audit" : "External Audit",
+        href: `/approve/audit/${item.id}/reviewer`,
+        sortDate: item.updatedAt,
+        meta: [
+          { label: "ประเภท", value: item.auditType === "INTERNAL" ? "Internal" : "External" },
+          { label: t("approve.date"), value: fmtDate(item.updatedAt, locale) },
+        ],
+      });
+    }
+
+    for (const item of (data.pendingAuditApproveItems ?? [])) {
+      items.push({
+        id: `audit-approve-${item.id}`,
+        module: "audit",
+        role: "approval",
+        title: item.auditNo,
+        subtitle: item.title,
+        description: item.auditType === "INTERNAL" ? "Internal Audit" : "External Audit",
+        href: `/approve/audit/${item.id}/approver`,
+        sortDate: item.updatedAt,
+        meta: [
+          { label: "ประเภท", value: item.auditType === "INTERNAL" ? "Internal" : "External" },
+          { label: t("approve.date"), value: fmtDate(item.updatedAt, locale) },
+        ],
+      });
+    }
+
+    return items.sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime());
+  }, [data, locale, t]);
+
+  const moduleCounts = useMemo(
+    () => ({
+      all: queueItems.length,
+      dar: queueItems.filter((item) => item.module === "dar").length,
+      kpi: queueItems.filter((item) => item.module === "kpi").length,
+      car: queueItems.filter((item) => item.module === "car").length,
+      audit: queueItems.filter((item) => item.module === "audit").length,
+    }),
+    [queueItems],
+  );
+
+  const roleCounts = useMemo(
+    () => ({
+      review: queueItems.filter((item) => item.role === "review").length,
+      approval: queueItems.filter((item) => item.role === "approval").length,
+      signOff: queueItems.filter((item) => item.role === "sign-off").length,
+    }),
+    [queueItems],
+  );
+
+  const filteredItems = useMemo(() => {
     const searchVal = params.search?.toLowerCase().trim() || "";
-    if (!searchVal) return items;
-    return items.filter(
-      (item) =>
-        item.department.toLowerCase().includes(searchVal) ||
-        (item.source === "OBJECTIVE" ? t("approve.typeObjective") : t("approve.typeMonthly"))
-          .toLowerCase()
-          .includes(searchVal) ||
-        String(item.year).includes(searchVal) ||
-        (item.month && item.month.toLowerCase().includes(searchVal)),
-    );
-  }, [data?.pendingKpiApproveItems, params.search, t]);
+    return queueItems.filter((item) => {
+      if (params.module && item.module !== params.module) return false;
+      if (params.role && item.role !== params.role) return false;
+      if (!searchVal) return true;
+
+      const haystack = [
+        item.title,
+        item.subtitle,
+        item.description ?? "",
+        ...item.meta.map((meta) => `${meta.label} ${meta.value}`),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(searchVal);
+    });
+  }, [params.module, params.role, params.search, queueItems]);
+
+  const groupedItems = useMemo(() => {
+    const order: QueueModule[] = ["dar", "kpi", "car", "audit"];
+    return order
+      .map((module) => ({
+        module,
+        items: filteredItems.filter((item) => item.module === module),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [filteredItems]);
 
   if (query.isError) {
     return (
       <div className="space-y-6">
         <PageHeader title={t("approve.title")} subtitle={t("approve.subtitle")} />
-        <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-6">
-          <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center mb-4 text-rose-600">
-            <ShieldAlert className="w-6 h-6" />
+        <div className="rounded-2xl border border-slate-100 bg-white px-6 py-16 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="mb-4 flex justify-center text-rose-600">
+            <ShieldAlert className="h-12 w-12 rounded-full bg-rose-50 p-3" />
           </div>
-          <p className="text-slate-800 font-semibold text-base mb-1">{t("error.title")}</p>
-          <p className="text-slate-400 text-sm mb-4">{t("common.errorRetry")}</p>
+          <p className="mb-1 text-base font-semibold text-slate-800">{t("error.title")}</p>
+          <p className="mb-4 text-sm text-slate-400">{t("common.errorRetry")}</p>
           <Button onClick={() => query.refetch()} variant="outline">
             {t("common.retry")}
           </Button>
@@ -149,440 +360,249 @@ export default function ApprovePageClient({ userRole }: Props) {
         <ApproveSkeleton />
       ) : (
         <>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-slate-500">{t("approve.totalPending")}</p>
-                <p className="text-3xl font-bold text-primary">{data?.totalPending ?? 0}</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500">
-                <Clock className="w-6 h-6" />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-slate-500">{t("approve.pendingDar")}</p>
-                <p className="text-3xl font-bold text-amber-600">{data?.pendingDarCount ?? 0}</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-                <FileCheck className="w-6 h-6" />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-slate-500">{t("approve.pendingKpi")}</p>
-                <p className="text-3xl font-bold text-sky-600">{totalKpi}</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
-                <ClipboardList className="w-6 h-6" />
-              </div>
-            </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <SummaryCard
+              active={!params.role}
+              icon={<Clock3 className="h-5 w-5" />}
+              label={t("approve.totalPending")}
+              value={data?.totalPending ?? 0}
+              tone="slate"
+              onClick={() => setParam("role", "")}
+            />
+            <SummaryCard
+              active={params.role === "review"}
+              icon={<ClipboardList className="h-5 w-5" />}
+              label={copy.pendingReview}
+              value={roleCounts.review}
+              tone="sky"
+              onClick={() => setParam("role", params.role === "review" ? "" : "review")}
+            />
+            <SummaryCard
+              active={params.role === "approval"}
+              icon={<CheckCircle2 className="h-5 w-5" />}
+              label={copy.pendingApproval}
+              value={roleCounts.approval}
+              tone="emerald"
+              onClick={() => setParam("role", params.role === "approval" ? "" : "approval")}
+            />
+            <SummaryCard
+              active={params.role === "sign-off"}
+              icon={<PenSquare className="h-5 w-5" />}
+              label={copy.pendingSignOff}
+              value={roleCounts.signOff}
+              tone="amber"
+              onClick={() => setParam("role", params.role === "sign-off" ? "" : "sign-off")}
+            />
           </div>
 
-          {/* Queue Tabs */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
-            <Tabs.Root value={activeTab} onValueChange={(val) => setParam("tab", val)} className="space-y-6">
-              <Tabs.List className="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-xl w-fit">
-                <Tabs.Trigger
-                  value="dar"
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-slate-500 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all flex items-center gap-2"
-                >
-                  <span>DAR</span>
-                  {data && data.pendingDarCount > 0 && (
-                    <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-50 text-amber-600 border border-amber-200">
-                      {data.pendingDarCount}
-                    </span>
-                  )}
-                </Tabs.Trigger>
+          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">{t("approve.title")}</h2>
+                <p className="text-xs text-slate-500">{copy.queueIntro}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <ModuleChip active={!params.module} label={copy.allModules} count={moduleCounts.all} onClick={() => setParam("module", "")} />
+                <ModuleChip active={params.module === "dar"} label={t("approve.pendingDar")} count={moduleCounts.dar} onClick={() => setParam("module", params.module === "dar" ? "" : "dar")} />
+                <ModuleChip active={params.module === "kpi"} label={t("approve.pendingKpi")} count={moduleCounts.kpi} onClick={() => setParam("module", params.module === "kpi" ? "" : "kpi")} />
+                <ModuleChip active={params.module === "car"} label={copy.pendingCar} count={moduleCounts.car} onClick={() => setParam("module", params.module === "car" ? "" : "car")} />
+                <ModuleChip active={params.module === "audit"} label={copy.pendingAudit} count={moduleCounts.audit} onClick={() => setParam("module", params.module === "audit" ? "" : "audit")} />
+              </div>
+            </div>
 
-                <Tabs.Trigger
-                  value="kpi-review"
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-slate-500 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all flex items-center gap-2"
-                >
-                  <span>KPI ({t("kpi.form.reviewer")})</span>
-                  {data && data.pendingKpiReviewCount > 0 && (
-                    <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full bg-sky-50 text-sky-600 border border-sky-200">
-                      {data.pendingKpiReviewCount}
-                    </span>
-                  )}
-                </Tabs.Trigger>
-
-                <Tabs.Trigger
-                  value="kpi-approve"
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-slate-500 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all flex items-center gap-2"
-                >
-                  <span>KPI ({t("kpi.form.approver")})</span>
-                  {data && data.pendingKpiApproveCount > 0 && (
-                    <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
-                      {data.pendingKpiApproveCount}
-                    </span>
-                  )}
-                </Tabs.Trigger>
-              </Tabs.List>
-
-              {/* DAR Tab */}
-              <Tabs.Content value="dar" className="space-y-4 outline-none">
-                <FilterBar
-                  searchValue={rawValues.search}
-                  onSearchChange={(v) => setParam("search", v)}
-                  searchPlaceholder={t("common.search")}
-                  hasActiveFilters={hasFilters}
-                  onClearAll={clearAll}
-                  resultCount={filteredDarItems.length}
-                  totalCount={data?.pendingDarCount ?? 0}
-                  countLabel={t("approve.totalPending").toLowerCase()}
-                />
-
-                {filteredDarItems.length > 0 ? (
-                  <>
-                    {/* Desktop Table */}
-                    <div className="hidden lg:block">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>{t("dar.field.darNo")}</TableHead>
-                            <TableHead>{t("approve.requester")}</TableHead>
-                            <TableHead>{t("approve.role")}</TableHead>
-                            <TableHead className="text-center">{t("approve.date")}</TableHead>
-                            {privileged && <TableHead>{t("approve.accessLevel")}</TableHead>}
-                            <TableHead className="text-right">{t("approve.action")}</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredDarItems.map((item) => (
-                            <TableRow key={`${item.darId}-${item.stepRole}`}>
-                              <TableCell className="font-semibold text-primary">
-                                {item.darNo ?? item.darId}
-                              </TableCell>
-                              <TableCell className="text-slate-700">{item.requesterName ?? "-"}</TableCell>
-                              <TableCell>
-                                <Badge variant={item.stepRole === "REVIEWER" ? "warning" : "info"}>
-                                  {item.stepRole === "REVIEWER"
-                                    ? t("approve.stepReview")
-                                    : t("approve.stepApprove")}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-center font-mono text-slate-600">
-                                {fmtDate(item.requestDate, locale)}
-                              </TableCell>
-                              {privileged && (
-                                <TableCell>
-                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">
-                                    <ShieldCheck className="w-3 h-3" />
-                                    {t("approve.fullAccess")}
-                                  </span>
-                                </TableCell>
-                              )}
-                              <TableCell className="text-right">
-                                <Button asChild size="sm">
-                                  <Link
-                                    href={`/approve/${item.darId}/${
-                                      item.stepRole === "REVIEWER" ? "reviewer" : "approver"
-                                    }?type=dar`}
-                                  >
-                                    {t("approve.openAction")}
-                                  </Link>
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Mobile Cards */}
-                    <div className="lg:hidden space-y-3">
-                      {filteredDarItems.map((item) => (
-                        <div
-                          key={`${item.darId}-${item.stepRole}`}
-                          className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 space-y-3"
-                        >
-                          <div className="flex justify-between items-start gap-2">
-                            <p className="text-sm font-semibold text-primary">{item.darNo ?? item.darId}</p>
-                            <div className="flex items-center gap-2 flex-wrap justify-end">
-                              <Badge variant={item.stepRole === "REVIEWER" ? "warning" : "info"}>
-                                {item.stepRole === "REVIEWER"
-                                  ? t("approve.stepReview")
-                                  : t("approve.stepApprove")}
-                              </Badge>
-                              {privileged && (
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                                  <ShieldCheck className="w-3 h-3" />
-                                  {t("approve.fullAccess")}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="space-y-1 text-xs text-slate-500">
-                            <p>
-                              <span className="font-medium text-slate-600">{t("approve.requester")}:</span>{" "}
-                              {item.requesterName ?? "-"}
-                            </p>
-                            <p>
-                              <span className="font-medium text-slate-600">{t("approve.date")}:</span>{" "}
-                              {fmtDate(item.requestDate, locale)}
-                            </p>
-                          </div>
-                          <div className="flex justify-end pt-1">
-                            <Button asChild size="sm" className="w-full sm:w-auto">
-                              <Link
-                                href={`/approve/${item.darId}/${
-                                  item.stepRole === "REVIEWER" ? "reviewer" : "approver"
-                                }?type=dar`}
-                              >
-                                {t("approve.openAction")}
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <EmptyState label={t("approve.empty")} />
-                )}
-              </Tabs.Content>
-
-              {/* KPI Review Tab */}
-              <Tabs.Content value="kpi-review" className="space-y-4 outline-none">
-                <FilterBar
-                  searchValue={rawValues.search}
-                  onSearchChange={(v) => setParam("search", v)}
-                  searchPlaceholder={t("common.search")}
-                  hasActiveFilters={hasFilters}
-                  onClearAll={clearAll}
-                  resultCount={filteredKpiReviewItems.length}
-                  totalCount={data?.pendingKpiReviewCount ?? 0}
-                  countLabel={t("approve.totalPending").toLowerCase()}
-                />
-
-                {filteredKpiReviewItems.length > 0 ? (
-                  <>
-                    {/* Desktop Table */}
-                    <div className="hidden lg:block">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>{t("approve.department")}</TableHead>
-                            <TableHead>{t("approve.type")}</TableHead>
-                            <TableHead className="text-center">{t("approve.period")}</TableHead>
-                            {privileged && <TableHead>{t("approve.accessLevel")}</TableHead>}
-                            <TableHead className="text-right">{t("approve.action")}</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredKpiReviewItems.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell className="font-semibold text-slate-800">{item.department}</TableCell>
-                              <TableCell>
-                                <Badge variant={item.source === "OBJECTIVE" ? "info" : "secondary"}>
-                                  {item.source === "OBJECTIVE"
-                                    ? t("approve.typeObjective")
-                                    : t("approve.typeMonthly")}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-center font-mono text-slate-600">
-                                {item.month ? `${item.month} ${item.year}` : String(item.year)}
-                              </TableCell>
-                              {privileged && (
-                                <TableCell>
-                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">
-                                    <ShieldCheck className="w-3 h-3" />
-                                    {t("approve.fullAccess")}
-                                  </span>
-                                </TableCell>
-                              )}
-                              <TableCell className="text-right">
-                                <Button asChild size="sm">
-                                  <Link
-                                    href={
-                                      item.source === "OBJECTIVE"
-                                        ? `/approve/${item.kpiId}/reviewer?type=kpi`
-                                        : `/approve/${item.id}/reviewer?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`
-                                    }
-                                  >
-                                    {t("approve.openAction")}
-                                  </Link>
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Mobile Cards */}
-                    <div className="lg:hidden space-y-3">
-                      {filteredKpiReviewItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 space-y-3"
-                        >
-                          <div className="flex justify-between items-start gap-2">
-                            <p className="text-sm font-semibold text-slate-800">{item.department}</p>
-                            <div className="flex items-center gap-2 flex-wrap justify-end">
-                              <Badge variant={item.source === "OBJECTIVE" ? "info" : "secondary"}>
-                                {item.source === "OBJECTIVE"
-                                  ? t("approve.typeObjective")
-                                  : t("approve.typeMonthly")}
-                              </Badge>
-                              {privileged && (
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                                  <ShieldCheck className="w-3 h-3" />
-                                  {t("approve.fullAccess")}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-xs text-slate-500 font-mono">
-                            <span className="font-medium text-slate-600 font-sans">{t("approve.period")}:</span>{" "}
-                            {item.month ? `${item.month} ${item.year}` : String(item.year)}
-                          </div>
-                          <div className="flex justify-end pt-1">
-                            <Button asChild size="sm" className="w-full sm:w-auto">
-                              <Link
-                                href={
-                                  item.source === "OBJECTIVE"
-                                    ? `/approve/${item.kpiId}/reviewer?type=kpi`
-                                    : `/approve/${item.id}/reviewer?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`
-                                }
-                              >
-                                {t("approve.openAction")}
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <EmptyState label={t("approve.emptyKpiReview")} />
-                )}
-              </Tabs.Content>
-
-              {/* KPI Approve Tab */}
-              <Tabs.Content value="kpi-approve" className="space-y-4 outline-none">
-                <FilterBar
-                  searchValue={rawValues.search}
-                  onSearchChange={(v) => setParam("search", v)}
-                  searchPlaceholder={t("common.search")}
-                  hasActiveFilters={hasFilters}
-                  onClearAll={clearAll}
-                  resultCount={filteredKpiApproveItems.length}
-                  totalCount={data?.pendingKpiApproveCount ?? 0}
-                  countLabel={t("approve.totalPending").toLowerCase()}
-                />
-
-                {filteredKpiApproveItems.length > 0 ? (
-                  <>
-                    {/* Desktop Table */}
-                    <div className="hidden lg:block">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>{t("approve.department")}</TableHead>
-                            <TableHead>{t("approve.type")}</TableHead>
-                            <TableHead className="text-center">{t("approve.period")}</TableHead>
-                            {privileged && <TableHead>{t("approve.accessLevel")}</TableHead>}
-                            <TableHead className="text-right">{t("approve.action")}</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredKpiApproveItems.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell className="font-semibold text-slate-800">{item.department}</TableCell>
-                              <TableCell>
-                                <Badge variant={item.source === "OBJECTIVE" ? "info" : "secondary"}>
-                                  {item.source === "OBJECTIVE"
-                                    ? t("approve.typeObjective")
-                                    : t("approve.typeMonthly")}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-center font-mono text-slate-600">
-                                {item.month ? `${item.month} ${item.year}` : String(item.year)}
-                              </TableCell>
-                              {privileged && (
-                                <TableCell>
-                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">
-                                    <ShieldCheck className="w-3 h-3" />
-                                    {t("approve.fullAccess")}
-                                  </span>
-                                </TableCell>
-                              )}
-                              <TableCell className="text-right">
-                                <Button asChild size="sm">
-                                  <Link
-                                    href={
-                                      item.source === "OBJECTIVE"
-                                        ? `/approve/${item.kpiId}/approver?type=kpi`
-                                        : `/approve/${item.id}/approver?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`
-                                    }
-                                  >
-                                    {t("approve.openAction")}
-                                  </Link>
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Mobile Cards */}
-                    <div className="lg:hidden space-y-3">
-                      {filteredKpiApproveItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 space-y-3"
-                        >
-                          <div className="flex justify-between items-start gap-2">
-                            <p className="text-sm font-semibold text-slate-800">{item.department}</p>
-                            <div className="flex items-center gap-2 flex-wrap justify-end">
-                              <Badge variant={item.source === "OBJECTIVE" ? "info" : "secondary"}>
-                                {item.source === "OBJECTIVE"
-                                  ? t("approve.typeObjective")
-                                  : t("approve.typeMonthly")}
-                              </Badge>
-                              {privileged && (
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                                  <ShieldCheck className="w-3 h-3" />
-                                  {t("approve.fullAccess")}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-xs text-slate-500 font-mono">
-                            <span className="font-medium text-slate-600 font-sans">{t("approve.period")}:</span>{" "}
-                            {item.month ? `${item.month} ${item.year}` : String(item.year)}
-                          </div>
-                          <div className="flex justify-end pt-1">
-                            <Button asChild size="sm" className="w-full sm:w-auto">
-                              <Link
-                                href={
-                                  item.source === "OBJECTIVE"
-                                    ? `/approve/${item.kpiId}/approver?type=kpi`
-                                    : `/approve/${item.id}/approver?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`
-                                }
-                              >
-                                {t("approve.openAction")}
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <EmptyState label={t("approve.emptyKpiApprove")} />
-                )}
-              </Tabs.Content>
-            </Tabs.Root>
+            <FilterBar
+              searchValue={rawValues.search}
+              onSearchChange={(value) => setParam("search", value)}
+              searchPlaceholder={t("common.search")}
+              hasActiveFilters={hasFilters}
+              onClearAll={clearAll}
+              resultCount={filteredItems.length}
+              totalCount={queueItems.length}
+              countLabel={copy.items}
+              className="mb-0"
+            />
           </div>
+
+          {filteredItems.length === 0 ? (
+            <EmptyState label={hasFilters ? copy.emptyFiltered : t("common.noItems")} />
+          ) : (
+            <div className="space-y-6">
+              {groupedItems.map((group) => (
+                <section key={group.module} className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">
+                        {group.module === "dar"
+                          ? t("approve.pendingDar")
+                          : group.module === "kpi"
+                            ? t("approve.pendingKpi")
+                            : group.module === "car"
+                              ? copy.pendingCar
+                              : copy.pendingAudit}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {group.module === "dar"
+                          ? copy.moduleDarDesc
+                          : group.module === "kpi"
+                            ? copy.moduleKpiDesc
+                            : group.module === "car"
+                              ? copy.moduleCarDesc
+                              : copy.moduleAuditDesc}
+                      </p>
+                    </div>
+                    <Badge variant="secondary">{group.items.length}</Badge>
+                  </div>
+
+                  <div className="space-y-3">
+                    {group.items.map((item) => (
+                      <QueueCard key={item.id} item={item} openLabel={t("approve.openAction")} signOffLabel={copy.signOff} />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
         </>
       )}
+    </div>
+  );
+}
+
+function SummaryCard({
+  active,
+  icon,
+  label,
+  value,
+  tone,
+  onClick,
+}: {
+  active: boolean;
+  icon: ReactNode;
+  label: string;
+  value: number;
+  tone: "slate" | "sky" | "emerald" | "amber";
+  onClick: () => void;
+}) {
+  const tones = {
+    slate: "bg-slate-50 text-slate-600 border-slate-200",
+    sky: "bg-sky-50 text-sky-600 border-sky-200",
+    emerald: "bg-emerald-50 text-emerald-600 border-emerald-200",
+    amber: "bg-amber-50 text-amber-600 border-amber-200",
+  } as const;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-2xl border bg-white p-5 text-left shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition hover:-translate-y-0.5 ${
+        active ? "border-primary ring-1 ring-primary/10" : "border-slate-100"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-slate-500">{label}</p>
+          <p className="mt-1 text-3xl font-bold text-slate-900">{value}</p>
+        </div>
+        <div className={`flex h-11 w-11 items-center justify-center rounded-xl border ${tones[tone]}`}>
+          {icon}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function ModuleChip({
+  active,
+  label,
+  count,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  count: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition ${
+        active
+          ? "border-primary bg-primary text-white"
+          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+      }`}
+    >
+      <span>{label}</span>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}`}>
+        {count}
+      </span>
+    </button>
+  );
+}
+
+function QueueCard({
+  item,
+  openLabel,
+  signOffLabel,
+}: {
+  item: QueueItem;
+  openLabel: string;
+  signOffLabel: string;
+}) {
+  const moduleBadge =
+    item.module === "dar"
+      ? "bg-amber-50 text-amber-700 border-amber-200"
+      : item.module === "kpi"
+        ? "bg-sky-50 text-sky-700 border-sky-200"
+        : item.module === "audit"
+          ? "bg-violet-50 text-violet-700 border-violet-200"
+          : "bg-rose-50 text-rose-700 border-rose-200";
+
+  const roleLabel =
+    item.role === "review"
+      ? "Review"
+      : item.role === "approval"
+        ? "Approval"
+        : signOffLabel;
+
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${moduleBadge}`}>
+              {item.module.toUpperCase()}
+            </span>
+            <Badge variant="outline">{roleLabel}</Badge>
+          </div>
+
+          <div className="space-y-1">
+            <h4 className="text-base font-semibold text-slate-900">{item.title}</h4>
+            <p className="text-sm text-slate-600">{item.subtitle}</p>
+            {item.description && (
+              <p className="line-clamp-2 text-sm text-slate-500">{item.description}</p>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {item.meta.map((meta) => (
+              <span
+                key={`${item.id}-${meta.label}`}
+                className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-xs text-slate-600"
+              >
+                <span className="mr-1 font-medium text-slate-500">{meta.label}:</span>
+                <span>{meta.value}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center justify-end">
+          <Button asChild size="sm" className="min-w-28 rounded-xl">
+            <Link href={item.href}>{openLabel}</Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -560,19 +560,6 @@ export class DarService {
 
     const detail = await this.fetchDarDetail(darId);
 
-    // Notify reviewer in-app
-    const reviewerAuthId = reviewerSnapshot?.authUserId ?? reviewerUserId;
-    if (reviewerAuthId) {
-      NotificationService.createInAppNotification({
-        recipientId: reviewerAuthId,
-        title: 'DAR รอการตรวจสอบจากคุณ',
-        body: `DAR ${dar.darNo ?? darId} รอการตรวจสอบ`,
-        module: 'DAR',
-        resourceId: darId,
-        resourceType: 'DAR',
-      }).catch(() => {});
-    }
-
     return detail!;
   }
 
@@ -766,27 +753,9 @@ export class DarService {
 
     const detail = await this.fetchDarDetail(darId);
 
-    // Notifications based on which step completed
-    if (myStep.stepRole === 'REVIEWER' && mrUser?.authUserId) {
-      NotificationService.createInAppNotification({
-        recipientId: mrUser.authUserId,
-        title: 'DAR รอการอนุมัติจาก MR',
-        body: `DAR ${dar.darNo ?? darId} ผ่าน Reviewer แล้ว`,
-        module: 'DAR', resourceId: darId, resourceType: 'DAR',
-      }).catch(() => {});
-    }
     if (myStep.stepRole === 'QMS_PROCESSOR') {
       // Completed — notify requester's dept
       const completedDeptId = (dar as Record<string, unknown>).authDepartmentId as string | null | undefined;
-      const requesterAuthId = (dar as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
-      if (requesterAuthId) {
-        NotificationService.createInAppNotification({
-          recipientId: requesterAuthId,
-          title: 'DAR ของคุณเสร็จสมบูรณ์แล้ว',
-          body: `DAR ${dar.darNo ?? darId} ถูกดำเนินการเสร็จสิ้นแล้ว`,
-          module: 'DAR', resourceId: darId, resourceType: 'DAR',
-        }).catch(() => {});
-      }
       if (completedDeptId && actor.accessToken) {
         NotificationService.notifyDeptMembers(completedDeptId, actor.accessToken, {
           title: 'DAR เสร็จสมบูรณ์', body: `DAR ${dar.darNo ?? darId} เสร็จสมบูรณ์แล้ว`,

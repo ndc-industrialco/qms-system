@@ -78,48 +78,44 @@ export async function POST(req: NextRequest, { params }: Params) {
 
       if (mrAuthKey) {
         const mrSnapshot = await getUserSnapshot(mrAuthKey);
-        const mrEmail = mrSnapshot?.email;
+        const mrToken = await ActionTokenService.issue({
+          module: ApprovalModule.DAR,
+          documentId: id,
+          role: ApprovalStep.APPROVER_MR,
+          issuedTo: mrAuthKey,
+        });
 
-        if (mrEmail) {
-          const mrToken = await ActionTokenService.issue({
-            module: ApprovalModule.DAR,
-            documentId: id,
-            role: ApprovalStep.APPROVER_MR,
-            issuedTo: mrAuthKey,
-          });
-
-          NotificationService.sendEmailOnce(
-            `DAR:${dar.id}:REVIEWER_APPROVED:mr:${mrAuthKey}:${mrToken.substring(0, 16)}`,
-            () => sendMrApprovalRequestEmail({
-              mr: { name: mrSnapshot?.name ?? "", email: mrEmail },
-              reviewerName: session.user.name ?? "",
-              requesterName: dar.requester.name ?? "",
-              requesterDepartment: dar.requester.department?.name ?? null,
-              darNo: dar.darNo!,
-              darId: dar.id,
-              requestDate: dar.requestDate,
-              objective: OBJECTIVE_LABELS[dar.objective],
-              docType: dar.docTypeOther
-                ? `${DOC_TYPE_LABELS[dar.docType]} — ${dar.docTypeOther}`
-                : DOC_TYPE_LABELS[dar.docType],
-              reason: dar.reason,
-              items: dar.items,
-              attachments: dar.attachments.map((a) => ({ fileName: a.fileName, spWebUrl: a.spWebUrl })),
-              actionToken: mrToken,
-              senderAccessToken: session.user.accessToken,
-            }),
-            mrEmail,
-            'DAR MR Approval Request',
-            mrAuthKey,
-            {
-              title: "มี DAR รอการอนุมัติจาก MR",
-              body: `DAR ${dar.darNo}`,
-              module: "DAR",
-              resourceId: id,
-              resourceType: "DAR",
-            },
-          ).catch(() => { /* logged inside NotificationService */ });
-        }
+        NotificationService.sendEmailOnce(
+          `DAR:${dar.id}:REVIEWER_APPROVED:mr:${mrAuthKey}:${mrToken.substring(0, 16)}`,
+          () => sendMrApprovalRequestEmail({
+            mr: { name: mrSnapshot?.name ?? "", email: mrSnapshot?.email ?? "" },
+            reviewerName: session.user.name ?? "",
+            requesterName: dar.requester.name ?? "",
+            requesterDepartment: dar.requester.department?.name ?? null,
+            darNo: dar.darNo!,
+            darId: dar.id,
+            requestDate: dar.requestDate,
+            objective: OBJECTIVE_LABELS[dar.objective],
+            docType: dar.docTypeOther
+              ? `${DOC_TYPE_LABELS[dar.docType]} - ${dar.docTypeOther}`
+              : DOC_TYPE_LABELS[dar.docType],
+            reason: dar.reason,
+            items: dar.items,
+            attachments: dar.attachments.map((a) => ({ fileName: a.fileName, spWebUrl: a.spWebUrl })),
+            actionToken: mrToken,
+            senderAccessToken: session.user.accessToken,
+          }),
+          mrSnapshot?.email ?? "",
+          'DAR MR Approval Request',
+          mrAuthKey,
+          {
+            title: "มี DAR รอการอนุมัติจาก MR",
+            body: `DAR ${dar.darNo}`,
+            module: "DAR",
+            resourceId: id,
+            resourceType: "DAR",
+          },
+        ).catch(() => { /* logged inside NotificationService */ });
       }
     }
 
@@ -129,61 +125,28 @@ export async function POST(req: NextRequest, { params }: Params) {
 
       if (qmsAuthKey) {
         const qmsSnapshot = await getUserSnapshot(qmsAuthKey);
-        const qmsEmail = qmsSnapshot?.email;
+        const qmsToken = await ActionTokenService.issue({
+          module: ApprovalModule.DAR,
+          documentId: id,
+          role: ApprovalStep.QMS_PROCESSOR,
+          issuedTo: qmsAuthKey,
+        });
 
-        if (qmsEmail) {
-          const qmsToken = await ActionTokenService.issue({
-            module: ApprovalModule.DAR,
-            documentId: id,
-            role: ApprovalStep.QMS_PROCESSOR,
-            issuedTo: qmsAuthKey,
-          });
-
-          NotificationService.sendEmailOnce(
-            `DAR:${dar.id}:MR_APPROVED:qms:${qmsAuthKey}:${qmsToken.substring(0, 16)}`,
-            () => sendQmsApprovalRequestEmail({
-              qms: { name: qmsSnapshot?.name ?? "", email: qmsEmail },
-              requesterName: dar.requester.name ?? "",
-              darNo: dar.darNo!,
-              darId: dar.id,
-              actionToken: qmsToken,
-              senderAccessToken: session.user.accessToken,
-            }),
-            qmsEmail,
-            'DAR QMS Processing Request',
-            qmsAuthKey,
-            {
-              title: "มี DAR รอการประมวลผล QMS",
-              body: `DAR ${dar.darNo}`,
-              module: "DAR",
-              resourceId: id,
-              resourceType: "DAR",
-            },
-          ).catch(() => { /* logged inside NotificationService */ });
-        }
-      }
-    }
-
-    if (qmsApprovedThisStep && dar.darNo) {
-      // All steps done — revoke any remaining DAR tokens
-      await ActionTokenService.revokeByDocument(ApprovalModule.DAR, id);
-
-      if (dar.requester.email) {
         NotificationService.sendEmailOnce(
-          `DAR:${dar.id}:COMPLETED:requester:${dar.requester.id}`,
-          () => sendApprovalNotificationEmail({
-            to: { name: dar.requester.name ?? "", email: dar.requester.email! },
+          `DAR:${dar.id}:MR_APPROVED:qms:${qmsAuthKey}:${qmsToken.substring(0, 16)}`,
+          () => sendQmsApprovalRequestEmail({
+            qms: { name: qmsSnapshot?.name ?? "", email: qmsSnapshot?.email ?? "" },
+            requesterName: dar.requester.name ?? "",
             darNo: dar.darNo!,
             darId: dar.id,
-            approverName: session.user.name ?? "QMS",
-            stepLabel: "QMS",
-            nextStepLabel: "Completed",
+            actionToken: qmsToken,
+            senderAccessToken: session.user.accessToken,
           }),
-          dar.requester.email,
-          'DAR Completed',
-          dar.requester.id,
+          qmsSnapshot?.email ?? "",
+          'DAR QMS Processing Request',
+          qmsAuthKey,
           {
-            title: "DAR เสร็จสมบูรณ์",
+            title: "มี DAR รอการประมวลผล QMS",
             body: `DAR ${dar.darNo}`,
             module: "DAR",
             resourceId: id,
@@ -191,6 +154,32 @@ export async function POST(req: NextRequest, { params }: Params) {
           },
         ).catch(() => { /* logged inside NotificationService */ });
       }
+    }
+
+    if (qmsApprovedThisStep && dar.darNo) {
+      await ActionTokenService.revokeByDocument(ApprovalModule.DAR, id);
+
+      NotificationService.sendEmailOnce(
+        `DAR:${dar.id}:COMPLETED:requester:${dar.requester.id}`,
+        () => sendApprovalNotificationEmail({
+          to: { name: dar.requester.name ?? "", email: dar.requester.email ?? "" },
+          darNo: dar.darNo!,
+          darId: dar.id,
+          approverName: session.user.name ?? "QMS",
+          stepLabel: "QMS",
+          nextStepLabel: "Completed",
+        }),
+        dar.requester.email ?? "",
+        'DAR Completed',
+        dar.requester.id,
+        {
+          title: "DAR เสร็จสมบูรณ์",
+          body: `DAR ${dar.darNo}`,
+          module: "DAR",
+          resourceId: id,
+          resourceType: "DAR",
+        },
+      ).catch(() => { /* logged inside NotificationService */ });
     }
 
     return sendSuccess(dar, "DAR approved successfully");

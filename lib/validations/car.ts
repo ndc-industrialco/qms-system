@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const reCarRefIdSchema = z.string().trim().optional();
+
 const carBaseSchema = z.object({
   sourceType: z.enum(["I", "C", "N", "O"]),
   sourceDetail: z.string().optional(),
@@ -12,11 +14,32 @@ const carBaseSchema = z.object({
   targetEmailGroups: z.array(z.string()).optional().default([]),
   targetEmailGroupsCc: z.array(z.string()).optional().default([]),
   reCar: z.boolean().optional().default(false),
-  reCarRefId: z.string().optional(),
+  reCarRefId: reCarRefIdSchema,
 });
 
 export const carCreateSchema = carBaseSchema.superRefine((data, ctx) => {
-  if (data.reCar && !data.reCarRefId) {
+  const refId = data.reCarRefId?.trim();
+  if (data.reCar && !refId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reCarRefId"],
+      message: "กรุณาระบุ CAR ที่อ้างอิงเมื่อเป็น Re-CAR",
+    });
+    return;
+  }
+
+  if (data.reCar && refId && !z.uuid().safeParse(refId).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reCarRefId"],
+      message: "กรุณากรอก CAR ID ที่ถูกต้อง (UUID)",
+    });
+  }
+});
+
+export const carUpdateSchema = carBaseSchema.partial().superRefine((data, ctx) => {
+  const refId = data.reCarRefId?.trim();
+  if (data.reCar && !refId) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["reCarRefId"],
@@ -24,8 +47,6 @@ export const carCreateSchema = carBaseSchema.superRefine((data, ctx) => {
     });
   }
 });
-
-export const carUpdateSchema = carBaseSchema.partial();
 
 export const carRespondSchema = z.object({
   responderPosition: z.string().min(1, "กรุณากรอกตำแหน่ง"),
@@ -55,13 +76,12 @@ export const carVerifySchema = z.object({
 );
 
 export const carCloseSchema = z.object({
-  // Token must be exactly 64 hex chars (32 random bytes from crypto.randomBytes)
-  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format"),
+  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format").optional(),
   comment: z.string().optional(),
 });
 
 export const carReviewResponseSchema = z.object({
-  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format"),
+  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format").optional(),
   action: z.enum(["APPROVED", "REJECTED"]),
   comment: z.string().optional(),
 });

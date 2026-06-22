@@ -12,9 +12,13 @@ import {
   FileText,
   FolderOpen,
   House,
+  LayoutDashboard,
+  ListTodo,
   Megaphone,
+  Search,
   Settings,
   ShieldCheck,
+  Upload,
   User,
   UserCog,
   Users,
@@ -91,6 +95,31 @@ function getSections(
       icon: <ClipboardCheck className="h-[18px] w-[18px] shrink-0" />,
     },
     {
+      labelTh: "ภาพรวมตรวจสอบ",
+      labelEn: "Audit Dashboard",
+      href: "/audit",
+      icon: <LayoutDashboard className="h-[18px] w-[18px] shrink-0" />,
+      exact: true,
+    },
+    {
+      labelTh: "แผนการตรวจสอบ",
+      labelEn: "Audit Plans",
+      href: "/audit/plans",
+      icon: <Search className="h-[18px] w-[18px] shrink-0" />,
+    },
+    {
+      labelTh: "งานตรวจสอบของฉัน",
+      labelEn: "My Audit Tasks",
+      href: "/audit/my-tasks",
+      icon: <ListTodo className="h-[18px] w-[18px] shrink-0" />,
+    },
+    {
+      labelTh: "ประกาศแต่งตั้งผู้ตรวจ",
+      labelEn: "Audit Appointments",
+      href: "/audit/appointments",
+      icon: <FileText className="h-[18px] w-[18px] shrink-0" />,
+    },
+    {
       labelTh: "งานรออนุมัติ",
       labelEn: "Approve Queue",
       href: "/approve",
@@ -105,6 +134,12 @@ function getSections(
   ];
 
   const qmsItems: NavItem[] = [
+    {
+      labelTh: "มาตรฐาน Audit",
+      labelEn: "Audit Standards",
+      href: "/qms/audit-standards",
+      icon: <ClipboardCheck className="h-[18px] w-[18px] shrink-0" />,
+    },
     {
       labelTh: "จัดการข่าวสาร",
       labelEn: "Manage Announcements",

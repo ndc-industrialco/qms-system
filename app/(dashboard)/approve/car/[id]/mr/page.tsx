@@ -1,10 +1,11 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
 import { CarService } from "@/services/carService";
 import CarMrSignDialog from "@/components/car/CarMrSignDialog";
 import CarStatusBadge from "@/components/car/CarStatusBadge";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "ลงนามปิด CAR" };
+export const metadata: Metadata = { title: "CAR Sign-off" };
 
 const carService = new CarService();
 
@@ -19,15 +20,8 @@ export default async function CarMrSignPage({
   const { token } = await searchParams;
 
   if (!token) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-xl bg-red-50 border border-red-200 p-8 text-center">
-          <div className="text-4xl mb-3">❌</div>
-          <h2 className="text-lg font-bold text-red-800">ลิงก์ไม่ถูกต้อง</h2>
-          <p className="mt-1 text-sm text-red-700">กรุณาตรวจสอบ inbox สำหรับลิงก์ที่ถูกต้อง</p>
-        </div>
-      </div>
-    );
+    const session = await requireAuth();
+    if (session.user.role !== "MR") notFound();
   }
 
   let car;
@@ -38,20 +32,20 @@ export default async function CarMrSignPage({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-8 space-y-6">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="mx-auto w-full max-w-lg space-y-6 rounded-2xl bg-white p-8 shadow-lg">
         <div className="text-center">
-          <h1 className="text-xl font-bold text-gray-900">ลงนามปิด CAR</h1>
-          <p className="text-sm text-gray-500 mt-1">MR Sign-off</p>
+          <h1 className="text-xl font-bold text-gray-900">CAR Sign-off</h1>
+          <p className="mt-1 text-sm text-gray-500">Management representative confirmation</p>
         </div>
 
-        <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 space-y-2">
+        <div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-700 font-mono">{car.carNo}</span>
+            <span className="font-mono text-sm font-semibold text-gray-700">{car.carNo}</span>
             <CarStatusBadge status={car.status} />
           </div>
-          <p className="text-xs text-gray-500">แผนก: {car.targetDepartment.name}</p>
-          <p className="text-xs text-gray-600 line-clamp-2">{car.defectDetail}</p>
+          <p className="text-xs text-gray-500">Department: {car.targetDepartment.name}</p>
+          <p className="line-clamp-2 text-xs text-gray-600">{car.defectDetail}</p>
         </div>
 
         <CarMrSignDialog carId={id} carNo={car.carNo} token={token} />

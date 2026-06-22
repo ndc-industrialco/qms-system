@@ -191,3 +191,83 @@ export type CarMrResponseReview = Prisma.CarMrResponseReviewModel
  * 
  */
 export type CarNotificationLog = Prisma.CarNotificationLogModel
+/**
+ * Model AuditAppointment
+ * 
+ */
+export type AuditAppointment = Prisma.AuditAppointmentModel
+/**
+ * Model AuditAppointmentMember
+ * 
+ */
+export type AuditAppointmentMember = Prisma.AuditAppointmentMemberModel
+/**
+ * Model AuditAppointmentSignoff
+ * 
+ */
+export type AuditAppointmentSignoff = Prisma.AuditAppointmentSignoffModel
+/**
+ * Model AuditPlan
+ * 
+ */
+export type AuditPlan = Prisma.AuditPlanModel
+/**
+ * Model AuditStandard
+ * 
+ */
+export type AuditStandard = Prisma.AuditStandardModel
+/**
+ * Model AuditPlanDepartment
+ * 
+ */
+export type AuditPlanDepartment = Prisma.AuditPlanDepartmentModel
+/**
+ * Model AuditAuditorAssignment
+ * 
+ */
+export type AuditAuditorAssignment = Prisma.AuditAuditorAssignmentModel
+/**
+ * Model AuditSchedule
+ * 
+ */
+export type AuditSchedule = Prisma.AuditScheduleModel
+/**
+ * Model AuditScheduleTeamMember
+ * 
+ */
+export type AuditScheduleTeamMember = Prisma.AuditScheduleTeamMemberModel
+/**
+ * Model AuditAttachment
+ * 
+ */
+export type AuditAttachment = Prisma.AuditAttachmentModel
+/**
+ * Model AuditAnnouncement
+ * 
+ */
+export type AuditAnnouncement = Prisma.AuditAnnouncementModel
+/**
+ * Model AuditFinding
+ * 
+ */
+export type AuditFinding = Prisma.AuditFindingModel
+/**
+ * Model AuditCorrectiveAction
+ * 
+ */
+export type AuditCorrectiveAction = Prisma.AuditCorrectiveActionModel
+/**
+ * Model AuditVerification
+ * 
+ */
+export type AuditVerification = Prisma.AuditVerificationModel
+/**
+ * Model AuditSignoff
+ * 
+ */
+export type AuditSignoff = Prisma.AuditSignoffModel
+/**
+ * Model AuditReport
+ * 
+ */
+export type AuditReport = Prisma.AuditReportModel

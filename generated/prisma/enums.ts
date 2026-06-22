@@ -57,7 +57,9 @@ export const ApprovalStep = {
   APPROVER: 'APPROVER',
   APPROVER_MR: 'APPROVER_MR',
   APPROVER_DCC: 'APPROVER_DCC',
-  QMS_PROCESSOR: 'QMS_PROCESSOR'
+  QMS_PROCESSOR: 'QMS_PROCESSOR',
+  LEAD_AUDITOR: 'LEAD_AUDITOR',
+  AUDIT_SIGNER: 'AUDIT_SIGNER'
 } as const
 
 export type ApprovalStep = (typeof ApprovalStep)[keyof typeof ApprovalStep]
@@ -67,7 +69,8 @@ export const ApprovalModule = {
   DAR: 'DAR',
   KPI: 'KPI',
   KPI_MONTHLY: 'KPI_MONTHLY',
-  CAR: 'CAR'
+  CAR: 'CAR',
+  AUDIT: 'AUDIT'
 } as const
 
 export type ApprovalModule = (typeof ApprovalModule)[keyof typeof ApprovalModule]
@@ -151,3 +154,129 @@ export const DocControlStatus = {
 } as const
 
 export type DocControlStatus = (typeof DocControlStatus)[keyof typeof DocControlStatus]
+
+
+export const AuditType = {
+  INTERNAL: 'INTERNAL',
+  EXTERNAL: 'EXTERNAL'
+} as const
+
+export type AuditType = (typeof AuditType)[keyof typeof AuditType]
+
+
+export const AuditMode = {
+  SYSTEM: 'SYSTEM',
+  FILE_UPLOAD: 'FILE_UPLOAD'
+} as const
+
+export type AuditMode = (typeof AuditMode)[keyof typeof AuditMode]
+
+
+export const AuditPlanStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  PLANNED: 'PLANNED',
+  ANNOUNCED: 'ANNOUNCED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  WAITING_CORRECTIVE: 'WAITING_CORRECTIVE',
+  READY_TO_CLOSE: 'READY_TO_CLOSE',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type AuditPlanStatus = (typeof AuditPlanStatus)[keyof typeof AuditPlanStatus]
+
+
+export const AuditorRole = {
+  LEAD: 'LEAD',
+  MEMBER: 'MEMBER',
+  OBSERVER: 'OBSERVER'
+} as const
+
+export type AuditorRole = (typeof AuditorRole)[keyof typeof AuditorRole]
+
+
+export const FindingCategory = {
+  NC: 'NC',
+  OBSERVATION: 'OBSERVATION',
+  OFI: 'OFI'
+} as const
+
+export type FindingCategory = (typeof FindingCategory)[keyof typeof FindingCategory]
+
+
+export const FindingSeverity = {
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+  CRITICAL: 'CRITICAL'
+} as const
+
+export type FindingSeverity = (typeof FindingSeverity)[keyof typeof FindingSeverity]
+
+
+export const FindingStatus = {
+  OPEN: 'OPEN',
+  RESPONDED: 'RESPONDED',
+  VERIFIED: 'VERIFIED',
+  CLOSED: 'CLOSED',
+  REOPENED: 'REOPENED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type FindingStatus = (typeof FindingStatus)[keyof typeof FindingStatus]
+
+
+export const AuditDeliveryMode = {
+  LINK: 'LINK',
+  ATTACHMENT: 'ATTACHMENT',
+  BOTH: 'BOTH'
+} as const
+
+export type AuditDeliveryMode = (typeof AuditDeliveryMode)[keyof typeof AuditDeliveryMode]
+
+
+export const AuditSignType = {
+  IN_APP: 'IN_APP',
+  TOKEN_LINK: 'TOKEN_LINK'
+} as const
+
+export type AuditSignType = (typeof AuditSignType)[keyof typeof AuditSignType]
+
+
+export const AuditVerifyResult = {
+  PASS: 'PASS',
+  FAIL: 'FAIL',
+  REOPEN: 'REOPEN'
+} as const
+
+export type AuditVerifyResult = (typeof AuditVerifyResult)[keyof typeof AuditVerifyResult]
+
+
+export const AuditScheduleConfirmStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  UNAVAILABLE: 'UNAVAILABLE'
+} as const
+
+export type AuditScheduleConfirmStatus = (typeof AuditScheduleConfirmStatus)[keyof typeof AuditScheduleConfirmStatus]
+
+
+export const AuditTeamRole = {
+  LEAD_AUDITOR: 'LEAD_AUDITOR',
+  AUDITOR: 'AUDITOR',
+  OBSERVER: 'OBSERVER',
+  AUDITEE: 'AUDITEE'
+} as const
+
+export type AuditTeamRole = (typeof AuditTeamRole)[keyof typeof AuditTeamRole]
+
+
+export const AuditAppointmentStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  PUBLISHED: 'PUBLISHED'
+} as const
+
+export type AuditAppointmentStatus = (typeof AuditAppointmentStatus)[keyof typeof AuditAppointmentStatus]

@@ -2,58 +2,62 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircle2, XCircle, ClipboardList } from "lucide-react";
+import { CheckCircle2, ClipboardList, XCircle } from "lucide-react";
 import type { CarDetail } from "@/types/car";
 
 interface Props {
   carId: string;
   car: CarDetail;
-  token: string;
+  token?: string;
   defaultAction?: "APPROVED" | "REJECTED";
 }
 
 async function submitReview(
   carId: string,
-  token: string,
+  token: string | undefined,
   action: "APPROVED" | "REJECTED",
   comment: string
 ): Promise<void> {
   const res = await fetch(`/api/car/${carId}/review-response`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, action, comment: comment || undefined }),
+    body: JSON.stringify({
+      ...(token ? { token } : {}),
+      action,
+      ...(comment ? { comment } : {}),
+    }),
   });
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
-    throw new Error(json.message ?? "ไม่สามารถบันทึกการตรวจสอบได้");
+    throw new Error(json.message ?? "Failed to submit review");
   }
 }
 
 function ResponseDetail({ response }: { response: NonNullable<CarDetail["response"]> }) {
   const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString("th-TH", { day: "2-digit", month: "long", year: "numeric" });
+    new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
   const rootCauses = [
-    response.rootCausePerson && "คน (Person)",
-    response.rootCauseMaterial && "วัสดุ (Material)",
-    response.rootCauseMachine && "เครื่องจักร (Machine)",
-    response.rootCauseMethod && "วิธีการ (Method)",
-    response.rootCauseOther && `อื่นๆ: ${response.rootCauseOtherDetail ?? ""}`,
+    response.rootCausePerson && "Person",
+    response.rootCauseMaterial && "Material",
+    response.rootCauseMachine && "Machine",
+    response.rootCauseMethod && "Method",
+    response.rootCauseOther && `Other: ${response.rootCauseOtherDetail ?? ""}`,
   ].filter(Boolean) as string[];
 
   return (
     <div className="space-y-3">
-      <Row label="ผู้ตอบกลับ" value={`${response.responder.name ?? "-"} (${response.responderPosition})`} />
-      <Row label="วันที่วางแผนเสร็จ" value={fmt(response.plannedCompletionDate)} highlight />
+      <Row label="Responder" value={`${response.responder.name ?? "-"} (${response.responderPosition})`} />
+      <Row label="Planned Completion" value={fmt(response.plannedCompletionDate)} highlight />
       <Divider />
-      <Row label="การวิเคราะห์ Why-Why" value={response.whyAnalysis} multiline />
-      <Row label="สาเหตุหลัก (5M)" value={rootCauses.join(", ") || "-"} />
-      <Row label="สรุปสาเหตุหลัก" value={response.rootCauseSummary} multiline />
+      <Row label="Why-Why Analysis" value={response.whyAnalysis} multiline />
+      <Row label="Root Cause (5M)" value={rootCauses.join(", ") || "-"} />
+      <Row label="Root Cause Summary" value={response.rootCauseSummary} multiline />
       <Divider />
-      <Row label="มาตรการแก้ไขเบื้องต้น" value={response.immediateAction} multiline />
-      <Row label="มาตรการป้องกัน" value={response.preventiveAction} multiline />
+      <Row label="Immediate Action" value={response.immediateAction} multiline />
+      <Row label="Preventive Action" value={response.preventiveAction} multiline />
       {response.additionalToolDetail && (
-        <Row label="เครื่องมือเพิ่มเติม" value={response.additionalToolDetail} multiline />
+        <Row label="Additional Tool" value={response.additionalToolDetail} multiline />
       )}
     </div>
   );
@@ -62,7 +66,7 @@ function ResponseDetail({ response }: { response: NonNullable<CarDetail["respons
 function Row({ label, value, multiline, highlight }: { label: string; value: string; multiline?: boolean; highlight?: boolean }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
       <p className={`mt-0.5 text-sm ${highlight ? "font-bold text-blue-700" : "text-slate-800"} ${multiline ? "whitespace-pre-wrap" : ""}`}>
         {value}
       </p>
@@ -91,19 +95,19 @@ export default function CarMrResponseReviewPanel({ carId, car, token, defaultAct
   if (done) {
     const approved = doneAction === "APPROVED";
     return (
-      <div className={`rounded-xl border p-8 text-center ${approved ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"}`}>
-        <div className="flex justify-center mb-3">
+      <div className={`rounded-xl border p-8 text-center ${approved ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"}`}>
+        <div className="mb-3 flex justify-center">
           {approved
-            ? <CheckCircle2 className="w-12 h-12 text-emerald-500" />
-            : <XCircle className="w-12 h-12 text-rose-500" />}
+            ? <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+            : <XCircle className="h-12 w-12 text-rose-500" />}
         </div>
         <h2 className={`text-lg font-bold ${approved ? "text-emerald-800" : "text-rose-800"}`}>
-          {approved ? "อนุมัติแผนการแก้ไขแล้ว" : "ปฏิเสธแผนการแก้ไขแล้ว"}
+          {approved ? "Corrective action plan approved" : "Corrective action plan rejected"}
         </h2>
         <p className={`mt-1 text-sm ${approved ? "text-emerald-700" : "text-rose-700"}`}>
           {approved
-            ? `CAR ${car.carNo} พร้อมสำหรับการติดตามผลการแก้ไข (Verify) แล้ว`
-            : `แผนกได้รับแจ้งให้แก้ไขและตอบกลับใหม่สำหรับ CAR ${car.carNo}`}
+            ? `CAR ${car.carNo} is now ready for verification.`
+            : `CAR ${car.carNo} has been sent back to the department for revision.`}
         </p>
       </div>
     );
@@ -111,34 +115,31 @@ export default function CarMrResponseReviewPanel({ carId, car, token, defaultAct
 
   return (
     <div className="space-y-6">
-      {/* CAR Info */}
-      <div className="rounded-lg bg-slate-50 border border-slate-200 p-4 space-y-1.5">
+      <div className="space-y-1.5 rounded-lg border border-slate-200 bg-slate-50 p-4">
         <div className="flex items-center justify-between">
           <span className="font-mono text-sm font-bold text-slate-800">{car.carNo}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium border border-blue-200">
+          <span className="rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
             {car.targetDepartment.name}
           </span>
         </div>
         <p className="text-xs text-slate-500">{car.defectDetail}</p>
-        <p className="text-xs text-slate-400">ข้อกำหนด: {car.nonConformanceRef}</p>
+        <p className="text-xs text-slate-400">Ref: {car.nonConformanceRef}</p>
       </div>
 
-      {/* Response Details */}
       {car.response ? (
         <div className="rounded-lg border border-slate-200 p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <ClipboardList className="w-4 h-4 text-slate-500" />
-            <h3 className="text-sm font-bold text-slate-700">แผนการแก้ไขที่แผนกตอบกลับมา</h3>
+          <div className="mb-3 flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-slate-500" />
+            <h3 className="text-sm font-bold text-slate-700">Corrective Action Plan</h3>
           </div>
           <ResponseDetail response={car.response} />
         </div>
       ) : (
-        <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-center text-sm text-amber-700">
-          ยังไม่มีข้อมูลการตอบกลับจากแผนก
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-center text-sm text-amber-700">
+          No department response has been submitted yet.
         </div>
       )}
 
-      {/* Action Selection */}
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => setAction("APPROVED")}
@@ -148,8 +149,8 @@ export default function CarMrResponseReviewPanel({ carId, car, token, defaultAct
               : "border-slate-200 bg-white text-slate-500 hover:border-emerald-300"
           }`}
         >
-          <CheckCircle2 className="w-4 h-4" />
-          อนุมัติแผน
+          <CheckCircle2 className="h-4 w-4" />
+          Approve Plan
         </button>
         <button
           onClick={() => setAction("REJECTED")}
@@ -159,51 +160,48 @@ export default function CarMrResponseReviewPanel({ carId, car, token, defaultAct
               : "border-slate-200 bg-white text-slate-500 hover:border-rose-300"
           }`}
         >
-          <XCircle className="w-4 h-4" />
-          ปฏิเสธแผน
+          <XCircle className="h-4 w-4" />
+          Reject Plan
         </button>
       </div>
 
-      {/* Comment */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          หมายเหตุ{action === "REJECTED" && <span className="text-rose-500"> (แนะนำให้ระบุเหตุผล)</span>}
+        <label className="mb-1 block text-sm font-medium text-slate-700">
+          Comment{action === "REJECTED" && <span className="text-rose-500"> (recommended)</span>}
         </label>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}
-          placeholder={action === "REJECTED" ? "ระบุเหตุผลที่ปฏิเสธ เช่น แผนไม่ครอบคลุมสาเหตุหลัก..." : "หมายเหตุเพิ่มเติม (ถ้ามี)"}
+          placeholder={action === "REJECTED" ? "Explain what must be revised..." : "Add an optional note..."}
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      {/* Error */}
       {mutation.error && (
-        <p className="text-sm text-rose-600 bg-rose-50 rounded-lg px-3 py-2 border border-rose-200">
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
           {(mutation.error as Error).message}
         </p>
       )}
 
-      {/* Confirm */}
       <div className={`rounded-lg p-3 text-xs ${action === "APPROVED" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
         {action === "APPROVED"
-          ? `การอนุมัติจะเปลี่ยนสถานะ CAR เป็น "รอติดตามครั้งที่ 1" และแจ้ง QMS + แผนก`
-          : `การปฏิเสธจะส่ง CAR กลับไปยังแผนก "${car.targetDepartment.name}" เพื่อแก้ไขแผนและตอบกลับใหม่`}
+          ? "Approving will move the CAR to verification and notify the next responsible parties."
+          : `Rejecting will send the CAR back to ${car.targetDepartment.name} for an updated plan.`}
       </div>
 
       <button
         onClick={() => mutation.mutate()}
         disabled={mutation.isPending}
-        className={`w-full rounded-xl py-3 text-sm font-bold text-white disabled:opacity-60 transition-colors ${
+        className={`w-full rounded-xl py-3 text-sm font-bold text-white disabled:opacity-60 ${
           action === "APPROVED" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
         }`}
       >
         {mutation.isPending
-          ? "กำลังบันทึก..."
+          ? "Submitting..."
           : action === "APPROVED"
-          ? "ยืนยัน — อนุมัติแผนการแก้ไข"
-          : "ยืนยัน — ปฏิเสธแผนการแก้ไข"}
+            ? "Confirm Plan Approval"
+            : "Confirm Plan Rejection"}
       </button>
     </div>
   );

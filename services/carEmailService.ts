@@ -1,5 +1,4 @@
 import { logger } from "@/lib/logger";
-import { graphFetch } from "@/lib/graphFetch";
 
 function esc(value: string): string {
   return value
@@ -20,31 +19,38 @@ async function sendMail(opts: {
   cc?: string[];
   subject: string;
   bodyHtml: string;
-  /** Delegated MS Graph token (Mail.Send scope) — required; skips if absent */
   senderAccessToken?: string | null;
 }): Promise<void> {
   if (!opts.senderAccessToken) {
-    logger.warn("[carEmail] No sender token — mail skipped", { subject: opts.subject, to: opts.to });
+    logger.warn("[carEmail] No sender token - mail skipped", { subject: opts.subject, to: opts.to });
     return;
   }
 
-  const payload = {
-    message: {
-      subject: opts.subject,
-      body: { contentType: "HTML", content: opts.bodyHtml },
-      toRecipients: [{ emailAddress: { address: opts.to } }],
-      ...(opts.cc?.length ? { ccRecipients: opts.cc.map((a) => ({ emailAddress: { address: a } })) } : {}),
-    },
-    saveToSentItems: false,
+  const base = process.env.AUTH_CENTER_URL?.replace(/\/$/, "");
+  if (!base) {
+    logger.warn("[carEmail] AUTH_CENTER_URL not set - mail skipped", { subject: opts.subject, to: opts.to });
+    return;
+  }
+
+  const body: Record<string, unknown> = {
+    toEmail: opts.to,
+    subject: opts.subject,
+    htmlBody: opts.bodyHtml,
+    ...(opts.cc?.length ? { cc: opts.cc.map((email) => ({ email })) } : {}),
   };
-  const res = await graphFetch("https://graph.microsoft.com/v1.0/me/sendMail", {
+
+  const res = await fetch(`${base}/api/auth/mail/send`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${opts.senderAccessToken}`, "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: {
+      Authorization: `Bearer ${opts.senderAccessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
   });
+
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Graph sendMail ${res.status}: ${text}`);
+    const text = await res.text().catch(() => "");
+    throw new Error(`Auth Center sendMail ${res.status}: ${text}`);
   }
 }
 
@@ -56,10 +62,13 @@ function makeCarMailBody(opts: {
   actionLabel?: string;
   actionUrl?: string;
 }): string {
-  const linesHtml = opts.bodyLines.map((l) => `<p style="margin:6px 0;font-size:13px;color:#334155">${esc(l)}</p>`).join("");
+  const linesHtml = opts.bodyLines
+    .map((line) => `<p style="margin:6px 0;font-size:13px;color:#334155">${esc(line)}</p>`)
+    .join("");
   const actionHtml = opts.actionUrl
-    ? `<div style="margin-top:18px"><a href="${opts.actionUrl}" style="display:inline-block;padding:12px 20px;background:#0f1059;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">${esc(opts.actionLabel ?? "เปิดรายการ")}</a><div style="margin-top:8px;font-size:11px;color:#64748b;word-break:break-all">${esc(opts.actionUrl)}</div></div>`
+    ? `<div style="margin-top:18px"><a href="${opts.actionUrl}" style="display:inline-block;padding:12px 20px;background:#0f1059;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">${esc(opts.actionLabel ?? "Open Item")}</a><div style="margin-top:8px;font-size:11px;color:#64748b;word-break:break-all">${esc(opts.actionUrl)}</div></div>`
     : "";
+
   return `
 <div style="width:100%;margin:0;padding:20px;background:#f8fafc;font-family:Segoe UI,Arial,sans-serif">
   <div style="max-width:680px;margin:0 auto;background:#fff;overflow:hidden;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08)">
@@ -69,7 +78,7 @@ function makeCarMailBody(opts: {
       <div style="margin-top:6px;font-size:13px;background:rgba(255,255,255,.15);display:inline-block;padding:3px 10px;border-radius:4px;font-weight:700">${esc(opts.carNo)}</div>
     </div>
     <div style="padding:20px 22px">${linesHtml}${actionHtml}</div>
-    <div style="padding:12px 22px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b">อีเมลนี้ถูกส่งโดยระบบอัตโนมัติ กรุณาอย่าตอบกลับ / This is an automated email. Please do not reply.</div>
+    <div style="padding:12px 22px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b">This is an automated email. Please do not reply.</div>
   </div>
 </div>`;
 }
@@ -79,23 +88,28 @@ export async function sendCarIssuedEmail(opts: {
   carNo: string;
   targetEmail: string;
   cc?: string[];
-  /** Delegated token — sends as the QMS officer who issued the CAR (if m365-linked) */
   senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
-    titleTh: "แจ้งเตือน: ได้รับคำร้องขอแก้ไข (CAR)",
-    titleEn: "Notice: Corrective Action Request Issued",
+    titleTh: "CAR issued",
+    titleEn: "Corrective Action Request Issued",
     carNo: opts.carNo,
     bodyLines: [
-      `แผนกของท่านได้รับ CAR หมายเลข ${opts.carNo}`,
-      "กรุณาดำเนินการตอบกลับภายใน 7 วัน",
-      "Your department has received a Corrective Action Request. Please respond within 7 days.",
+      `Your department has received CAR ${opts.carNo}.`,
+      "Please submit your response within 7 days.",
     ],
-    actionLabel: "ดูรายละเอียด CAR / View CAR",
+    actionLabel: "View CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[CAR] ได้รับคำร้องขอแก้ไข ${opts.carNo}`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
+
+  await sendMail({
+    to: opts.targetEmail,
+    cc: opts.cc,
+    subject: `[CAR] Issued ${opts.carNo}`,
+    bodyHtml: html,
+    senderAccessToken: opts.senderAccessToken,
+  });
 }
 
 export async function sendCarReminderEmail(opts: {
@@ -103,21 +117,28 @@ export async function sendCarReminderEmail(opts: {
   carNo: string;
   targetEmail: string;
   cc?: string[];
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
-    titleTh: "เตือน: ยังไม่ได้ตอบกลับ CAR",
-    titleEn: "Reminder: CAR Response Pending",
+    titleTh: "CAR reminder",
+    titleEn: "CAR Response Pending",
     carNo: opts.carNo,
     bodyLines: [
-      `CAR หมายเลข ${opts.carNo} ยังรอการตอบกลับจากแผนกของท่าน`,
-      "กรุณาดำเนินการโดยเร็วที่สุด",
-      `CAR ${opts.carNo} is still awaiting your department's response. Please take action promptly.`,
+      `CAR ${opts.carNo} is still awaiting your department response.`,
+      "Please take action as soon as possible.",
     ],
-    actionLabel: "ดูรายละเอียด CAR / View CAR",
+    actionLabel: "View CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[CAR Reminder] ยังไม่ได้ตอบกลับ ${opts.carNo}`, bodyHtml: html });
+
+  await sendMail({
+    to: opts.targetEmail,
+    cc: opts.cc,
+    subject: `[CAR Reminder] Pending response ${opts.carNo}`,
+    bodyHtml: html,
+    senderAccessToken: opts.senderAccessToken,
+  });
 }
 
 export async function sendCarRespondedEmail(opts: {
@@ -128,18 +149,23 @@ export async function sendCarRespondedEmail(opts: {
 }): Promise<void> {
   const url = getAppUrl(`/qms/car/${opts.carId}`);
   const html = makeCarMailBody({
-    titleTh: "แจ้งเตือน: แผนกตอบกลับ CAR แล้ว",
-    titleEn: "Notice: CAR Response Received",
+    titleTh: "CAR responded",
+    titleEn: "CAR Response Received",
     carNo: opts.carNo,
     bodyLines: [
-      `CAR หมายเลข ${opts.carNo} ได้รับการตอบกลับจากแผนกแล้ว`,
       `CAR ${opts.carNo} has received a response from the department.`,
     ],
-    actionLabel: "ดูรายละเอียด / View Details",
+    actionLabel: "View Details",
     actionUrl: url,
   });
+
   for (const to of opts.recipients) {
-    await sendMail({ to, subject: `[CAR] แผนกตอบกลับ ${opts.carNo} แล้ว`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
+    await sendMail({
+      to,
+      subject: `[CAR] Response received ${opts.carNo}`,
+      bodyHtml: html,
+      senderAccessToken: opts.senderAccessToken,
+    });
   }
 }
 
@@ -152,18 +178,23 @@ export async function sendCarVerifyPassEmail(opts: {
 }): Promise<void> {
   const url = getAppUrl(`/approve/car/${opts.carId}/mr?token=${opts.token}`);
   const html = makeCarMailBody({
-    titleTh: "แจ้งเตือน: CAR ผ่านการติดตาม — กรุณาลงนามปิด",
-    titleEn: "Notice: CAR Passed Verification — Please Sign to Close",
+    titleTh: "CAR passed verification",
+    titleEn: "Please sign to close CAR",
     carNo: opts.carNo,
     bodyLines: [
-      `CAR หมายเลข ${opts.carNo} ผ่านการติดตามผลการแก้ไขแล้ว`,
-      "กรุณาลงนามเพื่อปิด CAR โดยคลิกที่ปุ่มด้านล่าง",
-      `CAR ${opts.carNo} has passed verification. Please sign to close it.`,
+      `CAR ${opts.carNo} passed verification.`,
+      "Please sign to close this CAR.",
     ],
-    actionLabel: "ลงนามปิด CAR / Sign to Close CAR",
+    actionLabel: "Sign to Close CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.mrEmail, subject: `[CAR] กรุณาลงนามปิด CAR ${opts.carNo}`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
+
+  await sendMail({
+    to: opts.mrEmail,
+    subject: `[CAR] Sign to close ${opts.carNo}`,
+    bodyHtml: html,
+    senderAccessToken: opts.senderAccessToken,
+  });
 }
 
 export async function sendCarVerify2NotifyEmail(opts: {
@@ -176,18 +207,24 @@ export async function sendCarVerify2NotifyEmail(opts: {
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
-    titleTh: "แจ้งเตือน: CAR ยังไม่ผ่านการติดตาม — มีการกำหนดวันติดตามครั้งที่ 2",
-    titleEn: "Notice: CAR Failed Verification 1 — Verification 2 Scheduled",
+    titleTh: "Verification 2 scheduled",
+    titleEn: "CAR failed verification 1",
     carNo: opts.carNo,
     bodyLines: [
-      `CAR หมายเลข ${opts.carNo} ยังไม่ผ่านการติดตามผลครั้งที่ 1`,
-      `กำหนดการติดตามครั้งที่ 2: ${opts.nextDueDate}`,
-      `CAR ${opts.carNo} did not pass verification 1. Verification 2 is scheduled for ${opts.nextDueDate}.`,
+      `CAR ${opts.carNo} did not pass verification 1.`,
+      `Verification 2 is scheduled for ${opts.nextDueDate}.`,
     ],
-    actionLabel: "ดูรายละเอียด CAR / View CAR",
+    actionLabel: "View CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[CAR] กำหนดการติดตามครั้งที่ 2 สำหรับ ${opts.carNo}`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
+
+  await sendMail({
+    to: opts.targetEmail,
+    cc: opts.cc,
+    subject: `[CAR] Verification 2 scheduled ${opts.carNo}`,
+    bodyHtml: html,
+    senderAccessToken: opts.senderAccessToken,
+  });
 }
 
 export async function sendCarMrReviewRequestEmail(opts: {
@@ -202,21 +239,26 @@ export async function sendCarMrReviewRequestEmail(opts: {
   const rejectUrl = getAppUrl(`/approve/car/${opts.carId}/mr-response?token=${opts.token}&action=REJECTED`);
   const viewUrl = getAppUrl(`/qms/car/${opts.carId}`);
   const html = makeCarMailBody({
-    titleTh: "แจ้งเตือน: ขอให้ MR ตรวจสอบแผนแก้ไข CAR",
-    titleEn: "Action Required: Please Review CAR Corrective Action Plan",
+    titleTh: "MR review required",
+    titleEn: "Review CAR corrective action plan",
     carNo: opts.carNo,
     bodyLines: [
-      `CAR หมายเลข ${opts.carNo} ได้รับการตอบกลับจากแผนกแล้ว`,
-      `กำหนดเสร็จสิ้นตามแผน: ${opts.plannedCompletionDate}`,
-      `กรุณาตรวจสอบแผนการแก้ไขและอนุมัติหรือปฏิเสธ`,
-      `CAR ${opts.carNo} has received a corrective action plan. Please review and approve or reject.`,
+      `CAR ${opts.carNo} has received a corrective action plan.`,
+      `Planned completion date: ${opts.plannedCompletionDate}.`,
+      "Please review and approve or reject the plan.",
     ],
-    actionLabel: "ดูรายละเอียดแผน / View Plan",
+    actionLabel: "View Plan",
     actionUrl: viewUrl,
   });
-  const approveBtn = `<div style="margin-top:10px"><a href="${approveUrl}" style="display:inline-block;padding:10px 18px;background:#16a34a;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700;margin-right:8px">อนุมัติแผน / Approve</a><a href="${rejectUrl}" style="display:inline-block;padding:10px 18px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">ปฏิเสธแผน / Reject</a></div>`;
-  const fullHtml = html.replace("</div>\n    <div", approveBtn + "\n    </div>\n    <div");
-  await sendMail({ to: opts.mrEmail, subject: `[CAR] ขอให้ตรวจสอบแผนแก้ไข ${opts.carNo}`, bodyHtml: fullHtml, senderAccessToken: opts.senderAccessToken });
+  const approveBtn = `<div style="margin-top:10px"><a href="${approveUrl}" style="display:inline-block;padding:10px 18px;background:#16a34a;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700;margin-right:8px">Approve</a><a href="${rejectUrl}" style="display:inline-block;padding:10px 18px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">Reject</a></div>`;
+  const fullHtml = html.replace("</div>\n    <div", `${approveBtn}\n    </div>\n    <div`);
+
+  await sendMail({
+    to: opts.mrEmail,
+    subject: `[CAR] MR review required ${opts.carNo}`,
+    bodyHtml: fullHtml,
+    senderAccessToken: opts.senderAccessToken,
+  });
 }
 
 export async function sendCarPlanApprovedEmail(opts: {
@@ -224,22 +266,29 @@ export async function sendCarPlanApprovedEmail(opts: {
   carNo: string;
   recipients: string[];
   cc?: string[];
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
-    titleTh: "แจ้งเตือน: แผนการแก้ไข CAR ได้รับการอนุมัติแล้ว",
-    titleEn: "Notice: CAR Corrective Action Plan Approved",
+    titleTh: "Plan approved",
+    titleEn: "CAR corrective action plan approved",
     carNo: opts.carNo,
     bodyLines: [
-      `แผนการแก้ไข CAR หมายเลข ${opts.carNo} ได้รับการอนุมัติจาก MR แล้ว`,
-      `กรุณาดำเนินการตามแผนที่กำหนดไว้`,
-      `The corrective action plan for CAR ${opts.carNo} has been approved by MR. Please proceed as planned.`,
+      `The corrective action plan for CAR ${opts.carNo} has been approved by MR.`,
+      "Please proceed according to the approved plan.",
     ],
-    actionLabel: "ดูรายละเอียด CAR / View CAR",
+    actionLabel: "View CAR",
     actionUrl: url,
   });
+
   for (const to of opts.recipients) {
-    await sendMail({ to, cc: opts.cc, subject: `[CAR] แผนการแก้ไข ${opts.carNo} ได้รับการอนุมัติแล้ว`, bodyHtml: html });
+    await sendMail({
+      to,
+      cc: opts.cc,
+      subject: `[CAR] Plan approved ${opts.carNo}`,
+      bodyHtml: html,
+      senderAccessToken: opts.senderAccessToken,
+    });
   }
 }
 
@@ -249,22 +298,29 @@ export async function sendCarPlanRejectedEmail(opts: {
   targetEmail: string;
   comment?: string;
   cc?: string[];
+  senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
-    titleTh: "แจ้งเตือน: แผนการแก้ไข CAR ถูกปฏิเสธ — กรุณาแก้ไขและตอบกลับใหม่",
-    titleEn: "Notice: CAR Corrective Action Plan Rejected — Please Revise and Resubmit",
+    titleTh: "Plan rejected",
+    titleEn: "Please revise and resubmit",
     carNo: opts.carNo,
     bodyLines: [
-      `แผนการแก้ไข CAR หมายเลข ${opts.carNo} ไม่ผ่านการพิจารณาจาก MR`,
-      ...(opts.comment ? [`เหตุผล: ${opts.comment}`] : []),
-      `กรุณาแก้ไขแผนและตอบกลับใหม่ภายใน 7 วัน`,
-      `The corrective action plan for CAR ${opts.carNo} was rejected by MR. Please revise and resubmit within 7 days.`,
+      `The corrective action plan for CAR ${opts.carNo} was rejected by MR.`,
+      ...(opts.comment ? [`Comment: ${opts.comment}`] : []),
+      "Please revise and resubmit within 7 days.",
     ],
-    actionLabel: "แก้ไขและตอบกลับ / Revise & Resubmit",
+    actionLabel: "Revise Plan",
     actionUrl: url,
   });
-  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[CAR] แผนการแก้ไข ${opts.carNo} ถูกปฏิเสธ — กรุณาแก้ไขใหม่`, bodyHtml: html });
+
+  await sendMail({
+    to: opts.targetEmail,
+    cc: opts.cc,
+    subject: `[CAR] Plan rejected ${opts.carNo}`,
+    bodyHtml: html,
+    senderAccessToken: opts.senderAccessToken,
+  });
 }
 
 export async function sendCarReCarEmail(opts: {
@@ -277,16 +333,22 @@ export async function sendCarReCarEmail(opts: {
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const html = makeCarMailBody({
-    titleTh: "แจ้งเตือน: ออก Re-CAR ใหม่",
-    titleEn: "Notice: Re-CAR Issued",
+    titleTh: "Re-CAR issued",
+    titleEn: "New Re-CAR created",
     carNo: opts.carNo,
     bodyLines: [
-      `มีการออก Re-CAR หมายเลข ${opts.carNo} (อ้างอิงจาก CAR ${opts.originalCarNo})`,
-      "กรุณาดำเนินการตอบกลับภายใน 7 วัน",
-      `A new Re-CAR ${opts.carNo} has been issued (referencing CAR ${opts.originalCarNo}). Please respond within 7 days.`,
+      `A new Re-CAR ${opts.carNo} has been issued, referencing CAR ${opts.originalCarNo}.`,
+      "Please submit your response within 7 days.",
     ],
-    actionLabel: "ดูรายละเอียด Re-CAR / View Re-CAR",
+    actionLabel: "View Re-CAR",
     actionUrl: url,
   });
-  await sendMail({ to: opts.targetEmail, cc: opts.cc, subject: `[Re-CAR] ออก Re-CAR ใหม่ ${opts.carNo}`, bodyHtml: html, senderAccessToken: opts.senderAccessToken });
+
+  await sendMail({
+    to: opts.targetEmail,
+    cc: opts.cc,
+    subject: `[Re-CAR] Issued ${opts.carNo}`,
+    bodyHtml: html,
+    senderAccessToken: opts.senderAccessToken,
+  });
 }

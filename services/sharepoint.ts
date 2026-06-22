@@ -481,6 +481,42 @@ export function buildDocControlDocumentFolderPath(
   return revision ? `${base}/REV_${sanitizeFolderSegment(revision)}` : base;
 }
 
+// ── Audit Plan Upload ─────────────────────────────────────────────────────────
+
+export async function uploadFileToAudit(opts: {
+  fileBuffer: Uint8Array;
+  fileName: string;
+  mimeType: string;
+  planId: string;
+}): Promise<SpUploadResult> {
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
+  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+  const safePlanId = opts.planId.replace(/[^a-zA-Z0-9_-]/g, "_");
+  const folderPath = `Audit/${safePlanId}`;
+  const folderId = await ensureFolderPath(driveId, token, folderPath);
+
+  if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+    return simpleUpload({
+      token,
+      driveId,
+      folderId,
+      uploadName: safeBase,
+      fileBuffer: opts.fileBuffer,
+      mimeType: opts.mimeType,
+      folderPath,
+    });
+  }
+  return resumableUpload({
+    token,
+    driveId,
+    folderId,
+    uploadName: safeBase,
+    fileBuffer: opts.fileBuffer,
+    mimeType: opts.mimeType,
+    folderPath,
+  });
+}
+
 export async function ensureSpFolder(folderPath: string): Promise<void> {
   const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
   await ensureFolderPath(driveId, token, folderPath);

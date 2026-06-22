@@ -25,11 +25,10 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const notifyAuthIds = [updated.reviewerUserId, updated.approverUserId].filter(Boolean) as string[];
     for (const authId of notifyAuthIds) {
       const u = await getUserSnapshot(authId);
-      if (!u?.email) continue;
       NotificationService.sendEmailOnce(
         `KPI:${id}:APPROVED:notify:${authId}`,
         () => sendKpiResultEmail({
-          to: { name: u.name ?? '', email: u.email! },
+          to: { name: u?.name ?? '', email: u?.email ?? '' },
           departmentName: updated.department,
           year: updated.yearly,
           status: 'APPROVED',
@@ -38,7 +37,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
           senderAccessToken: session.user.accessToken,
         }),
-        u.email,
+        u?.email ?? '',
         'KPI Approved',
         authId,
         {

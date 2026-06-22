@@ -33,7 +33,6 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           return (sig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined ?? approverId;
         })();
         const approver = await getUserSnapshot(approverAuthId);
-        if (approver?.email) {
           await ActionTokenService.revokeByDocument(ApprovalModule.KPI_MONTHLY, reportId);
           const approverToken = await ActionTokenService.issue({
             module: ApprovalModule.KPI_MONTHLY,
@@ -46,7 +45,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           NotificationService.sendEmailOnce(
             `KPI_MONTHLY:${reportId}:REVIEWED:approver:${approverAuthId}:${approverToken.substring(0, 16)}`,
             () => sendKpiMonthlyApprovalRequestEmail({
-              approver: { name: approver.name ?? '', email: approver.email! },
+              approver: { name: approver?.name ?? '', email: approver?.email ?? '' },
               departmentName: detail.kpi.department,
               month: detail.month,
               year: detail.year,
@@ -61,7 +60,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
               actionToken: approverToken,
               senderAccessToken: session.user.accessToken,
             }),
-            approver.email,
+            approver?.email ?? '',
             'Monthly KPI Approval Request',
             approverAuthId,
             {
@@ -72,18 +71,16 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
               resourceType: "KPI_MONTHLY",
             },
           ).catch(() => { /* logged inside NotificationService */ });
-        }
       }
     } else if (updated.status === 'APPROVED') {
       const detail = await service.getReportById(reportId);
       const preparerSigApproved = detail.approvalSignatures?.find((s: { step: string }) => s.step === 'PREPARER');
       const preparerAuthIdApproved = (preparerSigApproved as Record<string, unknown>)?.signerAuthUserId as string | null | undefined;
       const preparer = preparerAuthIdApproved ? await getUserSnapshot(preparerAuthIdApproved) : null;
-      if (preparer?.email) {
         NotificationService.sendEmailOnce(
           `KPI_MONTHLY:${reportId}:APPROVED:preparer:${preparerAuthIdApproved}`,
           () => sendKpiMonthlyResultEmail({
-            to: { name: preparer.name ?? '', email: preparer.email! },
+          to: { name: preparer?.name ?? '', email: preparer?.email ?? '' },
             departmentName: detail.kpi.department,
             month: detail.month,
             year: detail.year,
@@ -99,7 +96,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
             reportId: reportId,
             senderAccessToken: session.user.accessToken,
           }),
-          preparer.email,
+          preparer?.email ?? '',
           'Monthly KPI Approved',
           preparerAuthIdApproved ?? undefined,
           {
@@ -110,7 +107,6 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
             resourceType: "KPI_MONTHLY",
           },
         ).catch(() => { /* logged inside NotificationService */ });
-      }
     }
 
     return sendSuccess(updated, 'Monthly report reviewed successfully');

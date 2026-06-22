@@ -27,6 +27,11 @@ function resolveActionUrl(t: VerifiedActionToken): string {
     if (role === "APPROVER_MR" || role === "QMS_PROCESSOR")
       return `/approve/${documentId}/approver`;
   }
+  if (module === "AUDIT") {
+    const signedRole = metadata?.signedRole;
+    if (signedRole === "REVIEWER") return `/approve/audit/${documentId}/reviewer`;
+    if (signedRole === "APPROVER") return `/approve/audit/${documentId}/approver`;
+  }
   return "/approve";
 }
 

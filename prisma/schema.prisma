@@ -360,6 +360,9 @@ enum ApprovalStep {
   APPROVER_MR
   APPROVER_DCC
   QMS_PROCESSOR
+  // Audit sign-off steps
+  LEAD_AUDITOR
+  AUDIT_SIGNER
 }
 
 enum ApprovalModule {
@@ -367,6 +370,7 @@ enum ApprovalModule {
   KPI
   KPI_MONTHLY
   CAR
+  AUDIT
 }
 
 enum CarStatus {
@@ -739,4 +743,408 @@ model CarNotificationLog {
 
   @@index([carMasterId])
   @@map("CarNotificationLog")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Audit Domain
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AuditType {
+  INTERNAL
+  EXTERNAL
+}
+
+enum AuditMode {
+  SYSTEM
+  FILE_UPLOAD
+}
+
+enum AuditPlanStatus {
+  DRAFT
+  PENDING_REVIEW
+  PENDING_APPROVAL
+  PLANNED
+  ANNOUNCED
+  IN_PROGRESS
+  WAITING_CORRECTIVE
+  READY_TO_CLOSE
+  CLOSED
+  CANCELLED
+}
+
+enum AuditorRole {
+  LEAD
+  MEMBER
+  OBSERVER
+}
+
+enum FindingCategory {
+  NC
+  OBSERVATION
+  OFI
+}
+
+enum FindingSeverity {
+  MINOR
+  MAJOR
+  CRITICAL
+}
+
+enum FindingStatus {
+  OPEN
+  RESPONDED
+  VERIFIED
+  CLOSED
+  REOPENED
+  REJECTED
+}
+
+enum AuditDeliveryMode {
+  LINK
+  ATTACHMENT
+  BOTH
+}
+
+enum AuditSignType {
+  IN_APP
+  TOKEN_LINK
+}
+
+enum AuditVerifyResult {
+  PASS
+  FAIL
+  REOPEN
+}
+
+enum AuditScheduleConfirmStatus {
+  PENDING
+  CONFIRMED
+  UNAVAILABLE
+}
+
+enum AuditTeamRole {
+  LEAD_AUDITOR
+  AUDITOR
+  OBSERVER
+  AUDITEE
+}
+
+enum AuditAppointmentStatus {
+  DRAFT
+  PENDING_REVIEW
+  PENDING_APPROVAL
+  PUBLISHED
+}
+
+model AuditAppointment {
+  id                    String                   @id @default(uuid())
+  appointmentNo         String                   @unique @map("appointment_no")
+  year                  Int
+  title                 String
+  standards             String[]                 @default([])
+  status                AuditAppointmentStatus   @default(DRAFT)
+  rejectReason          String?                  @map("reject_reason")
+  ownerAuthUserId       String?                  @map("owner_auth_user_id")
+  ownerEmail            String?                  @map("owner_email")
+  ownerNameSnapshot     String?                  @map("owner_name_snapshot")
+  reviewerAuthUserId    String?                  @map("reviewer_auth_user_id")
+  reviewerEmail         String?                  @map("reviewer_email")
+  reviewerNameSnapshot  String?                  @map("reviewer_name_snapshot")
+  approverAuthUserId    String?                  @map("approver_auth_user_id")
+  approverEmail         String?                  @map("approver_email")
+  approverNameSnapshot  String?                  @map("approver_name_snapshot")
+  emailGroupMails       String[]                 @default([]) @map("email_group_mails")
+  publishedAt           DateTime?                @map("published_at")
+  members               AuditAppointmentMember[]
+  signoffs              AuditAppointmentSignoff[]
+  createdAt             DateTime                 @default(now()) @map("created_at")
+  updatedAt             DateTime                 @updatedAt @map("updated_at")
+
+  @@map("audit_appointments")
+}
+
+model AuditAppointmentMember {
+  id            String           @id @default(uuid())
+  appointmentId String           @map("appointment_id")
+  authUserId    String           @map("auth_user_id")
+  name          String
+  department    String?
+  role          String
+  standards     String[]         @default([])
+  orderIndex    Int              @default(0) @map("order_index")
+  appointment   AuditAppointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId])
+  @@map("audit_appointment_members")
+}
+
+model AuditAppointmentSignoff {
+  id                 String           @id @default(uuid())
+  appointmentId      String           @map("appointment_id")
+  signedByAuthUserId String           @map("signed_by_auth_user_id")
+  signedRole         String           @map("signed_role")
+  signerNameSnapshot String?          @map("signer_name_snapshot")
+  signaturePath      String?          @map("signature_path")
+  signedAt           DateTime         @default(now()) @map("signed_at")
+  appointment        AuditAppointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@map("audit_appointment_signoffs")
+}
+
+model AuditPlan {
+  id                    String          @id @default(uuid())
+  auditNo               String          @unique @map("audit_no")
+  title                 String
+  auditType             AuditType       @map("audit_type")
+  mode                  AuditMode       @default(SYSTEM)
+  status                AuditPlanStatus @default(DRAFT)
+  standard              String?
+  scope                 String?
+  objective             String?
+  ownerAuthUserId       String          @map("owner_auth_user_id")
+  ownerEmail            String?         @map("owner_email")
+  ownerNameSnapshot     String?         @map("owner_name_snapshot")
+  leadAuditorAuthUserId String?         @map("lead_auditor_auth_user_id")
+  sourceOrganization    String?         @map("source_organization")
+  startDate             DateTime?       @map("start_date")
+  endDate               DateTime?       @map("end_date")
+  calendarEventId       String?         @map("calendar_event_id")
+  summary                String?
+  standards              String[]
+  reviewerAuthUserId     String?  @map("reviewer_auth_user_id")
+  reviewerEmail          String?  @map("reviewer_email")
+  reviewerNameSnapshot   String?  @map("reviewer_name_snapshot")
+  approverAuthUserId     String?  @map("approver_auth_user_id")
+  approverEmail          String?  @map("approver_email")
+  approverNameSnapshot   String?  @map("approver_name_snapshot")
+  emailGroupMails        String[] @map("email_group_mails")
+  rejectReason           String?  @map("reject_reason")
+  appointmentId          String?  @map("appointment_id")
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+
+  departments   AuditPlanDepartment[]
+  auditors      AuditAuditorAssignment[]
+  schedules     AuditSchedule[]
+  announcements AuditAnnouncement[]
+  findings      AuditFinding[]
+  signoffs      AuditSignoff[]
+  report        AuditReport?
+
+  @@index([status])
+  @@index([auditType])
+  @@index([ownerAuthUserId])
+  @@map("audit_plans")
+}
+
+model AuditStandard {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_standards")
+}
+
+
+model AuditPlanDepartment {
+  id             String    @id @default(uuid())
+  planId         String    @map("plan_id")
+  departmentId   String    @map("department_id")
+  departmentCode String?   @map("department_code")
+  departmentName String?   @map("department_name")
+
+  plan AuditPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, departmentId])
+  @@map("audit_plan_departments")
+}
+
+model AuditAuditorAssignment {
+  id                    String      @id @default(uuid())
+  planId                String      @map("plan_id")
+  assigneeAuthUserId    String      @map("assignee_auth_user_id")
+  assigneeNameSnapshot  String?     @map("assignee_name_snapshot")
+  assigneeEmailSnapshot String?     @map("assignee_email_snapshot")
+  role                  AuditorRole @default(MEMBER)
+  assignedAt            DateTime    @default(now()) @map("assigned_at")
+
+  plan AuditPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, assigneeAuthUserId])
+  @@index([planId])
+  @@map("audit_auditor_assignments")
+}
+
+model AuditSchedule {
+  id                    String                     @id @default(uuid())
+  planId                String                     @map("plan_id")
+  sessionTitle          String                     @map("session_title")
+  location              String?
+  agenda                String?
+  startAt               DateTime                   @map("start_at")
+  endAt                 DateTime                   @map("end_at")
+  calendarEventId       String?                    @map("calendar_event_id")
+  departmentId          String?                    @map("department_id")
+  departmentName        String?                    @map("department_name")
+  contactEmail          String?                    @map("contact_email")
+  confirmStatus         AuditScheduleConfirmStatus @default(PENDING) @map("confirm_status")
+  unavailableReason     String?                    @map("unavailable_reason")
+  confirmedAt           DateTime?                  @map("confirmed_at")
+  confirmedByAuthUserId String?                    @map("confirmed_by_auth_user_id")
+  confirmedByName       String?                    @map("confirmed_by_name")
+
+  leadAuditorAuthUserId    String? @map("lead_auditor_auth_user_id")
+  leadAuditorNameSnapshot  String? @map("lead_auditor_name_snapshot")
+  leadAuditorEmailSnapshot String? @map("lead_auditor_email_snapshot")
+
+  checklistDueAt             DateTime? @map("checklist_due_at")
+  checklistSubmittedAt       DateTime? @map("checklist_submitted_at")
+  checklistSubmittedByUserId String?   @map("checklist_submitted_by_user_id")
+  checklistSubmittedByName   String?   @map("checklist_submitted_by_name")
+
+  auditeeNotifyDept Boolean  @default(true) @map("auditee_notify_dept")
+
+  plan AuditPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  team AuditScheduleTeamMember[]
+
+  @@index([planId])
+  @@map("audit_schedules")
+}
+
+model AuditScheduleTeamMember {
+  id            String        @id @default(uuid())
+  scheduleId    String        @map("schedule_id")
+  authUserId    String        @map("auth_user_id")
+  nameSnapshot  String?       @map("name_snapshot")
+  emailSnapshot String?       @map("email_snapshot")
+  role          AuditTeamRole
+  schedule      AuditSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@map("audit_schedule_team_members")
+}
+
+// ponytail: pure generic attachment table — repository queries by (resourceType, resourceId).
+// No FK per resource type; the @@index covers all lookup patterns cleanly.
+// Add per-resource FKs only if eager-loading via Prisma include becomes a hard requirement.
+model AuditAttachment {
+  id                   String   @id @default(uuid())
+  resourceType         String   @map("resource_type") // PLAN | FINDING | REPORT
+  resourceId           String   @map("resource_id")
+  fileName             String   @map("file_name")
+  fileUrl              String?  @map("file_url")
+  spDownloadUrl        String?  @map("sp_download_url")
+  sharePointItemId     String?  @map("sharepoint_item_id")
+  mimeType             String?  @map("mime_type")
+  sizeBytes            Int?     @map("size_bytes")
+  uploadedByAuthUserId String   @map("uploaded_by_auth_user_id")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  @@index([resourceType, resourceId])
+  @@map("audit_attachments")
+}
+
+model AuditAnnouncement {
+  id                   String            @id @default(uuid())
+  planId               String            @map("plan_id")
+  title                String
+  message              String
+  deliveryMode         AuditDeliveryMode @default(LINK) @map("delivery_mode")
+  publishedAt          DateTime?         @map("published_at")
+  publishedByAuthUserId String?          @map("published_by_auth_user_id")
+
+  plan AuditPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@map("audit_announcements")
+}
+
+model AuditFinding {
+  id                  String          @id @default(uuid())
+  planId              String          @map("plan_id")
+  findingNo           String          @map("finding_no")
+  departmentId        String?         @map("department_id")
+  category            FindingCategory
+  severity            FindingSeverity @default(MINOR)
+  clause              String?
+  title               String
+  detail              String
+  evidenceSummary     String?         @map("evidence_summary")
+  ownerAuthUserId     String?         @map("owner_auth_user_id")
+  ownerNameSnapshot   String?         @map("owner_name_snapshot")
+  dueAt               DateTime?       @map("due_at")
+  status              FindingStatus   @default(OPEN)
+  createdByAuthUserId String          @map("created_by_auth_user_id")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+
+  plan             AuditPlan             @relation(fields: [planId], references: [id], onDelete: Cascade)
+  correctiveAction AuditCorrectiveAction?
+  verification     AuditVerification?
+
+  @@unique([planId, findingNo])
+  @@index([planId, status])
+  @@index([ownerAuthUserId])
+  @@map("audit_findings")
+}
+
+model AuditCorrectiveAction {
+  id                   String    @id @default(uuid())
+  findingId            String    @unique @map("finding_id")
+  rootCause            String?   @map("root_cause")
+  correction           String?
+  correctiveActionPlan String?   @map("corrective_action_plan")
+  targetDate           DateTime? @map("target_date")
+  respondedByAuthUserId String?  @map("responded_by_auth_user_id")
+  respondedAt          DateTime? @map("responded_at")
+
+  finding AuditFinding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+
+  @@map("audit_corrective_actions")
+}
+
+model AuditVerification {
+  id                String            @id @default(uuid())
+  findingId         String            @unique @map("finding_id")
+  verifierAuthUserId String           @map("verifier_auth_user_id")
+  result            AuditVerifyResult
+  comment           String?
+  verifiedAt        DateTime          @default(now()) @map("verified_at")
+
+  finding AuditFinding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+
+  @@map("audit_verifications")
+}
+
+model AuditSignoff {
+  id                 String        @id @default(uuid())
+  planId             String        @map("plan_id")
+  signedByAuthUserId String        @map("signed_by_auth_user_id")
+  signedRole         String        @map("signed_role")
+  signType           AuditSignType @default(IN_APP) @map("sign_type")
+  tokenId            String?       @map("token_id")
+  signedAt           DateTime      @default(now()) @map("signed_at")
+  signerNameSnapshot String?       @map("signer_name_snapshot")
+  signaturePath      String?       @map("signature_path") @db.Text
+
+  plan AuditPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@map("audit_signoffs")
+}
+
+model AuditReport {
+  id                   String    @id @default(uuid())
+  planId               String    @unique @map("plan_id")
+  summary              String?
+  conclusion           String?
+  pdfFileUrl           String?   @map("pdf_file_url")
+  generatedAt          DateTime? @map("generated_at")
+  generatedByAuthUserId String?  @map("generated_by_auth_user_id")
+
+  plan AuditPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@map("audit_reports")
 }

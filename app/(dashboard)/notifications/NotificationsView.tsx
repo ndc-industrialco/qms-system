@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCheck, ExternalLink } from "lucide-react";
+import { Bell, CheckCheck, ExternalLink, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -27,6 +27,7 @@ const MODULE_COLORS: Record<string, { bg: string; text: string; label: string }>
 function getActionPath(item: NotificationItem): string | null {
   if (item.module === "CAR") return `/car/${item.resourceId}`;
   if (item.module === "DAR") return `/dar/${item.resourceId}`;
+  if (item.module === "KPI") return `/qms/kpi/${item.resourceId}`;
   return null;
 }
 
@@ -51,17 +52,19 @@ export default function NotificationsView() {
   const [selected, setSelected] = useState<NotificationItem | null>(null);
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [moduleFilter, setModuleFilter] = useState<string>("ALL");
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
-  const { data, isLoading } = useQuery({
+  // ponytail: same queryKey as NotificationBell — must return the same shape (full response)
+  const { data: raw, isLoading } = useQuery<{ data: { notifications: NotificationItem[]; unreadCount: number } }>({
     queryKey: ["notifications"],
     queryFn: async () => {
       const res = await fetch("/api/notifications");
       if (!res.ok) throw new Error("failed");
-      const json = await res.json() as { data: { notifications: NotificationItem[]; unreadCount: number } };
-      return json.data;
+      return res.json();
     },
     refetchInterval: 30000,
   });
+  const data = raw?.data;
 
   const markRead = useMutation({
     mutationFn: async (id: string) => {
@@ -75,6 +78,32 @@ export default function NotificationsView() {
       await fetch("/api/notifications/read-all", { method: "PATCH" });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+
+  const deleteOne = useMutation({
+    mutationFn: async (id: string) => {
+      await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+    },
+    onSuccess: (_d, id) => {
+      if (selected?.id === id) setSelected(null);
+      setCheckedIds((prev) => { const s = new Set(prev); s.delete(id); return s; });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+
+  const deleteBulk = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await fetch("/api/notifications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+    },
+    onSuccess: (_d, ids) => {
+      if (selected && ids.includes(selected.id)) setSelected(null);
+      setCheckedIds(new Set());
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    },
   });
 
   const all = data?.notifications ?? [];
@@ -91,7 +120,36 @@ export default function NotificationsView() {
     if (!item.isRead) markRead.mutate(item.id);
   }
 
+  function toggleCheck(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    setCheckedIds((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
+      return s;
+    });
+  }
+
+  const allFilteredChecked = filtered.length > 0 && filtered.every((n) => checkedIds.has(n.id));
+
+  function toggleCheckAll() {
+    if (allFilteredChecked) {
+      setCheckedIds((prev) => {
+        const s = new Set(prev);
+        filtered.forEach((n) => s.delete(n.id));
+        return s;
+      });
+    } else {
+      setCheckedIds((prev) => {
+        const s = new Set(prev);
+        filtered.forEach((n) => s.add(n.id));
+        return s;
+      });
+    }
+  }
+
   const modules = [...new Set(all.map((n) => n.module))];
+  const checkedCount = [...checkedIds].filter((id) => filtered.some((n) => n.id === id)).length;
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -107,6 +165,18 @@ export default function NotificationsView() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          {/* Bulk delete */}
+          {checkedCount > 0 && (
+            <button
+              onClick={() => deleteBulk.mutate([...checkedIds].filter((id) => filtered.some((n) => n.id === id)))}
+              disabled={deleteBulk.isPending}
+              className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              ลบที่เลือก ({checkedCount})
+            </button>
+          )}
+
           {/* Module filter */}
           <select
             value={moduleFilter}
@@ -168,51 +238,87 @@ export default function NotificationsView() {
               <p className="text-sm">ไม่มีการแจ้งเตือน</p>
             </div>
           )}
-          <div className="flex flex-col gap-0.5 p-2">
+
+          {/* Select-all row */}
+          {!isLoading && filtered.length > 0 && (
+            <div className="flex items-center gap-2 px-3 pt-2 pb-1">
+              <input
+                type="checkbox"
+                checked={allFilteredChecked}
+                onChange={toggleCheckAll}
+                className="h-3.5 w-3.5 rounded accent-[#0f1059] cursor-pointer"
+              />
+              <span className="text-[11px] text-slate-400">เลือกทั้งหมด</span>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-0.5 p-2 pt-1">
             {filtered.map((n) => {
               const mod = MODULE_COLORS[n.module];
               const isActive = selected?.id === n.id;
+              const isChecked = checkedIds.has(n.id);
               return (
-                <button
+                <div
                   key={n.id}
-                  onClick={() => handleSelect(n)}
                   className={cn(
-                    "w-full rounded-xl p-3 text-left transition-all",
+                    "group relative flex items-start gap-2 rounded-xl p-3 transition-all cursor-pointer",
                     isActive
                       ? "bg-[#0f1059] text-white shadow-sm"
                       : n.isRead
                         ? "bg-white hover:bg-slate-100 text-slate-700"
                         : "bg-white hover:bg-blue-50/60 text-slate-800 border-l-2 border-[#0f1059]"
                   )}
+                  onClick={() => handleSelect(n)}
                 >
-                  <div className="flex items-start gap-2">
-                    {/* Module badge */}
-                    <span className={cn(
-                      "mt-0.5 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                      isActive ? "bg-white/20 text-white" : (mod?.bg ?? "bg-slate-100"),
-                      isActive ? "" : (mod?.text ?? "text-slate-600"),
-                    )}>
-                      {mod?.label ?? n.module}
-                    </span>
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onClick={(e) => toggleCheck(n.id, e)}
+                    onChange={() => {}}
+                    className="mt-1 h-3.5 w-3.5 shrink-0 rounded accent-[#0f1059] cursor-pointer"
+                  />
 
-                    <div className="min-w-0 flex-1">
-                      <p className={cn("truncate text-xs font-semibold", isActive ? "text-white" : "text-slate-900")}>
-                        {n.title}
-                      </p>
-                      <p className={cn("truncate text-[11px] mt-0.5", isActive ? "text-white/70" : "text-slate-500")}>
-                        {n.body}
-                      </p>
-                      <p className={cn("text-[10px] mt-1", isActive ? "text-white/50" : "text-slate-400")}>
-                        {relativeTime(n.createdAt)}
-                      </p>
-                    </div>
+                  {/* Module badge */}
+                  <span className={cn(
+                    "mt-0.5 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                    isActive ? "bg-white/20 text-white" : (mod?.bg ?? "bg-slate-100"),
+                    isActive ? "" : (mod?.text ?? "text-slate-600"),
+                  )}>
+                    {mod?.label ?? n.module}
+                  </span>
 
-                    {/* Unread dot */}
-                    {!n.isRead && !isActive && (
-                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#0f1059]" />
-                    )}
+                  <div className="min-w-0 flex-1">
+                    <p className={cn("truncate text-xs font-semibold", isActive ? "text-white" : "text-slate-900")}>
+                      {n.title}
+                    </p>
+                    <p className={cn("truncate text-[11px] mt-0.5", isActive ? "text-white/70" : "text-slate-500")}>
+                      {n.body}
+                    </p>
+                    <p className={cn("text-[10px] mt-1", isActive ? "text-white/50" : "text-slate-400")}>
+                      {relativeTime(n.createdAt)}
+                    </p>
                   </div>
-                </button>
+
+                  {/* Unread dot */}
+                  {!n.isRead && !isActive && (
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#0f1059]" />
+                  )}
+
+                  {/* Inline delete on hover */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteOne.mutate(n.id); }}
+                    className={cn(
+                      "absolute right-2 top-2 rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity",
+                      isActive
+                        ? "text-white/60 hover:text-white hover:bg-white/10"
+                        : "text-slate-400 hover:text-red-500 hover:bg-red-50"
+                    )}
+                    title="ลบ"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -229,20 +335,30 @@ export default function NotificationsView() {
             <div className="max-w-2xl mx-auto p-8">
               {/* Detail header */}
               <div className="mb-6 pb-5 border-b border-slate-100">
-                <div className="flex items-center gap-2 mb-3">
-                  {(() => {
-                    const mod = MODULE_COLORS[selected.module];
-                    return (
-                      <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", mod?.bg ?? "bg-slate-100", mod?.text ?? "text-slate-600")}>
-                        {mod?.label ?? selected.module}
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const mod = MODULE_COLORS[selected.module];
+                      return (
+                        <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", mod?.bg ?? "bg-slate-100", mod?.text ?? "text-slate-600")}>
+                          {mod?.label ?? selected.module}
+                        </span>
+                      );
+                    })()}
+                    {!selected.isRead && (
+                      <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                        ยังไม่ได้อ่าน
                       </span>
-                    );
-                  })()}
-                  {!selected.isRead && (
-                    <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                      ยังไม่ได้อ่าน
-                    </span>
-                  )}
+                    )}
+                  </div>
+                  <button
+                    onClick={() => deleteOne.mutate(selected.id)}
+                    disabled={deleteOne.isPending}
+                    className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    ลบ
+                  </button>
                 </div>
                 <h2 className="text-xl font-bold text-slate-900 leading-snug">{selected.title}</h2>
                 <p className="mt-1.5 text-sm text-slate-500">{fullDate(selected.createdAt)}</p>

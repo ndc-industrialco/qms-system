@@ -147,6 +147,14 @@ export class CarService {
   private seqRepo = new CarSequenceRepository();
   private configRepo = new SystemConfigRepository();
 
+  private normalizeReCarInput<T extends { reCar?: boolean; reCarRefId?: string | null }>(input: T): T {
+    const trimmedRef = typeof input.reCarRefId === "string" ? input.reCarRefId.trim() : input.reCarRefId;
+    return {
+      ...input,
+      reCarRefId: input.reCar ? (trimmedRef || undefined) : undefined,
+    };
+  }
+
   private async getIdentitySnapshot(authUserId: string): Promise<IdentitySnapshot | null> {
     const { getUserSnapshot } = await import("@/lib/userSnapshotCache");
     const cached = await getUserSnapshot(authUserId);
@@ -361,17 +369,18 @@ export class CarService {
   }
 
   async createCar(issuerId: string, input: CarCreateInput, issuerAuthUserId?: string | null): Promise<CarDetail> {
+    const normalizedInput = this.normalizeReCarInput(input);
     const year = new Date().getFullYear();
     const issuerSnapshot = await this.getIdentitySnapshot(issuerId);
     if (!issuerSnapshot) throw new ValidationError("Issuer not found");
 
-    const targetDept = await getDepartmentByCode(input.targetDepartmentId)
-      ?? await getDepartmentByName(input.targetDepartmentId);
-    const targetAuthDepartmentId = targetDept?.code ?? input.targetDepartmentId;
+    const targetDept = await getDepartmentByCode(normalizedInput.targetDepartmentId)
+      ?? await getDepartmentByName(normalizedInput.targetDepartmentId);
+    const targetAuthDepartmentId = targetDept?.code ?? normalizedInput.targetDepartmentId;
 
     const id = await db.$transaction(async (tx) => {
-      if (input.reCarRefId) {
-        const refCar = await this.carRepo.findById(input.reCarRefId, tx);
+      if (normalizedInput.reCarRefId) {
+        const refCar = await this.carRepo.findById(normalizedInput.reCarRefId, tx);
         if (!refCar) {
           throw new ValidationError("CAR ที่อ้างอิง (reCarRefId) ไม่มีอยู่ในระบบ");
         }
@@ -381,7 +390,7 @@ export class CarService {
       const carNo = this.buildCarNo(year, seq);
 
       const car = await this.carRepo.createDraft({
-        ...input,
+        ...normalizedInput,
         issuerId,
         issuerAuthUserId: issuerAuthUserId ?? null,
         issuerName: issuerSnapshot.name,
@@ -412,25 +421,26 @@ export class CarService {
   }
 
   async updateCar(id: string, _issuerId: string, input: CarUpdateInput): Promise<CarDetail> {
+    const normalizedInput = this.normalizeReCarInput(input);
     const existing = await this.carRepo.findById(id);
     if (!existing) throw new NotFoundError("CAR");
     if (existing.status !== "DRAFT") throw new ValidationError("Only DRAFT CAR records can be updated.");
 
-    if (input.reCarRefId) {
-      const refCar = await this.carRepo.findById(input.reCarRefId);
+    if (normalizedInput.reCarRefId) {
+      const refCar = await this.carRepo.findById(normalizedInput.reCarRefId);
       if (!refCar) {
         throw new ValidationError("CAR ที่อ้างอิง (reCarRefId) ไม่มีอยู่ในระบบ");
       }
     }
 
     // Dual-write targetAuthDepartmentId from Auth Center cache
-    const targetDept = input.targetDepartmentId
-      ? (await getDepartmentByCode(input.targetDepartmentId)
-        ?? await getDepartmentByName(input.targetDepartmentId))
+    const targetDept = normalizedInput.targetDepartmentId
+      ? (await getDepartmentByCode(normalizedInput.targetDepartmentId)
+        ?? await getDepartmentByName(normalizedInput.targetDepartmentId))
       : null;
-    const targetAuthDepartmentId = targetDept?.code ?? input.targetDepartmentId ?? null;
+    const targetAuthDepartmentId = targetDept?.code ?? normalizedInput.targetDepartmentId ?? null;
 
-    await this.carRepo.updateDraft(id, input, targetAuthDepartmentId, targetDept?.displayName ?? null);
+    await this.carRepo.updateDraft(id, normalizedInput, targetAuthDepartmentId, targetDept?.displayName ?? null);
 
     const detail = await this.carRepo.findDetailById(id);
     if (!detail) throw new NotFoundError("CAR");
@@ -512,7 +522,7 @@ export class CarService {
     });
 
     // Schedule 3-day reminder (best-effort, non-blocking)
-    CarReminderService.schedule(id).catch((err) =>
+    CarReminderService.schedule(id, accessToken).catch((err) =>
       logger.warn("[CarService.issueCar] Failed to schedule reminder", { carId: id, error: String(err) })
     );
 
@@ -524,6 +534,9 @@ export class CarService {
     if (emailTargets.length === 0) {
       emailSkipReason = "No target email group (To) selected";
       logger.info("[CarService.issueCar] Email skipped - no email targets", { carId: id });
+    } else if (!accessToken) {
+      emailSkipReason = "Sender not linked to Microsoft 365";
+      logger.warn("[CarService.issueCar] Email skipped - no sender access token", { carId: id });
     } else {
       emailQueued = true;
       for (const email of emailTargets) {
@@ -580,6 +593,17 @@ export class CarService {
         carId: id,
         reason: targetDeptCode ? "missing-access-token" : "missing-target-department",
       });
+    }
+
+    // Notify the issuer that the CAR was issued (so they see something in their notification feed)
+    if (actorAuthUserId) {
+      notifyCarUser({
+        recipientAuthUserId: actorAuthUserId,
+        event: "ISSUED",
+        carNo: car.carNo,
+        carId: id,
+        body: `CAR ${car.carNo} ออกแล้ว — รอการตอบกลับจาก ${car.targetDepartmentName ?? "แผนกที่เกี่ยวข้อง"}`,
+      }).catch(() => null);
     }
 
     const detail = await this.carRepo.findDetailById(id);
@@ -695,9 +719,12 @@ export class CarService {
   }
 
   async reviewResponseByMR(id: string, input: CarReviewResponseInput): Promise<CarDetail> {
+    if (!input.token) throw new ValidationError("Approval token is required.");
+    const token = input.token;
+
     const { ActionTokenRepository } = await import("@/repositories/actionTokenRepository");
     const tokenRepo = new ActionTokenRepository();
-    const tokenData = await tokenRepo.findByToken(input.token);
+    const tokenData = await tokenRepo.findByToken(token);
 
     if (!tokenData) throw new NotFoundError("Invalid approval link.");
     if (tokenData.revokedAt) throw new ForbiddenError("This approval link has been revoked.");
@@ -721,7 +748,7 @@ export class CarService {
     await db.$transaction(async (tx) => {
       await this.carRepo.createMrResponseReviewAndUseToken(
         id,
-        input.token,
+        token,
         tokenData.issuedTo,
         {
           mrAuthUserId: mrSnapshot?.authUserId ?? null,
@@ -764,6 +791,80 @@ export class CarService {
       }
     }
     // In-app notifications
+    const event = input.action === "APPROVED" ? "PLAN_APPROVED" : "PLAN_REJECTED" as const;
+    const notifTargets = [car.issuerAuthUserId, car.response?.responderAuthUserId].filter(Boolean) as string[];
+    for (const uid of [...new Set(notifTargets)]) {
+      notifyCarUser({ recipientAuthUserId: uid, event, carNo: car.carNo, carId: id });
+    }
+
+    const detail = await this.carRepo.findDetailById(id);
+    if (!detail) throw new NotFoundError("CAR");
+    return this.mapDetail(detail);
+  }
+
+  async reviewResponseByMRAuthenticated(
+    id: string,
+    mrUserId: string,
+    input: Omit<CarReviewResponseInput, "token">,
+    mrAuthUserId?: string | null,
+    accessToken?: string | null,
+  ): Promise<CarDetail> {
+    const car = await this.carRepo.findForReviewResponse(id);
+    if (!car) throw new NotFoundError("CAR");
+    if (car.status !== "RESPONDED") throw new ValidationError("CAR must be in RESPONDED status for MR review.");
+
+    const nextStatus: CarStatus = input.action === "APPROVED" ? "VERIFY_1" : "ISSUED";
+    const deptEmails = car.targetEmailGroups ?? [];
+    const emailCc = car.targetEmailGroupsCc ?? [];
+    const qmsEmail = input.action === "APPROVED" ? await this.configRepo.findValueByKey("CURRENT_QMS_EMAIL") : null;
+    const approvedRecipients = [...deptEmails, ...(qmsEmail ? [qmsEmail] : [])];
+    const mrSnapshot = mrAuthUserId ? await this.getIdentitySnapshot(mrAuthUserId) : null;
+
+    await db.$transaction(async (tx) => {
+      await this.carRepo.createMrResponseReview(
+        id,
+        mrUserId,
+        {
+          mrAuthUserId: mrAuthUserId ?? mrSnapshot?.authUserId ?? null,
+          mrUserName: mrSnapshot?.name ?? null,
+          mrEmployeeId: mrSnapshot?.employeeId ?? null,
+        },
+        input.action,
+        input.comment,
+        nextStatus,
+        tx
+      );
+
+      const notifType = input.action === "APPROVED" ? "PLAN_APPROVED" : "PLAN_REJECTED";
+      const notifRecipients = input.action === "APPROVED" ? approvedRecipients : deptEmails;
+      for (const r of notifRecipients) {
+        await this.carRepo.createNotificationLog({ carMasterId: id, type: notifType, recipient: r }, tx);
+      }
+
+      await AuditService.record({
+        actorUserId: mrUserId,
+        actorAuthUserId: mrAuthUserId,
+        actorRole: "MR",
+        action: input.action === "APPROVED" ? "APPROVE" : "REJECT",
+        resourceType: "CAR",
+        resourceId: id,
+        before: { status: "RESPONDED" },
+        after: { status: nextStatus, action: input.action },
+      }, tx);
+    });
+
+    if (input.action === "APPROVED" && approvedRecipients.length > 0) {
+      sendCarPlanApprovedEmail({ carId: id, carNo: car.carNo, recipients: approvedRecipients, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
+        logger.error("[CarService.reviewResponseByMRAuthenticated] Approved email failed", err)
+      );
+    } else if (input.action === "REJECTED" && deptEmails.length > 0) {
+      for (const email of deptEmails) {
+        sendCarPlanRejectedEmail({ carId: id, carNo: car.carNo, targetEmail: email, comment: input.comment, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
+          logger.error("[CarService.reviewResponseByMRAuthenticated] Rejected email failed", err)
+        );
+      }
+    }
+
     const event = input.action === "APPROVED" ? "PLAN_APPROVED" : "PLAN_REJECTED" as const;
     const notifTargets = [car.issuerAuthUserId, car.response?.responderAuthUserId].filter(Boolean) as string[];
     for (const uid of [...new Set(notifTargets)]) {
@@ -934,6 +1035,51 @@ export class CarService {
     return this.mapDetail(detail);
   }
 
+  async closeCarAuthenticated(
+    id: string,
+    mrUserId: string,
+    comment: string | null | undefined,
+    mrAuthUserId?: string | null,
+  ): Promise<CarDetail> {
+    const car = await this.carRepo.findForClose(id);
+    if (!car) throw new NotFoundError("CAR");
+    if (car.status !== "CLOSED") throw new ValidationError("CAR is not ready for MR sign-off.");
+
+    const mrSnapshot = mrAuthUserId ? await this.getIdentitySnapshot(mrAuthUserId) : null;
+
+    await db.$transaction(async (tx) => {
+      await this.carRepo.createMrSignature(
+        id,
+        mrUserId,
+        {
+          mrAuthUserId: mrAuthUserId ?? mrSnapshot?.authUserId ?? null,
+          mrUserName: mrSnapshot?.name ?? null,
+          mrEmployeeId: mrSnapshot?.employeeId ?? null,
+        },
+        comment,
+        tx
+      );
+
+      await AuditService.record({
+        actorUserId: mrUserId,
+        actorAuthUserId: mrAuthUserId,
+        actorRole: "MR",
+        action: "CLOSE",
+        resourceType: "CAR",
+        resourceId: id,
+        after: { status: "CLOSED", mrSigned: true },
+      }, tx);
+    });
+
+    if (car.issuerAuthUserId) {
+      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "CLOSED", carNo: car.carNo, carId: id });
+    }
+
+    const detail = await this.carRepo.findDetailById(id);
+    if (!detail) throw new NotFoundError("CAR");
+    return this.mapDetail(detail);
+  }
+
   async createReCar(originalId: string, actorId: string, actorAuthUserId?: string | null, accessToken?: string | null): Promise<{ newCarId: string; newCarNo: string }> {
     const original = await this.carRepo.findDetailById(originalId);
     if (!original) throw new NotFoundError("CAR");
@@ -1014,7 +1160,7 @@ export class CarService {
     return this.buildCarNo(year, seq);
   }
 
-  async sendReminder(carId: string): Promise<void> {
+  async sendReminder(carId: string, accessToken?: string | null): Promise<void> {
     const car = await this.carRepo.findForIssue(carId);
     if (!car || car.status !== "ISSUED") return;
 
@@ -1023,7 +1169,7 @@ export class CarService {
     if (emailTargets.length === 0) return;
 
     for (const email of emailTargets) {
-      sendCarReminderEmail({ carId, carNo: car.carNo, targetEmail: email, cc: emailCc }).catch((err) =>
+      sendCarReminderEmail({ carId, carNo: car.carNo, targetEmail: email, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
         logger.error("[CarService.sendReminder] Email failed", err)
       );
       await this.carRepo.createNotificationLog({ carMasterId: carId, type: "REMINDER", recipient: email });

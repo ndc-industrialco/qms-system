@@ -296,6 +296,66 @@ export class CarRepository extends BaseRepository<CarMaster> {
     });
   }
 
+  async countPendingMrResponseReviews(tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).count({
+      where: {
+        status: "RESPONDED",
+        mrResponseReview: null,
+      },
+    });
+  }
+
+  async countPendingMrSignatures(tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).count({
+      where: {
+        status: "CLOSED",
+        mrSignature: null,
+      },
+    });
+  }
+
+  async findPendingMrResponseReviews(take = 10, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: {
+        status: "RESPONDED",
+        mrResponseReview: null,
+      },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      take,
+      select: {
+        id: true,
+        carNo: true,
+        status: true,
+        defectDetail: true,
+        targetDepartmentName: true,
+        issuedAt: true,
+        responseDueAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async findPendingMrSignatures(take = 10, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: {
+        status: "CLOSED",
+        mrSignature: null,
+      },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      take,
+      select: {
+        id: true,
+        carNo: true,
+        status: true,
+        defectDetail: true,
+        targetDepartmentName: true,
+        issuedAt: true,
+        responseDueAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
   async createMrResponseReviewAndUseToken(
     carId: string,
     token: string,
@@ -510,6 +570,53 @@ export class CarRepository extends BaseRepository<CarMaster> {
     if (result.count === 0) {
       throw new ConflictError("This approval link has already been used by a concurrent request.");
     }
+  }
+
+  async createMrResponseReview(
+    carId: string,
+    mrUserId: string,
+    snapshot: { mrAuthUserId?: string | null; mrUserName?: string | null; mrEmployeeId?: string | null },
+    action: "APPROVED" | "REJECTED",
+    comment: string | null | undefined,
+    nextStatus: import("@/generated/prisma/client").CarStatus,
+    tx?: Prisma.TransactionClient
+  ) {
+    const client = this.getClient(tx);
+
+    await client.carMrResponseReview.create({
+      data: {
+        carMasterId: carId,
+        mrUserId,
+        mrAuthUserId: snapshot.mrAuthUserId ?? null,
+        mrUserName: snapshot.mrUserName ?? null,
+        mrEmployeeId: snapshot.mrEmployeeId ?? null,
+        action,
+        comment: comment ?? null,
+      },
+    });
+
+    await this.updateStatus(carId, nextStatus, tx);
+  }
+
+  async createMrSignature(
+    carId: string,
+    mrUserId: string,
+    snapshot: { mrAuthUserId?: string | null; mrUserName?: string | null; mrEmployeeId?: string | null },
+    comment: string | null | undefined,
+    tx?: Prisma.TransactionClient
+  ) {
+    const client = this.getClient(tx);
+
+    await client.carMrSignature.create({
+      data: {
+        carMasterId: carId,
+        mrUserId,
+        mrAuthUserId: snapshot.mrAuthUserId ?? null,
+        mrUserName: snapshot.mrUserName ?? null,
+        mrEmployeeId: snapshot.mrEmployeeId ?? null,
+        comment: comment ?? null,
+      },
+    });
   }
 
   async createReCarFromOriginal(

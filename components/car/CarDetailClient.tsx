@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
-import { Send, ClipboardCheck } from "lucide-react";
+import { Send, ClipboardCheck, BellRing } from "lucide-react";
 import CarStatusBadge from "./CarStatusBadge";
 import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
@@ -63,6 +63,18 @@ export default function CarDetailClient({
     initialData: initialCar,
   });
 
+  const reminderMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/car/${car.id}/remind`, { method: "POST" });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.message ?? "Failed to send reminder");
+      }
+    },
+    onSuccess: () => toast.success("ส่ง reminder แล้ว"),
+    onError: (err) => toast.error((err as Error).message),
+  });
+
   const reCarMutation = useMutation({
     mutationFn: () => createReCar(car.id),
     onSuccess: (result) => {
@@ -93,6 +105,10 @@ export default function CarDetailClient({
 
   const canReCar =
     car.status === "RE_CAR" &&
+    (userRole === "QMS" || userRole === "IT");
+
+  const canRemind =
+    car.status === "ISSUED" &&
     (userRole === "QMS" || userRole === "IT");
 
   const fmt = (iso: string | null | undefined) =>
@@ -130,6 +146,16 @@ export default function CarDetailClient({
             />
           )}
           {canIssue && <CarIssueDialog carId={car.id} carNo={car.carNo} />}
+          {canRemind && (
+            <Button
+              variant="outline"
+              onClick={() => reminderMutation.mutate()}
+              disabled={reminderMutation.isPending}
+            >
+              <BellRing className="w-3.5 h-3.5 mr-1.5" />
+              {reminderMutation.isPending ? "กำลังส่ง..." : "ส่ง Reminder"}
+            </Button>
+          )}
           {canVerify && !showVerify && (
             <Button onClick={() => setShowVerify(true)} className="bg-orange-500 hover:bg-orange-600">
               <ClipboardCheck className="w-3.5 h-3.5 mr-1.5" />

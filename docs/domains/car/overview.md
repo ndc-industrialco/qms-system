@@ -1,7 +1,7 @@
 # CAR Domain Overview
 
 **Purpose:** Corrective Action Request — จัดการข้อบกพร่อง/ปัญหาที่ไม่สอดคล้อง ตั้งแต่ออก CAR จนถึงปิด CAR พร้อม follow-up tracking  
-**Status:** PARTIAL — Backend + Frontend complete, Redis Reminder Job ยังไม่ implement
+**Status:** COMPLETED — Backend + Frontend + Redis Reminder Job + In-app notifications complete. Pending: E2E tests only.
 
 ---
 
@@ -74,9 +74,13 @@ DRAFT
 
 ---
 
+## Additional Services
+
+- `carNotificationService.ts` — in-app notifications (ISSUED / RESPONDED / MR_REVIEW / PLAN_APPROVED / PLAN_REJECTED / VERIFY_1_PASS / VERIFY_2_SCHEDULED / CLOSED / RE_CAR / REMINDER) via `NotificationRepository`
+- `carReminderService.ts` — Redis scheduler: `schedule(carId)` / `cancel(carId)` / `processAllDue()`. Fires every 3 days while ISSUED; cron endpoint `GET /api/cron/car-reminder` (bearer `CRON_SECRET`).
+
 ## Pending Features
 
-- [ ] Redis Reminder Job: ส่งเมลซ้ำทุก 3 วัน ขณะ status = ISSUED
 - [ ] E2E Tests
 
 ---
