@@ -146,7 +146,7 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
                     <li key={u.id}>
                       <button
                         type="button"
-                        onMouseDown={(e) => { e.preventDefault(); select(u); }}
+                        onClick={() => select(u)}
                         className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left hover:bg-blue-50 transition-colors"
                       >
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-bold mt-0.5">
