@@ -2,32 +2,25 @@ import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 
 export class CarSequenceRepository {
+  // Use MAX(sequenceNo)+1 so deleting the last CAR reclaims its number.
+  // Must run inside a transaction (createCar always provides one) — the
+  // serialisable snapshot prevents two concurrent creates from getting the same seq.
   async nextSequence(year: number, tx?: Prisma.TransactionClient): Promise<number> {
     const client = tx ?? db;
-
-    const counterKey = `CAR_COUNTER_${year}`;
-    const description = `CAR counter for ${year}`;
-
-    // Atomic: INSERT ... ON CONFLICT DO UPDATE increments the counter in a single
-    // statement — no separate read-then-write gap for concurrent requests to race through.
-    const result = await client.$queryRaw<[{ configValue: string }]>`
-      INSERT INTO "SystemConfig" ("configKey", "configValue", "description", "updatedAt")
-      VALUES (${counterKey}, '1', ${description}, NOW())
-      ON CONFLICT ("configKey") DO UPDATE
-        SET "configValue" = (CAST("SystemConfig"."configValue" AS INTEGER) + 1)::TEXT,
-            "updatedAt"   = NOW()
-      RETURNING "configValue"
+    const result = await client.$queryRaw<[{ next: number }]>`
+      SELECT COALESCE(MAX("sequenceNo"), 0) + 1 AS next
+      FROM "CarMaster"
+      WHERE "carYear" = ${year}
     `;
-
-    return parseInt(result[0].configValue, 10);
+    return Number(result[0].next);
   }
 
   async previewNext(year: number): Promise<number> {
-    const counterKey = `CAR_COUNTER_${year}`;
-    const existing = await db.systemConfig.findUnique({
-      where: { configKey: counterKey },
-      select: { configValue: true },
-    });
-    return existing ? parseInt(existing.configValue, 10) + 1 : 1;
+    const result = await db.$queryRaw<[{ next: number }]>`
+      SELECT COALESCE(MAX("sequenceNo"), 0) + 1 AS next
+      FROM "CarMaster"
+      WHERE "carYear" = ${year}
+    `;
+    return Number(result[0].next);
   }
 }

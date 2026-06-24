@@ -854,6 +854,7 @@ model AuditAppointment {
   approverEmail         String?                  @map("approver_email")
   approverNameSnapshot  String?                  @map("approver_name_snapshot")
   emailGroupMails       String[]                 @default([]) @map("email_group_mails")
+  emailGroupMailsCc     String[]                 @default([]) @map("email_group_mails_cc")
   publishedAt           DateTime?                @map("published_at")
   members               AuditAppointmentMember[]
   signoffs              AuditAppointmentSignoff[]

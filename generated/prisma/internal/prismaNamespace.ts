@@ -4479,6 +4479,7 @@ export const AuditAppointmentScalarFieldEnum = {
   approverEmail: 'approverEmail',
   approverNameSnapshot: 'approverNameSnapshot',
   emailGroupMails: 'emailGroupMails',
+  emailGroupMailsCc: 'emailGroupMailsCc',
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

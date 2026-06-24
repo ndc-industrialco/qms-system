@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 
 export interface GraphUserResult {
   id: string;
@@ -53,18 +52,7 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
   const { results, loading } = useUserSearch(query);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (!containerRef.current?.contains(e.target as Node) && !dropdownRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
 
   function openDropdown() {
     if (containerRef.current) {
@@ -123,6 +111,7 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
             value={query}
             onChange={(e) => { setQuery(e.target.value); openDropdown(); }}
             onFocus={openDropdown}
+            onBlur={() => setTimeout(() => setOpen(false), 150)}
             placeholder={placeholder ?? "ค้นหาชื่อ หรืออีเมล..."}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8"
           />
@@ -130,12 +119,8 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">...</span>
           )}
 
-          {open && createPortal(
-            <div
-              ref={dropdownRef}
-              style={dropdownStyle}
-              className="rounded-md border border-gray-200 bg-white shadow-lg overflow-hidden"
-            >
+          {open && (
+            <div style={dropdownStyle} className="rounded-md border border-gray-200 bg-white shadow-lg overflow-hidden">
               {results.length === 0 ? (
                 <p className="px-3 py-2.5 text-sm text-gray-400 text-center">
                   {loading ? "กำลังค้นหา..." : query ? "ไม่พบผู้ใช้" : "พิมพ์เพื่อค้นหา"}
@@ -146,7 +131,8 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
                     <li key={u.id}>
                       <button
                         type="button"
-                        onMouseDown={(e) => { e.preventDefault(); select(u); }}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => select(u)}
                         className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left hover:bg-blue-50 transition-colors"
                       >
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-bold mt-0.5">
@@ -165,8 +151,7 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
                   ))}
                 </ul>
               )}
-            </div>,
-            document.body
+            </div>
           )}
         </div>
       )}

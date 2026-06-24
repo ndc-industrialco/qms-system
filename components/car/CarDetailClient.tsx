@@ -13,6 +13,7 @@ import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
 import CarVerifyForm from "./CarVerifyForm";
 import CarRespondForm from "./CarRespondForm";
+import CarAttachmentUpload from "./CarAttachmentUpload";
 import CarFormModal from "./CarFormModal";
 import type { CarDetail } from "@/types/car";
 import { CAR_SOURCE_LABELS } from "@/types/car";
@@ -23,6 +24,7 @@ interface Props {
   userId: string;
   userDepartmentId: string | null;
   isPrivileged: boolean;
+  userJobTitle?: string | null;
 }
 
 async function fetchCar(id: string): Promise<CarDetail> {
@@ -48,6 +50,7 @@ export default function CarDetailClient({
   userId: _userId,
   userDepartmentId,
   isPrivileged: _isPrivileged,
+  userJobTitle,
 }: Props) {
   const t = useT();
   const qc = useQueryClient();
@@ -226,7 +229,7 @@ export default function CarDetailClient({
       {showRespond && (
         <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
           <h2 className="text-base font-semibold text-slate-800 mb-4">{t("car.detail.respondFormTitle")}</h2>
-          <CarRespondForm carId={car.id} onSuccess={() => setShowRespond(false)} />
+          <CarRespondForm carId={car.id} defaultPosition={userJobTitle ?? ""} onSuccess={() => setShowRespond(false)} />
         </div>
       )}
 
@@ -284,6 +287,44 @@ export default function CarDetailClient({
               <dd className="text-slate-800 whitespace-pre-wrap">{car.response.preventiveAction}</dd>
             </div>
           </dl>
+
+          {/* Attachments */}
+          {car.response.attachments.length > 0 && (
+            <div className="pt-2 border-t border-slate-100">
+              <p className="text-xs text-slate-500 mb-2">ไฟล์แนบ</p>
+              <ul className="space-y-1">
+                {car.response.attachments.map((a) => (
+                  <li key={a.id}>
+                    <a
+                      href={a.spDownloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      {a.fileName}
+                    </a>
+                    <span className="ml-2 text-xs text-slate-400">
+                      ({Math.round(a.fileSize / 1024)} KB)
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Upload — only for target dept or privileged, while CAR is still active */}
+          {(userDepartmentId === car.targetDepartment.id ||
+            userRole === "QMS" ||
+            userRole === "IT") &&
+            car.status !== "CLOSED" &&
+            car.status !== "CANCELLED" && (
+              <div className="pt-2 border-t border-slate-100">
+                <CarAttachmentUpload
+                  carResponseId={car.response.id}
+                  onUploaded={() => qc.invalidateQueries({ queryKey: ["car", car.id] })}
+                />
+              </div>
+            )}
         </div>
       )}
 

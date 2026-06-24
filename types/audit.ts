@@ -325,6 +325,8 @@ export type AuditAppointmentRow = {
   reviewerNameSnapshot: string | null;
   approverAuthUserId: string | null;
   approverNameSnapshot: string | null;
+  emailGroupMails: string[];
+  emailGroupMailsCc: string[];
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;

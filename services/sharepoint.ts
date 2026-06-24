@@ -265,6 +265,25 @@ async function resumableUpload(opts: UploadOpts): Promise<SpUploadResult> {
   };
 }
 
+// ── CAR attachment upload ─────────────────────────────────────────────────────
+
+export async function uploadFileToCarResponse(opts: {
+  fileBuffer: Uint8Array;
+  fileName: string;
+  mimeType: string;
+  carNo: string;
+}): Promise<SpUploadResult> {
+  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
+  const folderPath = `CAR/${opts.carNo.replace(/[/\\:*?"<>|]/g, "_")}`;
+  const folderId = await ensureFolderPath(driveId, token, folderPath);
+  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+  const uploadName = `${opts.carNo}_${safeBase}`;
+  if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+    return simpleUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+  }
+  return resumableUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+}
+
 // ── Temp upload (before DAR exists) ──────────────────────────────────────────
 
 export interface TempUploadResult {

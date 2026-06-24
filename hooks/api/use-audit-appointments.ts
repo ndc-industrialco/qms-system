@@ -2,6 +2,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AuditAppointmentRow } from "@/types/audit";
 import type { AuditAppointmentCreateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
 
+export type AuditMemberUser = {
+  id: string;
+  name: string;
+  email: string | null;
+  department: string | null;
+  jobTitle: string | null;
+  employeeId: string | null;
+};
+
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
 export const auditAppointmentKeys = {
@@ -155,6 +164,19 @@ export function useApproveAuditAppointment() {
       qc.invalidateQueries({ queryKey: auditAppointmentKeys.all });
       qc.invalidateQueries({ queryKey: auditAppointmentKeys.detail(id) });
     },
+  });
+}
+
+export function useAuditMemberUsers() {
+  return useQuery({
+    queryKey: ["audit-member-users"],
+    queryFn: async (): Promise<AuditMemberUser[]> => {
+      const res = await fetch("/api/audit/appointments/users");
+      if (!res.ok) throw new Error("Failed to fetch users");
+      const json = await res.json();
+      return json.data ?? [];
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
 

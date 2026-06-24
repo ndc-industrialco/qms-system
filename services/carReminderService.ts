@@ -21,7 +21,13 @@ export const CarReminderService = {
 
   /** Called by cron job. Returns counts for observability. */
   async processAllDue(): Promise<{ sent: number; cancelled: number }> {
-    const keys = await redis.keys(`${PREFIX}*`);
+    const keys: string[] = [];
+    let cursor = '0';
+    do {
+      const [next, batch] = await redis.scan(cursor, 'MATCH', `${PREFIX}*`, 'COUNT', 100);
+      cursor = next;
+      keys.push(...batch);
+    } while (cursor !== '0');
     const carRepo = new CarRepository();
     const now = Date.now();
     let sent = 0;

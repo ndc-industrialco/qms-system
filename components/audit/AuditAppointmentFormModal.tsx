@@ -13,28 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Plus, Trash2, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Check, Search, Users, X } from "lucide-react";
 import GraphUserPicker, { type GraphUserResult } from "@/components/shared/GraphUserPicker";
 import { auditAppointmentCreateSchema, type AuditAppointmentCreateInput } from "@/lib/validations/audit";
-import { useCreateAuditAppointment } from "@/hooks/api/use-audit-appointments";
+import { useCreateAuditAppointment, useAuditMemberUsers } from "@/hooks/api/use-audit-appointments";
 import { useAuditStandards } from "@/hooks/api/use-audit-standards";
+import { useEmailGroups } from "@/hooks/api/use-email-groups";
+import { cn } from "@/lib/utils";
 
 type FormValues = AuditAppointmentCreateInput;
-
-const MEMBER_ROLES = [
-  { value: "LEAD_AUDITOR", label: "หัวหน้าทีมผู้ตรวจ (Lead Auditor)" },
-  { value: "AUDITOR", label: "ผู้ตรวจติดตาม (Internal Auditor)" },
-  { value: "COMMITTEE", label: "คณะทำงาน (Working Committee)" },
-  { value: "SECRETARY", label: "เลขานุการ (Secretary)" },
-  { value: "ADVISOR", label: "ที่ปรึกษา (Advisor)" },
-];
 
 const STEPS = [
   { label: "ข้อมูลทั่วไป", sublabel: "General Info" },
@@ -42,6 +29,46 @@ const STEPS = [
   { label: "รายชื่ออีเมล", sublabel: "Email Groups" },
   { label: "ผู้ตรวจสอบ/อนุมัติ", sublabel: "Reviewer & Approver" },
 ];
+
+function EmailAccordion({
+  label, badge, selected, groups, onToggle,
+}: {
+  label: string; badge: number; selected: string[];
+  groups: { id: string; displayName: string; mail: string }[];
+  onToggle: (mail: string, checked: boolean) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <button type="button" onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors">
+        <span className="text-sm font-semibold text-slate-700">{label}</span>
+        <div className="flex items-center gap-2">
+          {badge > 0 && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">{badge}</span>
+          )}
+          <ChevronRight className={cn("h-4 w-4 text-slate-400 transition-transform", open && "rotate-90")} />
+        </div>
+      </button>
+      {open && (
+        <div className="divide-y divide-slate-100 border-t border-slate-100">
+          {groups.map((g) => {
+            const checked = selected.includes(g.mail);
+            return (
+              <label key={g.id} className={cn("flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors", checked ? "bg-primary/5" : "hover:bg-slate-50")}>
+                <input type="checkbox" checked={checked} onChange={(e) => onToggle(g.mail, e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-primary" />
+                <div className="min-w-0">
+                  <p className={cn("text-sm leading-tight", checked ? "font-semibold text-slate-800" : "font-medium text-slate-700")}>{g.displayName}</p>
+                  <p className="text-[11px] text-slate-400">{g.mail.split("@")[0]}</p>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 type Props = {
   open: boolean;
@@ -53,14 +80,17 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
   const [step, setStep] = useState(0);
   const [standardInput, setStandardInput] = useState("");
   const { data: dbStandards = [] } = useAuditStandards();
-  const [emailInput, setEmailInput] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailGroupsTo, setEmailGroupsTo] = useState<string[]>([]);
+  const [emailGroupsCc, setEmailGroupsCc] = useState<string[]>([]);
+  const { data: emailGroups = [] } = useEmailGroups();
   const [reviewer, setReviewer] = useState<GraphUserResult | null>(null);
   const [approver, setApprover] = useState<GraphUserResult | null>(null);
-  const [memberUsers, setMemberUsers] = useState<(GraphUserResult | null)[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [memberSearch, setMemberSearch] = useState("");
+  const { data: allUsers = [], isLoading: usersLoading } = useAuditMemberUsers();
   const createMutation = useCreateAuditAppointment();
 
-  const currentYear = new Date().getFullYear() + 543; // Convert to Buddhist Era
+  const currentYear = new Date().getFullYear() + 543;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(auditAppointmentCreateSchema) as unknown as Resolver<FormValues>,
@@ -79,13 +109,28 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
     },
   });
 
-  const { fields: memberFields, append: appendMember, remove: removeMember } = useFieldArray({
-    control: form.control,
-    name: "members",
-  });
+  const { replace: replaceMembers } = useFieldArray({ control: form.control, name: "members" });
 
   const standards = form.watch("standards");
-  const emailGroupMails = form.watch("emailGroupMails");
+
+  const filteredUsers = allUsers.filter((u) => {
+    if (!memberSearch.trim()) return true;
+    const q = memberSearch.toLowerCase();
+    return (
+      u.name.toLowerCase().includes(q) ||
+      (u.department ?? "").toLowerCase().includes(q) ||
+      (u.employeeId ?? "").toLowerCase().includes(q)
+    );
+  });
+
+  function toggleUser(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   function addStandard(s: string) {
     const trimmed = s.trim();
@@ -98,63 +143,22 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
     form.setValue("standards", standards.filter((x) => x !== s));
   }
 
-  function addEmail(e: string) {
-    const trimmed = e.trim();
-    if (!trimmed) return;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmed)) {
-      setEmailError("กรุณาระบุอีเมลที่ถูกต้อง (Please enter a valid email)");
-      return;
-    }
-    setEmailError(null);
-    if (emailGroupMails.includes(trimmed)) return;
-    form.setValue("emailGroupMails", [...emailGroupMails, trimmed]);
-    setEmailInput("");
-  }
-
-  function removeEmail(e: string) {
-    form.setValue("emailGroupMails", emailGroupMails.filter((x) => x !== e));
-  }
-
-  function addMember() {
-    appendMember({
-      authUserId: "",
-      name: "",
-      department: "",
-      role: "AUDITOR",
-      standards: [],
-      orderIndex: memberFields.length,
-    });
-    setMemberUsers((prev) => [...prev, null]);
-  }
-
-  function removeMemberWithUser(index: number) {
-    removeMember(index);
-    setMemberUsers((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function pickMemberUser(index: number, user: GraphUserResult | null) {
-    setMemberUsers((prev) => prev.map((u, i) => i === index ? user : u));
-    if (user) {
-      form.setValue(`members.${index}.authUserId`, user.id);
-      form.setValue(`members.${index}.name`, user.name);
-      form.setValue(`members.${index}.department`, user.department ?? "");
-    } else {
-      form.setValue(`members.${index}.authUserId`, "");
-      form.setValue(`members.${index}.name`, "");
-      form.setValue(`members.${index}.department`, "");
-    }
-  }
-
   async function handleNext() {
-    // Trigger validation for current step fields
     let valid = true;
     if (step === 0) {
       valid = await form.trigger(["year", "title", "standards"]);
     } else if (step === 1) {
-      valid = await form.trigger(["members"]);
+      const members = Array.from(selectedIds).map((id, i) => {
+        const u = allUsers.find((x) => x.id === id)!;
+        return { authUserId: id, name: u.name, department: u.department ?? "", role: "AUDITOR", standards: [], orderIndex: i };
+      });
+      replaceMembers(members);
+      valid = true;
+    } else if (step === 2) {
+      form.setValue("emailGroupMails", emailGroupsTo);
+      form.setValue("emailGroupMailsCc", emailGroupsCc);
+      valid = true;
     } else if (step === 3) {
-      // Set reviewer/approver from pickers
       if (!reviewer || !approver) {
         toast.error("กรุณาเลือกผู้ตรวจสอบและผู้อนุมัติ");
         return;
@@ -193,23 +197,26 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
       toast.success("สร้างประกาศแต่งตั้งเรียบร้อยแล้ว");
       onOpenChange(false);
       onSuccess?.();
-      form.reset();
-      setStep(0);
-      setReviewer(null);
-      setApprover(null);
-      setMemberUsers([]);
+      resetAll();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     }
   }
 
-  function handleClose() {
-    onOpenChange(false);
+  function resetAll() {
     form.reset();
     setStep(0);
     setReviewer(null);
     setApprover(null);
-    setMemberUsers([]);
+    setSelectedIds(new Set());
+    setMemberSearch("");
+    setEmailGroupsTo([]);
+    setEmailGroupsCc([]);
+  }
+
+  function handleClose() {
+    onOpenChange(false);
+    resetAll();
   }
 
   return (
@@ -226,11 +233,7 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
           {STEPS.map((s, i) => (
             <div key={i} className="flex items-center gap-1">
               <div className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shrink-0 ${
-                i < step
-                  ? "bg-emerald-500 text-white"
-                  : i === step
-                    ? "bg-primary text-white"
-                    : "bg-slate-100 text-slate-400"
+                i < step ? "bg-emerald-500 text-white" : i === step ? "bg-primary text-white" : "bg-slate-100 text-slate-400"
               }`}>
                 {i < step ? <Check className="h-3 w-3" /> : i + 1}
               </div>
@@ -322,94 +325,136 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
             </div>
           )}
 
-          {/* Step 1: Members */}
+          {/* Step 1: Members checklist */}
           {step === 1 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-700">รายชื่อสมาชิก ({memberFields.length} คน)</p>
-                <Button type="button" variant="outline" size="sm" onClick={addMember} className="rounded-lg">
-                  <Plus className="h-3.5 w-3.5 mr-1" /> เพิ่มสมาชิก
-                </Button>
+                <div className="flex items-center gap-1.5">
+                  <Users className="h-4 w-4 text-slate-400" />
+                  <p className="text-sm font-medium text-slate-700">
+                    เลือกรายชื่อสมาชิก
+                    {selectedIds.size > 0 && (
+                      <span className="ml-1.5 text-xs font-normal text-primary">({selectedIds.size} คน)</span>
+                    )}
+                  </p>
+                </div>
+                {selectedIds.size > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIds(new Set())}
+                    className="text-xs text-slate-400 hover:text-red-500 transition-colors"
+                  >
+                    ล้างทั้งหมด
+                  </button>
+                )}
               </div>
-              {memberFields.length === 0 && (
-                <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-sm text-slate-400">
-                  กดปุ่ม &ldquo;เพิ่มสมาชิก&rdquo; เพื่อเพิ่มรายชื่อ
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <Input
+                  value={memberSearch}
+                  onChange={(e) => setMemberSearch(e.target.value)}
+                  placeholder="ค้นหาชื่อ, ฝ่าย, รหัสพนักงาน..."
+                  className="pl-8 rounded-xl text-sm"
+                />
+              </div>
+
+              <div className="rounded-xl border border-slate-100 overflow-hidden">
+                {usersLoading ? (
+                  <div className="py-10 text-center text-sm text-slate-400">กำลังโหลดรายชื่อ...</div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="py-10 text-center text-sm text-slate-400">ไม่พบรายชื่อ</div>
+                ) : (
+                  <ul className="max-h-72 overflow-y-auto divide-y divide-slate-50">
+                    {filteredUsers.map((u) => {
+                      const checked = selectedIds.has(u.id);
+                      return (
+                        <li key={u.id}>
+                          <button
+                            type="button"
+                            onClick={() => toggleUser(u.id)}
+                            className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
+                              checked ? "bg-blue-50" : "hover:bg-slate-50"
+                            }`}
+                          >
+                            <div className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                              checked ? "bg-primary border-primary" : "border-slate-300"
+                            }`}>
+                              {checked && <Check className="h-2.5 w-2.5 text-white" />}
+                            </div>
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 text-xs font-bold">
+                              {(u.name[0] ?? "?").toUpperCase()}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className={`text-sm font-medium truncate ${checked ? "text-primary" : "text-slate-800"}`}>
+                                {u.name}
+                              </p>
+                              <p className="text-xs text-slate-400 truncate">
+                                {[u.department, u.jobTitle, u.employeeId ? `#${u.employeeId}` : null].filter(Boolean).join(" · ")}
+                              </p>
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+              <p className="text-xs text-slate-400">บทบาทจะกำหนดในขั้นตอนสร้างแผนการตรวจ</p>
+
+              {/* Selected members summary */}
+              {selectedIds.size > 0 && (
+                <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-blue-700">รายชื่อที่เลือก ({selectedIds.size} คน)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Array.from(selectedIds).map((id) => {
+                      const u = allUsers.find((x) => x.id === id);
+                      if (!u) return null;
+                      return (
+                        <span key={id} className="inline-flex items-center gap-1 rounded-full bg-white border border-blue-200 pl-2 pr-1 py-0.5 text-xs font-medium text-slate-700">
+                          {u.name}
+                          <button type="button" onClick={() => toggleUser(id)} className="text-slate-400 hover:text-red-500 leading-none">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-              <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-                {memberFields.map((field, index) => (
-                  <div key={field.id} className="rounded-xl border border-slate-200 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-500">สมาชิกที่ {index + 1}</span>
-                      <button type="button" onClick={() => removeMemberWithUser(index)} className="text-red-400 hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <GraphUserPicker
-                      label="ชื่อ-สกุล"
-                      value={memberUsers[index] ?? null}
-                      onChange={(u) => pickMemberUser(index, u)}
-                      placeholder="ค้นหาชื่อพนักงาน..."
-                      required
-                    />
-                    {form.formState.errors.members?.[index]?.authUserId && (
-                      <p className="text-xs text-red-500">กรุณาเลือกพนักงาน</p>
-                    )}
-                    <div className="space-y-1">
-                      <Label className="text-xs">บทบาท <span className="text-red-500">*</span></Label>
-                      <Select
-                        value={form.watch(`members.${index}.role`)}
-                        onValueChange={(v) => form.setValue(`members.${index}.role`, v)}
-                      >
-                        <SelectTrigger className="rounded-lg text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MEMBER_ROLES.map((r) => (
-                            <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
           {/* Step 2: Email Groups */}
           {step === 2 && (
-            <div className="space-y-3">
-              <p className="text-sm text-slate-600">
-                เพิ่มอีเมลที่ต้องการส่งประกาศเมื่อได้รับการอนุมัติ
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  type="email"
-                  value={emailInput}
-                  onChange={(e) => { setEmailInput(e.target.value); setEmailError(null); }}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addEmail(emailInput); } }}
-                  placeholder="email@company.com"
-                  className="rounded-xl flex-1"
-                />
-                <Button type="button" variant="outline" onClick={() => addEmail(emailInput)} className="rounded-xl shrink-0">
-                  <Plus className="h-4 w-4" />
-                </Button>
+            <div className="space-y-4">
+              <p className="text-sm text-slate-500">เลือกกลุ่มอีเมลที่จะได้รับประกาศเมื่ออนุมัติแล้ว (ไม่บังคับ)</p>
+              <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <span>อีเมลจะถูกส่งหลังจาก <strong>Reviewer</strong> และ <strong>Approver</strong> อนุมัติครบแล้วเท่านั้น</span>
               </div>
-              {emailError && <p className="text-xs text-destructive mt-1">{emailError}</p>}
-              {emailGroupMails.length > 0 ? (
-                <div className="space-y-1.5">
-                  {emailGroupMails.map((email) => (
-                    <div key={email} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
-                      <span className="text-sm text-slate-700">{email}</span>
-                      <button type="button" onClick={() => removeEmail(email)} className="text-slate-400 hover:text-red-500">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+              {emailGroups.filter((g) => !!g.mail).length === 0 ? (
+                <p className="text-sm text-slate-400">ไม่มีกลุ่มอีเมลในระบบ</p>
               ) : (
-                <p className="text-xs text-slate-400 italic">ยังไม่มีอีเมล (ไม่บังคับ)</p>
+                <div className="space-y-3">
+                  <EmailAccordion
+                    label="To — ส่งถึง"
+                    badge={emailGroupsTo.length}
+                    selected={emailGroupsTo}
+                    groups={emailGroups.filter((g) => !!g.mail) as { id: string; displayName: string; mail: string }[]}
+                    onToggle={(mail, checked) =>
+                      setEmailGroupsTo((prev) => checked ? [...prev, mail] : prev.filter((m) => m !== mail))
+                    }
+                  />
+                  <EmailAccordion
+                    label="CC — สำเนาถึง"
+                    badge={emailGroupsCc.length}
+                    selected={emailGroupsCc}
+                    groups={emailGroups.filter((g) => !!g.mail) as { id: string; displayName: string; mail: string }[]}
+                    onToggle={(mail, checked) =>
+                      setEmailGroupsCc((prev) => checked ? [...prev, mail] : prev.filter((m) => m !== mail))
+                    }
+                  />
+                </div>
               )}
             </div>
           )}

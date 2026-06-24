@@ -1,6 +1,7 @@
 import { listAuthCenterUsers } from "@/lib/auth-center-admin-client";
 import type { UserWithDept } from "@/types/user";
 import type { UserRole } from "@/generated/prisma/client";
+import { pickHighestQmsRole } from "@/lib/qms-roles";
 
 export class UserService {
   /**
@@ -18,7 +19,7 @@ export class UserService {
         email: u.email ?? null,
         employeeId: u.employeeId ?? null,
         position: u.jobTitle ?? null,
-        role: "USER" as UserRole,
+        role: pickHighestQmsRole(u.roles) as UserRole,
         msUserId: null,
         department: u.department
           ? { id: u.department, name: u.department, authDepartmentId: u.department }

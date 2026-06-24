@@ -995,6 +995,7 @@ export class CarService {
     if (tokenData.usedAt) throw new ValidationError("This approval link has already been used.");
     if (tokenData.documentId !== id) throw new ForbiddenError("Token does not match this CAR.");
     if (tokenData.module !== "CAR") throw new ForbiddenError("Token module is invalid.");
+    if (tokenData.role !== "APPROVER_MR") throw new ForbiddenError("Token role is invalid for this action.");
 
     const car = await this.carRepo.findForClose(id);
     if (!car) throw new NotFoundError("CAR");

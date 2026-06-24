@@ -13,6 +13,7 @@ interface MailAttachment {
 
 interface SendMailOpts {
   to: { name: string; email: string }[];
+  cc?: { name: string; email: string }[];
   subject: string;
   bodyHtml: string;
   senderAccessToken?: string | null;
@@ -36,9 +37,8 @@ async function sendMail(opts: SendMailOpts): Promise<void> {
       subject: opts.subject,
       htmlBody: opts.bodyHtml,
     };
-    if (opts.attachments?.length) {
-      payload.attachments = opts.attachments;
-    }
+    if (opts.cc?.length) payload.cc = opts.cc.map((r) => ({ email: r.email, name: r.name }));
+    if (opts.attachments?.length) payload.attachments = opts.attachments;
     const res = await fetch(`${base}/api/auth/mail/send`, {
       method: "POST",
       headers: { Authorization: `Bearer ${opts.senderAccessToken}`, "Content-Type": "application/json" },
@@ -424,6 +424,7 @@ export async function sendAppointmentSignRequestEmail(opts: {
 
 export async function sendAppointmentPublishedEmail(opts: {
   recipients: { name: string; email: string }[];
+  cc?: { name: string; email: string }[];
   appointmentNo: string;
   title: string;
   year: number;
@@ -433,7 +434,7 @@ export async function sendAppointmentPublishedEmail(opts: {
   appointmentId: string;
   senderAccessToken?: string | null;
 }): Promise<void> {
-  if (!opts.recipients.length) return;
+  if (!opts.recipients.length && !opts.cc?.length) return;
   const url = getAppUrl(`/audit/appointments/${opts.appointmentId}`);
   const yearTh = opts.year;
   const yearEn = yearTh - 543;
@@ -504,6 +505,7 @@ export async function sendAppointmentPublishedEmail(opts: {
 
   await sendMail({
     to: opts.recipients,
+    cc: opts.cc?.length ? opts.cc : undefined,
     senderAccessToken: opts.senderAccessToken,
     subject: `[QMS] ประกาศแต่งตั้งผู้ตรวจติดตามภายใน ประจำปี ${yearTh} — ${opts.appointmentNo}`,
     bodyHtml,

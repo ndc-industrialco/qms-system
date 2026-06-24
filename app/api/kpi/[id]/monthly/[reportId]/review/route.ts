@@ -30,7 +30,9 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
       if (approverId) {
         const approverAuthId = (() => {
           const sig = detail.approvalSignatures?.find((s: { step: string }) => s.step === 'APPROVER');
-          return (sig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined ?? approverId;
+          return (sig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined
+            ?? (detail.kpi as Record<string, unknown>).approverAuthUserId as string | null | undefined
+            ?? approverId;
         })();
         const approver = await getUserSnapshot(approverAuthId);
           await ActionTokenService.revokeByDocument(ApprovalModule.KPI_MONTHLY, reportId);

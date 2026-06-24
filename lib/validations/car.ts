@@ -50,7 +50,7 @@ export const carUpdateSchema = carBaseSchema.partial().superRefine((data, ctx) =
 
 export const carRespondSchema = z.object({
   responderPosition: z.string().min(1, "กรุณากรอกตำแหน่ง"),
-  whyAnalysis: z.string().min(1, "กรุณากรอกการวิเคราะห์สาเหตุ"),
+  whyAnalysis: z.string().optional().default(""),
   additionalToolDetail: z.string().optional(),
   rootCausePerson: z.boolean().default(false),
   rootCauseMaterial: z.boolean().default(false),

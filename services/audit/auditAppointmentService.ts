@@ -62,6 +62,7 @@ export class AuditAppointmentService {
           approverEmail: input.approverEmail,
           approverNameSnapshot: input.approverNameSnapshot ?? null,
           emailGroupMails: input.emailGroupMails,
+          emailGroupMailsCc: input.emailGroupMailsCc,
           members: {
             create: input.members.map((m, i) => ({
               authUserId: m.authUserId,
@@ -262,10 +263,12 @@ export class AuditAppointmentService {
       return u;
     });
 
-    if (appt.emailGroupMails.length > 0) {
+    if (appt.emailGroupMails.length > 0 || appt.emailGroupMailsCc.length > 0) {
       const recipients = appt.emailGroupMails.map((m) => ({ name: m, email: m }));
+      const cc = appt.emailGroupMailsCc.map((m) => ({ name: m, email: m }));
       sendAppointmentPublishedEmail({
         recipients,
+        cc,
         appointmentNo: updated.appointmentNo,
         title: updated.title,
         year: updated.year,

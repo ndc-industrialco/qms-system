@@ -94,6 +94,7 @@ export type AuditAppointmentCountAggregateOutputType = {
   approverEmail: number
   approverNameSnapshot: number
   emailGroupMails: number
+  emailGroupMailsCc: number
   publishedAt: number
   createdAt: number
   updatedAt: number
@@ -169,6 +170,7 @@ export type AuditAppointmentCountAggregateInputType = {
   approverEmail?: true
   approverNameSnapshot?: true
   emailGroupMails?: true
+  emailGroupMailsCc?: true
   publishedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -279,6 +281,7 @@ export type AuditAppointmentGroupByOutputType = {
   approverEmail: string | null
   approverNameSnapshot: string | null
   emailGroupMails: string[]
+  emailGroupMailsCc: string[]
   publishedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -325,6 +328,7 @@ export type AuditAppointmentWhereInput = {
   approverEmail?: Prisma.StringNullableFilter<"AuditAppointment"> | string | null
   approverNameSnapshot?: Prisma.StringNullableFilter<"AuditAppointment"> | string | null
   emailGroupMails?: Prisma.StringNullableListFilter<"AuditAppointment">
+  emailGroupMailsCc?: Prisma.StringNullableListFilter<"AuditAppointment">
   publishedAt?: Prisma.DateTimeNullableFilter<"AuditAppointment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"AuditAppointment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AuditAppointment"> | Date | string
@@ -350,6 +354,7 @@ export type AuditAppointmentOrderByWithRelationInput = {
   approverEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   approverNameSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   emailGroupMails?: Prisma.SortOrder
+  emailGroupMailsCc?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -378,6 +383,7 @@ export type AuditAppointmentWhereUniqueInput = Prisma.AtLeast<{
   approverEmail?: Prisma.StringNullableFilter<"AuditAppointment"> | string | null
   approverNameSnapshot?: Prisma.StringNullableFilter<"AuditAppointment"> | string | null
   emailGroupMails?: Prisma.StringNullableListFilter<"AuditAppointment">
+  emailGroupMailsCc?: Prisma.StringNullableListFilter<"AuditAppointment">
   publishedAt?: Prisma.DateTimeNullableFilter<"AuditAppointment"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"AuditAppointment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AuditAppointment"> | Date | string
@@ -403,6 +409,7 @@ export type AuditAppointmentOrderByWithAggregationInput = {
   approverEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   approverNameSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   emailGroupMails?: Prisma.SortOrder
+  emailGroupMailsCc?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -434,6 +441,7 @@ export type AuditAppointmentScalarWhereWithAggregatesInput = {
   approverEmail?: Prisma.StringNullableWithAggregatesFilter<"AuditAppointment"> | string | null
   approverNameSnapshot?: Prisma.StringNullableWithAggregatesFilter<"AuditAppointment"> | string | null
   emailGroupMails?: Prisma.StringNullableListFilter<"AuditAppointment">
+  emailGroupMailsCc?: Prisma.StringNullableListFilter<"AuditAppointment">
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AuditAppointment"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AuditAppointment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"AuditAppointment"> | Date | string
@@ -457,6 +465,7 @@ export type AuditAppointmentCreateInput = {
   approverEmail?: string | null
   approverNameSnapshot?: string | null
   emailGroupMails?: Prisma.AuditAppointmentCreateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentCreateemailGroupMailsCcInput | string[]
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -482,6 +491,7 @@ export type AuditAppointmentUncheckedCreateInput = {
   approverEmail?: string | null
   approverNameSnapshot?: string | null
   emailGroupMails?: Prisma.AuditAppointmentCreateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentCreateemailGroupMailsCcInput | string[]
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -507,6 +517,7 @@ export type AuditAppointmentUpdateInput = {
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverNameSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailGroupMails?: Prisma.AuditAppointmentUpdateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentUpdateemailGroupMailsCcInput | string[]
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -532,6 +543,7 @@ export type AuditAppointmentUncheckedUpdateInput = {
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverNameSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailGroupMails?: Prisma.AuditAppointmentUpdateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentUpdateemailGroupMailsCcInput | string[]
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -557,6 +569,7 @@ export type AuditAppointmentCreateManyInput = {
   approverEmail?: string | null
   approverNameSnapshot?: string | null
   emailGroupMails?: Prisma.AuditAppointmentCreateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentCreateemailGroupMailsCcInput | string[]
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -580,6 +593,7 @@ export type AuditAppointmentUpdateManyMutationInput = {
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverNameSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailGroupMails?: Prisma.AuditAppointmentUpdateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentUpdateemailGroupMailsCcInput | string[]
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -603,6 +617,7 @@ export type AuditAppointmentUncheckedUpdateManyInput = {
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverNameSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailGroupMails?: Prisma.AuditAppointmentUpdateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentUpdateemailGroupMailsCcInput | string[]
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -626,6 +641,7 @@ export type AuditAppointmentCountOrderByAggregateInput = {
   approverEmail?: Prisma.SortOrder
   approverNameSnapshot?: Prisma.SortOrder
   emailGroupMails?: Prisma.SortOrder
+  emailGroupMailsCc?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -694,6 +710,10 @@ export type AuditAppointmentCreateemailGroupMailsInput = {
   set: string[]
 }
 
+export type AuditAppointmentCreateemailGroupMailsCcInput = {
+  set: string[]
+}
+
 export type AuditAppointmentUpdatestandardsInput = {
   set?: string[]
   push?: string | string[]
@@ -704,6 +724,11 @@ export type EnumAuditAppointmentStatusFieldUpdateOperationsInput = {
 }
 
 export type AuditAppointmentUpdateemailGroupMailsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type AuditAppointmentUpdateemailGroupMailsCcInput = {
   set?: string[]
   push?: string | string[]
 }
@@ -754,6 +779,7 @@ export type AuditAppointmentCreateWithoutMembersInput = {
   approverEmail?: string | null
   approverNameSnapshot?: string | null
   emailGroupMails?: Prisma.AuditAppointmentCreateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentCreateemailGroupMailsCcInput | string[]
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -778,6 +804,7 @@ export type AuditAppointmentUncheckedCreateWithoutMembersInput = {
   approverEmail?: string | null
   approverNameSnapshot?: string | null
   emailGroupMails?: Prisma.AuditAppointmentCreateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentCreateemailGroupMailsCcInput | string[]
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -818,6 +845,7 @@ export type AuditAppointmentUpdateWithoutMembersInput = {
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverNameSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailGroupMails?: Prisma.AuditAppointmentUpdateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentUpdateemailGroupMailsCcInput | string[]
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -842,6 +870,7 @@ export type AuditAppointmentUncheckedUpdateWithoutMembersInput = {
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverNameSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailGroupMails?: Prisma.AuditAppointmentUpdateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentUpdateemailGroupMailsCcInput | string[]
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -866,6 +895,7 @@ export type AuditAppointmentCreateWithoutSignoffsInput = {
   approverEmail?: string | null
   approverNameSnapshot?: string | null
   emailGroupMails?: Prisma.AuditAppointmentCreateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentCreateemailGroupMailsCcInput | string[]
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -890,6 +920,7 @@ export type AuditAppointmentUncheckedCreateWithoutSignoffsInput = {
   approverEmail?: string | null
   approverNameSnapshot?: string | null
   emailGroupMails?: Prisma.AuditAppointmentCreateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentCreateemailGroupMailsCcInput | string[]
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -930,6 +961,7 @@ export type AuditAppointmentUpdateWithoutSignoffsInput = {
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverNameSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailGroupMails?: Prisma.AuditAppointmentUpdateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentUpdateemailGroupMailsCcInput | string[]
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -954,6 +986,7 @@ export type AuditAppointmentUncheckedUpdateWithoutSignoffsInput = {
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverNameSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailGroupMails?: Prisma.AuditAppointmentUpdateemailGroupMailsInput | string[]
+  emailGroupMailsCc?: Prisma.AuditAppointmentUpdateemailGroupMailsCcInput | string[]
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1018,6 +1051,7 @@ export type AuditAppointmentSelect<ExtArgs extends runtime.Types.Extensions.Inte
   approverEmail?: boolean
   approverNameSnapshot?: boolean
   emailGroupMails?: boolean
+  emailGroupMailsCc?: boolean
   publishedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1044,6 +1078,7 @@ export type AuditAppointmentSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   approverEmail?: boolean
   approverNameSnapshot?: boolean
   emailGroupMails?: boolean
+  emailGroupMailsCc?: boolean
   publishedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1067,6 +1102,7 @@ export type AuditAppointmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   approverEmail?: boolean
   approverNameSnapshot?: boolean
   emailGroupMails?: boolean
+  emailGroupMailsCc?: boolean
   publishedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1090,12 +1126,13 @@ export type AuditAppointmentSelectScalar = {
   approverEmail?: boolean
   approverNameSnapshot?: boolean
   emailGroupMails?: boolean
+  emailGroupMailsCc?: boolean
   publishedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AuditAppointmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "appointmentNo" | "year" | "title" | "standards" | "status" | "rejectReason" | "ownerAuthUserId" | "ownerEmail" | "ownerNameSnapshot" | "reviewerAuthUserId" | "reviewerEmail" | "reviewerNameSnapshot" | "approverAuthUserId" | "approverEmail" | "approverNameSnapshot" | "emailGroupMails" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["auditAppointment"]>
+export type AuditAppointmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "appointmentNo" | "year" | "title" | "standards" | "status" | "rejectReason" | "ownerAuthUserId" | "ownerEmail" | "ownerNameSnapshot" | "reviewerAuthUserId" | "reviewerEmail" | "reviewerNameSnapshot" | "approverAuthUserId" | "approverEmail" | "approverNameSnapshot" | "emailGroupMails" | "emailGroupMailsCc" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["auditAppointment"]>
 export type AuditAppointmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | Prisma.AuditAppointment$membersArgs<ExtArgs>
   signoffs?: boolean | Prisma.AuditAppointment$signoffsArgs<ExtArgs>
@@ -1128,6 +1165,7 @@ export type $AuditAppointmentPayload<ExtArgs extends runtime.Types.Extensions.In
     approverEmail: string | null
     approverNameSnapshot: string | null
     emailGroupMails: string[]
+    emailGroupMailsCc: string[]
     publishedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -1573,6 +1611,7 @@ export interface AuditAppointmentFieldRefs {
   readonly approverEmail: Prisma.FieldRef<"AuditAppointment", 'String'>
   readonly approverNameSnapshot: Prisma.FieldRef<"AuditAppointment", 'String'>
   readonly emailGroupMails: Prisma.FieldRef<"AuditAppointment", 'String[]'>
+  readonly emailGroupMailsCc: Prisma.FieldRef<"AuditAppointment", 'String[]'>
   readonly publishedAt: Prisma.FieldRef<"AuditAppointment", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"AuditAppointment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"AuditAppointment", 'DateTime'>
