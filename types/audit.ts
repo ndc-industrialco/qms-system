@@ -251,6 +251,12 @@ export type AuditPlanDetail = AuditPlanSummary & {
   sourceOrganization: string | null;
   summary: string | null;
   appointmentId: string | null;
+  reviewerAuthUserId: string | null;
+  reviewerEmail: string | null;
+  reviewerNameSnapshot: string | null;
+  approverAuthUserId: string | null;
+  approverEmail: string | null;
+  approverNameSnapshot: string | null;
   departments: AuditDepartmentRow[];
   auditors: AuditAuditorRow[];
   schedules: AuditScheduleRow[];

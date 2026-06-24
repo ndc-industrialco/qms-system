@@ -7,6 +7,17 @@ import { type NextRequest } from "next/server";
 
 const PRIVILEGED = new Set(["QMS", "IT", "MR"]);
 
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await requireAuth();
+    if (!PRIVILEGED.has(session.user.role)) throw new ForbiddenError();
+    const { id } = await params;
+    const { name } = await req.json();
+    const updated = await db.auditStandard.update({ where: { id }, data: { name } });
+    return sendSuccess(updated, "Updated");
+  } catch (err) { return handleApiError(err); }
+}
+
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await requireAuth();

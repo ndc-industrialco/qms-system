@@ -30,6 +30,16 @@ export function useCreateAuditStandard() {
   });
 }
 
+export function useUpdateAuditStandard() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      fetch(`/api/audit/standards/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) })
+        .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.message ?? "Failed"); return j.data as AuditStandard; }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.all }),
+  });
+}
+
 export function useDeleteAuditStandard() {
   const qc = useQueryClient();
   return useMutation({

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AuditPlanDetail } from "@/types/audit";
-import type { AuditAssignAuditorsInput, AuditPlanDepartmentsInput } from "@/lib/validations/audit";
+import type { AuditAssignAuditorsInput, AuditPlanDepartmentsInput, AuditPlanSubmitInput } from "@/lib/validations/audit";
 
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
 
@@ -9,6 +9,18 @@ async function fetchAuditPlanDetail(id: string): Promise<AuditPlanDetail> {
   if (!res.ok) throw new Error("Failed to fetch audit plan");
   const json = await res.json();
   return json.data;
+}
+
+async function submitPlan(planId: string, input: AuditPlanSubmitInput): Promise<void> {
+  const res = await fetch(`/api/audit/plans/${planId}/submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error((json as { message?: string }).message ?? "Failed to submit plan");
+  }
 }
 
 async function assignAuditors(planId: string, input: AuditAssignAuditorsInput): Promise<void> {
@@ -111,6 +123,17 @@ export function useAuditPlanDetail(id: string, initialData?: AuditPlanDetail) {
     queryKey: ["audit-plan", id],
     queryFn: () => fetchAuditPlanDetail(id),
     initialData,
+  });
+}
+
+export function useSubmitPlan(planId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AuditPlanSubmitInput) => submitPlan(planId, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["audit-plan", planId] });
+      qc.invalidateQueries({ queryKey: ["audit-plans"] });
+    },
   });
 }
 

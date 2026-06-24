@@ -18,7 +18,7 @@ export default async function AuditStandardsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader title="จัดการมาตรฐาน ISO" subtitle="เพิ่ม/ลบมาตรฐานที่ใช้ในระบบ Audit" />
-      <div className="mt-6 max-w-xl">
+      <div className="mt-6">
         <AuditStandardsManager />
       </div>
     </div>

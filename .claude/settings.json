@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep -l \"kpi\\\\|KPI\")",
+      "Bash(redis-cli DEL graph:app_token graph:app_token:lock)",
+      "PowerShell(Get-Command redis-cli -ErrorAction SilentlyContinue)"
+    ]
+  }
+}

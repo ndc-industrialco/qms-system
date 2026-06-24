@@ -86,7 +86,7 @@ export function AuditAppointmentListClient({ initialData, canCreate, onCreateCli
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             value={search}
@@ -115,7 +115,7 @@ export function AuditAppointmentListClient({ initialData, canCreate, onCreateCli
           <p className="text-sm text-slate-400">No appointment letters found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-3 w-full">
           {filtered.map((appt) => (
             <AppointmentCard key={appt.id} appt={appt} />
           ))}

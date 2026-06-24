@@ -12,7 +12,8 @@ import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
 import AuditFindingStatusBadge from "./AuditFindingStatusBadge";
 import AuditFindingFormModal from "./AuditFindingFormModal";
 import AuditPlanFormModal from "./AuditPlanFormModal";
-import { useAuditPlanDetail, useAnnouncePlan, useSignPlanInApp, useGenerateReport, useClosePlan, useIssueSignRequest } from "@/hooks/api/use-audit-plan-detail";
+import AuditPlanAssignDialog from "./AuditPlanAssignDialog";
+import { useAuditPlanDetail, useAnnouncePlan, useSignPlanInApp, useGenerateReport, useClosePlan, useIssueSignRequest, useSubmitPlan } from "@/hooks/api/use-audit-plan-detail";
 import { useAuditFindings, useRespondToFinding, useVerifyFinding, useCloseFinding } from "@/hooks/api/use-audit-findings";
 import { useAuditSchedules, useCreateSchedule, useDeleteSchedule, useConfirmSchedule, useSubmitChecklist } from "@/hooks/api/use-audit-schedules";
 import { useAuditAttachments, useDeleteAuditAttachment, useUploadAuditAttachment } from "@/hooks/api/use-audit-attachments";
@@ -734,15 +735,18 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
   const [showSignRequestDialog, setShowSignRequestDialog] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
   const [showAnnounceDialog, setShowAnnounceDialog] = useState(false);
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
 
   const { data: plan = initialPlan } = useAuditPlanDetail(initialPlan.id, initialPlan);
 
+  const submitMutation = useSubmitPlan(plan.id);
   const signMutation = useSignPlanInApp(plan.id);
   const generateMutation = useGenerateReport(plan.id);
   const closePlanMutation = useClosePlan(plan.id);
   const issueSignRequestMutation = useIssueSignRequest(plan.id);
   const announceMutation = useAnnouncePlan(plan.id);
 
+  const canSubmit = isPrivileged && plan.status === "DRAFT";
   const canEdit = isPrivileged && (plan.status === "DRAFT" || plan.status === "PLANNED");
   const canManageSchedule = isPrivileged || plan.auditors.some((a) => a.assigneeAuthUserId === userId && a.role === "LEAD");
   const canCreateFinding = isPrivileged || plan.auditors.some((a) => a.assigneeAuthUserId === userId);
@@ -786,6 +790,11 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
         <div className="flex flex-wrap gap-2">
           {canEdit && (
             <Button variant="outline" size="sm" onClick={() => setShowEdit(true)}>แก้ไข</Button>
+          )}
+          {canSubmit && (
+            <Button size="sm" className="bg-[#0F1059] hover:bg-[#161875] text-white" onClick={() => setShowAssignDialog(true)}>
+              มอบหมายและส่งอนุมัติ
+            </Button>
           )}
         </div>
       </div>
@@ -1087,6 +1096,27 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
 
       {/* Edit modal */}
       <AuditPlanFormModal open={showEdit} onClose={() => setShowEdit(false)} onSuccess={() => setShowEdit(false)} />
+
+      {/* Assign reviewer/approver + submit */}
+      <AuditPlanAssignDialog
+        open={showAssignDialog}
+        onOpenChange={setShowAssignDialog}
+        initialReviewerAuthUserId={plan.reviewerAuthUserId ?? undefined}
+        initialApproverAuthUserId={plan.approverAuthUserId ?? undefined}
+        onConfirm={async (reviewer, approver) => {
+          await submitMutation.mutateAsync({
+            signedRole: "PREPARER",
+            reviewerAuthUserId: reviewer.id,
+            reviewerEmail: reviewer.email,
+            reviewerNameSnapshot: reviewer.name,
+            approverAuthUserId: approver.id,
+            approverEmail: approver.email,
+            approverNameSnapshot: approver.name,
+            emailGroupMails: [],
+          });
+          toast.success("ส่งแผนเพื่ออนุมัติสำเร็จ");
+        }}
+      />
 
       {/* Announce dialog */}
       <Dialog open={showAnnounceDialog} onOpenChange={(v) => { if (!v) { setShowAnnounceDialog(false); announceForm.reset(); } }}>

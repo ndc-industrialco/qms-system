@@ -46,6 +46,7 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
   const { data: appt = initialData } = useAuditAppointment(initialData.id, initialData);
   const submitMutation = useSubmitAuditAppointment();
   const [submitting, setSubmitting] = useState(false);
+  const hasSidebar = (canSubmit && appt.status === "DRAFT") || appt.signoffs.length > 0;
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -82,7 +83,7 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
         </div>
       )}
 
-      <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-6 lg:items-start space-y-5 lg:space-y-0">
+      <div className={hasSidebar ? "lg:grid lg:grid-cols-[1fr_280px] lg:gap-6 lg:items-start space-y-5 lg:space-y-0" : ""}>
         {/* Main content */}
         <div className="space-y-4">
           {/* Header card */}
