@@ -221,7 +221,7 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-base font-bold">
             สร้างประกาศแต่งตั้งผู้ตรวจติดตามภายใน
