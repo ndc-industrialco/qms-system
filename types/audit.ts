@@ -315,6 +315,7 @@ export type AuditAppointmentSignoffRow = {
   signedRole: string;
   signerNameSnapshot: string | null;
   signedAt: string;
+  signaturePath: string | null;
 };
 
 export type AuditAppointmentRow = {
@@ -326,13 +327,17 @@ export type AuditAppointmentRow = {
   status: AuditAppointmentStatus;
   rejectReason: string | null;
   ownerAuthUserId: string | null;
+  ownerEmail: string | null;
   ownerNameSnapshot: string | null;
   reviewerAuthUserId: string | null;
+  reviewerEmail: string | null;
   reviewerNameSnapshot: string | null;
   approverAuthUserId: string | null;
+  approverEmail: string | null;
   approverNameSnapshot: string | null;
   emailGroupMails: string[];
   emailGroupMailsCc: string[];
+  ownerSignaturePath: string | null;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;

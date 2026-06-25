@@ -1,7 +1,9 @@
 
+import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getDepartments } from "@/lib/departmentCache";
+import { UnauthorizedError } from "@/lib/errors";
 import DashboardClientView from "@/components/dashboard/DashboardClientView";
 import type { Metadata } from "next";
 
@@ -21,11 +23,18 @@ export default async function CompanyCenterDashboard() {
     AND: [{ OR: [{ endDate: null }, { endDate: { gte: now } }] }],
   };
 
+  let departmentList;
+  try {
+    departmentList = await getDepartments(session.user.accessToken);
+  } catch (e) {
+    if (e instanceof UnauthorizedError) redirect("/api/auth/signout?callbackUrl=/");
+    throw e;
+  }
+
   const [
     announcementsList,
     tickerAnnouncements,
     recentPublicDocs,
-    departmentList,
     departmentDocStats,
     recentAttachments,
     kpiOkCount,
@@ -50,8 +59,6 @@ export default async function CompanyCenterDashboard() {
       orderBy: { publishedDate: "desc" },
       take: 5,
     }),
-
-    getDepartments(session.user.accessToken),
 
     db.documentControl.groupBy({
       by: ["departmentId"],

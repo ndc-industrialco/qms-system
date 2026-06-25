@@ -226,6 +226,9 @@ export const auditAppointmentCreateSchema = z.object({
 
 export type AuditAppointmentCreateInput = z.infer<typeof auditAppointmentCreateSchema>;
 
+export const auditAppointmentUpdateSchema = auditAppointmentCreateSchema.partial();
+export type AuditAppointmentUpdateInput = z.infer<typeof auditAppointmentUpdateSchema>;
+
 export const auditAppointmentRejectSchema = z.object({
   reason: z.string().min(1),
   signedRole: z.enum(["REVIEWER", "APPROVER"]),

@@ -839,19 +839,20 @@ export class AuditPlanService {
 
   private async nextAuditNo(tx: Parameters<Parameters<typeof db.$transaction>[0]>[0]): Promise<string> {
     const year = new Date().getFullYear();
-    const key = `AUDIT_PLAN_COUNTER_${year}`;
     const yy = String(year).slice(-2);
+    const prefix = `AUD-${yy}-`;
+    const likePattern = `${prefix}%`;
+    const startPos = prefix.length + 1;
 
-    const result = await tx.$queryRaw<[{ configValue: string }]>`
-      INSERT INTO "SystemConfig" ("configKey", "configValue", "description", "updatedAt")
-      VALUES (${key}, '1', ${'Audit plan counter for ' + year}, NOW())
-      ON CONFLICT ("configKey") DO UPDATE
-        SET "configValue" = (CAST("SystemConfig"."configValue" AS INTEGER) + 1)::TEXT,
-            "updatedAt"   = NOW()
-      RETURNING "configValue"
+    const existing = await tx.$queryRaw<{ seq: number }[]>`
+      SELECT CAST(SUBSTRING(audit_no FROM ${startPos}) AS INTEGER) AS seq
+      FROM audit_plans
+      WHERE audit_no LIKE ${likePattern}
+      ORDER BY seq
     `;
-
-    const seq = result[0].configValue.padStart(3, "0");
-    return `AUD-${yy}-${seq}`;
+    const used = new Set(existing.map((r) => r.seq));
+    let next = 1;
+    while (used.has(next)) next++;
+    return `${prefix}${String(next).padStart(3, "0")}`;
   }
 }

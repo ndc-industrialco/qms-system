@@ -417,6 +417,10 @@ export const ModelName = {
   AuditAppointment: 'AuditAppointment',
   AuditAppointmentMember: 'AuditAppointmentMember',
   AuditAppointmentSignoff: 'AuditAppointmentSignoff',
+  AuditSessionPlan: 'AuditSessionPlan',
+  AuditSessionRow: 'AuditSessionRow',
+  AuditSessionTeamMember: 'AuditSessionTeamMember',
+  AuditGanttRow: 'AuditGanttRow',
   AuditPlan: 'AuditPlan',
   AuditStandard: 'AuditStandard',
   AuditPlanDepartment: 'AuditPlanDepartment',
@@ -445,7 +449,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "systemConfig" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog" | "auditAppointment" | "auditAppointmentMember" | "auditAppointmentSignoff" | "auditPlan" | "auditStandard" | "auditPlanDepartment" | "auditAuditorAssignment" | "auditSchedule" | "auditScheduleTeamMember" | "auditAttachment" | "auditAnnouncement" | "auditFinding" | "auditCorrectiveAction" | "auditVerification" | "auditSignoff" | "auditReport"
+    modelProps: "systemConfig" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog" | "auditAppointment" | "auditAppointmentMember" | "auditAppointmentSignoff" | "auditSessionPlan" | "auditSessionRow" | "auditSessionTeamMember" | "auditGanttRow" | "auditPlan" | "auditStandard" | "auditPlanDepartment" | "auditAuditorAssignment" | "auditSchedule" | "auditScheduleTeamMember" | "auditAttachment" | "auditAnnouncement" | "auditFinding" | "auditCorrectiveAction" | "auditVerification" | "auditSignoff" | "auditReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2891,6 +2895,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AuditSessionPlan: {
+      payload: Prisma.$AuditSessionPlanPayload<ExtArgs>
+      fields: Prisma.AuditSessionPlanFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditSessionPlanFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditSessionPlanFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditSessionPlanFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditSessionPlanFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>
+        }
+        findMany: {
+          args: Prisma.AuditSessionPlanFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>[]
+        }
+        create: {
+          args: Prisma.AuditSessionPlanCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>
+        }
+        createMany: {
+          args: Prisma.AuditSessionPlanCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditSessionPlanCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>[]
+        }
+        delete: {
+          args: Prisma.AuditSessionPlanDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>
+        }
+        update: {
+          args: Prisma.AuditSessionPlanUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditSessionPlanDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditSessionPlanUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditSessionPlanUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditSessionPlanUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionPlanPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditSessionPlanAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditSessionPlan>
+        }
+        groupBy: {
+          args: Prisma.AuditSessionPlanGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditSessionPlanGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditSessionPlanCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditSessionPlanCountAggregateOutputType> | number
+        }
+      }
+    }
+    AuditSessionRow: {
+      payload: Prisma.$AuditSessionRowPayload<ExtArgs>
+      fields: Prisma.AuditSessionRowFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditSessionRowFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditSessionRowFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditSessionRowFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditSessionRowFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>
+        }
+        findMany: {
+          args: Prisma.AuditSessionRowFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>[]
+        }
+        create: {
+          args: Prisma.AuditSessionRowCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>
+        }
+        createMany: {
+          args: Prisma.AuditSessionRowCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditSessionRowCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>[]
+        }
+        delete: {
+          args: Prisma.AuditSessionRowDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>
+        }
+        update: {
+          args: Prisma.AuditSessionRowUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditSessionRowDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditSessionRowUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditSessionRowUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditSessionRowUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionRowPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditSessionRowAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditSessionRow>
+        }
+        groupBy: {
+          args: Prisma.AuditSessionRowGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditSessionRowGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditSessionRowCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditSessionRowCountAggregateOutputType> | number
+        }
+      }
+    }
+    AuditSessionTeamMember: {
+      payload: Prisma.$AuditSessionTeamMemberPayload<ExtArgs>
+      fields: Prisma.AuditSessionTeamMemberFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditSessionTeamMemberFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditSessionTeamMemberFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditSessionTeamMemberFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditSessionTeamMemberFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>
+        }
+        findMany: {
+          args: Prisma.AuditSessionTeamMemberFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>[]
+        }
+        create: {
+          args: Prisma.AuditSessionTeamMemberCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>
+        }
+        createMany: {
+          args: Prisma.AuditSessionTeamMemberCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditSessionTeamMemberCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>[]
+        }
+        delete: {
+          args: Prisma.AuditSessionTeamMemberDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>
+        }
+        update: {
+          args: Prisma.AuditSessionTeamMemberUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditSessionTeamMemberDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditSessionTeamMemberUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditSessionTeamMemberUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditSessionTeamMemberUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditSessionTeamMemberPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditSessionTeamMemberAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditSessionTeamMember>
+        }
+        groupBy: {
+          args: Prisma.AuditSessionTeamMemberGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditSessionTeamMemberGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditSessionTeamMemberCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditSessionTeamMemberCountAggregateOutputType> | number
+        }
+      }
+    }
+    AuditGanttRow: {
+      payload: Prisma.$AuditGanttRowPayload<ExtArgs>
+      fields: Prisma.AuditGanttRowFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditGanttRowFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditGanttRowFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditGanttRowFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditGanttRowFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>
+        }
+        findMany: {
+          args: Prisma.AuditGanttRowFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>[]
+        }
+        create: {
+          args: Prisma.AuditGanttRowCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>
+        }
+        createMany: {
+          args: Prisma.AuditGanttRowCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditGanttRowCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>[]
+        }
+        delete: {
+          args: Prisma.AuditGanttRowDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>
+        }
+        update: {
+          args: Prisma.AuditGanttRowUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditGanttRowDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditGanttRowUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditGanttRowUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditGanttRowUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditGanttRowPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditGanttRowAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditGanttRow>
+        }
+        groupBy: {
+          args: Prisma.AuditGanttRowGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditGanttRowGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditGanttRowCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditGanttRowCountAggregateOutputType> | number
+        }
+      }
+    }
     AuditPlan: {
       payload: Prisma.$AuditPlanPayload<ExtArgs>
       fields: Prisma.AuditPlanFieldRefs
@@ -4480,6 +4780,7 @@ export const AuditAppointmentScalarFieldEnum = {
   approverNameSnapshot: 'approverNameSnapshot',
   emailGroupMails: 'emailGroupMails',
   emailGroupMailsCc: 'emailGroupMailsCc',
+  ownerSignaturePath: 'ownerSignaturePath',
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -4513,6 +4814,56 @@ export const AuditAppointmentSignoffScalarFieldEnum = {
 } as const
 
 export type AuditAppointmentSignoffScalarFieldEnum = (typeof AuditAppointmentSignoffScalarFieldEnum)[keyof typeof AuditAppointmentSignoffScalarFieldEnum]
+
+
+export const AuditSessionPlanScalarFieldEnum = {
+  id: 'id',
+  appointmentId: 'appointmentId',
+  reviseNo: 'reviseNo',
+  reviseDate: 'reviseDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AuditSessionPlanScalarFieldEnum = (typeof AuditSessionPlanScalarFieldEnum)[keyof typeof AuditSessionPlanScalarFieldEnum]
+
+
+export const AuditSessionRowScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  orderIndex: 'orderIndex',
+  auditDate: 'auditDate',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  department: 'department',
+  remark: 'remark'
+} as const
+
+export type AuditSessionRowScalarFieldEnum = (typeof AuditSessionRowScalarFieldEnum)[keyof typeof AuditSessionRowScalarFieldEnum]
+
+
+export const AuditSessionTeamMemberScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  role: 'role',
+  name: 'name',
+  authUserId: 'authUserId'
+} as const
+
+export type AuditSessionTeamMemberScalarFieldEnum = (typeof AuditSessionTeamMemberScalarFieldEnum)[keyof typeof AuditSessionTeamMemberScalarFieldEnum]
+
+
+export const AuditGanttRowScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  orderIndex: 'orderIndex',
+  department: 'department',
+  processes: 'processes',
+  planWeeks: 'planWeeks',
+  actualWeeks: 'actualWeeks'
+} as const
+
+export type AuditGanttRowScalarFieldEnum = (typeof AuditGanttRowScalarFieldEnum)[keyof typeof AuditGanttRowScalarFieldEnum]
 
 
 export const AuditPlanScalarFieldEnum = {
@@ -5365,6 +5716,10 @@ export type GlobalOmitConfig = {
   auditAppointment?: Prisma.AuditAppointmentOmit
   auditAppointmentMember?: Prisma.AuditAppointmentMemberOmit
   auditAppointmentSignoff?: Prisma.AuditAppointmentSignoffOmit
+  auditSessionPlan?: Prisma.AuditSessionPlanOmit
+  auditSessionRow?: Prisma.AuditSessionRowOmit
+  auditSessionTeamMember?: Prisma.AuditSessionTeamMemberOmit
+  auditGanttRow?: Prisma.AuditGanttRowOmit
   auditPlan?: Prisma.AuditPlanOmit
   auditStandard?: Prisma.AuditStandardOmit
   auditPlanDepartment?: Prisma.AuditPlanDepartmentOmit

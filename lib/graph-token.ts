@@ -23,6 +23,18 @@ interface FreshToken {
   cacheTtlSec: number;
 }
 
+/** Extract `exp` from a JWT payload without verifying signature. */
+function jwtExpSec(token: string): number | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const json = JSON.parse(Buffer.from(payload, "base64url").toString()) as { exp?: number };
+    return typeof json.exp === "number" ? json.exp : null;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchFreshToken(): Promise<FreshToken> {
   const base = process.env.AUTH_CENTER_URL?.replace(/\/$/, "");
   const appId = process.env.AUTH_CENTER_APP_ID ?? "qms";
@@ -47,14 +59,24 @@ async function fetchFreshToken(): Promise<FreshToken> {
   const token = json.data?.accessToken;
   if (!token) throw new Error("Auth Center graph-token: missing accessToken in response");
 
-  return { token, cacheTtlSec: DEFAULT_TTL_SEC };
+  // Derive TTL from the JWT's own `exp` claim (minus 60s safety margin).
+  // Falls back to DEFAULT_TTL_SEC if the token is opaque or already near-expired.
+  const exp = jwtExpSec(token);
+  const nowSec = Math.floor(Date.now() / 1000);
+  const cacheTtlSec = exp ? Math.max(60, exp - nowSec - 60) : DEFAULT_TTL_SEC;
+
+  return { token, cacheTtlSec };
 }
 
 /**
  * Returns a valid MS Graph app-only access token.
  * Reads from Redis cache first; fetches from Azure AD on miss.
+ * Pass { forceRefresh: true } to bust the cache (e.g. after a 401).
  */
-export async function getGraphToken(): Promise<string> {
+export async function getGraphToken(opts?: { forceRefresh?: boolean }): Promise<string> {
+  if (opts?.forceRefresh) {
+    try { await redis.del(CACHE_KEY); } catch { /* non-fatal */ }
+  }
   try {
     const cached = await redis.get(CACHE_KEY);
     if (cached) return cached;

@@ -2,8 +2,10 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import PageHeader from "@/components/common/PageHeader";
 import AuditPlanListTable from "@/components/audit/AuditPlanListTable";
-import { AuditPlanFormModalTrigger } from "@/components/audit/AuditPlanFormModal";
 import { AuditPlanService } from "@/services/audit/auditPlanService";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "แผนการตรวจสอบ - QMS" };
@@ -35,7 +37,16 @@ export default async function AuditPlansPage() {
       <PageHeader
         title="แผนการตรวจสอบ"
         subtitle="Audit Plans"
-        actions={canEdit ? <AuditPlanFormModalTrigger /> : undefined}
+        actions={
+          canEdit ? (
+            <Button asChild>
+              <Link href="/audit/plans/new">
+                <Plus className="mr-1.5 h-4 w-4" />
+                สร้างแผนใหม่
+              </Link>
+            </Button>
+          ) : undefined
+        }
       />
       <AuditPlanListTable
         initialData={initialData}

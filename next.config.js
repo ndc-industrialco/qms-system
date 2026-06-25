@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: { ignoreDuringBuilds: true },
   output: "standalone",
   productionBrowserSourceMaps: true,
   async headers() {

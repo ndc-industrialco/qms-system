@@ -6,7 +6,6 @@ import { Ban, Eye, Loader2, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ActionTone = "view" | "edit" | "delete" | "cancel";
-type ActionSize = "icon" | "pill";
 
 const toneMap: Record<ActionTone, { icon: ReactNode; className: string }> = {
   view: {

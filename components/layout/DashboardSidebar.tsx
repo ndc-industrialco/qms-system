@@ -13,12 +13,10 @@ import {
   FolderOpen,
   House,
   LayoutDashboard,
-  ListTodo,
   Megaphone,
   Search,
   Settings,
   ShieldCheck,
-  Upload,
   User,
   UserCog,
   Users,
@@ -27,6 +25,7 @@ import {
 import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 import { t } from "@/lib/i18n";
+import { useAppQuery } from "@/hooks/use-app-query";
 
 type NavItem = {
   labelTh: string;
@@ -106,12 +105,6 @@ function getSections(
       labelEn: "Audit Plans",
       href: "/audit/plans",
       icon: <Search className="h-[18px] w-[18px] shrink-0" />,
-    },
-    {
-      labelTh: "งานตรวจสอบของฉัน",
-      labelEn: "My Audit Tasks",
-      href: "/audit/my-tasks",
-      icon: <ListTodo className="h-[18px] w-[18px] shrink-0" />,
     },
     {
       labelTh: "ประกาศแต่งตั้งผู้ตรวจ",
@@ -236,6 +229,18 @@ export default function DashboardSidebar({
   const sections = getSections(role, locale);
   const signOutLabel = t("auth.signOut", locale);
 
+  const { data: pendingSummary } = useAppQuery<{ totalPending: number }>({
+    queryKey: ["approvals", "pending-summary"],
+    realtimeClass: "A",
+    queryFn: async () => {
+      const res = await fetch("/api/approvals/pending-summary");
+      if (!res.ok) return { totalPending: 0 };
+      const json = await res.json();
+      return json.data ?? { totalPending: 0 };
+    },
+  });
+  const pendingCount = pendingSummary?.totalPending ?? 0;
+
   return (
     <>
       {isOpen && (
@@ -290,6 +295,8 @@ export default function DashboardSidebar({
                   : pathname === item.href || pathname.startsWith(item.href + "/");
                 const label = locale === "en" ? item.labelEn : item.labelTh;
 
+                const showBadge = item.href === "/approve" && pendingCount > 0;
+
                 return (
                   <div key={item.href} className="relative group">
                     <Link
@@ -319,12 +326,19 @@ export default function DashboardSidebar({
                       >
                         {label}
                       </span>
-                      {isActive && (
-                        <span
-                          className="ml-auto w-1.5 h-6 rounded-full shrink-0"
-                          style={{ background: "var(--sidebar-icon-active)" }}
-                        />
-                      )}
+                      <span className="ml-auto flex items-center gap-1 shrink-0">
+                        {showBadge && (
+                          <span className="flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-red-500 px-1 text-[10px] font-bold text-white leading-none">
+                            {pendingCount > 99 ? "99+" : pendingCount}
+                          </span>
+                        )}
+                        {isActive && (
+                          <span
+                            className="w-1.5 h-6 rounded-full"
+                            style={{ background: "var(--sidebar-icon-active)" }}
+                          />
+                        )}
+                      </span>
                     </Link>
                   </div>
                 );

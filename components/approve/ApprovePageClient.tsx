@@ -57,6 +57,16 @@ type PendingAuditItem = {
   updatedAt: string;
 };
 
+type PendingAppointmentItem = {
+  id: string;
+  appointmentNo: string;
+  title: string;
+  year: number;
+  status: string;
+  updatedAt: string;
+  actionType: "REVIEW" | "APPROVE";
+};
+
 type PendingSummary = {
   totalPending: number;
   pendingDarCount: number;
@@ -66,6 +76,8 @@ type PendingSummary = {
   pendingCarSignCount: number;
   pendingAuditReviewCount: number;
   pendingAuditApproveCount: number;
+  pendingAppointmentReviewCount: number;
+  pendingAppointmentApproveCount: number;
   pendingDarItems: PendingDarItem[];
   pendingKpiReviewItems: PendingKpiItem[];
   pendingKpiApproveItems: PendingKpiItem[];
@@ -73,9 +85,11 @@ type PendingSummary = {
   pendingCarSignItems: PendingCarItem[];
   pendingAuditReviewItems: PendingAuditItem[];
   pendingAuditApproveItems: PendingAuditItem[];
+  pendingAppointmentReviewItems: PendingAppointmentItem[];
+  pendingAppointmentApproveItems: PendingAppointmentItem[];
 };
 
-type QueueModule = "dar" | "kpi" | "car" | "audit";
+type QueueModule = "dar" | "kpi" | "car" | "audit" | "appointment";
 type QueueRole = "review" | "approval" | "sign-off";
 
 type QueueItem = {
@@ -113,6 +127,8 @@ export default function ApprovePageClient({ userRole }: Props) {
         moduleKpiDesc: "Objectives and monthly KPI reports",
         moduleCarDesc: "MR review and final sign-off",
         moduleAuditDesc: "Internal and external audit plan approvals",
+        moduleAppointmentDesc: "Audit appointment letters",
+        pendingAppointment: "Appointment Pending",
       }
     : {
         pendingReview: "รอตรวจสอบ",
@@ -129,6 +145,8 @@ export default function ApprovePageClient({ userRole }: Props) {
         moduleKpiDesc: "KPI objective และรายงานรายเดือน",
         moduleCarDesc: "งาน MR review และ sign-off",
         moduleAuditDesc: "แผนการตรวจสอบภายในและภายนอก",
+        moduleAppointmentDesc: "ประกาศแต่งตั้งผู้ตรวจ",
+        pendingAppointment: "ประกาศแต่งตั้งรอดำเนินการ",
       };
 
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
@@ -279,6 +297,40 @@ export default function ApprovePageClient({ userRole }: Props) {
       });
     }
 
+    for (const item of (data.pendingAppointmentReviewItems ?? [])) {
+      items.push({
+        id: `appointment-review-${item.id}`,
+        module: "appointment",
+        role: "review",
+        title: item.appointmentNo,
+        subtitle: item.title,
+        description: `ประจำปี พ.ศ. ${item.year}`,
+        href: `/approve/audit/appointments/${item.id}/reviewer`,
+        sortDate: item.updatedAt,
+        meta: [
+          { label: "ปี", value: String(item.year) },
+          { label: t("approve.date"), value: fmtDate(item.updatedAt, locale) },
+        ],
+      });
+    }
+
+    for (const item of (data.pendingAppointmentApproveItems ?? [])) {
+      items.push({
+        id: `appointment-approve-${item.id}`,
+        module: "appointment",
+        role: "approval",
+        title: item.appointmentNo,
+        subtitle: item.title,
+        description: `ประจำปี พ.ศ. ${item.year}`,
+        href: `/approve/audit/appointments/${item.id}/approver`,
+        sortDate: item.updatedAt,
+        meta: [
+          { label: "ปี", value: String(item.year) },
+          { label: t("approve.date"), value: fmtDate(item.updatedAt, locale) },
+        ],
+      });
+    }
+
     return items.sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime());
   }, [data, locale, t]);
 
@@ -289,6 +341,7 @@ export default function ApprovePageClient({ userRole }: Props) {
       kpi: queueItems.filter((item) => item.module === "kpi").length,
       car: queueItems.filter((item) => item.module === "car").length,
       audit: queueItems.filter((item) => item.module === "audit").length,
+      appointment: queueItems.filter((item) => item.module === "appointment").length,
     }),
     [queueItems],
   );
@@ -323,7 +376,7 @@ export default function ApprovePageClient({ userRole }: Props) {
   }, [params.module, params.role, params.search, queueItems]);
 
   const groupedItems = useMemo(() => {
-    const order: QueueModule[] = ["dar", "kpi", "car", "audit"];
+    const order: QueueModule[] = ["dar", "kpi", "car", "audit", "appointment"];
     return order
       .map((module) => ({
         module,
@@ -407,6 +460,7 @@ export default function ApprovePageClient({ userRole }: Props) {
                 <ModuleChip active={params.module === "kpi"} label={t("approve.pendingKpi")} count={moduleCounts.kpi} onClick={() => setParam("module", params.module === "kpi" ? "" : "kpi")} />
                 <ModuleChip active={params.module === "car"} label={copy.pendingCar} count={moduleCounts.car} onClick={() => setParam("module", params.module === "car" ? "" : "car")} />
                 <ModuleChip active={params.module === "audit"} label={copy.pendingAudit} count={moduleCounts.audit} onClick={() => setParam("module", params.module === "audit" ? "" : "audit")} />
+                <ModuleChip active={params.module === "appointment"} label={copy.pendingAppointment} count={moduleCounts.appointment} onClick={() => setParam("module", params.module === "appointment" ? "" : "appointment")} />
               </div>
             </div>
 
@@ -438,7 +492,9 @@ export default function ApprovePageClient({ userRole }: Props) {
                             ? t("approve.pendingKpi")
                             : group.module === "car"
                               ? copy.pendingCar
-                              : copy.pendingAudit}
+                              : group.module === "appointment"
+                                ? copy.pendingAppointment
+                                : copy.pendingAudit}
                       </h3>
                       <p className="text-xs text-slate-500">
                         {group.module === "dar"
@@ -447,7 +503,9 @@ export default function ApprovePageClient({ userRole }: Props) {
                             ? copy.moduleKpiDesc
                             : group.module === "car"
                               ? copy.moduleCarDesc
-                              : copy.moduleAuditDesc}
+                              : group.module === "appointment"
+                                ? copy.moduleAppointmentDesc
+                                : copy.moduleAuditDesc}
                       </p>
                     </div>
                     <Badge variant="secondary">{group.items.length}</Badge>
@@ -556,7 +614,9 @@ function QueueCard({
         ? "bg-sky-50 text-sky-700 border-sky-200"
         : item.module === "audit"
           ? "bg-violet-50 text-violet-700 border-violet-200"
-          : "bg-rose-50 text-rose-700 border-rose-200";
+          : item.module === "appointment"
+            ? "bg-teal-50 text-teal-700 border-teal-200"
+            : "bg-rose-50 text-rose-700 border-rose-200";
 
   const roleLabel =
     item.role === "review"

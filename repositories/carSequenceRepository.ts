@@ -2,25 +2,32 @@ import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 
 export class CarSequenceRepository {
-  // Use MAX(sequenceNo)+1 so deleting the last CAR reclaims its number.
-  // Must run inside a transaction (createCar always provides one) — the
-  // serialisable snapshot prevents two concurrent creates from getting the same seq.
+  // Find the lowest sequence number not already in use for this year (gap-fill).
+  // Must run inside a transaction to prevent races between concurrent creates.
   async nextSequence(year: number, tx?: Prisma.TransactionClient): Promise<number> {
     const client = tx ?? db;
-    const result = await client.$queryRaw<[{ next: number }]>`
-      SELECT COALESCE(MAX("sequenceNo"), 0) + 1 AS next
+    const existing = await client.$queryRaw<{ seq: number }[]>`
+      SELECT "sequenceNo" AS seq
       FROM "CarMaster"
       WHERE "carYear" = ${year}
+      ORDER BY "sequenceNo"
     `;
-    return Number(result[0].next);
+    const used = new Set(existing.map((r) => Number(r.seq)));
+    let next = 1;
+    while (used.has(next)) next++;
+    return next;
   }
 
   async previewNext(year: number): Promise<number> {
-    const result = await db.$queryRaw<[{ next: number }]>`
-      SELECT COALESCE(MAX("sequenceNo"), 0) + 1 AS next
+    const existing = await db.$queryRaw<{ seq: number }[]>`
+      SELECT "sequenceNo" AS seq
       FROM "CarMaster"
       WHERE "carYear" = ${year}
+      ORDER BY "sequenceNo"
     `;
-    return Number(result[0].next);
+    const used = new Set(existing.map((r) => Number(r.seq)));
+    let next = 1;
+    while (used.has(next)) next++;
+    return next;
   }
 }

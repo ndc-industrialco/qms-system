@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
-import AuditPlanFormModal from "./AuditPlanFormModal";
 import {
   AUDIT_TYPE_LABELS,
   AUDIT_PLAN_STATUS_LABELS,
@@ -76,7 +75,7 @@ function formatDate(value: string | null | undefined) {
   return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(value));
 }
 
-export default function AuditPlanListTable({ initialData, isPrivileged = false, canEdit = false }: Props) {
+export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivileged = false, canEdit = false }: Props) {
   const [cancelTarget, setCancelTarget] = useState<AuditPlanSummary | null>(null);
 
   const cancelMutation = useCancelAuditPlan();

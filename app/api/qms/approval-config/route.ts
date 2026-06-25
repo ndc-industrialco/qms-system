@@ -6,8 +6,8 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { ApprovalConfigService } from "@/services/approvalConfigService";
 
 const updateSchema = z.object({
-  mrUserId: z.string().min(1).nullable(),
-  qmsUserId: z.string().min(1).nullable(),
+  mrUserId: z.string().min(1).nullable().optional(),
+  qmsUserId: z.string().min(1).nullable().optional(),
 });
 
 const service = new ApprovalConfigService();
@@ -24,9 +24,14 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    await requireRole("QMS", "IT", "MR");
+    const session = await requireRole("QMS", "IT", "MR");
     const parsed = updateSchema.parse(await request.json());
-    await service.updateConfig(parsed.mrUserId, parsed.qmsUserId);
+    // Only update keys that were explicitly provided in the request
+    const current = await service.getConfig(session.user.accessToken);
+    await service.updateConfig(
+      parsed.mrUserId !== undefined ? parsed.mrUserId : current.currentMrUserId,
+      parsed.qmsUserId !== undefined ? parsed.qmsUserId : current.currentQmsUserId,
+    );
     return sendSuccess(null, "Approval config updated successfully");
   } catch (error) {
     return handleApiError(error);

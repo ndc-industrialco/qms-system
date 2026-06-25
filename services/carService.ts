@@ -174,12 +174,22 @@ export class CarService {
     return null;
   }
 
-  /** Resolve the designated MR user, preferring Auth Center stable key. */
-  private async resolveMrUser(): Promise<{ authUserId: string } | null> {
+  /** Resolve the designated MR user: SystemConfig first, then fallback to first QMS_MR/MR role grant. */
+  private async resolveMrUser(): Promise<{ authUserId: string; email?: string | null } | null> {
     const authKey = await this.configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
     if (authKey) return { authUserId: authKey };
     const localKey = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID");
     if (localKey) return { authUserId: localKey };
+
+    // ponytail: fallback — no SystemConfig set, find first MR role grant from Auth Center
+    try {
+      const { listAuthCenterRoleGrants } = await import("@/lib/auth-center-admin-client");
+      const grants = await listAuthCenterRoleGrants();
+      const mrGrant = grants.find((g) => g.role === "QMS_MR" || g.role === "MR");
+      if (mrGrant) return { authUserId: mrGrant.userId, email: mrGrant.userEmail };
+    } catch (err) {
+      logger.warn("[CarService.resolveMrUser] Auth Center role grant lookup failed", { error: String(err) });
+    }
     return null;
   }
 
@@ -631,7 +641,7 @@ export class CarService {
       : responderDepartmentId === car.targetDepartmentId;
     if (!inTargetDept) throw new ForbiddenError("You do not have permission to respond to this CAR.");
 
-    const [mrEmail, mrUser, qmsEmail] = await Promise.all([
+    const [mrEmailConfig, mrUser, qmsEmail] = await Promise.all([
       this.configRepo.findValueByKey("CURRENT_MR_EMAIL"),
       this.resolveMrUser(),
       this.configRepo.findValueByKey("CURRENT_QMS_EMAIL"),
@@ -639,6 +649,7 @@ export class CarService {
     const responderSnapshot = await this.getIdentitySnapshot(responderId);
     if (!responderSnapshot) throw new ValidationError("Responder not found");
     const mrSnapshot = mrUser ? await this.getIdentitySnapshot(mrUser.authUserId) : null;
+    const mrEmail = mrEmailConfig ?? mrUser?.email ?? mrSnapshot?.email ?? null;
     const infoRecipients = [qmsEmail].filter(Boolean) as string[];
     const plannedDate = input.plannedCompletionDate;
 
@@ -743,7 +754,11 @@ export class CarService {
     const emailCc = car.targetEmailGroupsCc ?? [];
     const qmsEmail = input.action === "APPROVED" ? await this.configRepo.findValueByKey("CURRENT_QMS_EMAIL") : null;
     const approvedRecipients = [...deptEmails, ...(qmsEmail ? [qmsEmail] : [])];
-    const mrSnapshot = await this.getIdentitySnapshot(tokenData.issuedTo);
+    const [mrSnapshot, responderSnapshot] = await Promise.all([
+      this.getIdentitySnapshot(tokenData.issuedTo),
+      car.response?.responderAuthUserId ? this.getIdentitySnapshot(car.response.responderAuthUserId) : Promise.resolve(null),
+    ]);
+    const responderEmail = responderSnapshot?.email ?? null;
 
     await db.$transaction(async (tx) => {
       await this.carRepo.createMrResponseReviewAndUseToken(
@@ -783,8 +798,9 @@ export class CarService {
       sendCarPlanApprovedEmail({ carId: id, carNo: car.carNo, recipients: approvedRecipients, cc: emailCc }).catch((err) =>
         logger.error("[CarService.reviewResponseByMR] Approved email failed", err)
       );
-    } else if (input.action === "REJECTED" && deptEmails.length > 0) {
-      for (const email of deptEmails) {
+    } else if (input.action === "REJECTED") {
+      const rejectedTargets = [...new Set([...deptEmails, ...(responderEmail ? [responderEmail] : [])])];
+      for (const email of rejectedTargets) {
         sendCarPlanRejectedEmail({ carId: id, carNo: car.carNo, targetEmail: email, comment: input.comment, cc: emailCc }).catch((err) =>
           logger.error("[CarService.reviewResponseByMR] Rejected email failed", err)
         );
@@ -818,7 +834,11 @@ export class CarService {
     const emailCc = car.targetEmailGroupsCc ?? [];
     const qmsEmail = input.action === "APPROVED" ? await this.configRepo.findValueByKey("CURRENT_QMS_EMAIL") : null;
     const approvedRecipients = [...deptEmails, ...(qmsEmail ? [qmsEmail] : [])];
-    const mrSnapshot = mrAuthUserId ? await this.getIdentitySnapshot(mrAuthUserId) : null;
+    const [mrSnapshot, responderSnapshot] = await Promise.all([
+      mrAuthUserId ? this.getIdentitySnapshot(mrAuthUserId) : Promise.resolve(null),
+      car.response?.responderAuthUserId ? this.getIdentitySnapshot(car.response.responderAuthUserId) : Promise.resolve(null),
+    ]);
+    const responderEmail = responderSnapshot?.email ?? null;
 
     await db.$transaction(async (tx) => {
       await this.carRepo.createMrResponseReview(
@@ -857,8 +877,9 @@ export class CarService {
       sendCarPlanApprovedEmail({ carId: id, carNo: car.carNo, recipients: approvedRecipients, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
         logger.error("[CarService.reviewResponseByMRAuthenticated] Approved email failed", err)
       );
-    } else if (input.action === "REJECTED" && deptEmails.length > 0) {
-      for (const email of deptEmails) {
+    } else if (input.action === "REJECTED") {
+      const rejectedTargets = [...new Set([...deptEmails, ...(responderEmail ? [responderEmail] : [])])];
+      for (const email of rejectedTargets) {
         sendCarPlanRejectedEmail({ carId: id, carNo: car.carNo, targetEmail: email, comment: input.comment, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
           logger.error("[CarService.reviewResponseByMRAuthenticated] Rejected email failed", err)
         );
@@ -901,10 +922,11 @@ export class CarService {
     }
 
     let actionTokenValue: string | null = null;
-    const [mrEmail, mrUserForVerify] = await Promise.all([
+    const [mrEmailConfig, mrUserForVerify] = await Promise.all([
       input.result === "PASSED" ? this.configRepo.findValueByKey("CURRENT_MR_EMAIL") : Promise.resolve(null),
       input.result === "PASSED" ? this.resolveMrUser() : Promise.resolve(null),
     ]);
+    const mrVerifyEmailResolved = mrEmailConfig ?? mrUserForVerify?.email ?? null;
     const deptEmails = (input.result === "FAILED" && input.round === 1)
       ? (car.targetEmailGroups ?? [])
       : [];
@@ -935,8 +957,8 @@ export class CarService {
             issuedTo: mrUserForVerify.authUserId,
           });
         }
-        if (mrEmail) {
-          await this.carRepo.createNotificationLog({ carMasterId: id, type: "VERIFY_1_PASS", recipient: mrEmail }, tx);
+        if (mrVerifyEmailResolved) {
+          await this.carRepo.createNotificationLog({ carMasterId: id, type: "VERIFY_1_PASS", recipient: mrVerifyEmailResolved }, tx);
         }
       } else if (input.result === "FAILED" && input.round === 1 && deptEmails.length > 0) {
         for (const email of deptEmails) {
@@ -958,6 +980,7 @@ export class CarService {
 
     // Send emails after transaction committed (non-blocking)
     const mrVerifySnapshot = mrUserForVerify ? await this.getIdentitySnapshot(mrUserForVerify.authUserId) : null;
+    const mrEmail = mrVerifyEmailResolved ?? mrVerifySnapshot?.email ?? null;
     if (input.result === "PASSED" && actionTokenValue && mrEmail && canReceiveEmail(mrVerifySnapshot?.m365Linked)) {
       sendCarVerifyPassEmail({ carId: id, carNo: car.carNo, mrEmail, token: actionTokenValue, senderAccessToken: accessToken }).catch((err) =>
         logger.error("[CarService.verifyCar] MR email failed", err)
@@ -974,9 +997,6 @@ export class CarService {
       notifyCarUser({ recipientAuthUserId: mrUserForVerify.authUserId, event: "VERIFY_1_PASS", carNo: car.carNo, carId: id });
     } else if (input.result === "FAILED" && input.round === 1 && car.issuerAuthUserId) {
       notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "VERIFY_2_SCHEDULED", carNo: car.carNo, carId: id });
-    }
-    if (car.issuerAuthUserId && input.result === "PASSED") {
-      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "CLOSED", carNo: car.carNo, carId: id });
     }
 
     const detail = await this.carRepo.findDetailById(id);
@@ -1150,6 +1170,21 @@ export class CarService {
       sendCarReCarEmail({ carId: newId, carNo: newCarNo, targetEmail: email, originalCarNo: original.carNo, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
         logger.error("[CarService.createReCar] Email failed", err)
       );
+    }
+
+    // In-app notify dept members (same pattern as issueCar)
+    const targetDeptCode = (original as Record<string, unknown>).targetAuthDepartmentId as string | null | undefined ?? original.targetDepartmentId;
+    if (targetDeptCode && accessToken) {
+      getAuthCenterDepartmentMembers(targetDeptCode, { accessToken })
+        .then(async (deptResult) => {
+          const recipients = [...new Set((deptResult?.members ?? []).map((m) => m.id).filter(Boolean))];
+          await Promise.all(
+            recipients.map((recipientAuthUserId) =>
+              notifyCarUser({ recipientAuthUserId, event: "RE_CAR", carNo: newCarNo, carId: newId })
+            )
+          );
+        })
+        .catch((err) => logger.error("[CarService.createReCar] Department notification failed", { carId: newId, error: String(err) }));
     }
 
     return { newCarId: newId, newCarNo };

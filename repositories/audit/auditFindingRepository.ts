@@ -41,18 +41,16 @@ export class AuditFindingRepository extends BaseRepository<AuditFinding> {
    */
   async nextFindingNo(planId: string, tx?: Prisma.TransactionClient): Promise<string> {
     const client = tx ?? db;
-    const key = `AUDIT_FINDING_SEQ_${planId}`;
-
-    const result = await client.$queryRaw<[{ configValue: string }]>`
-      INSERT INTO "SystemConfig" ("configKey", "configValue", "description", "updatedAt")
-      VALUES (${key}, '1', ${'Finding sequence for audit plan ' + planId}, NOW())
-      ON CONFLICT ("configKey") DO UPDATE
-        SET "configValue" = (CAST("SystemConfig"."configValue" AS INTEGER) + 1)::TEXT,
-            "updatedAt"   = NOW()
-      RETURNING "configValue"
+    const existing = await client.$queryRaw<{ seq: number }[]>`
+      SELECT CAST(finding_no AS INTEGER) AS seq
+      FROM audit_findings
+      WHERE plan_id = ${planId}
+      ORDER BY seq
     `;
-
-    return result[0].configValue.padStart(3, "0");
+    const used = new Set(existing.map((r) => r.seq));
+    let next = 1;
+    while (used.has(next)) next++;
+    return String(next).padStart(3, "0");
   }
 
   async updateStatus(id: string, status: FindingStatus, tx?: Prisma.TransactionClient) {

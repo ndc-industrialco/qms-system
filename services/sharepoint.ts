@@ -14,6 +14,25 @@ import type { DarObjective, DarDocType } from "@/types/dar";
 import { getGraphToken } from "@/lib/graph-token";
 import { graphFetch } from "@/lib/graphFetch";
 
+// ── Token + driveId + 401 retry helper ───────────────────────────────────────
+
+// ponytail: retries once on 401 by busting token + driveId caches; needed
+// because Auth Center can issue tokens shorter than our 55-min Redis TTL.
+async function withGraph<T>(fn: (token: string, driveId: string) => Promise<T>): Promise<T> {
+  const run = async () => {
+    const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
+    return fn(token, driveId);
+  };
+  try {
+    return await run();
+  } catch (err) {
+    if (!(err instanceof Error) || !err.message.includes("401")) throw err;
+    _driveId = null;
+    await getGraphToken({ forceRefresh: true });
+    return run();
+  }
+}
+
 // ── Drive resolution ──────────────────────────────────────────────────────────
 
 let _driveId: string | null = null;
@@ -27,8 +46,8 @@ async function getDriveId(): Promise<string> {
   }
 
   // Fall back to site's default document library drive
-  const token = await getGraphToken();
   const siteId = process.env.SHAREPOINT_SITE_ID;
+  const token = await getGraphToken();
   const res = await graphFetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drive`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -152,24 +171,20 @@ export async function uploadFileToDar(opts: {
   objective: DarObjective;
   docType: DarDocType;
 }): Promise<SpUploadResult> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const folderPath = buildFolderPath({
-    departmentName: opts.departmentName,
-    objective: opts.objective,
-    docType: opts.docType,
+  return withGraph(async (token, driveId) => {
+    const folderPath = buildFolderPath({
+      departmentName: opts.departmentName,
+      objective: opts.objective,
+      docType: opts.docType,
+    });
+    const folderId = await ensureFolderPath(driveId, token, folderPath);
+    const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+    const uploadName = `${opts.darNo}_${safeBase}`;
+    if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+      return simpleUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+    }
+    return resumableUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
   });
-
-  const folderId = await ensureFolderPath(driveId, token, folderPath);
-
-  // Sanitise file name: prefix with DAR number for uniqueness
-  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
-  const uploadName = `${opts.darNo}_${safeBase}`;
-
-  // Use simple upload for files ≤ 4 MB, resumable session for larger files
-  if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
-    return simpleUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
-  }
-  return resumableUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
 }
 
 interface UploadOpts {
@@ -273,15 +288,16 @@ export async function uploadFileToCarResponse(opts: {
   mimeType: string;
   carNo: string;
 }): Promise<SpUploadResult> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const folderPath = `CAR/${opts.carNo.replace(/[/\\:*?"<>|]/g, "_")}`;
-  const folderId = await ensureFolderPath(driveId, token, folderPath);
-  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
-  const uploadName = `${opts.carNo}_${safeBase}`;
-  if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
-    return simpleUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
-  }
-  return resumableUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+  return withGraph(async (token, driveId) => {
+    const folderPath = `CAR/${opts.carNo.replace(/[/\\:*?"<>|]/g, "_")}`;
+    const folderId = await ensureFolderPath(driveId, token, folderPath);
+    const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+    const uploadName = `${opts.carNo}_${safeBase}`;
+    if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+      return simpleUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+    }
+    return resumableUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+  });
 }
 
 // ── Temp upload (before DAR exists) ──────────────────────────────────────────
@@ -300,16 +316,15 @@ export async function uploadFileToTemp(opts: {
   mimeType: string;
   tempId: string; // uuid generated client-side per form session
 }): Promise<TempUploadResult> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const folderPath = `DAR/_temp/${opts.tempId}`;
-  const folderId = await ensureFolderPath(driveId, token, folderPath);
-  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
-
-  const result = opts.fileBuffer.length <= 4 * 1024 * 1024
-    ? await simpleUpload({ token, driveId, folderId, uploadName: safeBase, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath })
-    : await resumableUpload({ token, driveId, folderId, uploadName: safeBase, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
-
-  return { spItemId: result.spItemId, spWebUrl: result.spWebUrl, spDownloadUrl: result.spDownloadUrl, folderPath, driveId };
+  return withGraph(async (token, driveId) => {
+    const folderPath = `DAR/_temp/${opts.tempId}`;
+    const folderId = await ensureFolderPath(driveId, token, folderPath);
+    const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+    const result = opts.fileBuffer.length <= 4 * 1024 * 1024
+      ? await simpleUpload({ token, driveId, folderId, uploadName: safeBase, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath })
+      : await resumableUpload({ token, driveId, folderId, uploadName: safeBase, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+    return { spItemId: result.spItemId, spWebUrl: result.spWebUrl, spDownloadUrl: result.spDownloadUrl, folderPath, driveId };
+  });
 }
 
 // Move a SharePoint item into a target folder (by folder item id).
@@ -319,27 +334,27 @@ export async function moveSpItem(opts: {
   targetFolderPath: string;
   newName: string;
 }): Promise<{ spWebUrl: string; spDownloadUrl: string }> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const targetFolderId = await ensureFolderPath(driveId, token, opts.targetFolderPath);
-
-  const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${opts.spItemId}`, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: opts.newName,
-      parentReference: { id: targetFolderId },
-      "@microsoft.graph.conflictBehavior": "rename",
-    }),
+  return withGraph(async (token, driveId) => {
+    const targetFolderId = await ensureFolderPath(driveId, token, opts.targetFolderPath);
+    const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${opts.spItemId}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: opts.newName,
+        parentReference: { id: targetFolderId },
+        "@microsoft.graph.conflictBehavior": "rename",
+      }),
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`Graph PATCH (move) item ${res.status}: ${t}`);
+    }
+    const item = await res.json() as { webUrl: string; "@microsoft.graph.downloadUrl"?: string };
+    return {
+      spWebUrl: item.webUrl,
+      spDownloadUrl: item["@microsoft.graph.downloadUrl"] ?? item.webUrl,
+    };
   });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`Graph PATCH (move) item ${res.status}: ${t}`);
-  }
-  const item = await res.json() as { webUrl: string; "@microsoft.graph.downloadUrl"?: string };
-  return {
-    spWebUrl: item.webUrl,
-    spDownloadUrl: item["@microsoft.graph.downloadUrl"] ?? item.webUrl,
-  };
 }
 
 // Rename an existing SharePoint item in place.
@@ -347,59 +362,60 @@ export async function renameSpItem(opts: {
   spItemId: string;
   newName: string;
 }): Promise<{ name: string; spWebUrl: string; spDownloadUrl: string }> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-
-  const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${opts.spItemId}`, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: opts.newName,
-      "@microsoft.graph.conflictBehavior": "rename",
-    }),
+  return withGraph(async (token, driveId) => {
+    const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${opts.spItemId}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: opts.newName,
+        "@microsoft.graph.conflictBehavior": "rename",
+      }),
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`Graph PATCH (rename) item ${res.status}: ${t}`);
+    }
+    const item = await res.json() as { name: string; webUrl: string; "@microsoft.graph.downloadUrl"?: string };
+    return {
+      name: item.name,
+      spWebUrl: item.webUrl,
+      spDownloadUrl: item["@microsoft.graph.downloadUrl"] ?? item.webUrl,
+    };
   });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`Graph PATCH (rename) item ${res.status}: ${t}`);
-  }
-
-  const item = await res.json() as { name: string; webUrl: string; "@microsoft.graph.downloadUrl"?: string };
-  return {
-    name: item.name,
-    spWebUrl: item.webUrl,
-    spDownloadUrl: item["@microsoft.graph.downloadUrl"] ?? item.webUrl,
-  };
 }
 
 // Delete temp folder entirely (best-effort)
 export async function deleteTempFolder(tempId: string): Promise<void> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const folderPath = `DAR/_temp/${tempId}`;
-  const encodedPath = folderPath.split("/").map(encodeURIComponent).join("/");
-  const getRes = await graphFetch(
-    `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedPath}?$select=id`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
-  if (!getRes.ok) return; // already gone or never existed
-  const { id } = await getRes.json() as { id: string };
-  await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+  return withGraph(async (token, driveId) => {
+    const folderPath = `DAR/_temp/${tempId}`;
+    const encodedPath = folderPath.split("/").map(encodeURIComponent).join("/");
+    const getRes = await graphFetch(
+      `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedPath}?$select=id`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!getRes.ok) return; // already gone or never existed
+    const { id } = await getRes.json() as { id: string };
+    await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
   });
 }
 
 // ── Delete file ───────────────────────────────────────────────────────────────
 
 export async function deleteSpItem(spItemId: string): Promise<void> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${spItemId}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+  return withGraph(async (token, driveId) => {
+    const res = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${spItemId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    // 204 = success, 404 = already gone — both are fine
+    if (!res.ok && res.status !== 404) {
+      const t = await res.text();
+      throw new Error(`Graph DELETE item ${res.status}: ${t}`);
+    }
   });
-  // 204 = success, 404 = already gone — both are fine
-  if (!res.ok && res.status !== 404) {
-    const t = await res.text();
-    throw new Error(`Graph DELETE item ${res.status}: ${t}`);
-  }
 }
 
 // ── Document Control Upload ───────────────────────────────────────────────────
@@ -413,35 +429,15 @@ export async function uploadFileToDocControl(opts: {
   docNumber: string;
   revision?: string;
 }): Promise<SpUploadResult> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const folderPath = buildDocControlDocumentFolderPath(opts.deptName, opts.categoryName, opts.docNumber, opts.revision);
-
-  const folderId = await ensureFolderPath(driveId, token, folderPath);
-
-  // Sanitise file name: prefix with document number for uniqueness
-  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
-  const uploadName = `${opts.docNumber}_${safeBase}`;
-
-  // Use simple upload for files ≤ 4 MB, resumable session for larger files
-  if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
-    return simpleUpload({
-      token,
-      driveId,
-      folderId,
-      uploadName,
-      fileBuffer: opts.fileBuffer,
-      mimeType: opts.mimeType,
-      folderPath,
-    });
-  }
-  return resumableUpload({
-    token,
-    driveId,
-    folderId,
-    uploadName,
-    fileBuffer: opts.fileBuffer,
-    mimeType: opts.mimeType,
-    folderPath,
+  return withGraph(async (token, driveId) => {
+    const folderPath = buildDocControlDocumentFolderPath(opts.deptName, opts.categoryName, opts.docNumber, opts.revision);
+    const folderId = await ensureFolderPath(driveId, token, folderPath);
+    const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+    const uploadName = `${opts.docNumber}_${safeBase}`;
+    if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+      return simpleUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+    }
+    return resumableUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
   });
 }
 
@@ -453,32 +449,15 @@ export async function uploadFileToKpiMonthly(opts: {
   year: number;
   month: string;
 }): Promise<SpUploadResult> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const folderPath = `KPI Monthly/${sanitizeFolderSegment(opts.departmentName)}/${opts.year}/${sanitizeFolderSegment(opts.month)}`;
-  const folderId = await ensureFolderPath(driveId, token, folderPath);
-  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
-  const uploadName = `${opts.year}_${opts.month}_${safeBase}`;
-
-  if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
-    return simpleUpload({
-      token,
-      driveId,
-      folderId,
-      uploadName,
-      fileBuffer: opts.fileBuffer,
-      mimeType: opts.mimeType,
-      folderPath,
-    });
-  }
-
-  return resumableUpload({
-    token,
-    driveId,
-    folderId,
-    uploadName,
-    fileBuffer: opts.fileBuffer,
-    mimeType: opts.mimeType,
-    folderPath,
+  return withGraph(async (token, driveId) => {
+    const folderPath = `KPI Monthly/${sanitizeFolderSegment(opts.departmentName)}/${opts.year}/${sanitizeFolderSegment(opts.month)}`;
+    const folderId = await ensureFolderPath(driveId, token, folderPath);
+    const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+    const uploadName = `${opts.year}_${opts.month}_${safeBase}`;
+    if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+      return simpleUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+    }
+    return resumableUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
   });
 }
 
@@ -508,37 +487,20 @@ export async function uploadFileToAudit(opts: {
   mimeType: string;
   planId: string;
 }): Promise<SpUploadResult> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
-  const safePlanId = opts.planId.replace(/[^a-zA-Z0-9_-]/g, "_");
-  const folderPath = `Audit/${safePlanId}`;
-  const folderId = await ensureFolderPath(driveId, token, folderPath);
-
-  if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
-    return simpleUpload({
-      token,
-      driveId,
-      folderId,
-      uploadName: safeBase,
-      fileBuffer: opts.fileBuffer,
-      mimeType: opts.mimeType,
-      folderPath,
-    });
-  }
-  return resumableUpload({
-    token,
-    driveId,
-    folderId,
-    uploadName: safeBase,
-    fileBuffer: opts.fileBuffer,
-    mimeType: opts.mimeType,
-    folderPath,
+  return withGraph(async (token, driveId) => {
+    const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+    const safePlanId = opts.planId.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const folderPath = `Audit/${safePlanId}`;
+    const folderId = await ensureFolderPath(driveId, token, folderPath);
+    if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+      return simpleUpload({ token, driveId, folderId, uploadName: safeBase, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+    }
+    return resumableUpload({ token, driveId, folderId, uploadName: safeBase, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
   });
 }
 
 export async function ensureSpFolder(folderPath: string): Promise<void> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  await ensureFolderPath(driveId, token, folderPath);
+  return withGraph((token, driveId) => ensureFolderPath(driveId, token, folderPath).then(() => undefined));
 }
 
 export async function moveSpFolderByPath(opts: {
@@ -546,55 +508,56 @@ export async function moveSpFolderByPath(opts: {
   targetParentPath: string;
   newFolderName?: string;
 }): Promise<{ movedFolderPath: string }> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const sourceEncoded = opts.sourceFolderPath.split("/").map(encodeURIComponent).join("/");
-  const sourceRes = await graphFetch(
-    `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${sourceEncoded}?$select=id,name`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
-  if (!sourceRes.ok) {
-    const t = await sourceRes.text();
-    throw new Error(`Graph GET source folder ${sourceRes.status}: ${t}`);
-  }
-  const source = await sourceRes.json() as { id: string; name: string };
-  const targetParentId = await ensureFolderPath(driveId, token, opts.targetParentPath);
-  const newName = opts.newFolderName ?? source.name;
-
-  const patchRes = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${source.id}`, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: newName,
-      parentReference: { id: targetParentId },
-      "@microsoft.graph.conflictBehavior": "rename",
-    }),
+  return withGraph(async (token, driveId) => {
+    const sourceEncoded = opts.sourceFolderPath.split("/").map(encodeURIComponent).join("/");
+    const sourceRes = await graphFetch(
+      `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${sourceEncoded}?$select=id,name`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!sourceRes.ok) {
+      const t = await sourceRes.text();
+      throw new Error(`Graph GET source folder ${sourceRes.status}: ${t}`);
+    }
+    const source = await sourceRes.json() as { id: string; name: string };
+    const targetParentId = await ensureFolderPath(driveId, token, opts.targetParentPath);
+    const newName = opts.newFolderName ?? source.name;
+    const patchRes = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${source.id}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: newName,
+        parentReference: { id: targetParentId },
+        "@microsoft.graph.conflictBehavior": "rename",
+      }),
+    });
+    if (!patchRes.ok) {
+      const t = await patchRes.text();
+      throw new Error(`Graph PATCH (move folder) ${patchRes.status}: ${t}`);
+    }
+    return { movedFolderPath: `${opts.targetParentPath}/${newName}` };
   });
-  if (!patchRes.ok) {
-    const t = await patchRes.text();
-    throw new Error(`Graph PATCH (move folder) ${patchRes.status}: ${t}`);
-  }
-  return { movedFolderPath: `${opts.targetParentPath}/${newName}` };
 }
 
 export async function deleteSpFolderByPath(folderPath: string): Promise<void> {
-  const [token, driveId] = await Promise.all([getGraphToken(), getDriveId()]);
-  const encodedPath = folderPath.split("/").map(encodeURIComponent).join("/");
-  const getRes = await fetch(
-    `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedPath}?$select=id`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
-  if (!getRes.ok) {
-    if (getRes.status === 404) return;
-    const t = await getRes.text();
-    throw new Error(`Graph GET folder before delete ${getRes.status}: ${t}`);
-  }
-  const { id } = await getRes.json() as { id: string };
-  const delRes = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+  return withGraph(async (token, driveId) => {
+    const encodedPath = folderPath.split("/").map(encodeURIComponent).join("/");
+    const getRes = await fetch(
+      `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedPath}?$select=id`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!getRes.ok) {
+      if (getRes.status === 404) return;
+      const t = await getRes.text();
+      throw new Error(`Graph GET folder before delete ${getRes.status}: ${t}`);
+    }
+    const { id } = await getRes.json() as { id: string };
+    const delRes = await graphFetch(`https://graph.microsoft.com/v1.0/drives/${driveId}/items/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!delRes.ok && delRes.status !== 404) {
+      const t = await delRes.text();
+      throw new Error(`Graph DELETE folder ${delRes.status}: ${t}`);
+    }
   });
-  if (!delRes.ok && delRes.status !== 404) {
-    const t = await delRes.text();
-    throw new Error(`Graph DELETE folder ${delRes.status}: ${t}`);
-  }
 }

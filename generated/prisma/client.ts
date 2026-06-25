@@ -207,6 +207,26 @@ export type AuditAppointmentMember = Prisma.AuditAppointmentMemberModel
  */
 export type AuditAppointmentSignoff = Prisma.AuditAppointmentSignoffModel
 /**
+ * Model AuditSessionPlan
+ * 
+ */
+export type AuditSessionPlan = Prisma.AuditSessionPlanModel
+/**
+ * Model AuditSessionRow
+ * 
+ */
+export type AuditSessionRow = Prisma.AuditSessionRowModel
+/**
+ * Model AuditSessionTeamMember
+ * 
+ */
+export type AuditSessionTeamMember = Prisma.AuditSessionTeamMemberModel
+/**
+ * Model AuditGanttRow
+ * 
+ */
+export type AuditGanttRow = Prisma.AuditGanttRowModel
+/**
  * Model AuditPlan
  * 
  */

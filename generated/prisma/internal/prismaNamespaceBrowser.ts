@@ -84,6 +84,10 @@ export const ModelName = {
   AuditAppointment: 'AuditAppointment',
   AuditAppointmentMember: 'AuditAppointmentMember',
   AuditAppointmentSignoff: 'AuditAppointmentSignoff',
+  AuditSessionPlan: 'AuditSessionPlan',
+  AuditSessionRow: 'AuditSessionRow',
+  AuditSessionTeamMember: 'AuditSessionTeamMember',
+  AuditGanttRow: 'AuditGanttRow',
   AuditPlan: 'AuditPlan',
   AuditStandard: 'AuditStandard',
   AuditPlanDepartment: 'AuditPlanDepartment',
@@ -703,6 +707,7 @@ export const AuditAppointmentScalarFieldEnum = {
   approverNameSnapshot: 'approverNameSnapshot',
   emailGroupMails: 'emailGroupMails',
   emailGroupMailsCc: 'emailGroupMailsCc',
+  ownerSignaturePath: 'ownerSignaturePath',
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -736,6 +741,56 @@ export const AuditAppointmentSignoffScalarFieldEnum = {
 } as const
 
 export type AuditAppointmentSignoffScalarFieldEnum = (typeof AuditAppointmentSignoffScalarFieldEnum)[keyof typeof AuditAppointmentSignoffScalarFieldEnum]
+
+
+export const AuditSessionPlanScalarFieldEnum = {
+  id: 'id',
+  appointmentId: 'appointmentId',
+  reviseNo: 'reviseNo',
+  reviseDate: 'reviseDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AuditSessionPlanScalarFieldEnum = (typeof AuditSessionPlanScalarFieldEnum)[keyof typeof AuditSessionPlanScalarFieldEnum]
+
+
+export const AuditSessionRowScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  orderIndex: 'orderIndex',
+  auditDate: 'auditDate',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  department: 'department',
+  remark: 'remark'
+} as const
+
+export type AuditSessionRowScalarFieldEnum = (typeof AuditSessionRowScalarFieldEnum)[keyof typeof AuditSessionRowScalarFieldEnum]
+
+
+export const AuditSessionTeamMemberScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  role: 'role',
+  name: 'name',
+  authUserId: 'authUserId'
+} as const
+
+export type AuditSessionTeamMemberScalarFieldEnum = (typeof AuditSessionTeamMemberScalarFieldEnum)[keyof typeof AuditSessionTeamMemberScalarFieldEnum]
+
+
+export const AuditGanttRowScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  orderIndex: 'orderIndex',
+  department: 'department',
+  processes: 'processes',
+  planWeeks: 'planWeeks',
+  actualWeeks: 'actualWeeks'
+} as const
+
+export type AuditGanttRowScalarFieldEnum = (typeof AuditGanttRowScalarFieldEnum)[keyof typeof AuditGanttRowScalarFieldEnum]
 
 
 export const AuditPlanScalarFieldEnum = {

@@ -46,6 +46,16 @@ type PendingAuditItem = {
   updatedAt: string;
 };
 
+type PendingAppointmentItem = {
+  id: string;
+  appointmentNo: string;
+  title: string;
+  year: number;
+  status: string;
+  updatedAt: string;
+  actionType: "REVIEW" | "APPROVE";
+};
+
 export type PendingApprovalSummary = {
   totalPending: number;
   pendingDarCount: number;
@@ -64,6 +74,8 @@ export type PendingApprovalSummary = {
   pendingCarSignItems: PendingCarItem[];
   pendingAuditReviewItems: PendingAuditItem[];
   pendingAuditApproveItems: PendingAuditItem[];
+  pendingAppointmentReviewItems: PendingAppointmentItem[];
+  pendingAppointmentApproveItems: PendingAppointmentItem[];
 };
 
 export class ApprovalsService {
@@ -102,6 +114,8 @@ export class ApprovalsService {
       pendingAuditApproveRaw,
       pendingAppointmentReviewCount,
       pendingAppointmentApproveCount,
+      pendingAppointmentReviewRaw,
+      pendingAppointmentApproveRaw,
     ] = await Promise.all([
       this.darRepo.countPendingApprovalsByUser(userId, authUserId),
       this.darRepo.findPendingApprovalsByUser(userId, authUserId, 10),
@@ -127,6 +141,22 @@ export class ApprovalsService {
       auditId
         ? db.auditAppointment.count({ where: { status: "PENDING_APPROVAL", approverAuthUserId: auditId } })
         : Promise.resolve(0),
+      auditId
+        ? db.auditAppointment.findMany({
+            where: { status: "PENDING_REVIEW", reviewerAuthUserId: auditId },
+            orderBy: { updatedAt: "desc" },
+            take: 10,
+            select: { id: true, appointmentNo: true, title: true, year: true, status: true, updatedAt: true },
+          })
+        : Promise.resolve([]),
+      auditId
+        ? db.auditAppointment.findMany({
+            where: { status: "PENDING_APPROVAL", approverAuthUserId: auditId },
+            orderBy: { updatedAt: "desc" },
+            take: 10,
+            select: { id: true, appointmentNo: true, title: true, year: true, status: true, updatedAt: true },
+          })
+        : Promise.resolve([]),
     ]);
 
     const pendingDarItems: PendingDarItem[] = pendingDarItemsRaw.map((row) => ({
@@ -226,6 +256,26 @@ export class ApprovalsService {
       updatedAt: row.updatedAt.toISOString(),
     }));
 
+    const pendingAppointmentReviewItems: PendingAppointmentItem[] = pendingAppointmentReviewRaw.map((row) => ({
+      id: row.id,
+      appointmentNo: row.appointmentNo,
+      title: row.title,
+      year: row.year,
+      status: row.status,
+      updatedAt: row.updatedAt.toISOString(),
+      actionType: "REVIEW",
+    }));
+
+    const pendingAppointmentApproveItems: PendingAppointmentItem[] = pendingAppointmentApproveRaw.map((row) => ({
+      id: row.id,
+      appointmentNo: row.appointmentNo,
+      title: row.title,
+      year: row.year,
+      status: row.status,
+      updatedAt: row.updatedAt.toISOString(),
+      actionType: "APPROVE",
+    }));
+
     return {
       totalPending:
         pendingDarCount +
@@ -253,6 +303,8 @@ export class ApprovalsService {
       pendingCarSignItems,
       pendingAuditReviewItems,
       pendingAuditApproveItems,
+      pendingAppointmentReviewItems,
+      pendingAppointmentApproveItems,
     };
   }
 }

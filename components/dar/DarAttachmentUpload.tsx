@@ -442,44 +442,51 @@ export default function DarAttachmentUpload(props: Props) {
   }, [tempItems, props.mode]);
 
   const uploadMutation = useMutation({
-    mutationFn: async (files: FileList) => {
-      const results = [];
-      for (const file of Array.from(files)) {
+    mutationFn: async (files: File[]) => {
+      const succeeded: Array<{ kind: "saved"; data: DarAttachmentRow } | { kind: "temp"; data: TempItem }> = [];
+      const errors: string[] = [];
+      await Promise.all(files.map(async (file) => {
         const form = new FormData();
         form.append("file", file);
-        if (props.mode === "saved") {
-          const res = await fetch(`/api/dar/${props.darId}/attachments`, { method: "POST", body: form });
-          const json = await res.json();
-          if (!res.ok || json.error) throw new Error(json.error || "อัปโหลดล้มเหลว");
-          results.push({ kind: "saved" as const, data: json.data as DarAttachmentRow });
-        } else {
-          const res = await fetch(`/api/dar/attachments/temp?tempId=${props.tempId}`, { method: "POST", body: form });
-          const json = await res.json();
-          if (!res.ok || json.error) throw new Error(json.error || "อัปโหลดล้มเหลว");
-          const item: TempItem = { ...json.data as TempAttachmentInput, _localId: crypto.randomUUID() };
-          results.push({ kind: "temp" as const, data: item });
+        try {
+          if (props.mode === "saved") {
+            const res = await fetch(`/api/dar/${props.darId}/attachments`, { method: "POST", body: form });
+            const json = await res.json();
+            if (!res.ok || json.error) throw new Error(json.error || "อัปโหลดล้มเหลว");
+            succeeded.push({ kind: "saved", data: json.data as DarAttachmentRow });
+          } else {
+            const res = await fetch(`/api/dar/attachments/temp?tempId=${props.tempId}`, { method: "POST", body: form });
+            const json = await res.json();
+            if (!res.ok || json.error) throw new Error(json.error || "อัปโหลดล้มเหลว");
+            const item: TempItem = { ...json.data as TempAttachmentInput, _localId: crypto.randomUUID() };
+            succeeded.push({ kind: "temp", data: item });
+          }
+        } catch (e) {
+          errors.push(`"${file.name}": ${e instanceof Error ? e.message : "อัปโหลดล้มเหลว"}`);
         }
-      }
-      return results;
+      }));
+      return { succeeded, errors };
     },
-    onSuccess: (results) => {
-      results.forEach((r) => {
+    onSuccess: ({ succeeded, errors }) => {
+      succeeded.forEach((r) => {
         if (r.kind === "saved") setSavedItems((prev) => [...prev, r.data as DarAttachmentRow]);
         else setTempItems((prev) => [...prev, r.data as TempItem]);
       });
+      if (errors.length) setError(errors.join("\n"));
     },
-    onError: (err) => setError(err.message),
+    onError: (err) => setError(err instanceof Error ? err.message : "อัปโหลดล้มเหลว"),
   });
 
-  async function handleFiles(files: FileList) {
+  function handleFiles(files: FileList) {
     setError(null);
+    const toUpload: File[] = [];
+    const sizeErrors: string[] = [];
     for (const file of Array.from(files)) {
-      if (file.size > MAX_MB * 1024 * 1024) {
-        setError(`"${file.name}" มีขนาดเกิน ${MAX_MB} MB`);
-        return;
-      }
+      if (file.size > MAX_MB * 1024 * 1024) sizeErrors.push(`"${file.name}" มีขนาดเกิน ${MAX_MB} MB`);
+      else toUpload.push(file);
     }
-    uploadMutation.mutate(files);
+    if (sizeErrors.length) setError(sizeErrors.join("\n"));
+    if (toUpload.length) uploadMutation.mutate(toUpload);
   }
 
   const deleteMutation = useMutation({

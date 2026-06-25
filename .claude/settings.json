@@ -3,7 +3,20 @@
     "allow": [
       "Bash(xargs grep -l \"kpi\\\\|KPI\")",
       "Bash(redis-cli DEL graph:app_token graph:app_token:lock)",
-      "PowerShell(Get-Command redis-cli -ErrorAction SilentlyContinue)"
+      "PowerShell(Get-Command redis-cli -ErrorAction SilentlyContinue)",
+      "Bash(xargs grep -l \"AuditAppointmentApproveClient\")",
+      "Bash(curl -s \"http://localhost:5556\")",
+      "Bash(mkdir -p \"d:/NDC_042/NextJS/qms-system/app/api/audit/appointments/[id]/session-plan\")",
+      "Bash(mkdir -p \"d:/NDC_042/NextJS/qms-system/app/\\(dashboard\\)/audit/appointments/[id]/session-plan\")",
+      "Bash(mkdir -p \"d:/NDC_042/NextJS/qms-system/app/\\(dashboard\\)/audit/session-plans/[planId]\")",
+      "Bash(mkdir -p \"d:/NDC_042/NextJS/qms-system/app/api/audit/session-plans/[planId]\")",
+      "Bash(DATABASE_URL=\"postgresql://itdev:DEVNDCPassw7rd@172.26.200.198:5432/dev-qms-system?schema=public\" npx prisma db execute --stdin)",
+      "Skill(code-review)",
+      "Skill(code-review:*)"
+    ],
+    "additionalDirectories": [
+      "d:\\NDC_042\\NextJS\\qms-system\\app\\api\\audit\\appointments\\[id]",
+      "d:\\NDC_042\\NextJS\\qms-system\\app\\(dashboard)\\audit\\appointments\\[id]"
     ]
   }
 }

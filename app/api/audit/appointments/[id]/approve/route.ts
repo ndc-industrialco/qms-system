@@ -7,12 +7,13 @@ import { type NextRequest } from "next/server";
 const svc = new AuditAppointmentService();
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await requireAuth();
     const { id } = await params;
+    const body = await req.json().catch(() => ({}));
 
     const appt = await svc.approve(id, {
       userId: session.user.id,
@@ -21,6 +22,10 @@ export async function POST(
       nameSnapshot: session.user.name,
       email: session.user.email,
       accessToken: session.user.accessToken,
+    }, {
+      signatureDataUrl: body?.signatureDataUrl ?? null,
+      signatureType: body?.signatureType ?? null,
+      saveSignature: body?.saveSignature ?? false,
     });
 
     return sendSuccess(appt, "Appointment approved and published");

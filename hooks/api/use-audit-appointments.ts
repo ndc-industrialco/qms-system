@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AuditAppointmentRow } from "@/types/audit";
-import type { AuditAppointmentCreateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
+import type { AuditAppointmentCreateInput, AuditAppointmentUpdateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
 
 export type AuditMemberUser = {
   id: string;
@@ -53,8 +53,34 @@ async function createAppointment(input: AuditAppointmentCreateInput): Promise<Au
   return json.data;
 }
 
-async function submitAppointment(id: string): Promise<AuditAppointmentRow> {
-  const res = await fetch(`/api/audit/appointments/${id}/submit`, { method: "POST" });
+async function updateAppointment(id: string, input: AuditAppointmentUpdateInput): Promise<AuditAppointmentRow> {
+  const res = await fetch(`/api/audit/appointments/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error((json as { error?: { message?: string } }).error?.message ?? "Failed to update appointment");
+  }
+  const json = await res.json();
+  return json.data;
+}
+
+async function deleteAppointment(id: string): Promise<void> {
+  const res = await fetch(`/api/audit/appointments/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error((json as { error?: { message?: string } }).error?.message ?? "Failed to delete appointment");
+  }
+}
+
+async function submitAppointment(id: string, ownerSignatureDataUrl?: string): Promise<AuditAppointmentRow> {
+  const res = await fetch(`/api/audit/appointments/${id}/submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ownerSignatureDataUrl }),
+  });
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
     throw new Error(
@@ -134,11 +160,34 @@ export function useCreateAuditAppointment() {
   });
 }
 
+export function useUpdateAuditAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: AuditAppointmentUpdateInput }) =>
+      updateAppointment(id, input),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: auditAppointmentKeys.all });
+      qc.invalidateQueries({ queryKey: auditAppointmentKeys.detail(id) });
+    },
+  });
+}
+
+export function useDeleteAuditAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteAppointment(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: auditAppointmentKeys.all });
+    },
+  });
+}
+
 export function useSubmitAuditAppointment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => submitAppointment(id),
-    onSuccess: (_data, id) => {
+    mutationFn: ({ id, ownerSignatureDataUrl }: { id: string; ownerSignatureDataUrl?: string }) =>
+      submitAppointment(id, ownerSignatureDataUrl),
+    onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: auditAppointmentKeys.all });
       qc.invalidateQueries({ queryKey: auditAppointmentKeys.detail(id) });
     },
@@ -177,6 +226,17 @@ export function useAuditMemberUsers() {
       return json.data ?? [];
     },
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useResendAuditNotification() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/audit/appointments/${id}/resend-notification`, { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((json as { error?: { message?: string } }).error?.message ?? "Failed to resend");
+      return (json as { message?: string }).message ?? "Sent";
+    },
   });
 }
 

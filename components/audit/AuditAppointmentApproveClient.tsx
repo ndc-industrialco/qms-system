@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  CheckCircle2,
   ClipboardCheck,
   ChevronRight,
   RotateCcw,
@@ -21,6 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
 import type { AuditAppointmentRow } from "@/types/audit";
 
 const MEMBER_ROLE_LABELS: Record<string, string> = {
@@ -43,6 +43,7 @@ type Props = {
 
 export function AuditAppointmentApproveClient({ appt, mode }: Props) {
   const router = useRouter();
+  const [sigOpen, setSigOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -59,12 +60,17 @@ export function AuditAppointmentApproveClient({ appt, mode }: Props) {
     bannerSub: isReviewer ? "Pending Review" : "Pending Approval",
     actionLabel: isReviewer ? "ตรวจสอบและลงนาม" : "อนุมัติและลงนาม",
     actionLabelEn: isReviewer ? "Review & Sign" : "Approve & Sign",
+    sigDialogTitle: isReviewer ? "ลงนามตรวจสอบ" : "ลงนามอนุมัติ",
   };
 
-  async function handleSign() {
+  async function handleSign(payload: { signatureDataUrl: string; signatureType: string; saveSignature: boolean }) {
     setSubmitting(true);
     try {
-      const res = await fetch(endpoint, { method: "POST" });
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error((json as { error?: { message?: string } }).error?.message ?? "Action failed");
       setSuccessOpen(true);
@@ -100,67 +106,135 @@ export function AuditAppointmentApproveClient({ appt, mode }: Props) {
   const expectedStatus = isReviewer ? "PENDING_REVIEW" : "PENDING_APPROVAL";
   const alreadyActioned = appt.status !== expectedStatus;
 
+  // Timeline steps — always 3 slots: owner (preparer), reviewer, approver
+  const TIMELINE_STEPS = [
+    {
+      key: "OWNER",
+      label: "ผู้จัดทำ",
+      name: appt.ownerNameSnapshot,
+      signedRole: "OWNER",
+      signaturePath: appt.ownerSignaturePath,
+      signedAt: null as string | null,
+      done: true, // owner always signed (submitted)
+    },
+    {
+      key: "REVIEWER",
+      label: "ผู้ตรวจสอบ",
+      name: appt.reviewerNameSnapshot,
+      ...(() => {
+        const s = appt.signoffs.find((x) => x.signedRole === "REVIEWER");
+        return { signaturePath: s?.signaturePath ?? null, signedAt: s?.signedAt ?? null, done: !!s };
+      })(),
+    },
+    {
+      key: "APPROVER",
+      label: "ผู้อนุมัติ",
+      name: appt.approverNameSnapshot,
+      ...(() => {
+        const s = appt.signoffs.find((x) => x.signedRole === "APPROVER");
+        return { signaturePath: s?.signaturePath ?? null, signedAt: s?.signedAt ?? null, done: !!s };
+      })(),
+    },
+  ];
+
   const ActionPanel = (
-    <div className="rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
-      {alreadyActioned ? (
-        <div className="rounded-lg border border-muted bg-muted/30 p-6 text-center">
-          <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-emerald-500" />
-          <p className="text-sm font-medium">ดำเนินการแล้ว / Already Actioned</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            ประกาศนี้ได้รับการดำเนินการแล้ว สถานะปัจจุบัน:{" "}
-            <span className="font-semibold">{appt.status}</span>
-          </p>
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
         </div>
-      ) : null}
-      {!alreadyActioned && appt.signoffs.length > 0 && (
-        <div className="p-5 border-b border-slate-100">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">ประวัติการลงนาม</p>
-          <div className="space-y-3">
-            {appt.signoffs.map((s, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="mt-0.5 w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <h2 className="text-sm font-bold text-slate-800">ขั้นตอนการอนุมัติ</h2>
+      </div>
+
+      {/* Timeline */}
+      <div className="p-6 flex flex-col">
+        {TIMELINE_STEPS.map((step, idx) => {
+          const isLast = idx === TIMELINE_STEPS.length - 1;
+          return (
+            <div key={step.key} className="flex gap-4">
+              <div className="flex flex-col items-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 shadow-sm ${
+                  step.done
+                    ? "bg-emerald-500 border-emerald-500 text-white"
+                    : "bg-white border-slate-200 text-slate-400"
+                }`}>
+                  {step.done ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><polyline points="20 6 9 17 4 12" /></svg>
+                  ) : (
+                    <span className="text-sm font-bold">{idx + 1}</span>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800">{s.signerNameSnapshot ?? "-"}</p>
-                  <p className="text-xs text-slate-500">{s.signedRole}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{fmtDate(s.signedAt)}</p>
-                </div>
+                {!isLast && (
+                  <div className={`w-0.5 flex-1 my-1.5 ${step.done ? "bg-emerald-200" : "bg-slate-100"}`} style={{ minHeight: 32 }} />
+                )}
               </div>
-            ))}
+              <div className="pb-6 flex-1 min-w-0 mt-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-bold text-slate-800">{step.label}</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase ${
+                    step.done ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                  }`}>
+                    {step.done ? "อนุมัติแล้ว" : "รออนุมัติ"}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
+                    {step.name?.charAt(0) ?? "?"}
+                  </div>
+                  <p className="text-sm text-slate-600 font-medium">{step.name ?? "—"}</p>
+                </div>
+                {step.signedAt && (
+                  <p className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {new Date(step.signedAt).toLocaleString("th-TH", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                )}
+                {step.signaturePath && step.done && (
+                  <div className="mt-3 border border-slate-200 rounded-xl bg-white inline-block p-2 shadow-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={step.signaturePath} alt="ลายมือชื่อ" className="h-12 object-contain" />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Action bar */}
+      {!alreadyActioned && (
+        <div className="border-t border-slate-200 overflow-hidden">
+          <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold text-slate-700">
+              ขั้นตอนของคุณ: <span className="text-primary">{isReviewer ? "ผู้ตรวจสอบ" : "ผู้อนุมัติ"}</span>
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setSigOpen(true)}
+                disabled={submitting}
+                className="h-8 px-4 text-xs font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><polyline points="20 6 9 17 4 12" /></svg>
+                {submitting ? "กำลังดำเนินการ..." : copy.actionLabel}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRejectOpen(true)}
+                className="h-8 px-4 text-xs font-medium rounded-lg border border-rose-300 text-rose-600 hover:bg-rose-50 transition-colors inline-flex items-center gap-1.5"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                ส่งคืน
+              </button>
+            </div>
           </div>
         </div>
       )}
-      <div className="p-5 space-y-3">
-        {!alreadyActioned && (
-          <>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{copy.bannerSub}</p>
-            <Button
-              className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
-              disabled={submitting}
-              onClick={handleSign}
-            >
-              <ClipboardCheck className="w-4 h-4 mr-2" />
-              {submitting ? "กำลังดำเนินการ..." : copy.actionLabel}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full rounded-xl h-10 text-sm border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-              onClick={() => setRejectOpen(true)}
-            >
-              <RotateCcw className="w-3.5 h-3.5 mr-2" />
-              ส่งกลับแก้ไข / Return
-            </Button>
-          </>
-        )}
-        <Button
-          variant="ghost"
-          className="w-full rounded-xl text-slate-500 hover:text-slate-700 h-9 text-sm"
-          onClick={() => router.push("/approve")}
-        >
-          กลับ / Back
-        </Button>
-      </div>
     </div>
   );
 
@@ -273,29 +347,41 @@ export function AuditAppointmentApproveClient({ appt, mode }: Props) {
       <div className="lg:hidden pb-24">{DetailContent}</div>
 
       {/* Mobile floating bar */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgb(0,0,0,0.08)]">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-slate-500 font-medium">{copy.bannerSub}</p>
-            <p className="text-sm font-semibold text-slate-800 truncate">{appt.title}</p>
+      {!alreadyActioned && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgb(0,0,0,0.08)]">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-slate-500 font-medium">{copy.bannerSub}</p>
+              <p className="text-sm font-semibold text-slate-800 truncate">{appt.title}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSigOpen(true)}
+              disabled={submitting}
+              className="shrink-0 h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-[#161875] active:scale-95 transition-all disabled:opacity-50"
+            >
+              {copy.actionLabelEn}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleSign}
-            disabled={submitting}
-            className="shrink-0 h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-[#161875] active:scale-95 transition-all disabled:opacity-50"
-          >
-            {copy.actionLabelEn}
-          </button>
         </div>
-      </div>
+      )}
+
+      {/* Signature Dialog — same as KPI */}
+      <KpiSignatureDialog
+        open={sigOpen}
+        title={copy.sigDialogTitle}
+        onOpenChange={setSigOpen}
+        onConfirm={async (payload) => {
+          await handleSign(payload);
+        }}
+      />
 
       {/* Success Dialog */}
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               ดำเนินการเรียบร้อย
             </DialogTitle>
           </DialogHeader>

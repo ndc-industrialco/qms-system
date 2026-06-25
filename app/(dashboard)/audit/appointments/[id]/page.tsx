@@ -24,9 +24,11 @@ export default async function AuditAppointmentDetailPage({
   const role = session.user.role;
   const isPrivileged = role === "QMS" || role === "IT" || role === "MR";
   const canSubmit = isPrivileged || authUserId === raw.ownerAuthUserId;
+  const canCrud = isPrivileged;
 
   const appt = {
     ...raw,
+    ownerSignaturePath: raw.ownerSignaturePath ?? null,
     publishedAt: raw.publishedAt?.toISOString() ?? null,
     createdAt: raw.createdAt.toISOString(),
     updatedAt: raw.updatedAt.toISOString(),
@@ -36,7 +38,7 @@ export default async function AuditAppointmentDetailPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <AuditAppointmentDetailClient initialData={appt} canSubmit={canSubmit} />
+      <AuditAppointmentDetailClient initialData={appt} canSubmit={canSubmit} canCrud={canCrud} />
     </div>
   );
 }

@@ -15,6 +15,7 @@ export default async function AuditAppointmentsPage() {
 
   const role = session.user.role;
   const canCreate = role === "QMS" || role === "IT" || role === "MR";
+  const canCrud = canCreate;
 
   const raw = await svc.findAll();
   const initialData = raw.map((a) => ({
@@ -32,7 +33,7 @@ export default async function AuditAppointmentsPage() {
         title="ประกาศแต่งตั้งผู้ตรวจติดตามภายใน"
         subtitle="Internal Audit Appointment Letters"
       />
-      <AuditAppointmentsPageClient initialData={initialData} canCreate={canCreate} />
+      <AuditAppointmentsPageClient initialData={initialData} canCreate={canCreate} canCrud={canCrud} />
     </div>
   );
 }

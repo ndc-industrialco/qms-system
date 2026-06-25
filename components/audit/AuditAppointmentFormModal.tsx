@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Plus, ChevronLeft, ChevronRight, Check, Search, Users, X } from "lucide-react";
 import GraphUserPicker, { type GraphUserResult } from "@/components/shared/GraphUserPicker";
 import { auditAppointmentCreateSchema, type AuditAppointmentCreateInput } from "@/lib/validations/audit";
-import { useCreateAuditAppointment, useAuditMemberUsers } from "@/hooks/api/use-audit-appointments";
+import { useCreateAuditAppointment, useUpdateAuditAppointment, useAuditMemberUsers } from "@/hooks/api/use-audit-appointments";
+import type { AuditAppointmentRow } from "@/types/audit";
 import { useAuditStandards } from "@/hooks/api/use-audit-standards";
 import { useEmailGroups } from "@/hooks/api/use-email-groups";
 import { cn } from "@/lib/utils";
@@ -73,39 +74,61 @@ function EmailAccordion({
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onCreated?: (id: string) => void;
+  onUpdated?: () => void;
+  initialData?: AuditAppointmentRow; // edit mode when provided
 };
 
-export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Props) {
+export function AuditAppointmentFormModal({ open, onOpenChange, onCreated, onUpdated, initialData }: Props) {
+  const isEdit = !!initialData;
   const [step, setStep] = useState(0);
   const [standardInput, setStandardInput] = useState("");
   const { data: dbStandards = [] } = useAuditStandards();
-  const [emailGroupsTo, setEmailGroupsTo] = useState<string[]>([]);
-  const [emailGroupsCc, setEmailGroupsCc] = useState<string[]>([]);
+  const [emailGroupsTo, setEmailGroupsTo] = useState<string[]>(initialData?.emailGroupMails ?? []);
+  const [emailGroupsCc, setEmailGroupsCc] = useState<string[]>(initialData?.emailGroupMailsCc ?? []);
   const { data: emailGroups = [] } = useEmailGroups();
-  const [reviewer, setReviewer] = useState<GraphUserResult | null>(null);
-  const [approver, setApprover] = useState<GraphUserResult | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [reviewer, setReviewer] = useState<GraphUserResult | null>(
+    initialData?.reviewerAuthUserId
+      ? { id: initialData.reviewerAuthUserId, name: initialData.reviewerNameSnapshot ?? "", email: initialData.reviewerEmail ?? "", department: null, jobTitle: null, employeeId: null }
+      : null
+  );
+  const [approver, setApprover] = useState<GraphUserResult | null>(
+    initialData?.approverAuthUserId
+      ? { id: initialData.approverAuthUserId, name: initialData.approverNameSnapshot ?? "", email: initialData.approverEmail ?? "", department: null, jobTitle: null, employeeId: null }
+      : null
+  );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    new Set(initialData?.members.map((m) => m.authUserId) ?? [])
+  );
   const [memberSearch, setMemberSearch] = useState("");
   const { data: allUsers = [], isLoading: usersLoading } = useAuditMemberUsers();
   const createMutation = useCreateAuditAppointment();
+  const updateMutation = useUpdateAuditAppointment();
 
   const currentYear = new Date().getFullYear() + 543;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(auditAppointmentCreateSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
-      year: currentYear,
-      title: "",
-      standards: [],
-      members: [],
-      reviewerAuthUserId: "",
-      reviewerEmail: "",
-      reviewerNameSnapshot: "",
-      approverAuthUserId: "",
-      approverEmail: "",
-      approverNameSnapshot: "",
-      emailGroupMails: [],
+      year: initialData?.year ?? currentYear,
+      title: initialData?.title ?? "",
+      standards: initialData?.standards ?? [],
+      members: initialData?.members.map((m, i) => ({
+        authUserId: m.authUserId,
+        name: m.name,
+        department: m.department ?? "",
+        role: m.role,
+        standards: m.standards,
+        orderIndex: i,
+      })) ?? [],
+      reviewerAuthUserId: initialData?.reviewerAuthUserId ?? "",
+      reviewerEmail: initialData?.reviewerEmail ?? "",
+      reviewerNameSnapshot: initialData?.reviewerNameSnapshot ?? "",
+      approverAuthUserId: initialData?.approverAuthUserId ?? "",
+      approverEmail: initialData?.approverEmail ?? "",
+      approverNameSnapshot: initialData?.approverNameSnapshot ?? "",
+      emailGroupMails: initialData?.emailGroupMails ?? [],
+      emailGroupMailsCc: initialData?.emailGroupMailsCc ?? [],
     },
   });
 
@@ -147,6 +170,12 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
     let valid = true;
     if (step === 0) {
       valid = await form.trigger(["year", "title", "standards"]);
+      if (!valid) {
+        const errs = form.formState.errors;
+        const msg = errs.year?.message ?? errs.title?.message ?? "กรุณากรอกข้อมูลให้ครบ";
+        toast.error(msg as string);
+        return;
+      }
     } else if (step === 1) {
       const members = Array.from(selectedIds).map((id, i) => {
         const u = allUsers.find((x) => x.id === id)!;
@@ -193,15 +222,25 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
     values.approverNameSnapshot = approver.name;
 
     try {
-      await createMutation.mutateAsync(values);
-      toast.success("สร้างประกาศแต่งตั้งเรียบร้อยแล้ว");
-      onOpenChange(false);
-      onSuccess?.();
-      resetAll();
+      if (isEdit && initialData) {
+        await updateMutation.mutateAsync({ id: initialData.id, input: values });
+        toast.success("แก้ไขประกาศเรียบร้อยแล้ว");
+        resetAll();
+        onOpenChange(false);
+        onUpdated?.();
+      } else {
+        const created = await createMutation.mutateAsync(values);
+        const createdId = created.id;
+        resetAll();
+        onOpenChange(false);
+        onCreated?.(createdId);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     }
   }
+
+  const isMutating = createMutation.isPending || updateMutation.isPending;
 
   function resetAll() {
     form.reset();
@@ -224,7 +263,7 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
       <DialogContent className="max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-base font-bold">
-            สร้างประกาศแต่งตั้งผู้ตรวจติดตามภายใน
+            {isEdit ? "แก้ไขประกาศแต่งตั้ง" : "สร้างประกาศแต่งตั้งผู้ตรวจติดตามภายใน"}
           </DialogTitle>
         </DialogHeader>
 
@@ -508,11 +547,11 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onSuccess }: Pro
             <Button
               type="button"
               onClick={handleNext}
-              disabled={createMutation.isPending}
+              disabled={isMutating}
               className="rounded-xl bg-primary hover:bg-[#161875]"
             >
               {step === STEPS.length - 1 ? (
-                createMutation.isPending ? "กำลังสร้าง..." : "สร้างประกาศ"
+                isMutating ? "กำลังบันทึก..." : isEdit ? "บันทึกการแก้ไข" : "ส่งรีวิว"
               ) : (
                 <>ถัดไป <ChevronRight className="h-4 w-4 ml-1" /></>
               )}

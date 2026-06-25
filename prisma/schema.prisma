@@ -855,9 +855,11 @@ model AuditAppointment {
   approverNameSnapshot  String?                  @map("approver_name_snapshot")
   emailGroupMails       String[]                 @default([]) @map("email_group_mails")
   emailGroupMailsCc     String[]                 @default([]) @map("email_group_mails_cc")
+  ownerSignaturePath    String?                  @map("owner_signature_path") @db.Text
   publishedAt           DateTime?                @map("published_at")
   members               AuditAppointmentMember[]
   signoffs              AuditAppointmentSignoff[]
+  sessionPlan           AuditSessionPlan?
   createdAt             DateTime                 @default(now()) @map("created_at")
   updatedAt             DateTime                 @updatedAt @map("updated_at")
 
@@ -890,6 +892,68 @@ model AuditAppointmentSignoff {
   appointment        AuditAppointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
   @@map("audit_appointment_signoffs")
+}
+
+// ─── Audit Session Plan (ประกาศการตรวจ + Gantt) ───────────────────────────────
+
+model AuditSessionPlan {
+  id            String                  @id @default(uuid())
+  appointmentId String                  @unique @map("appointment_id")
+  reviseNo      Int                     @default(0) @map("revise_no")
+  reviseDate    DateTime?               @map("revise_date")
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+
+  appointment   AuditAppointment        @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  sessions      AuditSessionRow[]
+  ganttRows     AuditGanttRow[]
+
+  @@map("audit_session_plans")
+}
+
+model AuditSessionRow {
+  id          String           @id @default(uuid())
+  planId      String           @map("plan_id")
+  orderIndex  Int              @default(0) @map("order_index")
+  auditDate   DateTime         @map("audit_date")
+  startTime   String           @map("start_time")
+  endTime     String           @map("end_time")
+  department  String
+  remark      String?
+
+  plan        AuditSessionPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  teamMembers AuditSessionTeamMember[]
+
+  @@index([planId])
+  @@map("audit_session_rows")
+}
+
+model AuditSessionTeamMember {
+  id            String   @id @default(uuid())
+  sessionId     String   @map("session_id")
+  role          String   // LEAD_AUDITOR | AUDITOR | OBSERVER | AUDITEE
+  name          String
+  authUserId    String?  @map("auth_user_id")
+
+  session AuditSessionRow @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("audit_session_team_members")
+}
+
+model AuditGanttRow {
+  id          String           @id @default(uuid())
+  planId      String           @map("plan_id")
+  orderIndex  Int              @default(0) @map("order_index")
+  department  String
+  processes   String[]         @default([])
+  planWeeks   String[]         @default([]) @map("plan_weeks")
+  actualWeeks String[]         @default([]) @map("actual_weeks")
+
+  plan  AuditSessionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@map("audit_gantt_rows")
 }
 
 model AuditPlan {

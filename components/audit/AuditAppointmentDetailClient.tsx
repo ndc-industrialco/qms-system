@@ -11,11 +11,18 @@ import {
   Users,
   Send,
   RotateCcw,
+  PenLine,
+  Pencil,
+  Trash2,
+  CalendarCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AuditAppointmentStatusBadge } from "./AuditAppointmentStatusBadge";
-import { useAuditAppointment, useSubmitAuditAppointment } from "@/hooks/api/use-audit-appointments";
+import { AuditAppointmentFormModal } from "./AuditAppointmentFormModal";
+import SignaturePad from "@/components/dar/SignaturePad";
+import { useAuditAppointment, useSubmitAuditAppointment, useDeleteAuditAppointment } from "@/hooks/api/use-audit-appointments";
 import type { AuditAppointmentRow } from "@/types/audit";
 
 const MEMBER_ROLE_LABELS: Record<string, string> = {
@@ -31,6 +38,41 @@ const SIGNOFF_ROLE_LABELS: Record<string, { th: string; en: string }> = {
   APPROVER: { th: "ผู้อนุมัติ", en: "Approver" },
 };
 
+function SessionPlanButton({ appointmentId }: { appointmentId: string }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  async function handleClick() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/audit/session-plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appointmentId }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((j as { error?: { message?: string } }).error?.message ?? "Error");
+      const planId = (j as { data?: { id?: string } }).data?.id;
+      if (planId) router.push(`/audit/session-plans/${planId}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={loading}
+      className="flex items-center gap-2 w-full rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 transition-colors"
+    >
+      <CalendarCheck className="w-4 h-4" />
+      {loading ? "กำลังโหลด..." : "ดู / สร้างแผนการตรวจ"}
+    </button>
+  );
+}
+
 function fmtDate(iso: string | null) {
   if (!iso) return "-";
   return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(iso));
@@ -39,25 +81,39 @@ function fmtDate(iso: string | null) {
 type Props = {
   initialData: AuditAppointmentRow;
   canSubmit: boolean;
+  canCrud?: boolean;
 };
 
-export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) {
+export function AuditAppointmentDetailClient({ initialData, canSubmit, canCrud = false }: Props) {
   const router = useRouter();
   const { data: appt = initialData } = useAuditAppointment(initialData.id, initialData);
   const submitMutation = useSubmitAuditAppointment();
-  const [submitting, setSubmitting] = useState(false);
+  const deleteMutation = useDeleteAuditAppointment();
+  const [signPadOpen, setSignPadOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const hasSidebar = (canSubmit && appt.status === "DRAFT") || appt.signoffs.length > 0;
+  const canEdit = canCrud && appt.status === "DRAFT";
 
-  async function handleSubmit() {
-    setSubmitting(true);
+  async function handleSignConfirm(dataUrl: string, _type?: unknown, _save?: unknown) {
     try {
-      await submitMutation.mutateAsync(appt.id);
+      await submitMutation.mutateAsync({ id: appt.id, ownerSignatureDataUrl: dataUrl });
       toast.success("ส่งประกาศเพื่อตรวจสอบเรียบร้อยแล้ว");
+      setSignPadOpen(false);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
-    } finally {
-      setSubmitting(false);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await deleteMutation.mutateAsync(appt.id);
+      toast.success("ลบประกาศเรียบร้อยแล้ว");
+      router.push("/audit/appointments");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     }
   }
 
@@ -97,6 +153,28 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
                 <h1 className="text-lg font-bold text-slate-900 leading-snug">{appt.title}</h1>
                 <p className="text-sm text-slate-500 mt-1">ประจำปี พ.ศ. {appt.year}</p>
               </div>
+              {canCrud && (
+                <div className="flex items-center gap-2 shrink-0">
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => setEditOpen(true)}
+                      className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      แก้ไข
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setDeleteOpen(true)}
+                    className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    ลบ
+                  </button>
+                </div>
+              )}
             </div>
 
             {appt.standards.length > 0 && (
@@ -180,11 +258,10 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">ดำเนินการ</p>
               <Button
                 className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
-                onClick={handleSubmit}
-                disabled={submitting}
+                onClick={() => setSignPadOpen(true)}
               >
                 <Send className="w-4 h-4 mr-2" />
-                {submitting ? "กำลังส่ง..." : "ส่งตรวจสอบ"}
+                ส่งตรวจสอบ
               </Button>
             </div>
           )}
@@ -216,15 +293,79 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit }: Props) 
             </div>
           )}
 
-          {/* Published info */}
+          {/* Published info + plan link */}
           {appt.status === "PUBLISHED" && appt.publishedAt && (
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm">
-              <p className="font-semibold text-emerald-800">เผยแพร่แล้ว</p>
-              <p className="text-xs text-emerald-600 mt-0.5">เมื่อ {fmtDate(appt.publishedAt)}</p>
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm space-y-3">
+              <div>
+                <p className="font-semibold text-emerald-800">เผยแพร่แล้ว</p>
+                <p className="text-xs text-emerald-600 mt-0.5">เมื่อ {fmtDate(appt.publishedAt)}</p>
+              </div>
+              <SessionPlanButton appointmentId={appt.id} />
             </div>
           )}
         </div>
       </div>
+
+      {/* Owner signature dialog */}
+      <Dialog open={signPadOpen} onOpenChange={(o) => { if (!submitMutation.isPending) setSignPadOpen(o); }}>
+        <DialogContent
+          className="max-w-2xl rounded-2xl"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold">
+              <PenLine className="h-4 w-4 text-primary" />
+              ลงลายมือชื่อผู้จัดทำ
+            </DialogTitle>
+            <p className="text-sm text-slate-500 mt-1">
+              ลงนามก่อนส่งประกาศให้ผู้ตรวจสอบ — อีเมลและการแจ้งเตือนจะถูกส่งทันที
+            </p>
+          </DialogHeader>
+          <SignaturePad
+            onConfirm={handleSignConfirm}
+            onCancel={() => setSignPadOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit modal */}
+      {canEdit && (
+        <AuditAppointmentFormModal
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          initialData={appt}
+          onUpdated={() => router.refresh()}
+        />
+      )}
+
+      {/* Delete confirm dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-4 h-4 text-red-500" />
+              ยืนยันการลบประกาศ
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-500">
+              ประกาศ <strong>{appt.appointmentNo}</strong> จะถูกลบถาวรและไม่สามารถกู้คืนได้
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" className="rounded-xl" onClick={() => setDeleteOpen(false)} disabled={deleteMutation.isPending}>
+              ยกเลิก
+            </Button>
+            <Button
+              variant="destructive"
+              className="rounded-xl"
+              disabled={deleteMutation.isPending}
+              onClick={handleDelete}
+            >
+              {deleteMutation.isPending ? "กำลังลบ..." : "ยืนยันลบ"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
