@@ -18,7 +18,7 @@ export async function POST(
     const input = carCloseSchema.parse(body);
 
     const car = input.token
-      ? await carService.closeCar(id, input.token, input.comment)
+      ? await carService.closeCar(id, input.token, input.comment, input.signaturePath)
       : await (async () => {
           const session = await requireAuth();
           if (session.user.role !== "MR") {
@@ -30,6 +30,7 @@ export async function POST(
             session.user.id,
             input.comment,
             session.user.authUserId,
+            input.signaturePath,
           );
         })();
 

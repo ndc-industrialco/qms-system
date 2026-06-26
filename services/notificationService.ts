@@ -28,6 +28,7 @@ export class NotificationService {
     recipientAuthUserId?: string | null;
     title: string;
     body: string;
+    htmlBody?: string | null;
     module: string;
     resourceId: string;
     resourceType: string;
@@ -44,6 +45,7 @@ export class NotificationService {
       recipientAuthUserId?: string | null;
       title: string;
       body: string;
+      htmlBody?: string | null;
       module: string;
       resourceId: string;
       resourceType: string;
@@ -129,6 +131,7 @@ export class NotificationService {
     notificationData?: {
       title: string;
       body: string;
+      htmlBody?: string | null;
       module: string;
       resourceId: string;
       resourceType: string;

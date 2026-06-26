@@ -511,6 +511,23 @@ export type EnumCarSourceTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumCarSourceTypeFilter<$PrismaModel>
 }
 
+export type EnumCarResponseTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CarResponseType | Prisma.EnumCarResponseTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CarResponseType[] | Prisma.ListEnumCarResponseTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CarResponseType[] | Prisma.ListEnumCarResponseTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCarResponseTypeFilter<$PrismaModel> | $Enums.CarResponseType
+}
+
+export type EnumCarResponseTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CarResponseType | Prisma.EnumCarResponseTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CarResponseType[] | Prisma.ListEnumCarResponseTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CarResponseType[] | Prisma.ListEnumCarResponseTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCarResponseTypeWithAggregatesFilter<$PrismaModel> | $Enums.CarResponseType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCarResponseTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCarResponseTypeFilter<$PrismaModel>
+}
+
 export type EnumVerificationResultFilter<$PrismaModel = never> = {
   equals?: $Enums.VerificationResult | Prisma.EnumVerificationResultFieldRefInput<$PrismaModel>
   in?: $Enums.VerificationResult[] | Prisma.ListEnumVerificationResultFieldRefInput<$PrismaModel>
@@ -1208,6 +1225,23 @@ export type NestedEnumCarSourceTypeWithAggregatesFilter<$PrismaModel = never> = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCarSourceTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCarSourceTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumCarResponseTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CarResponseType | Prisma.EnumCarResponseTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CarResponseType[] | Prisma.ListEnumCarResponseTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CarResponseType[] | Prisma.ListEnumCarResponseTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCarResponseTypeFilter<$PrismaModel> | $Enums.CarResponseType
+}
+
+export type NestedEnumCarResponseTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CarResponseType | Prisma.EnumCarResponseTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CarResponseType[] | Prisma.ListEnumCarResponseTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CarResponseType[] | Prisma.ListEnumCarResponseTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCarResponseTypeWithAggregatesFilter<$PrismaModel> | $Enums.CarResponseType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCarResponseTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCarResponseTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumVerificationResultFilter<$PrismaModel = never> = {

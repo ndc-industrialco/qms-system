@@ -180,7 +180,7 @@ export default function ApprovePageClient({ userRole }: Props) {
         role: isReview ? "review" : "approval",
         title: item.darNo ?? item.darId,
         subtitle: isReview ? t("approve.stepReview") : t("approve.stepApprove"),
-        href: `/approve/${item.darId}/${isReview ? "reviewer" : "approver"}?type=dar`,
+        href: `/approve/dar/${item.darId}/${isReview ? "reviewer" : "approver"}`,
         sortDate: item.requestDate,
         meta: [
           { label: t("approve.requester"), value: item.requesterName ?? "-" },
@@ -199,8 +199,8 @@ export default function ApprovePageClient({ userRole }: Props) {
         description: item.month ? `${item.month} ${item.year}` : String(item.year),
         href:
           item.source === "OBJECTIVE"
-            ? `/approve/${item.kpiId}/reviewer?type=kpi`
-            : `/approve/${item.id}/reviewer?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`,
+            ? `/approve/kpi/${item.kpiId}/reviewer`
+            : `/approve/kpi/${item.id}/reviewer?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`,
         sortDate: `${item.year}-${item.month ? String(item.month).padStart(2, "0") : "12"}-01T00:00:00.000Z`,
         meta: [
           { label: t("approve.department"), value: item.department },
@@ -219,8 +219,8 @@ export default function ApprovePageClient({ userRole }: Props) {
         description: item.month ? `${item.month} ${item.year}` : String(item.year),
         href:
           item.source === "OBJECTIVE"
-            ? `/approve/${item.kpiId}/approver?type=kpi`
-            : `/approve/${item.id}/approver?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`,
+            ? `/approve/kpi/${item.kpiId}/approver`
+            : `/approve/kpi/${item.id}/approver?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`,
         sortDate: `${item.year}-${item.month ? String(item.month).padStart(2, "0") : "12"}-01T00:00:00.000Z`,
         meta: [
           { label: t("approve.department"), value: item.department },

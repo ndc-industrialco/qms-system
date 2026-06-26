@@ -5,27 +5,25 @@ import { ActionTokenService, type VerifiedActionToken } from "@/services/actionT
 import { AppError } from "@/errors/customErrors";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Approve",
-};
+export const metadata: Metadata = { title: "Approve" };
 
 function resolveActionUrl(t: VerifiedActionToken): string {
   const { module, documentId, role, metadata } = t;
   if (module === "KPI") {
-    if (role === "REVIEWER") return `/approve/${documentId}/reviewer?type=kpi`;
-    if (role === "APPROVER") return `/approve/${documentId}/approver?type=kpi`;
+    if (role === "REVIEWER") return `/approve/kpi/${documentId}/reviewer`;
+    if (role === "APPROVER") return `/approve/kpi/${documentId}/approver`;
   }
   if (module === "KPI_MONTHLY") {
     const kpiId = metadata?.kpiId;
     if (role === "REVIEWER" && kpiId)
-      return `/approve/${documentId}/reviewer?type=kpi-monthly&kpiId=${kpiId}`;
+      return `/approve/kpi/${documentId}/reviewer?type=kpi-monthly&kpiId=${kpiId}`;
     if (role === "APPROVER" && kpiId)
-      return `/approve/${documentId}/approver?type=kpi-monthly&kpiId=${kpiId}`;
+      return `/approve/kpi/${documentId}/approver?type=kpi-monthly&kpiId=${kpiId}`;
   }
   if (module === "DAR") {
-    if (role === "REVIEWER") return `/approve/${documentId}/reviewer`;
+    if (role === "REVIEWER") return `/approve/dar/${documentId}/reviewer`;
     if (role === "APPROVER_MR" || role === "QMS_PROCESSOR")
-      return `/approve/${documentId}/approver`;
+      return `/approve/dar/${documentId}/approver`;
   }
   if (module === "AUDIT") {
     const signedRole = metadata?.signedRole;
@@ -52,7 +50,7 @@ export default async function ApprovePage({ searchParams }: Props) {
       if (err instanceof AppError) {
         errorMessage = err.message;
       } else {
-        throw err; // unexpected error — let Next.js handle it
+        throw err;
       }
     }
 

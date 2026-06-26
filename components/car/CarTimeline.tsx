@@ -42,6 +42,13 @@ export default function CarTimeline({ car }: Props) {
         meta={
           <>
             {t("car.timeline.labelNo")} {car.carNo} · {fmt(car.issuedAt)} · {t("car.timeline.labelIssuedBy")} {car.issuer.name}
+            {car.issuerSignaturePath && (
+              <>
+                {" · "}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={car.issuerSignaturePath} alt="ลายเซ็น" className="inline-block h-5 object-contain align-middle ml-1" />
+              </>
+            )}
           </>
         }
       />
@@ -54,6 +61,14 @@ export default function CarTimeline({ car }: Props) {
               {fmt(car.response.respondedAt)} · {car.response.responder.name} ({car.response.responderPosition})
               <br />
               {t("car.timeline.labelPlannedDate")} {fmt(car.response.plannedCompletionDate)}
+              {" · "}{car.response.responseType === "FIVE_WHY" ? "5 Whys" : "อื่นๆ"}
+              {car.response.responderSignaturePath && (
+                <>
+                  {" · "}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={car.response.responderSignaturePath} alt="ลายเซ็น" className="inline-block h-5 object-contain align-middle ml-1" />
+                </>
+              )}
             </>
           ) : undefined
         }
@@ -91,6 +106,13 @@ export default function CarTimeline({ car }: Props) {
                   {" "}· {t("car.timeline.labelNextDue")} {fmt(verify1.nextDueDate)}
                 </>
               ) : null}
+              {verify1.verifierSignaturePath && (
+                <>
+                  {" · "}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={verify1.verifierSignaturePath} alt="ลายเซ็น" className="inline-block h-5 object-contain align-middle ml-1" />
+                </>
+              )}
             </>
           ) : undefined
         }
@@ -108,6 +130,13 @@ export default function CarTimeline({ car }: Props) {
                 <span className={verify2.result === "PASSED" ? "text-emerald-600 font-semibold" : "text-rose-600 font-semibold"}>
                   {verify2.result === "PASSED" ? t("car.timeline.labelPassed") : t("car.timeline.labelFailed")}
                 </span>
+                {verify2.verifierSignaturePath && (
+                  <>
+                    {" · "}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={verify2.verifierSignaturePath} alt="ลายเซ็น" className="inline-block h-5 object-contain align-middle ml-1" />
+                  </>
+                )}
               </>
             ) : undefined
           }

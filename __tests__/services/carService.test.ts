@@ -227,7 +227,7 @@ describe("CarService", () => {
         return null;
       });
 
-      await service.verifyCar("car-1", "verifier-1", { round: 1, result: "PASSED", findings: "OK", verifierPosition: "QMS Officer" }, "auth-verifier-1");
+      await service.verifyCar("car-1", "verifier-1", { round: 1, result: "PASSED", findings: "OK", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" }, "auth-verifier-1");
 
       expect(carRepo.createVerificationAndSetStatus).toHaveBeenCalledWith(
         "car-1",
@@ -255,7 +255,7 @@ describe("CarService", () => {
       await service.verifyCar(
         "car-1",
         "verifier-1",
-        { round: 1, result: "FAILED", findings: "Not fixed", nextDueDate: "2026-07-15", verifierPosition: "QMS Officer" },
+        { round: 1, result: "FAILED", findings: "Not fixed", nextDueDate: "2026-07-15", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" },
         "auth-verifier-1"
       );
 
@@ -279,7 +279,7 @@ describe("CarService", () => {
       await service.verifyCar(
         "car-1",
         "verifier-1",
-        { round: 2, result: "FAILED", findings: "Still not fixed", verifierPosition: "QMS Officer" },
+        { round: 2, result: "FAILED", findings: "Still not fixed", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" },
         "auth-verifier-1"
       );
 
@@ -300,7 +300,7 @@ describe("CarService", () => {
       vi.mocked(carRepo.findForVerify).mockResolvedValue(makeForVerifyRaw({ status: "VERIFY_1" }) as never);
 
       await expect(
-        service.verifyCar("car-1", "verifier-1", { round: 2, result: "FAILED", findings: "x", verifierPosition: "QMS" })
+        service.verifyCar("car-1", "verifier-1", { round: 2, result: "FAILED", findings: "x", verifierPosition: "QMS", verifierSignaturePath: "data:image/png;base64,test" })
       ).rejects.toThrow("VERIFY_2");
     });
   });

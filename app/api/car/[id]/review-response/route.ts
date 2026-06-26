@@ -22,6 +22,7 @@ export async function POST(
           token: input.token,
           action: input.action,
           comment: input.comment,
+          signaturePath: input.signaturePath,
         })
       : await (async () => {
           const session = await requireAuth();
@@ -32,7 +33,7 @@ export async function POST(
           return carService.reviewResponseByMRAuthenticated(
             id,
             session.user.id,
-            { action: input.action, comment: input.comment },
+            { action: input.action, comment: input.comment, signaturePath: input.signaturePath },
             session.user.authUserId,
             session.user.accessToken,
           );

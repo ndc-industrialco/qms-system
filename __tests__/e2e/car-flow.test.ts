@@ -158,7 +158,7 @@ describe("CAR flow — happy path (DRAFT → ISSUED → RESPONDED → VERIFY_1 P
 
     const result = await svc.respondToCar(
       CAR_ID, "responder-1", "dept-1",
-      { responderPosition: "Dept Officer", whyAnalysis: "x", rootCausePerson: false, rootCauseMaterial: false, rootCauseMachine: false, rootCauseMethod: false, rootCauseOther: false, rootCauseSummary: "y", immediateAction: "z", preventiveAction: "w", plannedCompletionDate: "2026-07-01" },
+      { responderPosition: "Dept Officer", responseType: "FIVE_WHY" as const, whyAnalysis: "x", rootCausePerson: false, rootCauseMaterial: false, rootCauseMachine: false, rootCauseMethod: false, rootCauseOther: false, rootCauseSummary: "y", immediateAction: "z", preventiveAction: "w", plannedCompletionDate: "2026-07-01", responderSignaturePath: "data:image/png;base64,test" },
       "auth-responder-1", "dept-1"
     );
 
@@ -176,7 +176,7 @@ describe("CAR flow — happy path (DRAFT → ISSUED → RESPONDED → VERIFY_1 P
       k === "CURRENT_MR_EMAIL" ? "mr@example.com" : null
     );
 
-    const result = await svc.verifyCar(CAR_ID, "verifier-1", { round: 1, result: "PASSED", findings: "All good", verifierPosition: "QMS Officer" }, "auth-verifier-1");
+    const result = await svc.verifyCar(CAR_ID, "verifier-1", { round: 1, result: "PASSED", findings: "All good", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" }, "auth-verifier-1");
 
     expect(result.status).toBe("CLOSED");
     expect(carRepo.createVerificationAndSetStatus).toHaveBeenCalledWith(
@@ -209,7 +209,7 @@ describe("CAR flow — Re-CAR path (VERIFY_1 FAIL → VERIFY_2 FAIL → RE_CAR)"
 
     const result = await svc.verifyCar(
       CAR_ID, "verifier-1",
-      { round: 1, result: "FAILED", findings: "Not fixed", nextDueDate: "2026-07-20", verifierPosition: "QMS Officer" },
+      { round: 1, result: "FAILED", findings: "Not fixed", nextDueDate: "2026-07-20", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" },
       "auth-verifier-1"
     );
 
@@ -230,7 +230,7 @@ describe("CAR flow — Re-CAR path (VERIFY_1 FAIL → VERIFY_2 FAIL → RE_CAR)"
 
     const result = await svc.verifyCar(
       CAR_ID, "verifier-1",
-      { round: 2, result: "FAILED", findings: "Still not fixed", verifierPosition: "QMS Officer" },
+      { round: 2, result: "FAILED", findings: "Still not fixed", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" },
       "auth-verifier-1"
     );
 

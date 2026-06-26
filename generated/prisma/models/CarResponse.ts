@@ -33,8 +33,10 @@ export type CarResponseMinAggregateOutputType = {
   responderEmployeeId: string | null
   responderPosition: string | null
   respondedAt: Date | null
+  responseType: $Enums.CarResponseType | null
   whyAnalysis: string | null
   additionalToolDetail: string | null
+  responderSignaturePath: string | null
   rootCausePerson: boolean | null
   rootCauseMaterial: boolean | null
   rootCauseMachine: boolean | null
@@ -56,8 +58,10 @@ export type CarResponseMaxAggregateOutputType = {
   responderEmployeeId: string | null
   responderPosition: string | null
   respondedAt: Date | null
+  responseType: $Enums.CarResponseType | null
   whyAnalysis: string | null
   additionalToolDetail: string | null
+  responderSignaturePath: string | null
   rootCausePerson: boolean | null
   rootCauseMaterial: boolean | null
   rootCauseMachine: boolean | null
@@ -79,8 +83,11 @@ export type CarResponseCountAggregateOutputType = {
   responderEmployeeId: number
   responderPosition: number
   respondedAt: number
+  responseType: number
+  fiveWhys: number
   whyAnalysis: number
   additionalToolDetail: number
+  responderSignaturePath: number
   rootCausePerson: number
   rootCauseMaterial: number
   rootCauseMachine: number
@@ -104,8 +111,10 @@ export type CarResponseMinAggregateInputType = {
   responderEmployeeId?: true
   responderPosition?: true
   respondedAt?: true
+  responseType?: true
   whyAnalysis?: true
   additionalToolDetail?: true
+  responderSignaturePath?: true
   rootCausePerson?: true
   rootCauseMaterial?: true
   rootCauseMachine?: true
@@ -127,8 +136,10 @@ export type CarResponseMaxAggregateInputType = {
   responderEmployeeId?: true
   responderPosition?: true
   respondedAt?: true
+  responseType?: true
   whyAnalysis?: true
   additionalToolDetail?: true
+  responderSignaturePath?: true
   rootCausePerson?: true
   rootCauseMaterial?: true
   rootCauseMachine?: true
@@ -150,8 +161,11 @@ export type CarResponseCountAggregateInputType = {
   responderEmployeeId?: true
   responderPosition?: true
   respondedAt?: true
+  responseType?: true
+  fiveWhys?: true
   whyAnalysis?: true
   additionalToolDetail?: true
+  responderSignaturePath?: true
   rootCausePerson?: true
   rootCauseMaterial?: true
   rootCauseMachine?: true
@@ -246,8 +260,11 @@ export type CarResponseGroupByOutputType = {
   responderEmployeeId: string | null
   responderPosition: string
   respondedAt: Date
+  responseType: $Enums.CarResponseType
+  fiveWhys: runtime.JsonValue | null
   whyAnalysis: string
   additionalToolDetail: string | null
+  responderSignaturePath: string | null
   rootCausePerson: boolean
   rootCauseMaterial: boolean
   rootCauseMachine: boolean
@@ -290,8 +307,11 @@ export type CarResponseWhereInput = {
   responderEmployeeId?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringFilter<"CarResponse"> | string
   respondedAt?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFilter<"CarResponse"> | $Enums.CarResponseType
+  fiveWhys?: Prisma.JsonNullableFilter<"CarResponse">
   whyAnalysis?: Prisma.StringFilter<"CarResponse"> | string
   additionalToolDetail?: Prisma.StringNullableFilter<"CarResponse"> | string | null
+  responderSignaturePath?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   rootCausePerson?: Prisma.BoolFilter<"CarResponse"> | boolean
   rootCauseMaterial?: Prisma.BoolFilter<"CarResponse"> | boolean
   rootCauseMachine?: Prisma.BoolFilter<"CarResponse"> | boolean
@@ -315,8 +335,11 @@ export type CarResponseOrderByWithRelationInput = {
   responderEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
+  responseType?: Prisma.SortOrder
+  fiveWhys?: Prisma.SortOrderInput | Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
   additionalToolDetail?: Prisma.SortOrderInput | Prisma.SortOrder
+  responderSignaturePath?: Prisma.SortOrderInput | Prisma.SortOrder
   rootCausePerson?: Prisma.SortOrder
   rootCauseMaterial?: Prisma.SortOrder
   rootCauseMachine?: Prisma.SortOrder
@@ -343,8 +366,11 @@ export type CarResponseWhereUniqueInput = Prisma.AtLeast<{
   responderEmployeeId?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringFilter<"CarResponse"> | string
   respondedAt?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFilter<"CarResponse"> | $Enums.CarResponseType
+  fiveWhys?: Prisma.JsonNullableFilter<"CarResponse">
   whyAnalysis?: Prisma.StringFilter<"CarResponse"> | string
   additionalToolDetail?: Prisma.StringNullableFilter<"CarResponse"> | string | null
+  responderSignaturePath?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   rootCausePerson?: Prisma.BoolFilter<"CarResponse"> | boolean
   rootCauseMaterial?: Prisma.BoolFilter<"CarResponse"> | boolean
   rootCauseMachine?: Prisma.BoolFilter<"CarResponse"> | boolean
@@ -368,8 +394,11 @@ export type CarResponseOrderByWithAggregationInput = {
   responderEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
+  responseType?: Prisma.SortOrder
+  fiveWhys?: Prisma.SortOrderInput | Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
   additionalToolDetail?: Prisma.SortOrderInput | Prisma.SortOrder
+  responderSignaturePath?: Prisma.SortOrderInput | Prisma.SortOrder
   rootCausePerson?: Prisma.SortOrder
   rootCauseMaterial?: Prisma.SortOrder
   rootCauseMachine?: Prisma.SortOrder
@@ -397,8 +426,11 @@ export type CarResponseScalarWhereWithAggregatesInput = {
   responderEmployeeId?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringWithAggregatesFilter<"CarResponse"> | string
   respondedAt?: Prisma.DateTimeWithAggregatesFilter<"CarResponse"> | Date | string
+  responseType?: Prisma.EnumCarResponseTypeWithAggregatesFilter<"CarResponse"> | $Enums.CarResponseType
+  fiveWhys?: Prisma.JsonNullableWithAggregatesFilter<"CarResponse">
   whyAnalysis?: Prisma.StringWithAggregatesFilter<"CarResponse"> | string
   additionalToolDetail?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
+  responderSignaturePath?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
   rootCausePerson?: Prisma.BoolWithAggregatesFilter<"CarResponse"> | boolean
   rootCauseMaterial?: Prisma.BoolWithAggregatesFilter<"CarResponse"> | boolean
   rootCauseMachine?: Prisma.BoolWithAggregatesFilter<"CarResponse"> | boolean
@@ -419,8 +451,11 @@ export type CarResponseCreateInput = {
   responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
-  whyAnalysis: string
+  responseType?: $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whyAnalysis?: string
   additionalToolDetail?: string | null
+  responderSignaturePath?: string | null
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -444,8 +479,11 @@ export type CarResponseUncheckedCreateInput = {
   responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
-  whyAnalysis: string
+  responseType?: $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whyAnalysis?: string
   additionalToolDetail?: string | null
+  responderSignaturePath?: string | null
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -467,8 +505,11 @@ export type CarResponseUpdateInput = {
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
   additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -492,8 +533,11 @@ export type CarResponseUncheckedUpdateInput = {
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
   additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -516,8 +560,11 @@ export type CarResponseCreateManyInput = {
   responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
-  whyAnalysis: string
+  responseType?: $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whyAnalysis?: string
   additionalToolDetail?: string | null
+  responderSignaturePath?: string | null
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -538,8 +585,11 @@ export type CarResponseUpdateManyMutationInput = {
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
   additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -561,8 +611,11 @@ export type CarResponseUncheckedUpdateManyInput = {
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
   additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -589,8 +642,11 @@ export type CarResponseCountOrderByAggregateInput = {
   responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
+  responseType?: Prisma.SortOrder
+  fiveWhys?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
   additionalToolDetail?: Prisma.SortOrder
+  responderSignaturePath?: Prisma.SortOrder
   rootCausePerson?: Prisma.SortOrder
   rootCauseMaterial?: Prisma.SortOrder
   rootCauseMachine?: Prisma.SortOrder
@@ -612,8 +668,10 @@ export type CarResponseMaxOrderByAggregateInput = {
   responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
+  responseType?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
   additionalToolDetail?: Prisma.SortOrder
+  responderSignaturePath?: Prisma.SortOrder
   rootCausePerson?: Prisma.SortOrder
   rootCauseMaterial?: Prisma.SortOrder
   rootCauseMachine?: Prisma.SortOrder
@@ -635,8 +693,10 @@ export type CarResponseMinOrderByAggregateInput = {
   responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
+  responseType?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
   additionalToolDetail?: Prisma.SortOrder
+  responderSignaturePath?: Prisma.SortOrder
   rootCausePerson?: Prisma.SortOrder
   rootCauseMaterial?: Prisma.SortOrder
   rootCauseMachine?: Prisma.SortOrder
@@ -686,6 +746,10 @@ export type CarResponseUncheckedUpdateOneWithoutCarMasterNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CarResponseUpdateToOneWithWhereWithoutCarMasterInput, Prisma.CarResponseUpdateWithoutCarMasterInput>, Prisma.CarResponseUncheckedUpdateWithoutCarMasterInput>
 }
 
+export type EnumCarResponseTypeFieldUpdateOperationsInput = {
+  set?: $Enums.CarResponseType
+}
+
 export type CarResponseCreateNestedOneWithoutAttachmentsInput = {
   create?: Prisma.XOR<Prisma.CarResponseCreateWithoutAttachmentsInput, Prisma.CarResponseUncheckedCreateWithoutAttachmentsInput>
   connectOrCreate?: Prisma.CarResponseCreateOrConnectWithoutAttachmentsInput
@@ -708,8 +772,11 @@ export type CarResponseCreateWithoutCarMasterInput = {
   responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
-  whyAnalysis: string
+  responseType?: $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whyAnalysis?: string
   additionalToolDetail?: string | null
+  responderSignaturePath?: string | null
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -731,8 +798,11 @@ export type CarResponseUncheckedCreateWithoutCarMasterInput = {
   responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
-  whyAnalysis: string
+  responseType?: $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whyAnalysis?: string
   additionalToolDetail?: string | null
+  responderSignaturePath?: string | null
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -770,8 +840,11 @@ export type CarResponseUpdateWithoutCarMasterInput = {
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
   additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -793,8 +866,11 @@ export type CarResponseUncheckedUpdateWithoutCarMasterInput = {
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
   additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -816,8 +892,11 @@ export type CarResponseCreateWithoutAttachmentsInput = {
   responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
-  whyAnalysis: string
+  responseType?: $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whyAnalysis?: string
   additionalToolDetail?: string | null
+  responderSignaturePath?: string | null
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -840,8 +919,11 @@ export type CarResponseUncheckedCreateWithoutAttachmentsInput = {
   responderEmployeeId?: string | null
   responderPosition: string
   respondedAt?: Date | string
-  whyAnalysis: string
+  responseType?: $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  whyAnalysis?: string
   additionalToolDetail?: string | null
+  responderSignaturePath?: string | null
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -878,8 +960,11 @@ export type CarResponseUpdateWithoutAttachmentsInput = {
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
   additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -902,8 +987,11 @@ export type CarResponseUncheckedUpdateWithoutAttachmentsInput = {
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
+  fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   whyAnalysis?: Prisma.StringFieldUpdateOperationsInput | string
   additionalToolDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responderSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rootCausePerson?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMaterial?: Prisma.BoolFieldUpdateOperationsInput | boolean
   rootCauseMachine?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -956,8 +1044,11 @@ export type CarResponseSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   responderEmployeeId?: boolean
   responderPosition?: boolean
   respondedAt?: boolean
+  responseType?: boolean
+  fiveWhys?: boolean
   whyAnalysis?: boolean
   additionalToolDetail?: boolean
+  responderSignaturePath?: boolean
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -982,8 +1073,11 @@ export type CarResponseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   responderEmployeeId?: boolean
   responderPosition?: boolean
   respondedAt?: boolean
+  responseType?: boolean
+  fiveWhys?: boolean
   whyAnalysis?: boolean
   additionalToolDetail?: boolean
+  responderSignaturePath?: boolean
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -1006,8 +1100,11 @@ export type CarResponseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   responderEmployeeId?: boolean
   responderPosition?: boolean
   respondedAt?: boolean
+  responseType?: boolean
+  fiveWhys?: boolean
   whyAnalysis?: boolean
   additionalToolDetail?: boolean
+  responderSignaturePath?: boolean
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -1030,8 +1127,11 @@ export type CarResponseSelectScalar = {
   responderEmployeeId?: boolean
   responderPosition?: boolean
   respondedAt?: boolean
+  responseType?: boolean
+  fiveWhys?: boolean
   whyAnalysis?: boolean
   additionalToolDetail?: boolean
+  responderSignaturePath?: boolean
   rootCausePerson?: boolean
   rootCauseMaterial?: boolean
   rootCauseMachine?: boolean
@@ -1044,7 +1144,7 @@ export type CarResponseSelectScalar = {
   plannedCompletionDate?: boolean
 }
 
-export type CarResponseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "responderId" | "responderAuthUserId" | "responderName" | "responderEmployeeId" | "responderPosition" | "respondedAt" | "whyAnalysis" | "additionalToolDetail" | "rootCausePerson" | "rootCauseMaterial" | "rootCauseMachine" | "rootCauseMethod" | "rootCauseOther" | "rootCauseOtherDetail" | "rootCauseSummary" | "immediateAction" | "preventiveAction" | "plannedCompletionDate", ExtArgs["result"]["carResponse"]>
+export type CarResponseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "responderId" | "responderAuthUserId" | "responderName" | "responderEmployeeId" | "responderPosition" | "respondedAt" | "responseType" | "fiveWhys" | "whyAnalysis" | "additionalToolDetail" | "responderSignaturePath" | "rootCausePerson" | "rootCauseMaterial" | "rootCauseMachine" | "rootCauseMethod" | "rootCauseOther" | "rootCauseOtherDetail" | "rootCauseSummary" | "immediateAction" | "preventiveAction" | "plannedCompletionDate", ExtArgs["result"]["carResponse"]>
 export type CarResponseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
   attachments?: boolean | Prisma.CarResponse$attachmentsArgs<ExtArgs>
@@ -1072,8 +1172,11 @@ export type $CarResponsePayload<ExtArgs extends runtime.Types.Extensions.Interna
     responderEmployeeId: string | null
     responderPosition: string
     respondedAt: Date
+    responseType: $Enums.CarResponseType
+    fiveWhys: runtime.JsonValue | null
     whyAnalysis: string
     additionalToolDetail: string | null
+    responderSignaturePath: string | null
     rootCausePerson: boolean
     rootCauseMaterial: boolean
     rootCauseMachine: boolean
@@ -1517,8 +1620,11 @@ export interface CarResponseFieldRefs {
   readonly responderEmployeeId: Prisma.FieldRef<"CarResponse", 'String'>
   readonly responderPosition: Prisma.FieldRef<"CarResponse", 'String'>
   readonly respondedAt: Prisma.FieldRef<"CarResponse", 'DateTime'>
+  readonly responseType: Prisma.FieldRef<"CarResponse", 'CarResponseType'>
+  readonly fiveWhys: Prisma.FieldRef<"CarResponse", 'Json'>
   readonly whyAnalysis: Prisma.FieldRef<"CarResponse", 'String'>
   readonly additionalToolDetail: Prisma.FieldRef<"CarResponse", 'String'>
+  readonly responderSignaturePath: Prisma.FieldRef<"CarResponse", 'String'>
   readonly rootCausePerson: Prisma.FieldRef<"CarResponse", 'Boolean'>
   readonly rootCauseMaterial: Prisma.FieldRef<"CarResponse", 'Boolean'>
   readonly rootCauseMachine: Prisma.FieldRef<"CarResponse", 'Boolean'>

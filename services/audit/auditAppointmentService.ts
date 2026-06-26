@@ -6,9 +6,152 @@ import { AuditService } from "@/services/auditService";
 import { NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import type { AuditAppointmentCreateInput, AuditAppointmentUpdateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
-import { sendAppointmentSignRequestEmail, sendAppointmentPublishedEmail, sendAppointmentRejectedEmail } from "./auditEmailService";
+import { sendAppointmentSignRequestEmail, sendAppointmentPublishedEmail, sendAppointmentRejectedEmail, buildAppointmentPublishedHtml, layout, esc } from "./auditEmailService";
 import { NotificationService } from "@/services/notificationService";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
+
+// ─── HTML notification builders (same template as email, minus send wrapper) ──
+
+function getAppUrl(path: string) {
+  return `${(process.env.NEXTAUTH_URL ?? "").replace(/\/+$/, "")}${path}`;
+}
+
+function buildSignRequestHtml(opts: {
+  appointmentId: string;
+  appointmentNo: string;
+  title: string;
+  year: number;
+  standards: string[];
+  ownerName: string | null;
+  signedRole: "REVIEWER" | "APPROVER";
+}): string {
+  const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : "Reviewer";
+  const rolePath = opts.signedRole === "APPROVER" ? "approver" : "reviewer";
+  const yearEn = opts.year - 543;
+  const url = getAppUrl(`/approve/audit/appointments/${opts.appointmentId}/${rolePath}`);
+
+  const standardsBadges = opts.standards.length
+    ? `<div style="margin-top:16px">
+        <p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px">Standards</p>
+        <div>${opts.standards.map((s) => `<span style="display:inline-block;background:#e0e7ff;color:#3730a3;border-radius:4px;padding:3px 10px;font-size:12px;font-weight:700;margin:2px 4px 2px 0">${esc(s)}</span>`).join("")}</div>
+      </div>`
+    : "";
+
+  const urgentBanner = `<div style="margin:16px 0 0;padding:14px 16px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
+    <strong>Your signature is required.</strong> Please click the button below to review and sign this appointment letter as <strong>${esc(roleLabel)}</strong>.
+    The process cannot proceed without your signature.
+  </div>`;
+
+  return layout({
+    badgeColor: "#f59e0b",
+    badgeText: "Signature Required",
+    title: "Appointment Letter — Signature Request",
+    subtitle: `${opts.appointmentNo} · ${roleLabel}`,
+    rows: [
+      { label: "Document No.", value: opts.appointmentNo },
+      { label: "Title", value: opts.title },
+      { label: "Year", value: `${yearEn} (B.E. ${opts.year})` },
+      ...(opts.ownerName ? [{ label: "Prepared by", value: opts.ownerName }] : []),
+      { label: "Your Role", value: roleLabel },
+    ],
+    body: standardsBadges + urgentBanner,
+    actionLabel: opts.signedRole === "APPROVER" ? "Review & Approve" : "Review & Sign",
+    actionUrl: url,
+  });
+}
+
+
+function buildRejectedHtml(opts: {
+  appointmentId: string;
+  appointmentNo: string;
+  title: string;
+  year: number;
+  rejectorName: string;
+  signedRole: "REVIEWER" | "APPROVER";
+  reason: string;
+}): string {
+  const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : "Reviewer";
+  const yearEn = opts.year - 543;
+  const url = getAppUrl(`/audit/appointments/${opts.appointmentId}`);
+  return layout({
+    badgeColor: "#ef4444",
+    badgeText: "Returned",
+    title: "Appointment Letter Returned for Revision",
+    subtitle: `${opts.appointmentNo} · Returned by ${roleLabel}`,
+    rows: [
+      { label: "Document No.", value: opts.appointmentNo },
+      { label: "Title", value: opts.title },
+      { label: "Year", value: `${yearEn} (B.E. ${opts.year})` },
+      { label: "Returned by", value: `${opts.rejectorName} (${roleLabel})` },
+    ],
+    body: `<div style="margin:16px 0 0;padding:14px 16px;background:#fff1f2;border-left:3px solid #f43f5e;border-radius:0 6px 6px 0">
+      <p style="font-size:11px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px">Reason for Return</p>
+      <p style="font-size:13px;color:#0f172a;line-height:1.7;margin:0;white-space:pre-wrap">${esc(opts.reason)}</p>
+    </div>`,
+    actionLabel: "Revise & Resubmit",
+    actionUrl: url,
+  });
+}
+
+// ─── Notify dispatcher ────────────────────────────────────────────────────────
+
+async function sendSignRequest(opts: {
+  appointmentId: string;
+  appointmentNo: string;
+  title: string;
+  year: number;
+  standards: string[];
+  ownerName: string | null;
+  reviewerName?: string | null;
+  signedRole: "REVIEWER" | "APPROVER";
+  targetAuthUserId: string | null;
+  targetEmail: string | null;
+  targetName: string | null;
+  senderAccessToken?: string | null;
+}) {
+  if (!opts.targetAuthUserId) return;
+  const yearEn = opts.year - 543;
+  const roleLabel = opts.signedRole === "REVIEWER" ? "Reviewer" : "Approver";
+  const idKey = `AUDIT_APPT:${opts.appointmentId}:SIGN_REQUEST:${opts.signedRole}`;
+  const subject = `[QMS] Signature Required — Appointment ${opts.appointmentNo} (${roleLabel})`;
+  const plainBody = opts.signedRole === "REVIEWER"
+    ? `You have been assigned as Reviewer for "${opts.title}" (Year ${yearEn}). Your signature is required.\nPrepared by: ${opts.ownerName ?? "—"}`
+    : `You have been assigned as Approver for "${opts.title}" (Year ${yearEn}). Please review and approve to publish.\nPrepared by: ${opts.ownerName ?? "—"} · Reviewed by: ${opts.reviewerName ?? "—"}`;
+
+  await NotificationService.sendEmailOnce(
+    idKey,
+    () => sendAppointmentSignRequestEmail({
+      to: { name: opts.targetName ?? opts.targetEmail ?? "", email: opts.targetEmail! },
+      appointmentNo: opts.appointmentNo,
+      title: opts.title,
+      year: opts.year,
+      standards: opts.standards,
+      ownerName: opts.ownerName,
+      signedRole: opts.signedRole,
+      appointmentId: opts.appointmentId,
+      senderAccessToken: opts.senderAccessToken,
+    }),
+    opts.targetEmail ?? "",
+    subject,
+    opts.targetAuthUserId,
+    {
+      title: `${opts.signedRole === "REVIEWER" ? "Signature Required" : "Approval Required"} — ${opts.appointmentNo}`,
+      body: plainBody,
+      htmlBody: buildSignRequestHtml({
+        appointmentId: opts.appointmentId,
+        appointmentNo: opts.appointmentNo,
+        title: opts.title,
+        year: opts.year,
+        standards: opts.standards,
+        ownerName: opts.ownerName,
+        signedRole: opts.signedRole,
+      }),
+      module: "AUDIT",
+      resourceId: opts.appointmentId,
+      resourceType: "AUDIT_APPOINTMENT",
+    },
+  ).catch((err) => logger.warn(`[appointment] ${opts.signedRole} notify failed`, { error: String(err) }));
+}
 
 const userPrefRepo = new UserPreferenceRepository();
 
@@ -259,43 +402,19 @@ export class AuditAppointmentService {
       return u;
     });
 
-    logger.info("[appointment/submit] email check", {
-      reviewerEmail: appt.reviewerEmail,
-      hasToken: !!actor.accessToken,
+    await sendSignRequest({
+      appointmentId: id,
+      appointmentNo: updated.appointmentNo,
+      title: updated.title,
+      year: updated.year,
+      standards: updated.standards,
+      ownerName: appt.ownerNameSnapshot,
+      signedRole: "REVIEWER",
+      targetAuthUserId: appt.reviewerAuthUserId,
+      targetEmail: appt.reviewerEmail,
+      targetName: appt.reviewerNameSnapshot,
+      senderAccessToken: actor.accessToken,
     });
-    if (appt.reviewerEmail) {
-      sendAppointmentSignRequestEmail({
-        to: {
-          name: appt.reviewerNameSnapshot ?? appt.reviewerEmail,
-          email: appt.reviewerEmail,
-        },
-        appointmentNo: updated.appointmentNo,
-        title: updated.title,
-        year: updated.year,
-        standards: updated.standards,
-        ownerName: appt.ownerNameSnapshot,
-        signedRole: "REVIEWER",
-        appointmentId: id,
-        senderAccessToken: actor.accessToken,
-      }).catch((err) =>
-        logger.warn("[appointment] reviewer email failed", { error: String(err) })
-      );
-    }
-
-    if (appt.reviewerAuthUserId) {
-      const yearEn = updated.year - 543;
-      NotificationService.createInAppNotification({
-        recipientId: appt.reviewerAuthUserId,
-        recipientAuthUserId: appt.reviewerAuthUserId,
-        title: `Signature Required — ${updated.appointmentNo}`,
-        body: `You have been assigned as Reviewer for appointment letter "${updated.title}" (Year ${yearEn}). Your signature is required to proceed.\nPrepared by: ${appt.ownerNameSnapshot ?? "—"}`,
-        module: "AUDIT",
-        resourceId: id,
-        resourceType: "AUDIT_APPOINTMENT",
-      }).catch((err) =>
-        logger.warn("[appointment] reviewer in-app notification failed", { error: String(err) })
-      );
-    }
 
     return updated;
   }
@@ -348,39 +467,20 @@ export class AuditAppointmentService {
       return u;
     });
 
-    if (appt.approverEmail) {
-      sendAppointmentSignRequestEmail({
-        to: {
-          name: appt.approverNameSnapshot ?? appt.approverEmail,
-          email: appt.approverEmail,
-        },
-        appointmentNo: updated.appointmentNo,
-        title: updated.title,
-        year: updated.year,
-        standards: updated.standards,
-        ownerName: appt.ownerNameSnapshot,
-        signedRole: "APPROVER",
-        appointmentId: id,
-        senderAccessToken: actor.accessToken,
-      }).catch((err) =>
-        logger.warn("[appointment] approver email failed", { error: String(err) })
-      );
-    }
-
-    if (appt.approverAuthUserId) {
-      const yearEn = updated.year - 543;
-      NotificationService.createInAppNotification({
-        recipientId: appt.approverAuthUserId,
-        recipientAuthUserId: appt.approverAuthUserId,
-        title: `Approval Required — ${updated.appointmentNo}`,
-        body: `You have been assigned as Approver for appointment letter "${updated.title}" (Year ${yearEn}). Please review and approve to publish.\nPrepared by: ${appt.ownerNameSnapshot ?? "—"} · Reviewed by: ${appt.reviewerNameSnapshot ?? "—"}`,
-        module: "AUDIT",
-        resourceId: id,
-        resourceType: "AUDIT_APPOINTMENT",
-      }).catch((err) =>
-        logger.warn("[appointment] approver in-app notification failed", { error: String(err) })
-      );
-    }
+    await sendSignRequest({
+      appointmentId: id,
+      appointmentNo: updated.appointmentNo,
+      title: updated.title,
+      year: updated.year,
+      standards: updated.standards,
+      ownerName: appt.ownerNameSnapshot,
+      reviewerName: appt.reviewerNameSnapshot,
+      signedRole: "APPROVER",
+      targetAuthUserId: appt.approverAuthUserId,
+      targetEmail: appt.approverEmail,
+      targetName: appt.approverNameSnapshot,
+      senderAccessToken: actor.accessToken,
+    });
 
     return updated;
   }
@@ -436,6 +536,9 @@ export class AuditAppointmentService {
       return u;
     });
 
+    const pubYearEn = updated.year - 543;
+    const approverName = actor.nameSnapshot ?? actorId;
+
     // Published email — to: emailGroupMails; cc: emailGroupMailsCc + owner + reviewer
     {
       const toList = appt.emailGroupMails.map((m) => ({ name: m, email: m }));
@@ -445,17 +548,20 @@ export class AuditAppointmentService {
       if (appt.ownerEmail) ccList.push({ name: appt.ownerNameSnapshot ?? appt.ownerEmail, email: appt.ownerEmail });
       if (appt.reviewerEmail) ccList.push({ name: appt.reviewerNameSnapshot ?? appt.reviewerEmail, email: appt.reviewerEmail });
 
-      const allRecipients = toList.length ? toList : ccList.splice(0);
-      if (allRecipients.length || ccList.length) {
+      // ponytail: splice() was a bug here — it mutated ccList before passing it as cc
+      const allRecipients = toList.length ? toList : [...ccList];
+      const finalCc = toList.length ? ccList : [];
+
+      if (allRecipients.length) {
         sendAppointmentPublishedEmail({
           recipients: allRecipients,
-          cc: ccList.length ? ccList : undefined,
+          cc: finalCc.length ? finalCc : undefined,
           appointmentNo: updated.appointmentNo,
           title: updated.title,
           year: updated.year,
           standards: updated.standards,
           members: appt.members,
-          approverName: actor.nameSnapshot ?? actorId,
+          approverName,
           ownerName: appt.ownerNameSnapshot,
           reviewerName: appt.reviewerNameSnapshot,
           appointmentId: id,
@@ -466,37 +572,81 @@ export class AuditAppointmentService {
       }
     }
 
-    const pubYearEn = updated.year - 543;
+    const publishedHtml = buildAppointmentPublishedHtml({
+      appointmentId: id,
+      appointmentNo: updated.appointmentNo,
+      title: updated.title,
+      year: updated.year,
+      standards: updated.standards,
+      members: appt.members,
+      approverName,
+      ownerName: appt.ownerNameSnapshot,
+      reviewerName: appt.reviewerNameSnapshot,
+    });
 
-    // In-app: notify owner
+    // Notify owner
     if (appt.ownerAuthUserId) {
-      NotificationService.createInAppNotification({
-        recipientId: appt.ownerAuthUserId,
-        recipientAuthUserId: appt.ownerAuthUserId,
-        title: `Published — ${updated.appointmentNo}`,
-        body: `Appointment letter "${updated.title}" (Year ${pubYearEn}) has been approved and published.\nApproved by: ${actor.nameSnapshot ?? "Approver"}`,
-        module: "AUDIT",
-        resourceId: id,
-        resourceType: "AUDIT_APPOINTMENT",
-      }).catch((err) =>
-        logger.warn("[appointment] approve in-app notification (owner) failed", { error: String(err) })
-      );
+      await NotificationService.sendEmailOnce(
+        `AUDIT_APPT:${id}:PUBLISHED:owner`,
+        async () => {},  // published email already sent above to groups; owner gets in-app or is on CC
+        appt.ownerEmail ?? "",
+        `[QMS] Published — ${updated.appointmentNo}`,
+        appt.ownerAuthUserId,
+        {
+          title: `Published — ${updated.appointmentNo}`,
+          body: `Appointment letter "${updated.title}" (Year ${pubYearEn}) has been approved and published.\nApproved by: ${approverName}`,
+          htmlBody: publishedHtml,
+          module: "AUDIT",
+          resourceId: id,
+          resourceType: "AUDIT_APPOINTMENT",
+        },
+      ).catch((err) => logger.warn("[appointment] owner publish notify failed", { error: String(err) }));
     }
 
-    // In-app: notify reviewer that it's fully published
+    // Notify reviewer (skip if same person as owner)
     if (appt.reviewerAuthUserId && appt.reviewerAuthUserId !== appt.ownerAuthUserId) {
-      NotificationService.createInAppNotification({
-        recipientId: appt.reviewerAuthUserId,
-        recipientAuthUserId: appt.reviewerAuthUserId,
-        title: `Published — ${updated.appointmentNo}`,
-        body: `Appointment letter "${updated.title}" (Year ${pubYearEn}) has been approved and published by ${actor.nameSnapshot ?? "Approver"}.`,
-        module: "AUDIT",
-        resourceId: id,
-        resourceType: "AUDIT_APPOINTMENT",
-      }).catch((err) =>
-        logger.warn("[appointment] approve in-app notification (reviewer) failed", { error: String(err) })
-      );
+      await NotificationService.sendEmailOnce(
+        `AUDIT_APPT:${id}:PUBLISHED:reviewer`,
+        async () => {},  // reviewer is on CC of published email already
+        appt.reviewerEmail ?? "",
+        `[QMS] Published — ${updated.appointmentNo}`,
+        appt.reviewerAuthUserId,
+        {
+          title: `Published — ${updated.appointmentNo}`,
+          body: `Appointment letter "${updated.title}" (Year ${pubYearEn}) has been approved and published by ${approverName}.`,
+          htmlBody: publishedHtml,
+          module: "AUDIT",
+          resourceId: id,
+          resourceType: "AUDIT_APPOINTMENT",
+        },
+      ).catch((err) => logger.warn("[appointment] reviewer publish notify failed", { error: String(err) }));
     }
+
+    // Notify each appointed member (skip owner/reviewer already notified above)
+    const alreadyNotified = new Set([appt.ownerAuthUserId, appt.reviewerAuthUserId, appt.approverAuthUserId].filter(Boolean));
+    const memberNotifyBody = `คุณได้รับการแต่งตั้งเป็น Auditor/Working Committee ใน "${updated.title}" (ปี ${updated.year}) ซึ่งได้รับการอนุมัติและประกาศใช้แล้ว\nApproved by: ${approverName}`;
+
+    await Promise.all(
+      appt.members
+        .filter((m) => m.authUserId && !alreadyNotified.has(m.authUserId))
+        .map((m) =>
+          NotificationService.sendEmailOnce(
+            `AUDIT_APPT:${id}:PUBLISHED:member:${m.authUserId}`,
+            async () => {},
+            "",
+            `[QMS] Published — ${updated.appointmentNo}`,
+            m.authUserId,
+            {
+              title: `Published — ${updated.appointmentNo}`,
+              body: memberNotifyBody,
+              htmlBody: publishedHtml,
+              module: "AUDIT",
+              resourceId: id,
+              resourceType: "AUDIT_APPOINTMENT",
+            },
+          ).catch((err) => logger.warn("[appointment] member publish notify failed", { memberId: m.authUserId, error: String(err) }))
+        )
+    );
 
     return updated;
   }
@@ -541,35 +691,44 @@ export class AuditAppointmentService {
       return u;
     });
 
-    if (appt.ownerEmail) {
-      sendAppointmentRejectedEmail({
-        to: { name: appt.ownerNameSnapshot ?? appt.ownerEmail, email: appt.ownerEmail },
-        appointmentNo: appt.appointmentNo,
-        title: appt.title,
-        year: appt.year,
-        reason: input.reason,
-        rejectedByName: actor.nameSnapshot,
-        rejectedByRole: input.signedRole,
-        appointmentId: id,
-        senderAccessToken: actor.accessToken,
-      }).catch((err) => logger.warn("[appointment] rejection email failed", { error: String(err) }));
-    }
-
     if (appt.ownerAuthUserId) {
       const roleLabel = input.signedRole === "REVIEWER" ? "Reviewer" : "Approver";
       const rejectorName = actor.nameSnapshot ? `${actor.nameSnapshot} (${roleLabel})` : roleLabel;
       const rejectYearEn = appt.year - 543;
-      NotificationService.createInAppNotification({
-        recipientId: appt.ownerAuthUserId,
-        recipientAuthUserId: appt.ownerAuthUserId,
-        title: `Returned for Revision — ${appt.appointmentNo}`,
-        body: `${rejectorName} returned appointment letter "${appt.title}" (Year ${rejectYearEn}) for revision.\nReason: ${input.reason}`,
-        module: "AUDIT",
-        resourceId: id,
-        resourceType: "AUDIT_APPOINTMENT",
-      }).catch((err) =>
-        logger.warn("[appointment] reject in-app notification failed", { error: String(err) })
-      );
+
+      await NotificationService.sendEmailOnce(
+        `AUDIT_APPT:${id}:REJECTED:${input.signedRole}`,
+        () => sendAppointmentRejectedEmail({
+          to: { name: appt.ownerNameSnapshot ?? appt.ownerEmail!, email: appt.ownerEmail! },
+          appointmentNo: appt.appointmentNo,
+          title: appt.title,
+          year: appt.year,
+          reason: input.reason,
+          rejectedByName: actor.nameSnapshot,
+          rejectedByRole: input.signedRole,
+          appointmentId: id,
+          senderAccessToken: actor.accessToken,
+        }),
+        appt.ownerEmail ?? "",
+        `[QMS] Appointment Returned — ${appt.appointmentNo}`,
+        appt.ownerAuthUserId,
+        {
+          title: `Returned for Revision — ${appt.appointmentNo}`,
+          body: `${rejectorName} returned appointment letter "${appt.title}" (Year ${rejectYearEn}) for revision.\nReason: ${input.reason}`,
+          htmlBody: buildRejectedHtml({
+            appointmentId: id,
+            appointmentNo: appt.appointmentNo,
+            title: appt.title,
+            year: appt.year,
+            rejectorName,
+            signedRole: input.signedRole,
+            reason: input.reason,
+          }),
+          module: "AUDIT",
+          resourceId: id,
+          resourceType: "AUDIT_APPOINTMENT",
+        },
+      ).catch((err) => logger.warn("[appointment] reject notify failed", { error: String(err) }));
     }
 
     return updated;

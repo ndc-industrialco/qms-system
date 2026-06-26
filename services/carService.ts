@@ -30,6 +30,7 @@ export type CarDetail = {
   defectDetail: string;
   nonConformanceRef: string;
   issuerPosition: string;
+  issuerSignaturePath: string | null;
   issuedAt: string | null;
   responseDueAt: string | null;
   reCar: boolean;
@@ -49,12 +50,16 @@ export type CarDetail = {
   mrResponseReview: CarMrResponseReviewDetail | null;
 };
 
+export type FiveWhyItem = { question: string; answer: string };
+
 export type CarResponseDetail = {
   id: string;
   responderId: string;
   responderAuthUserId?: string | null;
   responderPosition: string;
   respondedAt: string;
+  responseType: "FIVE_WHY" | "OTHER";
+  fiveWhys: FiveWhyItem[] | null;
   whyAnalysis: string;
   additionalToolDetail: string | null;
   rootCausePerson: boolean;
@@ -67,6 +72,7 @@ export type CarResponseDetail = {
   immediateAction: string;
   preventiveAction: string;
   plannedCompletionDate: string;
+  responderSignaturePath: string | null;
   responder: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null };
   attachments: CarAttachmentRow[];
 };
@@ -81,6 +87,7 @@ export type CarVerificationDetail = {
   findings: string;
   result: VerificationResult;
   nextDueDate: string | null;
+  verifierSignaturePath: string | null;
   verifier: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null };
 };
 
@@ -175,16 +182,19 @@ export class CarService {
   }
 
   /** Resolve the designated MR user: SystemConfig first, then fallback to first QMS_MR/MR role grant. */
-  private async resolveMrUser(): Promise<{ authUserId: string; email?: string | null } | null> {
-    const authKey = await this.configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
-    if (authKey) return { authUserId: authKey };
+  private async resolveMrUser(accessToken?: string | null): Promise<{ authUserId: string; email?: string | null } | null> {
+    const [authKey, emailKey] = await Promise.all([
+      this.configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID"),
+      this.configRepo.findValueByKey("CURRENT_MR_EMAIL"),
+    ]);
+    if (authKey) return { authUserId: authKey, email: emailKey };
     const localKey = await this.configRepo.findValueByKey("CURRENT_MR_USER_ID");
-    if (localKey) return { authUserId: localKey };
+    if (localKey) return { authUserId: localKey, email: emailKey };
 
-    // ponytail: fallback — no SystemConfig set, find first MR role grant from Auth Center
+    // fallback — find first QMS_MR role grant from Auth Center using caller's delegated token
     try {
       const { listAuthCenterRoleGrants } = await import("@/lib/auth-center-admin-client");
-      const grants = await listAuthCenterRoleGrants();
+      const grants = await listAuthCenterRoleGrants({ accessToken });
       const mrGrant = grants.find((g) => g.role === "QMS_MR" || g.role === "MR");
       if (mrGrant) return { authUserId: mrGrant.userId, email: mrGrant.userEmail };
     } catch (err) {
@@ -206,6 +216,7 @@ export class CarService {
       defectDetail: raw.defectDetail,
       nonConformanceRef: raw.nonConformanceRef,
       issuerPosition: raw.issuerPosition,
+      issuerSignaturePath: (raw as Record<string, unknown>).issuerSignaturePath as string | null ?? null,
       issuedAt: raw.issuedAt?.toISOString() ?? null,
       responseDueAt: raw.responseDueAt?.toISOString() ?? null,
       reCar: raw.reCar,
@@ -236,8 +247,11 @@ export class CarService {
             responderAuthUserId: raw.response.responderAuthUserId ?? null,
             responderPosition: raw.response.responderPosition,
             respondedAt: raw.response.respondedAt.toISOString(),
+            responseType: (raw.response as Record<string, unknown>).responseType as "FIVE_WHY" | "OTHER" ?? "FIVE_WHY",
+            fiveWhys: (raw.response as Record<string, unknown>).fiveWhys as import("@/types/car").FiveWhyItem[] | null ?? null,
             whyAnalysis: raw.response.whyAnalysis,
             additionalToolDetail: raw.response.additionalToolDetail,
+            responderSignaturePath: (raw.response as Record<string, unknown>).responderSignaturePath as string | null ?? null,
             rootCausePerson: raw.response.rootCausePerson,
             rootCauseMaterial: raw.response.rootCauseMaterial,
             rootCauseMachine: raw.response.rootCauseMachine,
@@ -278,6 +292,7 @@ export class CarService {
         findings: v.findings,
         result: v.result as VerificationResult,
         nextDueDate: v.nextDueDate?.toISOString() ?? null,
+        verifierSignaturePath: (v as Record<string, unknown>).verifierSignaturePath as string | null ?? null,
         verifier: {
           id: v.verifierId,
           authUserId: v.verifierAuthUserId ?? null,
@@ -501,6 +516,7 @@ export class CarService {
     actorId: string,
     actorAuthUserId?: string | null,
     accessToken?: string | null,
+    issuerSignaturePath?: string | null,
   ): Promise<{ car: CarDetail; emailQueued: boolean; emailSkipReason?: string }> {
     const car = await this.carRepo.findForIssue(id);
     if (!car) throw new NotFoundError("CAR");
@@ -513,7 +529,7 @@ export class CarService {
     const emailCc = car.targetEmailGroupsCc ?? [];
 
     await db.$transaction(async (tx) => {
-      await this.carRepo.issue(id, now, responseDueAt, tx);
+      await this.carRepo.issue(id, now, responseDueAt, issuerSignaturePath ?? null, tx);
 
       for (const email of emailTargets) {
         await this.carRepo.createNotificationLog({ carMasterId: id, type: "ISSUED", recipient: email }, tx);
@@ -550,7 +566,21 @@ export class CarService {
     } else {
       emailQueued = true;
       for (const email of emailTargets) {
-        sendCarIssuedEmail({ carId: id, carNo: car.carNo, targetEmail: email, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
+        sendCarIssuedEmail({
+          carId: id,
+          carNo: car.carNo,
+          targetEmail: email,
+          cc: emailCc,
+          senderAccessToken: accessToken,
+          targetDepartmentName: car.targetDepartmentName ?? undefined,
+          sourceType: car.sourceType,
+          isoStandards: car.isoStandards ?? [],
+          defectDetail: car.defectDetail,
+          nonConformanceRef: car.nonConformanceRef,
+          issuerName: car.issuerName ?? undefined,
+          issuerPosition: car.issuerPosition ?? undefined,
+          responseDueAt: car.responseDueAt?.toISOString() ?? undefined,
+        }).catch((err) =>
           logger.error("[CarService.issueCar] Email failed", { email, error: err instanceof Error ? err.message : String(err) })
         );
       }
@@ -586,7 +616,9 @@ export class CarService {
                 event: "ISSUED",
                 carNo: car.carNo,
                 carId: id,
-                body: `CAR หมายเลข ${car.carNo} ถูกส่งถึงแผนก ${car.targetDepartmentName ?? "-"}`,
+                targetDepartmentName: car.targetDepartmentName ?? undefined,
+                defectDetail: car.defectDetail ?? undefined,
+                isoStandards: car.isoStandards ?? [],
               })
             )
           );
@@ -612,7 +644,9 @@ export class CarService {
         event: "ISSUED",
         carNo: car.carNo,
         carId: id,
-        body: `CAR ${car.carNo} ออกแล้ว — รอการตอบกลับจาก ${car.targetDepartmentName ?? "แผนกที่เกี่ยวข้อง"}`,
+        targetDepartmentName: car.targetDepartmentName ?? undefined,
+        defectDetail: car.defectDetail ?? undefined,
+        isoStandards: car.isoStandards ?? [],
       }).catch(() => null);
     }
 
@@ -643,7 +677,7 @@ export class CarService {
 
     const [mrEmailConfig, mrUser, qmsEmail] = await Promise.all([
       this.configRepo.findValueByKey("CURRENT_MR_EMAIL"),
-      this.resolveMrUser(),
+      this.resolveMrUser(accessToken),
       this.configRepo.findValueByKey("CURRENT_QMS_EMAIL"),
     ]);
     const responderSnapshot = await this.getIdentitySnapshot(responderId);
@@ -701,27 +735,57 @@ export class CarService {
     CarReminderService.cancel(id).catch(() => {});
 
     // Send emails after transaction committed (non-blocking)
-    if (mrEmail && mrReviewToken && canReceiveEmail(mrSnapshot?.m365Linked)) {
+    if (!mrUser) {
+      logger.warn("[CarService.respondToCar] MR user not resolved — email will be sent without approve/reject token", { carId: id });
+    }
+    if (mrEmail && canReceiveEmail(mrSnapshot?.m365Linked)) {
       sendCarMrReviewRequestEmail({
         carId: id,
         carNo: car.carNo,
         mrEmail,
-        token: mrReviewToken,
+        token: mrReviewToken ?? undefined,
         plannedCompletionDate: plannedDate,
         senderAccessToken: accessToken,
       }).catch((err) => logger.error("[CarService.respondToCar] MR review email failed", err));
+    } else if (!mrEmail) {
+      logger.warn("[CarService.respondToCar] MR email not resolved — MR review email skipped", { carId: id });
     }
     if (infoRecipients.length > 0) {
-      sendCarRespondedEmail({ carId: id, carNo: car.carNo, recipients: infoRecipients, senderAccessToken: accessToken }).catch((err) =>
+      sendCarRespondedEmail({
+        carId: id,
+        carNo: car.carNo,
+        recipients: infoRecipients,
+        senderAccessToken: accessToken,
+        targetDepartmentName: (car as Record<string, unknown>).targetDepartmentName as string | undefined,
+        defectDetail: (car as Record<string, unknown>).defectDetail as string | undefined,
+        isoStandards: (car as Record<string, unknown>).isoStandards as string[] | undefined,
+      }).catch((err) =>
         logger.error("[CarService.respondToCar] QMS email failed", err)
       );
     }
     // In-app notifications
+    const carDeptName = (car as Record<string, unknown>).targetDepartmentName as string | undefined;
+    const carDefect   = (car as Record<string, unknown>).defectDetail as string | undefined;
+    const carIso      = (car as Record<string, unknown>).isoStandards as string[] | undefined;
     if (mrUser) {
-      notifyCarUser({ recipientAuthUserId: mrUser.authUserId, event: "MR_REVIEW", carNo: car.carNo, carId: id });
+      logger.info("[CarService.respondToCar] Sending MR_REVIEW notification", { mrAuthUserId: mrUser.authUserId, carId: id });
+      notifyCarUser({
+        recipientAuthUserId: mrUser.authUserId,
+        event: "MR_REVIEW",
+        carNo: car.carNo,
+        carId: id,
+        targetDepartmentName: carDeptName,
+        defectDetail: carDefect,
+        isoStandards: carIso,
+        mrReviewToken,
+        plannedCompletionDate: plannedDate,
+      }).catch((err) => logger.error("[CarService.respondToCar] MR_REVIEW notification failed", { error: String(err) }));
+    } else {
+      logger.warn("[CarService.respondToCar] MR user not resolved — MR_REVIEW in-app notification skipped", { carId: id });
     }
     if (car.issuerAuthUserId) {
-      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "RESPONDED", carNo: car.carNo, carId: id });
+      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "RESPONDED", carNo: car.carNo, carId: id, targetDepartmentName: carDeptName, defectDetail: carDefect, isoStandards: carIso })
+        .catch((err) => logger.error("[CarService.respondToCar] RESPONDED notification failed", { error: String(err) }));
     }
 
     const detail = await this.carRepo.findDetailById(id);
@@ -773,7 +837,8 @@ export class CarService {
         input.action,
         input.comment,
         nextStatus,
-        tx
+        tx,
+        input.signaturePath,
       );
 
       const notifType = input.action === "APPROVED" ? "PLAN_APPROVED" : "PLAN_REJECTED";
@@ -810,7 +875,7 @@ export class CarService {
     const event = input.action === "APPROVED" ? "PLAN_APPROVED" : "PLAN_REJECTED" as const;
     const notifTargets = [car.issuerAuthUserId, car.response?.responderAuthUserId].filter(Boolean) as string[];
     for (const uid of [...new Set(notifTargets)]) {
-      notifyCarUser({ recipientAuthUserId: uid, event, carNo: car.carNo, carId: id });
+      notifyCarUser({ recipientAuthUserId: uid, event, carNo: car.carNo, carId: id, targetDepartmentName: car.targetDepartmentName ?? undefined, defectDetail: (car as Record<string, unknown>).defectDetail as string | undefined, isoStandards: (car as Record<string, unknown>).isoStandards as string[] | undefined, comment: input.comment });
     }
 
     const detail = await this.carRepo.findDetailById(id);
@@ -852,7 +917,8 @@ export class CarService {
         input.action,
         input.comment,
         nextStatus,
-        tx
+        tx,
+        input.signaturePath,
       );
 
       const notifType = input.action === "APPROVED" ? "PLAN_APPROVED" : "PLAN_REJECTED";
@@ -889,7 +955,7 @@ export class CarService {
     const event = input.action === "APPROVED" ? "PLAN_APPROVED" : "PLAN_REJECTED" as const;
     const notifTargets = [car.issuerAuthUserId, car.response?.responderAuthUserId].filter(Boolean) as string[];
     for (const uid of [...new Set(notifTargets)]) {
-      notifyCarUser({ recipientAuthUserId: uid, event, carNo: car.carNo, carId: id });
+      notifyCarUser({ recipientAuthUserId: uid, event, carNo: car.carNo, carId: id, targetDepartmentName: car.targetDepartmentName ?? undefined, defectDetail: (car as Record<string, unknown>).defectDetail as string | undefined, isoStandards: (car as Record<string, unknown>).isoStandards as string[] | undefined, comment: input.comment });
     }
 
     const detail = await this.carRepo.findDetailById(id);
@@ -924,7 +990,7 @@ export class CarService {
     let actionTokenValue: string | null = null;
     const [mrEmailConfig, mrUserForVerify] = await Promise.all([
       input.result === "PASSED" ? this.configRepo.findValueByKey("CURRENT_MR_EMAIL") : Promise.resolve(null),
-      input.result === "PASSED" ? this.resolveMrUser() : Promise.resolve(null),
+      input.result === "PASSED" ? this.resolveMrUser(accessToken) : Promise.resolve(null),
     ]);
     const mrVerifyEmailResolved = mrEmailConfig ?? mrUserForVerify?.email ?? null;
     const deptEmails = (input.result === "FAILED" && input.round === 1)
@@ -993,10 +1059,13 @@ export class CarService {
       }
     }
     // In-app notifications
+    const verifyDept   = car.targetDepartmentName ?? undefined;
+    const verifyDefect = (car as Record<string, unknown>).defectDetail as string | undefined;
+    const verifyIso    = (car as Record<string, unknown>).isoStandards as string[] | undefined;
     if (input.result === "PASSED" && mrUserForVerify) {
-      notifyCarUser({ recipientAuthUserId: mrUserForVerify.authUserId, event: "VERIFY_1_PASS", carNo: car.carNo, carId: id });
+      notifyCarUser({ recipientAuthUserId: mrUserForVerify.authUserId, event: "VERIFY_1_PASS", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, mrReviewToken: actionTokenValue });
     } else if (input.result === "FAILED" && input.round === 1 && car.issuerAuthUserId) {
-      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "VERIFY_2_SCHEDULED", carNo: car.carNo, carId: id });
+      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "VERIFY_2_SCHEDULED", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, nextDueDate: input.nextDueDate });
     }
 
     const detail = await this.carRepo.findDetailById(id);
@@ -1004,7 +1073,7 @@ export class CarService {
     return this.mapDetail(detail);
   }
 
-  async closeCar(id: string, token: string, comment: string | null | undefined): Promise<CarDetail> {
+  async closeCar(id: string, token: string, comment: string | null | undefined, signaturePath?: string | null): Promise<CarDetail> {
     const { ActionTokenRepository } = await import("@/repositories/actionTokenRepository");
     const tokenRepo = new ActionTokenRepository();
     const tokenData = await tokenRepo.findByToken(token);
@@ -1033,7 +1102,8 @@ export class CarService {
           mrEmployeeId: mrSnapshot?.employeeId ?? null,
         },
         comment,
-        tx
+        tx,
+        signaturePath,
       );
 
       await AuditService.record({
@@ -1061,6 +1131,7 @@ export class CarService {
     mrUserId: string,
     comment: string | null | undefined,
     mrAuthUserId?: string | null,
+    signaturePath?: string | null,
   ): Promise<CarDetail> {
     const car = await this.carRepo.findForClose(id);
     if (!car) throw new NotFoundError("CAR");
@@ -1078,7 +1149,8 @@ export class CarService {
           mrEmployeeId: mrSnapshot?.employeeId ?? null,
         },
         comment,
-        tx
+        tx,
+        signaturePath,
       );
 
       await AuditService.record({
@@ -1180,7 +1252,7 @@ export class CarService {
           const recipients = [...new Set((deptResult?.members ?? []).map((m) => m.id).filter(Boolean))];
           await Promise.all(
             recipients.map((recipientAuthUserId) =>
-              notifyCarUser({ recipientAuthUserId, event: "RE_CAR", carNo: newCarNo, carId: newId })
+              notifyCarUser({ recipientAuthUserId, event: "RE_CAR", carNo: newCarNo, carId: newId, targetDepartmentName: original.targetDepartmentName ?? undefined, defectDetail: original.defectDetail ?? undefined, isoStandards: original.isoStandards ?? [] })
             )
           );
         })
@@ -1205,7 +1277,18 @@ export class CarService {
     if (emailTargets.length === 0) return;
 
     for (const email of emailTargets) {
-      sendCarReminderEmail({ carId, carNo: car.carNo, targetEmail: email, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
+      sendCarReminderEmail({
+        carId,
+        carNo: car.carNo,
+        targetEmail: email,
+        cc: emailCc,
+        senderAccessToken: accessToken,
+        targetDepartmentName: car.targetDepartmentName ?? undefined,
+        isoStandards: car.isoStandards ?? [],
+        defectDetail: car.defectDetail,
+        nonConformanceRef: car.nonConformanceRef,
+        responseDueAt: car.responseDueAt?.toISOString() ?? undefined,
+      }).catch((err) =>
         logger.error("[CarService.sendReminder] Email failed", err)
       );
       await this.carRepo.createNotificationLog({ carMasterId: carId, type: "REMINDER", recipient: email });

@@ -28,10 +28,11 @@ export async function PATCH(request: NextRequest) {
     const parsed = updateSchema.parse(await request.json());
     // Only update keys that were explicitly provided in the request
     const current = await service.getConfig(session.user.accessToken);
-    await service.updateConfig(
-      parsed.mrUserId !== undefined ? parsed.mrUserId : current.currentMrUserId,
-      parsed.qmsUserId !== undefined ? parsed.qmsUserId : current.currentQmsUserId,
-    );
+    const newMrId  = parsed.mrUserId  !== undefined ? parsed.mrUserId  : current.currentMrUserId;
+    const newQmsId = parsed.qmsUserId !== undefined ? parsed.qmsUserId : current.currentQmsUserId;
+    const mrEmail  = newMrId  ? (current.users.find((u) => u.authUserId === newMrId)?.email  ?? null) : null;
+    const qmsEmail = newQmsId ? (current.users.find((u) => u.authUserId === newQmsId)?.email ?? null) : null;
+    await service.updateConfig(newMrId, newQmsId, { mrEmail, qmsEmail });
     return sendSuccess(null, "Approval config updated successfully");
   } catch (error) {
     return handleApiError(error);

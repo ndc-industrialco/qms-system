@@ -6,6 +6,7 @@ export class NotificationRepository {
     recipientAuthUserId?: string | null;
     title: string;
     body: string;
+    htmlBody?: string | null;
     module: string;
     resourceId: string;
     resourceType: string;

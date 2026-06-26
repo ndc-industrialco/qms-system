@@ -51,7 +51,7 @@ async function sendMail(opts: SendMailOpts): Promise<void> {
   }
 }
 
-function esc(v: string) {
+export function esc(v: string) {
   return v.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
 
@@ -73,7 +73,7 @@ function fmtDateTime(iso: string) {
 
 // ─── Shared layout ────────────────────────────────────────────────────────────
 
-function layout(opts: {
+export function layout(opts: {
   badgeColor: string;      // hex e.g. "#0f1059"
   badgeText: string;       // e.g. "ACTION REQUIRED"
   title: string;
@@ -502,9 +502,7 @@ export async function sendAppointmentSignRequestEmail(opts: {
 
 // ─── Appointment: published (full letter to all recipients) ───────────────────
 
-export async function sendAppointmentPublishedEmail(opts: {
-  recipients: { name: string; email: string }[];
-  cc?: { name: string; email: string }[];
+export function buildAppointmentPublishedHtml(opts: {
   appointmentNo: string;
   title: string;
   year: number;
@@ -514,9 +512,7 @@ export async function sendAppointmentPublishedEmail(opts: {
   ownerName?: string | null;
   reviewerName?: string | null;
   appointmentId: string;
-  senderAccessToken?: string | null;
-}): Promise<void> {
-  if (!opts.recipients.length && !opts.cc?.length) return;
+}): string {
   const url = getAppUrl(`/audit/appointments/${opts.appointmentId}`);
   const yearEn = opts.year - 543;
 
@@ -528,10 +524,6 @@ export async function sendAppointmentPublishedEmail(opts: {
     ADVISOR: "Advisor",
   };
 
-  const standardsList = opts.standards.length
-    ? opts.standards.map((s) => `<span style="display:inline-block;background:#e0e7ff;color:#3730a3;border-radius:4px;padding:3px 10px;font-size:12px;font-weight:700;margin:2px 4px 2px 0">${esc(s)}</span>`).join("")
-    : "—";
-
   const memberRows = opts.members.map((m, i) =>
     `<tr style="background:${i % 2 === 0 ? "#f8fafc" : "#fff"}">
       <td style="padding:9px 14px;font-size:12px;color:#64748b;border-bottom:1px solid #e2e8f0">${i + 1}</td>
@@ -542,7 +534,7 @@ export async function sendAppointmentPublishedEmail(opts: {
     </tr>`
   ).join("");
 
-  const bodyHtml = `
+  return `
 <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;background:#f1f5f9;padding:32px 16px">
 <div style="max-width:760px;margin:0 auto">
 
@@ -625,13 +617,30 @@ export async function sendAppointmentPublishedEmail(opts: {
 
 </div>
 </div>`;
+}
 
+export async function sendAppointmentPublishedEmail(opts: {
+  recipients: { name: string; email: string }[];
+  cc?: { name: string; email: string }[];
+  appointmentNo: string;
+  title: string;
+  year: number;
+  standards: string[];
+  members: { name: string; role: string; department?: string | null; standards: string[] }[];
+  approverName: string;
+  ownerName?: string | null;
+  reviewerName?: string | null;
+  appointmentId: string;
+  senderAccessToken?: string | null;
+}): Promise<void> {
+  if (!opts.recipients.length && !opts.cc?.length) return;
+  const yearEn = opts.year - 543;
   await sendMail({
     to: opts.recipients,
     cc: opts.cc?.length ? opts.cc : undefined,
     senderAccessToken: opts.senderAccessToken,
     subject: `[QMS] Appointment Letter Published — ${opts.appointmentNo} (Year ${yearEn})`,
-    bodyHtml,
+    bodyHtml: buildAppointmentPublishedHtml(opts),
   });
 }
 

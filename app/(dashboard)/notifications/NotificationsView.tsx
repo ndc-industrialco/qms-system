@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCheck, ExternalLink, Trash2 } from "lucide-react";
+import { ArrowLeft, Bell, CheckCheck, ExternalLink, Filter, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -10,6 +11,7 @@ interface NotificationItem {
   id: string;
   title: string;
   body: string;
+  htmlBody?: string | null;
   module: string;
   resourceId: string;
   resourceType: string;
@@ -17,29 +19,48 @@ interface NotificationItem {
   createdAt: string;
 }
 
-const MODULE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  DAR:         { bg: "bg-blue-100",    text: "text-blue-700",    label: "DAR" },
-  KPI:         { bg: "bg-green-100",   text: "text-green-700",   label: "KPI" },
-  KPI_MONTHLY: { bg: "bg-emerald-100", text: "text-emerald-700", label: "KPI Monthly" },
-  CAR:         { bg: "bg-orange-100",  text: "text-orange-700",  label: "CAR" },
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const MODULE_META: Record<string, { bg: string; text: string; dot: string; brand: string; label: string }> = {
+  CAR:         { bg: "bg-orange-100",  text: "text-orange-700",  dot: "bg-orange-400",  brand: "#ea580c", label: "CAR"        },
+  DAR:         { bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-500",    brand: "#2563eb", label: "DAR"        },
+  KPI:         { bg: "bg-green-100",   text: "text-green-700",   dot: "bg-green-500",   brand: "#16a34a", label: "KPI"        },
+  KPI_MONTHLY: { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500", brand: "#059669", label: "KPI Monthly"},
+  AUDIT:       { bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-500",  brand: "#7c3aed", label: "Audit"      },
 };
 
+const FALLBACK_META = { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400", brand: "#64748b", label: "—" };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function getActionPath(item: NotificationItem): string | null {
-  if (item.module === "CAR") return `/car/${item.resourceId}`;
-  if (item.module === "DAR") return `/dar/${item.resourceId}`;
-  if (item.module === "KPI") return `/qms/kpi/${item.resourceId}`;
+  if (item.module === "CAR")   return `/car/${item.resourceId}`;
+  if (item.module === "DAR")   return `/dar/${item.resourceId}`;
+  if (item.module === "KPI")   return `/qms/kpi/${item.resourceId}`;
+  if (item.module === "AUDIT") {
+    if (item.resourceType === "AUDIT_APPOINTMENT") {
+      if (item.title.startsWith("Signature Required"))  return `/approve/audit/appointments/${item.resourceId}/reviewer`;
+      if (item.title.startsWith("Approval Required"))   return `/approve/audit/appointments/${item.resourceId}/approver`;
+      return `/audit/appointments/${item.resourceId}`;
+    }
+    if (item.resourceType === "AUDIT_PLAN") {
+      if (item.title.includes("Signature Required")) return `/approve/audit/${item.resourceId}/reviewer`;
+      if (item.title.includes("Approval Required"))  return `/approve/audit/${item.resourceId}/approver`;
+      return `/audit/plans/${item.resourceId}`;
+    }
+  }
   return null;
 }
 
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "เมื่อกี้";
+  if (m < 1)  return "เมื่อกี้";
   if (m < 60) return `${m} นาทีที่แล้ว`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h} ชั่วโมงที่แล้ว`;
   const d = Math.floor(h / 24);
-  if (d < 7) return `${d} วันที่แล้ว`;
+  if (d < 7)  return `${d} วันที่แล้ว`;
   return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(dateStr));
 }
 
@@ -47,14 +68,229 @@ function fullDate(dateStr: string): string {
   return new Intl.DateTimeFormat("th-TH", { dateStyle: "full", timeStyle: "short" }).format(new Date(dateStr));
 }
 
+// Body format:
+//   line 0 — Thai intro
+//   line 1 — English intro (no ":" = not a metadata row)
+//   line 2+ — "Label: value" rows
+function parseBody(body: string) {
+  const lines = body.split("\n").filter(Boolean);
+  const thLine   = lines[0] ?? "";
+  const hasEnLine = lines.length > 1 && !lines[1].includes(":");
+  const enLine   = hasEnLine ? lines[1] : "";
+  const metaStart = hasEnLine ? 2 : 1;
+  const rows = lines.slice(metaStart).map((line) => {
+    const idx = line.indexOf(":");
+    if (idx === -1) return { label: "", value: line };
+    return { label: line.slice(0, idx).trim(), value: line.slice(idx + 1).trim() };
+  });
+  return { thLine, enLine, rows };
+}
+
+// ─── Detail card ──────────────────────────────────────────────────────────────
+
+function HtmlFrame({ html, itemId }: { html: string; itemId: string }) {
+  const [height, setHeight] = useState(600);
+
+  useEffect(() => {
+    function onMsg(e: MessageEvent) {
+      if (e.data?.notifFrameId === itemId) setHeight(e.data.height + 16);
+    }
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [itemId]);
+
+  const srcDoc = [
+    "<!DOCTYPE html><html><head><meta charset=\"utf-8\">",
+    "<style>body{margin:0;padding:0;}</style></head><body>",
+    html,
+    "<script>",
+    "function rh(){parent.postMessage({notifFrameId:" + JSON.stringify(itemId) + ",height:document.body.scrollHeight},\"*\");}",
+    "window.addEventListener(\"load\",rh);",
+    "new MutationObserver(rh).observe(document.body,{childList:true,subtree:true});",
+    "<\/script></body></html>",
+  ].join("");
+
+  return (
+    <iframe
+      key={itemId}
+      title="notification-html"
+      srcDoc={srcDoc}
+      sandbox="allow-same-origin allow-popups allow-scripts"
+      className="w-full border-0 block"
+      style={{ height, minHeight: 200 }}
+    />
+  );
+}
+
+function NotificationDetail({
+  item,
+  onDelete,
+  deleting,
+}: {
+  item: NotificationItem;
+  onDelete: () => void;
+  deleting: boolean;
+}) {
+  const mod = MODULE_META[item.module] ?? FALLBACK_META;
+  const actionPath = getActionPath(item);
+  const { thLine, enLine, rows } = parseBody(item.body);
+
+  const hasHtml = Boolean(item.htmlBody);
+
+  return (
+    <div className="flex flex-col gap-0">
+      {/* Action bar */}
+      <div className={cn("flex items-center justify-between gap-2 mb-3", hasHtml && "px-4 pt-4 sm:px-6 sm:pt-5")}>
+        <p className="text-xs text-slate-400">{fullDate(item.createdAt)}</p>
+        <div className="flex items-center gap-2">
+          {actionPath && (
+            <Link
+              href={actionPath}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: mod.brand }}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              เปิดรายการ
+            </Link>
+          )}
+          <button
+            onClick={onDelete}
+            disabled={deleting}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            ลบ
+          </button>
+        </div>
+      </div>
+
+      {/* HTML email template — fills full width, no extra border/wrapper */}
+      {item.htmlBody ? (
+        <HtmlFrame html={item.htmlBody} itemId={item.id} />
+      ) : (
+        /* Plain-text fallback for older notifications */
+        <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-md">
+          <div className="px-5 py-5 sm:px-7 sm:py-6" style={{ background: mod.brand }}>
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-white/50">
+              NDC Quality Management System
+            </p>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="flex-1 text-base font-extrabold leading-snug text-white sm:text-lg">{item.title}</h2>
+              <span className="shrink-0 rounded-full bg-white/20 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">{mod.label}</span>
+            </div>
+          </div>
+          <div className="bg-white px-5 py-5 sm:px-7 sm:py-6">
+            {thLine && (
+              <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                <p className="text-sm font-medium leading-relaxed text-slate-800">{thLine}</p>
+                {enLine && <p className="mt-1 text-xs italic leading-relaxed text-slate-500">{enLine}</p>}
+              </div>
+            )}
+            {rows.length > 0 && (
+              <div className="mb-5 overflow-hidden rounded-xl border border-slate-100">
+                {rows.map((row, i) => (
+                  <div key={i} className={cn("flex flex-col gap-0.5 px-4 py-2.5 sm:flex-row sm:items-baseline sm:gap-3", i < rows.length - 1 && "border-b border-slate-50")}>
+                    {row.label && <span className="w-full shrink-0 text-[10px] font-bold uppercase tracking-wide text-slate-400 sm:w-36">{row.label}</span>}
+                    <span className="text-sm font-medium text-slate-800">{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="border-t border-slate-100 bg-slate-50 px-5 py-3 text-center text-[11px] text-slate-400">
+            NDC Industrial Co., Ltd. — Quality Management System
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── List row ─────────────────────────────────────────────────────────────────
+
+function NotifRow({
+  n, isActive, isChecked, onSelect, onCheck, onDelete,
+}: {
+  n: NotificationItem;
+  isActive: boolean;
+  isChecked: boolean;
+  onSelect: () => void;
+  onCheck: (e: React.MouseEvent) => void;
+  onDelete: () => void;
+}) {
+  const mod = MODULE_META[n.module] ?? FALLBACK_META;
+  const { thLine } = parseBody(n.body);
+
+  return (
+    <div
+      className={cn(
+        "group relative flex cursor-pointer select-none items-start gap-2.5 rounded-xl p-3 transition-all",
+        isActive
+          ? "bg-[#0f1059] shadow-sm"
+          : n.isRead
+            ? "bg-white hover:bg-slate-50"
+            : "border-l-2 border-[#0f1059] bg-white hover:bg-blue-50/40"
+      )}
+      onClick={onSelect}
+    >
+      <input
+        type="checkbox"
+        checked={isChecked}
+        onClick={onCheck}
+        onChange={() => {}}
+        className="mt-1 h-3.5 w-3.5 shrink-0 cursor-pointer rounded accent-[#0f1059]"
+      />
+      <span className={cn("mt-2 h-2 w-2 shrink-0 rounded-full", isActive ? "bg-white/50" : mod.dot)} />
+      <div className="min-w-0 flex-1">
+        <div className="mb-0.5 flex items-center gap-1.5">
+          <span className={cn(
+            "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+            isActive ? "bg-white/20 text-white" : cn(mod.bg, mod.text)
+          )}>
+            {mod.label}
+          </span>
+          <span className={cn("text-[10px]", isActive ? "text-white/50" : "text-slate-400")}>
+            {relativeTime(n.createdAt)}
+          </span>
+        </div>
+        <p className={cn("truncate text-xs font-semibold leading-snug", isActive ? "text-white" : "text-slate-900")}>
+          {n.title}
+        </p>
+        <p className={cn("mt-0.5 line-clamp-2 text-[11px] leading-relaxed", isActive ? "text-white/65" : "text-slate-500")}>
+          {thLine}
+        </p>
+      </div>
+      {!n.isRead && !isActive && (
+        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0f1059]" />
+      )}
+      <button
+        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+        className={cn(
+          "absolute right-2 top-2 rounded-lg p-1 opacity-0 transition-opacity group-hover:opacity-100",
+          isActive
+            ? "text-white/50 hover:bg-white/10 hover:text-white"
+            : "text-slate-300 hover:bg-red-50 hover:text-red-500"
+        )}
+        title="ลบ"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function NotificationsView() {
   const qc = useQueryClient();
-  const [selected, setSelected] = useState<NotificationItem | null>(null);
-  const [unreadOnly, setUnreadOnly] = useState(false);
-  const [moduleFilter, setModuleFilter] = useState<string>("ALL");
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const searchParams = useSearchParams();
 
-  // ponytail: same queryKey as NotificationBell — must return the same shape (full response)
+  const [selected, setSelected]         = useState<NotificationItem | null>(null);
+  const [showDetail, setShowDetail]     = useState(false);
+  const [unreadOnly, setUnreadOnly]     = useState(false);
+  const [moduleFilter, setModuleFilter] = useState("ALL");
+  const [checkedIds, setCheckedIds]     = useState<Set<string>>(new Set());
+
   const { data: raw, isLoading } = useQuery<{ data: { notifications: NotificationItem[]; unreadCount: number } }>({
     queryKey: ["notifications"],
     queryFn: async () => {
@@ -64,33 +300,25 @@ export default function NotificationsView() {
     },
     refetchInterval: 30000,
   });
-  const data = raw?.data;
+  const all         = raw?.data?.notifications ?? [];
+  const unreadCount = raw?.data?.unreadCount   ?? 0;
 
   const markRead = useMutation({
-    mutationFn: async (id: string) => {
-      await fetch(`/api/notifications/${id}/read`, { method: "PATCH" });
-    },
+    mutationFn: async (id: string) => { await fetch(`/api/notifications/${id}/read`, { method: "PATCH" }); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
-
   const markAllRead = useMutation({
-    mutationFn: async () => {
-      await fetch("/api/notifications/read-all", { method: "PATCH" });
-    },
+    mutationFn: async () => { await fetch("/api/notifications/read-all", { method: "PATCH" }); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
-
   const deleteOne = useMutation({
-    mutationFn: async (id: string) => {
-      await fetch(`/api/notifications/${id}`, { method: "DELETE" });
-    },
+    mutationFn: async (id: string) => { await fetch(`/api/notifications/${id}`, { method: "DELETE" }); },
     onSuccess: (_d, id) => {
-      if (selected?.id === id) setSelected(null);
+      if (selected?.id === id) { setSelected(null); setShowDetail(false); }
       setCheckedIds((prev) => { const s = new Set(prev); s.delete(id); return s; });
       qc.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
-
   const deleteBulk = useMutation({
     mutationFn: async (ids: string[]) => {
       await fetch("/api/notifications", {
@@ -100,14 +328,11 @@ export default function NotificationsView() {
       });
     },
     onSuccess: (_d, ids) => {
-      if (selected && ids.includes(selected.id)) setSelected(null);
+      if (selected && ids.includes(selected.id)) { setSelected(null); setShowDetail(false); }
       setCheckedIds(new Set());
       qc.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
-
-  const all = data?.notifications ?? [];
-  const unreadCount = data?.unreadCount ?? 0;
 
   const filtered = all.filter((n) => {
     if (unreadOnly && n.isRead) return false;
@@ -117,114 +342,126 @@ export default function NotificationsView() {
 
   function handleSelect(item: NotificationItem) {
     setSelected(item);
+    setShowDetail(true);
     if (!item.isRead) markRead.mutate(item.id);
   }
 
+  useEffect(() => {
+    const id = searchParams.get("select");
+    if (!id || !all.length || selected) return;
+    const match = all.find((n) => n.id === id);
+    if (match) handleSelect(match);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all, searchParams]);
+
   function toggleCheck(id: string, e: React.MouseEvent) {
     e.stopPropagation();
-    setCheckedIds((prev) => {
-      const s = new Set(prev);
-      if (s.has(id)) s.delete(id);
-      else s.add(id);
-      return s;
-    });
+    setCheckedIds((prev) => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
   }
 
   const allFilteredChecked = filtered.length > 0 && filtered.every((n) => checkedIds.has(n.id));
-
   function toggleCheckAll() {
     if (allFilteredChecked) {
-      setCheckedIds((prev) => {
-        const s = new Set(prev);
-        filtered.forEach((n) => s.delete(n.id));
-        return s;
-      });
+      setCheckedIds((prev) => { const s = new Set(prev); filtered.forEach((n) => s.delete(n.id)); return s; });
     } else {
-      setCheckedIds((prev) => {
-        const s = new Set(prev);
-        filtered.forEach((n) => s.add(n.id));
-        return s;
-      });
+      setCheckedIds((prev) => { const s = new Set(prev); filtered.forEach((n) => s.add(n.id)); return s; });
     }
   }
 
-  const modules = [...new Set(all.map((n) => n.module))];
+  const modules      = [...new Set(all.map((n) => n.module))];
   const checkedCount = [...checkedIds].filter((id) => filtered.some((n) => n.id === id)).length;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex h-[calc(100vh-4rem)] flex-col">
+
       {/* ── Top bar ── */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 bg-white shrink-0">
-        <div className="flex items-center gap-3">
-          <Bell className="h-5 w-5 text-[#0f1059]" />
-          <h1 className="text-base font-bold text-slate-900">การแจ้งเตือน</h1>
-          {unreadCount > 0 && (
-            <span className="rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white">
-              {unreadCount}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Bulk delete */}
-          {checkedCount > 0 && (
-            <button
-              onClick={() => deleteBulk.mutate([...checkedIds].filter((id) => filtered.some((n) => n.id === id)))}
-              disabled={deleteBulk.isPending}
-              className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              ลบที่เลือก ({checkedCount})
-            </button>
-          )}
-
-          {/* Module filter */}
-          <select
-            value={moduleFilter}
-            onChange={(e) => setModuleFilter(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0f1059]/20"
-          >
-            <option value="ALL">ทุกระบบ</option>
-            {modules.map((m) => (
-              <option key={m} value={m}>{MODULE_COLORS[m]?.label ?? m}</option>
-            ))}
-          </select>
-
-          {/* Unread toggle */}
-          <button
-            onClick={() => setUnreadOnly((v) => !v)}
-            className={cn(
-              "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
-              unreadOnly
-                ? "border-[#0f1059] bg-[#0f1059] text-white"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+      <div className="shrink-0 border-b border-slate-100 bg-white">
+        <div className="flex items-center justify-between gap-2 px-4 py-3">
+          <div className="flex items-center gap-2">
+            {/* Back button on mobile when detail is open */}
+            {showDetail && (
+              <button
+                onClick={() => setShowDetail(false)}
+                className="flex items-center rounded-lg p-1 text-slate-500 hover:bg-slate-100 md:hidden"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
             )}
-          >
-            ยังไม่อ่าน
-          </button>
+            <Bell className="h-4 w-4 text-[#0f1059]" />
+            <h1 className="text-sm font-bold text-slate-900 sm:text-base">การแจ้งเตือน</h1>
+            {unreadCount > 0 && (
+              <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                {unreadCount}
+              </span>
+            )}
+          </div>
 
-          {/* Mark all read */}
-          {unreadCount > 0 && (
+          <div className="flex flex-wrap items-center justify-end gap-1.5">
+            {checkedCount > 0 && (
+              <button
+                onClick={() => deleteBulk.mutate([...checkedIds].filter((id) => filtered.some((n) => n.id === id)))}
+                disabled={deleteBulk.isPending}
+                className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">ลบที่เลือก</span>
+                <span>({checkedCount})</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5">
+              <Filter className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <select
+                value={moduleFilter}
+                onChange={(e) => setModuleFilter(e.target.value)}
+                className="bg-transparent text-xs text-slate-700 focus:outline-none"
+              >
+                <option value="ALL">ทุกระบบ</option>
+                {modules.map((m) => (
+                  <option key={m} value={m}>{MODULE_META[m]?.label ?? m}</option>
+                ))}
+              </select>
+            </div>
+
             <button
-              onClick={() => markAllRead.mutate()}
-              disabled={markAllRead.isPending}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+              onClick={() => setUnreadOnly((v) => !v)}
+              className={cn(
+                "rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors",
+                unreadOnly
+                  ? "border-[#0f1059] bg-[#0f1059] text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              )}
             >
-              <CheckCheck className="h-3.5 w-3.5" />
-              อ่านทั้งหมด
+              ยังไม่อ่าน
             </button>
-          )}
+
+            {unreadCount > 0 && (
+              <button
+                onClick={() => markAllRead.mutate()}
+                disabled={markAllRead.isPending}
+                className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+              >
+                <CheckCheck className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">อ่านทั้งหมด</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ── Body: list + detail ── */}
+      {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* ── Left list pane ── */}
-        <div className="w-80 shrink-0 overflow-y-auto border-r border-slate-100 bg-slate-50/50">
+        {/* List pane: full-width on mobile, 320px on md+ */}
+        <div className={cn(
+          "shrink-0 overflow-y-auto border-r border-slate-100 bg-slate-50/60",
+          "w-full md:w-80",
+          showDetail ? "hidden md:block" : "block"
+        )}>
           {isLoading && (
             <div className="flex flex-col gap-2 p-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-xl bg-white p-3 animate-pulse space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="animate-pulse space-y-2 rounded-xl bg-white p-3">
                   <div className="h-3 w-16 rounded bg-slate-200" />
                   <div className="h-3.5 w-full rounded bg-slate-200" />
                   <div className="h-3 w-2/3 rounded bg-slate-100" />
@@ -232,155 +469,59 @@ export default function NotificationsView() {
               ))}
             </div>
           )}
+
           {!isLoading && filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-2 py-16 text-slate-400">
-              <Bell className="h-8 w-8 opacity-30" />
+            <div className="flex flex-col items-center justify-center gap-2 py-20 text-slate-400">
+              <Bell className="h-10 w-10 opacity-20" />
               <p className="text-sm">ไม่มีการแจ้งเตือน</p>
             </div>
           )}
 
-          {/* Select-all row */}
           {!isLoading && filtered.length > 0 && (
-            <div className="flex items-center gap-2 px-3 pt-2 pb-1">
-              <input
-                type="checkbox"
-                checked={allFilteredChecked}
-                onChange={toggleCheckAll}
-                className="h-3.5 w-3.5 rounded accent-[#0f1059] cursor-pointer"
-              />
-              <span className="text-[11px] text-slate-400">เลือกทั้งหมด</span>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-0.5 p-2 pt-1">
-            {filtered.map((n) => {
-              const mod = MODULE_COLORS[n.module];
-              const isActive = selected?.id === n.id;
-              const isChecked = checkedIds.has(n.id);
-              return (
-                <div
-                  key={n.id}
-                  className={cn(
-                    "group relative flex items-start gap-2 rounded-xl p-3 transition-all cursor-pointer",
-                    isActive
-                      ? "bg-[#0f1059] text-white shadow-sm"
-                      : n.isRead
-                        ? "bg-white hover:bg-slate-100 text-slate-700"
-                        : "bg-white hover:bg-blue-50/60 text-slate-800 border-l-2 border-[#0f1059]"
-                  )}
-                  onClick={() => handleSelect(n)}
-                >
-                  {/* Checkbox */}
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onClick={(e) => toggleCheck(n.id, e)}
-                    onChange={() => {}}
-                    className="mt-1 h-3.5 w-3.5 shrink-0 rounded accent-[#0f1059] cursor-pointer"
+            <>
+              <div className="flex items-center gap-2 px-3 pb-1 pt-2.5">
+                <input
+                  type="checkbox"
+                  checked={allFilteredChecked}
+                  onChange={toggleCheckAll}
+                  className="h-3.5 w-3.5 cursor-pointer rounded accent-[#0f1059]"
+                />
+                <span className="text-[11px] text-slate-400">เลือกทั้งหมด ({filtered.length})</span>
+              </div>
+              <div className="flex flex-col gap-0.5 p-2 pt-0.5">
+                {filtered.map((n) => (
+                  <NotifRow
+                    key={n.id}
+                    n={n}
+                    isActive={selected?.id === n.id}
+                    isChecked={checkedIds.has(n.id)}
+                    onSelect={() => handleSelect(n)}
+                    onCheck={(e) => toggleCheck(n.id, e)}
+                    onDelete={() => deleteOne.mutate(n.id)}
                   />
-
-                  {/* Module badge */}
-                  <span className={cn(
-                    "mt-0.5 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                    isActive ? "bg-white/20 text-white" : (mod?.bg ?? "bg-slate-100"),
-                    isActive ? "" : (mod?.text ?? "text-slate-600"),
-                  )}>
-                    {mod?.label ?? n.module}
-                  </span>
-
-                  <div className="min-w-0 flex-1">
-                    <p className={cn("truncate text-xs font-semibold", isActive ? "text-white" : "text-slate-900")}>
-                      {n.title}
-                    </p>
-                    <p className={cn("truncate text-[11px] mt-0.5", isActive ? "text-white/70" : "text-slate-500")}>
-                      {n.body}
-                    </p>
-                    <p className={cn("text-[10px] mt-1", isActive ? "text-white/50" : "text-slate-400")}>
-                      {relativeTime(n.createdAt)}
-                    </p>
-                  </div>
-
-                  {/* Unread dot */}
-                  {!n.isRead && !isActive && (
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#0f1059]" />
-                  )}
-
-                  {/* Inline delete on hover */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); deleteOne.mutate(n.id); }}
-                    className={cn(
-                      "absolute right-2 top-2 rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity",
-                      isActive
-                        ? "text-white/60 hover:text-white hover:bg-white/10"
-                        : "text-slate-400 hover:text-red-500 hover:bg-red-50"
-                    )}
-                    title="ลบ"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
-        {/* ── Right detail pane ── */}
-        <div className="flex-1 overflow-y-auto bg-white">
+        {/* Detail pane */}
+        <div className={cn(
+          "flex-1 overflow-y-auto bg-slate-100/80",
+          showDetail ? "block" : "hidden md:block"
+        )}>
           {!selected ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-slate-300">
-              <Bell className="h-16 w-16 opacity-20" />
+              <Bell className="h-16 w-16 opacity-15" />
               <p className="text-sm">เลือกการแจ้งเตือนเพื่อดูรายละเอียด</p>
             </div>
           ) : (
-            <div className="max-w-2xl mx-auto p-8">
-              {/* Detail header */}
-              <div className="mb-6 pb-5 border-b border-slate-100">
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex items-center gap-2">
-                    {(() => {
-                      const mod = MODULE_COLORS[selected.module];
-                      return (
-                        <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", mod?.bg ?? "bg-slate-100", mod?.text ?? "text-slate-600")}>
-                          {mod?.label ?? selected.module}
-                        </span>
-                      );
-                    })()}
-                    {!selected.isRead && (
-                      <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                        ยังไม่ได้อ่าน
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => deleteOne.mutate(selected.id)}
-                    disabled={deleteOne.isPending}
-                    className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    ลบ
-                  </button>
-                </div>
-                <h2 className="text-xl font-bold text-slate-900 leading-snug">{selected.title}</h2>
-                <p className="mt-1.5 text-sm text-slate-500">{fullDate(selected.createdAt)}</p>
-              </div>
-
-              {/* Detail body */}
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 px-6 py-5">
-                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{selected.body}</p>
-              </div>
-
-              {/* Action */}
-              {getActionPath(selected) && (
-                <div className="mt-6">
-                  <Link
-                    href={getActionPath(selected)!}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#0f1059] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0f1059]/90 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    เปิดรายการ {selected.module}
-                  </Link>
-                </div>
-              )}
+            <div className={cn(selected.htmlBody ? "p-0" : "mx-auto max-w-2xl p-4 sm:p-6")}>
+              <NotificationDetail
+                item={selected}
+                onDelete={() => deleteOne.mutate(selected.id)}
+                deleting={deleteOne.isPending}
+              />
             </div>
           )}
         </div>

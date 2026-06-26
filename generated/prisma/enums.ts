@@ -108,6 +108,14 @@ export const VerificationResult = {
 export type VerificationResult = (typeof VerificationResult)[keyof typeof VerificationResult]
 
 
+export const CarResponseType = {
+  FIVE_WHY: 'FIVE_WHY',
+  OTHER: 'OTHER'
+} as const
+
+export type CarResponseType = (typeof CarResponseType)[keyof typeof CarResponseType]
+
+
 export const SignatureType = {
   DRAW: 'DRAW',
   TYPE: 'TYPE',

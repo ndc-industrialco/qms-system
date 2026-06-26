@@ -3,36 +3,19 @@ import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
 import DarReviewLayout from "@/components/dar/DarReviewLayout";
 import type { DarApprovalRow } from "@/types/dar";
-import KpiApproveActionClient from "@/components/approve/KpiApproveActionClient";
 import { AppError } from "@/errors/customErrors";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "DAR — Approve" };
 
 const darService = new DarService();
 
-type Props = {
+export default async function DarApproverPage({
+  params,
+}: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ type?: string; kpiId?: string; year?: string; month?: string }>;
-};
-
-export default async function ApproveApproverPage({ params, searchParams }: Props) {
-  const [session, { id }, sp] = await Promise.all([requireAuth(), params, searchParams]);
-  const type = sp.type ?? "dar";
-
-  if (type === "kpi") {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <KpiApproveActionClient id={id} mode="approver" type="kpi" />
-      </div>
-    );
-  }
-
-  if (type === "kpi-monthly") {
-    if (!sp.kpiId) redirect("/approve");
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <KpiApproveActionClient id={id} mode="approver" type="kpi-monthly" kpiId={sp.kpiId} />
-      </div>
-    );
-  }
+}) {
+  const [session, { id }] = await Promise.all([requireAuth(), params]);
 
   try {
     const [dar, savedSig] = await Promise.all([
@@ -40,16 +23,14 @@ export default async function ApproveApproverPage({ params, searchParams }: Prop
       darService.getSavedSignature(session.user.id),
     ]);
 
-    const isAssignedApprover = dar.approvals.some(
+    const isAssigned = dar.approvals.some(
       (a: DarApprovalRow) =>
         (a.stepRole === "APPROVER_MR" || a.stepRole === "QMS_PROCESSOR") &&
         a.assignedUser.id === session.user.id &&
         a.action === "PENDING",
     );
 
-    if (!isAssignedApprover) {
-      redirect(`/dar/${id}`);
-    }
+    if (!isAssigned) redirect(`/dar/${id}`);
 
     return (
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
@@ -60,7 +41,7 @@ export default async function ApproveApproverPage({ params, searchParams }: Prop
           currentUserId={session.user.id}
           savedSignatureUrl={savedSig?.url ?? null}
           savedSignatureType={savedSig?.type ?? null}
-          isAssignedReviewer={true}
+          isAssignedReviewer
           isMrApprove={session.user.role === "MR"}
           redirectToApproveOnAction
         />
@@ -68,12 +49,8 @@ export default async function ApproveApproverPage({ params, searchParams }: Prop
     );
   } catch (error) {
     if (error instanceof AppError) {
-      if (error.statusCode === 403) {
-        redirect("/unauthorized?reason=insufficient_role");
-      }
-      if (error.statusCode === 404) {
-        notFound();
-      }
+      if (error.statusCode === 403) redirect("/unauthorized?reason=insufficient_role");
+      if (error.statusCode === 404) notFound();
     }
     throw error;
   }

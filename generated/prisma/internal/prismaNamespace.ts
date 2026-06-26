@@ -4599,6 +4599,7 @@ export const NotificationScalarFieldEnum = {
   recipientAuthUserId: 'recipientAuthUserId',
   title: 'title',
   body: 'body',
+  htmlBody: 'htmlBody',
   module: 'module',
   resourceId: 'resourceId',
   resourceType: 'resourceType',
@@ -4642,6 +4643,7 @@ export const CarMasterScalarFieldEnum = {
   issuerName: 'issuerName',
   issuerEmployeeId: 'issuerEmployeeId',
   issuerPosition: 'issuerPosition',
+  issuerSignaturePath: 'issuerSignaturePath',
   issuedAt: 'issuedAt',
   targetDepartmentId: 'targetDepartmentId',
   targetAuthDepartmentId: 'targetAuthDepartmentId',
@@ -4667,8 +4669,11 @@ export const CarResponseScalarFieldEnum = {
   responderEmployeeId: 'responderEmployeeId',
   responderPosition: 'responderPosition',
   respondedAt: 'respondedAt',
+  responseType: 'responseType',
+  fiveWhys: 'fiveWhys',
   whyAnalysis: 'whyAnalysis',
   additionalToolDetail: 'additionalToolDetail',
+  responderSignaturePath: 'responderSignaturePath',
   rootCausePerson: 'rootCausePerson',
   rootCauseMaterial: 'rootCauseMaterial',
   rootCauseMachine: 'rootCauseMachine',
@@ -4696,7 +4701,8 @@ export const CarVerificationScalarFieldEnum = {
   verifiedAt: 'verifiedAt',
   findings: 'findings',
   result: 'result',
-  nextDueDate: 'nextDueDate'
+  nextDueDate: 'nextDueDate',
+  verifierSignaturePath: 'verifierSignaturePath'
 } as const
 
 export type CarVerificationScalarFieldEnum = (typeof CarVerificationScalarFieldEnum)[keyof typeof CarVerificationScalarFieldEnum]
@@ -4710,7 +4716,8 @@ export const CarMrSignatureScalarFieldEnum = {
   mrUserName: 'mrUserName',
   mrEmployeeId: 'mrEmployeeId',
   signedAt: 'signedAt',
-  comment: 'comment'
+  comment: 'comment',
+  signaturePath: 'signaturePath'
 } as const
 
 export type CarMrSignatureScalarFieldEnum = (typeof CarMrSignatureScalarFieldEnum)[keyof typeof CarMrSignatureScalarFieldEnum]
@@ -4744,7 +4751,8 @@ export const CarMrResponseReviewScalarFieldEnum = {
   mrEmployeeId: 'mrEmployeeId',
   reviewedAt: 'reviewedAt',
   action: 'action',
-  comment: 'comment'
+  comment: 'comment',
+  signaturePath: 'signaturePath'
 } as const
 
 export type CarMrResponseReviewScalarFieldEnum = (typeof CarMrResponseReviewScalarFieldEnum)[keyof typeof CarMrResponseReviewScalarFieldEnum]
@@ -5375,6 +5383,20 @@ export type EnumCarSourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'CarSourceType[]'
  */
 export type ListEnumCarSourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CarSourceType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CarResponseType'
+ */
+export type EnumCarResponseTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CarResponseType'>
+    
+
+
+/**
+ * Reference to a field of type 'CarResponseType[]'
+ */
+export type ListEnumCarResponseTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CarResponseType[]'>
     
 
 

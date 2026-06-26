@@ -147,14 +147,14 @@ export function useDarForm(
     try {
       let res: Response;
 
-      if (mode === "create") {
+      if (mode === "create" && !savedDarId) {
         res = await fetch("/api/dar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...buildBody(values, action), tempAttachments }),
         });
       } else {
-        const darId = initialData!.id;
+        const darId = savedDarId ?? initialData!.id;
         if (isSubmit) {
           await fetch(`/api/dar/${darId}`, {
             method: "PATCH",
@@ -213,7 +213,7 @@ export function useDarForm(
       const values = getValues();
       let darId: string;
 
-      if (mode === "create") {
+      if (mode === "create" && !savedDarId) {
         const res = await fetch("/api/dar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -223,7 +223,7 @@ export function useDarForm(
         if (!res.ok || json.error) { onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด")); return; }
         darId = json.data.id as string;
       } else {
-        const id = initialData!.id;
+        const id = savedDarId ?? initialData!.id;
         await fetch(`/api/dar/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

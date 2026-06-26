@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
-import { Send, ClipboardCheck, BellRing } from "lucide-react";
+import { Send, ClipboardCheck, BellRing, FileText, Download, Eye } from "lucide-react";
 import CarStatusBadge from "./CarStatusBadge";
 import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
@@ -15,8 +15,9 @@ import CarVerifyForm from "./CarVerifyForm";
 import CarRespondForm from "./CarRespondForm";
 import CarAttachmentUpload from "./CarAttachmentUpload";
 import CarFormModal from "./CarFormModal";
-import type { CarDetail } from "@/types/car";
+import type { CarDetail, CarAttachmentRow } from "@/types/car";
 import { CAR_SOURCE_LABELS } from "@/types/car";
+import { FilePreviewModal } from "@/components/common/FilePreviewModal";
 
 interface Props {
   car: CarDetail;
@@ -25,6 +26,7 @@ interface Props {
   userDepartmentId: string | null;
   isPrivileged: boolean;
   userJobTitle?: string | null;
+  listPath?: string;
 }
 
 async function fetchCar(id: string): Promise<CarDetail> {
@@ -51,6 +53,7 @@ export default function CarDetailClient({
   userDepartmentId,
   isPrivileged: _isPrivileged,
   userJobTitle,
+  listPath = "/car",
 }: Props) {
   const t = useT();
   const qc = useQueryClient();
@@ -59,6 +62,7 @@ export default function CarDetailClient({
   const [showRespond, setShowRespond] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [previewFile, setPreviewFile] = useState<CarAttachmentRow | null>(null);
 
   const { data: car = initialCar } = useQuery({
     queryKey: ["car", initialCar.id],
@@ -118,7 +122,16 @@ export default function CarDetailClient({
     iso ? new Date(iso).toLocaleDateString("th-TH", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm text-slate-400">
+        <Link href={listPath} className="hover:text-slate-600 transition-colors">CAR</Link>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        <span className="font-mono font-medium text-slate-600">{car.carNo}</span>
+      </nav>
+
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -177,159 +190,204 @@ export default function CarDetailClient({
         </div>
       </div>
 
-      {/* Details Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-        <div>
-          <p className="text-xs text-slate-500">{t("car.detail.labelType")}</p>
-          <p className="text-sm font-medium text-slate-900">{CAR_SOURCE_LABELS[car.sourceType] ?? car.sourceType}</p>
-          {car.sourceDetail && <p className="text-xs text-slate-500 mt-0.5">{car.sourceDetail}</p>}
-        </div>
-        <div>
-          <p className="text-xs text-slate-500">{t("car.detail.labelTargetDept")}</p>
-          <p className="text-sm font-medium text-slate-900">{car.targetDepartment.name}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-500">{t("car.detail.labelIssuer")}</p>
-          <p className="text-sm font-medium text-slate-900">{car.issuer.name} ({car.issuerPosition})</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-500">{t("car.detail.labelIso")}</p>
-          <p className="text-sm font-medium text-slate-900">{car.isoStandards.join(", ") || "—"}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-500">{t("car.detail.labelIssuedAt")}</p>
-          <p className="text-sm font-medium">{fmt(car.issuedAt)}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-500">{t("car.detail.labelDueAt")}</p>
-          <p className={`text-sm font-medium ${car.responseDueAt && new Date(car.responseDueAt) < new Date() && car.status === "ISSUED" ? "text-rose-600" : ""}`}>
-            {fmt(car.responseDueAt)}
-          </p>
-        </div>
-        <div className="sm:col-span-2">
-          <p className="text-xs text-slate-500">{t("car.detail.labelDefect")}</p>
-          <p className="text-sm text-slate-800 whitespace-pre-wrap">{car.defectDetail}</p>
-        </div>
-        <div className="sm:col-span-2">
-          <p className="text-xs text-slate-500">{t("car.detail.labelNonConformance")}</p>
-          <p className="text-sm text-slate-800 whitespace-pre-wrap">{car.nonConformanceRef}</p>
-        </div>
-      </div>
+      {/* 2-column body */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-      {/* Respond prompt (USER) */}
-      {canRespond && !showRespond && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 flex items-center justify-between gap-4">
-          <p className="text-sm font-semibold text-blue-800">{t("car.detail.respondPrompt")}</p>
-          <Button onClick={() => setShowRespond(true)} className="shrink-0">
-            <Send className="w-3.5 h-3.5 mr-1.5" />
-            {t("car.detail.btnRespond")}
-          </Button>
-        </div>
-      )}
-      {showRespond && (
-        <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-          <h2 className="text-base font-semibold text-slate-800 mb-4">{t("car.detail.respondFormTitle")}</h2>
-          <CarRespondForm carId={car.id} defaultPosition={userJobTitle ?? ""} onSuccess={() => setShowRespond(false)} />
-        </div>
-      )}
+        {/* Left — main content */}
+        <div className="lg:col-span-2 space-y-5">
 
-      {/* Verify form (QMS) */}
-      {showVerify && (
-        <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-          <h2 className="text-base font-semibold text-slate-800 mb-4">
-            {t("car.detail.verifyTitle", { round: String(car.status === "VERIFY_2" ? 2 : 1) })}
-          </h2>
-          <CarVerifyForm
-            carId={car.id}
-            currentStatus={car.status}
-            onSuccess={() => setShowVerify(false)}
-          />
-        </div>
-      )}
-
-      {/* Timeline */}
-      <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-        <h2 className="text-base font-semibold text-slate-800 mb-4">{t("car.detail.timelineTitle")}</h2>
-        <CarTimeline car={car} />
-      </div>
-
-      {/* Response detail */}
-      {car.response && (
-        <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5 space-y-3">
-          <h2 className="text-base font-semibold text-slate-800">{t("car.detail.responseTitle")}</h2>
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          {/* Details card */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
             <div>
-              <dt className="text-xs text-slate-500">{t("car.detail.labelResponder")}</dt>
-              <dd className="text-slate-800">{car.response.responder.name} ({car.response.responderPosition})</dd>
+              <p className="text-xs text-slate-500">{t("car.detail.labelType")}</p>
+              <p className="text-sm font-medium text-slate-900">{CAR_SOURCE_LABELS[car.sourceType] ?? car.sourceType}</p>
+              {car.sourceDetail && <p className="text-xs text-slate-500 mt-0.5">{car.sourceDetail}</p>}
             </div>
             <div>
-              <dt className="text-xs text-slate-500">{t("car.detail.labelRespondedAt")}</dt>
-              <dd className="text-slate-800">{fmt(car.response.respondedAt)}</dd>
+              <p className="text-xs text-slate-500">{t("car.detail.labelTargetDept")}</p>
+              <p className="text-sm font-medium text-slate-900">{car.targetDepartment.name}</p>
             </div>
             <div>
-              <dt className="text-xs text-slate-500">{t("car.detail.labelPlannedDate")}</dt>
-              <dd className="text-slate-800">{fmt(car.response.plannedCompletionDate)}</dd>
+              <p className="text-xs text-slate-500">{t("car.detail.labelIssuer")}</p>
+              <p className="text-sm font-medium text-slate-900">{car.issuer.name} ({car.issuerPosition})</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">{t("car.detail.labelIso")}</p>
+              <p className="text-sm font-medium text-slate-900">{car.isoStandards.join(", ") || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">{t("car.detail.labelIssuedAt")}</p>
+              <p className="text-sm font-medium">{fmt(car.issuedAt)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">{t("car.detail.labelDueAt")}</p>
+              <p className={`text-sm font-medium ${car.responseDueAt && new Date(car.responseDueAt) < new Date() && car.status === "ISSUED" ? "text-rose-600" : ""}`}>
+                {fmt(car.responseDueAt)}
+              </p>
             </div>
             <div className="sm:col-span-2">
-              <dt className="text-xs text-slate-500">{t("car.detail.labelWhyAnalysis")}</dt>
-              <dd className="text-slate-800 whitespace-pre-wrap">{car.response.whyAnalysis}</dd>
+              <p className="text-xs text-slate-500">{t("car.detail.labelDefect")}</p>
+              <p className="text-sm text-slate-800 whitespace-pre-wrap">{car.defectDetail}</p>
             </div>
             <div className="sm:col-span-2">
-              <dt className="text-xs text-slate-500">{t("car.detail.labelRootCause")}</dt>
-              <dd className="text-slate-800">{car.response.rootCauseSummary}</dd>
+              <p className="text-xs text-slate-500">{t("car.detail.labelNonConformance")}</p>
+              <p className="text-sm text-slate-800 whitespace-pre-wrap">{car.nonConformanceRef}</p>
             </div>
-            <div className="sm:col-span-2">
-              <dt className="text-xs text-slate-500">{t("car.detail.labelImmediateAction")}</dt>
-              <dd className="text-slate-800 whitespace-pre-wrap">{car.response.immediateAction}</dd>
-            </div>
-            <div className="sm:col-span-2">
-              <dt className="text-xs text-slate-500">{t("car.detail.labelPreventiveAction")}</dt>
-              <dd className="text-slate-800 whitespace-pre-wrap">{car.response.preventiveAction}</dd>
-            </div>
-          </dl>
+          </div>
 
-          {/* Attachments */}
-          {car.response.attachments.length > 0 && (
-            <div className="pt-2 border-t border-slate-100">
-              <p className="text-xs text-slate-500 mb-2">ไฟล์แนบ</p>
-              <ul className="space-y-1">
-                {car.response.attachments.map((a) => (
-                  <li key={a.id}>
-                    <a
-                      href={a.spDownloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      {a.fileName}
-                    </a>
-                    <span className="ml-2 text-xs text-slate-400">
-                      ({Math.round(a.fileSize / 1024)} KB)
-                    </span>
-                  </li>
-                ))}
-              </ul>
+          {/* Respond prompt (USER) */}
+          {canRespond && !showRespond && (
+            <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 flex items-center justify-between gap-4">
+              <p className="text-sm font-semibold text-blue-800">{t("car.detail.respondPrompt")}</p>
+              <Button onClick={() => setShowRespond(true)} className="shrink-0">
+                <Send className="w-3.5 h-3.5 mr-1.5" />
+                {t("car.detail.btnRespond")}
+              </Button>
+            </div>
+          )}
+          {showRespond && (
+            <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
+              <h2 className="text-base font-semibold text-slate-800 mb-4">{t("car.detail.respondFormTitle")}</h2>
+              <CarRespondForm carId={car.id} defaultPosition={userJobTitle ?? ""} onSuccess={() => setShowRespond(false)} />
             </div>
           )}
 
-          {/* Upload — only for target dept or privileged, while CAR is still active */}
-          {(userDepartmentId === car.targetDepartment.id ||
-            userRole === "QMS" ||
-            userRole === "IT") &&
-            car.status !== "CLOSED" &&
-            car.status !== "CANCELLED" && (
-              <div className="pt-2 border-t border-slate-100">
-                <CarAttachmentUpload
-                  carResponseId={car.response.id}
-                  onUploaded={() => qc.invalidateQueries({ queryKey: ["car", car.id] })}
-                />
-              </div>
-            )}
+          {/* Verify form (QMS) */}
+          {showVerify && (
+            <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
+              <h2 className="text-base font-semibold text-slate-800 mb-4">
+                {t("car.detail.verifyTitle", { round: String(car.status === "VERIFY_2" ? 2 : 1) })}
+              </h2>
+              <CarVerifyForm
+                carId={car.id}
+                currentStatus={car.status}
+                defaultPosition={userJobTitle ?? ""}
+                onSuccess={() => setShowVerify(false)}
+              />
+            </div>
+          )}
+
+          {/* Response detail */}
+          {car.response && (
+            <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5 space-y-3">
+              <h2 className="text-base font-semibold text-slate-800">{t("car.detail.responseTitle")}</h2>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt className="text-xs text-slate-500">{t("car.detail.labelResponder")}</dt>
+                  <dd className="text-slate-800">{car.response.responder.name} ({car.response.responderPosition})</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-500">{t("car.detail.labelRespondedAt")}</dt>
+                  <dd className="text-slate-800">{fmt(car.response.respondedAt)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-500">{t("car.detail.labelPlannedDate")}</dt>
+                  <dd className="text-slate-800">{fmt(car.response.plannedCompletionDate)}</dd>
+                </div>
+                {car.response.responseType === "FIVE_WHY" && car.response.fiveWhys && car.response.fiveWhys.length > 0 && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs text-slate-500 mb-2">5 Whys Analysis</dt>
+                    <dd className="space-y-2">
+                      {car.response.fiveWhys.map((w, i) => (
+                        <div key={i} className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm">
+                          <p className="font-medium text-slate-600 text-xs mb-1">Why {i + 1}: {w.question}</p>
+                          <p className="text-slate-800">{w.answer || <span className="text-slate-400">—</span>}</p>
+                        </div>
+                      ))}
+                    </dd>
+                  </div>
+                )}
+                <div className="sm:col-span-2">
+                  <dt className="text-xs text-slate-500">{t("car.detail.labelRootCause")}</dt>
+                  <dd className="text-slate-800">{car.response.rootCauseSummary}</dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="text-xs text-slate-500">{t("car.detail.labelImmediateAction")}</dt>
+                  <dd className="text-slate-800 whitespace-pre-wrap">{car.response.immediateAction}</dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="text-xs text-slate-500">{t("car.detail.labelPreventiveAction")}</dt>
+                  <dd className="text-slate-800 whitespace-pre-wrap">{car.response.preventiveAction}</dd>
+                </div>
+                {car.response.responderSignaturePath && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs text-slate-500 mb-1">ลายเซ็นผู้ตอบกลับ</dt>
+                    <dd>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={car.response.responderSignaturePath} alt="ลายเซ็น" className="h-12 object-contain border border-slate-100 rounded-lg p-1 bg-white" />
+                    </dd>
+                  </div>
+                )}
+              </dl>
+
+              {/* Attachments */}
+              {car.response.attachments.length > 0 && (
+                <div className="pt-2 border-t border-slate-100">
+                  <p className="text-xs text-slate-500 mb-2">ไฟล์แนบ</p>
+                  <ul className="space-y-1">
+                    {car.response.attachments.map((a) => (
+                      <li key={a.id} className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                        <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                        <span className="flex-1 truncate text-sm text-slate-700">{a.fileName}</span>
+                        <span className="shrink-0 text-xs text-slate-400">{Math.round(a.fileSize / 1024)} KB</span>
+                        <button
+                          onClick={() => setPreviewFile(a)}
+                          className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <a href={a.spDownloadUrl} target="_blank" rel="noopener noreferrer"
+                          className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600">
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Upload — target dept while ISSUED (responding), or QMS/MR/IT always */}
+              {((userDepartmentId === car.targetDepartment.id && car.status === "ISSUED") ||
+                userRole === "QMS" ||
+                userRole === "MR" ||
+                userRole === "IT") &&
+                car.status !== "CLOSED" &&
+                car.status !== "CANCELLED" && (
+                  <div className="pt-2 border-t border-slate-100">
+                    <CarAttachmentUpload
+                      carResponseId={car.response.id}
+                      onUploaded={() => qc.invalidateQueries({ queryKey: ["car", car.id] })}
+                    />
+                  </div>
+                )}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Right — timeline (sticky) */}
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
+            <h2 className="text-base font-semibold text-slate-800 mb-4">{t("car.detail.timelineTitle")}</h2>
+            <CarTimeline car={car} />
+          </div>
+        </div>
+      </div>
 
       {/* Edit modal */}
       <CarFormModal open={showEdit} onClose={() => setShowEdit(false)} editCar={car} />
+
+      {/* Attachment preview */}
+      {previewFile && (
+        <FilePreviewModal
+          target={{
+            fileName: previewFile.fileName,
+            mimeType: previewFile.mimeType,
+            sharePointItemId: previewFile.spItemId,
+            spDownloadUrl: previewFile.spDownloadUrl,
+          }}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
     </div>
   );
 }

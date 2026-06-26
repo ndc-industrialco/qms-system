@@ -34,6 +34,7 @@ export type CarMrResponseReviewMinAggregateOutputType = {
   reviewedAt: Date | null
   action: string | null
   comment: string | null
+  signaturePath: string | null
 }
 
 export type CarMrResponseReviewMaxAggregateOutputType = {
@@ -46,6 +47,7 @@ export type CarMrResponseReviewMaxAggregateOutputType = {
   reviewedAt: Date | null
   action: string | null
   comment: string | null
+  signaturePath: string | null
 }
 
 export type CarMrResponseReviewCountAggregateOutputType = {
@@ -58,6 +60,7 @@ export type CarMrResponseReviewCountAggregateOutputType = {
   reviewedAt: number
   action: number
   comment: number
+  signaturePath: number
   _all: number
 }
 
@@ -72,6 +75,7 @@ export type CarMrResponseReviewMinAggregateInputType = {
   reviewedAt?: true
   action?: true
   comment?: true
+  signaturePath?: true
 }
 
 export type CarMrResponseReviewMaxAggregateInputType = {
@@ -84,6 +88,7 @@ export type CarMrResponseReviewMaxAggregateInputType = {
   reviewedAt?: true
   action?: true
   comment?: true
+  signaturePath?: true
 }
 
 export type CarMrResponseReviewCountAggregateInputType = {
@@ -96,6 +101,7 @@ export type CarMrResponseReviewCountAggregateInputType = {
   reviewedAt?: true
   action?: true
   comment?: true
+  signaturePath?: true
   _all?: true
 }
 
@@ -181,6 +187,7 @@ export type CarMrResponseReviewGroupByOutputType = {
   reviewedAt: Date
   action: string
   comment: string | null
+  signaturePath: string | null
   _count: CarMrResponseReviewCountAggregateOutputType | null
   _min: CarMrResponseReviewMinAggregateOutputType | null
   _max: CarMrResponseReviewMaxAggregateOutputType | null
@@ -214,6 +221,7 @@ export type CarMrResponseReviewWhereInput = {
   reviewedAt?: Prisma.DateTimeFilter<"CarMrResponseReview"> | Date | string
   action?: Prisma.StringFilter<"CarMrResponseReview"> | string
   comment?: Prisma.StringNullableFilter<"CarMrResponseReview"> | string | null
+  signaturePath?: Prisma.StringNullableFilter<"CarMrResponseReview"> | string | null
   carMaster?: Prisma.XOR<Prisma.CarMasterScalarRelationFilter, Prisma.CarMasterWhereInput>
 }
 
@@ -227,6 +235,7 @@ export type CarMrResponseReviewOrderByWithRelationInput = {
   reviewedAt?: Prisma.SortOrder
   action?: Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
+  signaturePath?: Prisma.SortOrderInput | Prisma.SortOrder
   carMaster?: Prisma.CarMasterOrderByWithRelationInput
 }
 
@@ -243,6 +252,7 @@ export type CarMrResponseReviewWhereUniqueInput = Prisma.AtLeast<{
   reviewedAt?: Prisma.DateTimeFilter<"CarMrResponseReview"> | Date | string
   action?: Prisma.StringFilter<"CarMrResponseReview"> | string
   comment?: Prisma.StringNullableFilter<"CarMrResponseReview"> | string | null
+  signaturePath?: Prisma.StringNullableFilter<"CarMrResponseReview"> | string | null
   carMaster?: Prisma.XOR<Prisma.CarMasterScalarRelationFilter, Prisma.CarMasterWhereInput>
 }, "id" | "carMasterId">
 
@@ -256,6 +266,7 @@ export type CarMrResponseReviewOrderByWithAggregationInput = {
   reviewedAt?: Prisma.SortOrder
   action?: Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
+  signaturePath?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.CarMrResponseReviewCountOrderByAggregateInput
   _max?: Prisma.CarMrResponseReviewMaxOrderByAggregateInput
   _min?: Prisma.CarMrResponseReviewMinOrderByAggregateInput
@@ -274,6 +285,7 @@ export type CarMrResponseReviewScalarWhereWithAggregatesInput = {
   reviewedAt?: Prisma.DateTimeWithAggregatesFilter<"CarMrResponseReview"> | Date | string
   action?: Prisma.StringWithAggregatesFilter<"CarMrResponseReview"> | string
   comment?: Prisma.StringNullableWithAggregatesFilter<"CarMrResponseReview"> | string | null
+  signaturePath?: Prisma.StringNullableWithAggregatesFilter<"CarMrResponseReview"> | string | null
 }
 
 export type CarMrResponseReviewCreateInput = {
@@ -285,6 +297,7 @@ export type CarMrResponseReviewCreateInput = {
   reviewedAt?: Date | string
   action: string
   comment?: string | null
+  signaturePath?: string | null
   carMaster: Prisma.CarMasterCreateNestedOneWithoutMrResponseReviewInput
 }
 
@@ -298,6 +311,7 @@ export type CarMrResponseReviewUncheckedCreateInput = {
   reviewedAt?: Date | string
   action: string
   comment?: string | null
+  signaturePath?: string | null
 }
 
 export type CarMrResponseReviewUpdateInput = {
@@ -309,6 +323,7 @@ export type CarMrResponseReviewUpdateInput = {
   reviewedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   carMaster?: Prisma.CarMasterUpdateOneRequiredWithoutMrResponseReviewNestedInput
 }
 
@@ -322,6 +337,7 @@ export type CarMrResponseReviewUncheckedUpdateInput = {
   reviewedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarMrResponseReviewCreateManyInput = {
@@ -334,6 +350,7 @@ export type CarMrResponseReviewCreateManyInput = {
   reviewedAt?: Date | string
   action: string
   comment?: string | null
+  signaturePath?: string | null
 }
 
 export type CarMrResponseReviewUpdateManyMutationInput = {
@@ -345,6 +362,7 @@ export type CarMrResponseReviewUpdateManyMutationInput = {
   reviewedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarMrResponseReviewUncheckedUpdateManyInput = {
@@ -357,6 +375,7 @@ export type CarMrResponseReviewUncheckedUpdateManyInput = {
   reviewedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarMrResponseReviewNullableScalarRelationFilter = {
@@ -374,6 +393,7 @@ export type CarMrResponseReviewCountOrderByAggregateInput = {
   reviewedAt?: Prisma.SortOrder
   action?: Prisma.SortOrder
   comment?: Prisma.SortOrder
+  signaturePath?: Prisma.SortOrder
 }
 
 export type CarMrResponseReviewMaxOrderByAggregateInput = {
@@ -386,6 +406,7 @@ export type CarMrResponseReviewMaxOrderByAggregateInput = {
   reviewedAt?: Prisma.SortOrder
   action?: Prisma.SortOrder
   comment?: Prisma.SortOrder
+  signaturePath?: Prisma.SortOrder
 }
 
 export type CarMrResponseReviewMinOrderByAggregateInput = {
@@ -398,6 +419,7 @@ export type CarMrResponseReviewMinOrderByAggregateInput = {
   reviewedAt?: Prisma.SortOrder
   action?: Prisma.SortOrder
   comment?: Prisma.SortOrder
+  signaturePath?: Prisma.SortOrder
 }
 
 export type CarMrResponseReviewCreateNestedOneWithoutCarMasterInput = {
@@ -441,6 +463,7 @@ export type CarMrResponseReviewCreateWithoutCarMasterInput = {
   reviewedAt?: Date | string
   action: string
   comment?: string | null
+  signaturePath?: string | null
 }
 
 export type CarMrResponseReviewUncheckedCreateWithoutCarMasterInput = {
@@ -452,6 +475,7 @@ export type CarMrResponseReviewUncheckedCreateWithoutCarMasterInput = {
   reviewedAt?: Date | string
   action: string
   comment?: string | null
+  signaturePath?: string | null
 }
 
 export type CarMrResponseReviewCreateOrConnectWithoutCarMasterInput = {
@@ -479,6 +503,7 @@ export type CarMrResponseReviewUpdateWithoutCarMasterInput = {
   reviewedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarMrResponseReviewUncheckedUpdateWithoutCarMasterInput = {
@@ -490,6 +515,7 @@ export type CarMrResponseReviewUncheckedUpdateWithoutCarMasterInput = {
   reviewedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   action?: Prisma.StringFieldUpdateOperationsInput | string
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -504,6 +530,7 @@ export type CarMrResponseReviewSelect<ExtArgs extends runtime.Types.Extensions.I
   reviewedAt?: boolean
   action?: boolean
   comment?: boolean
+  signaturePath?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carMrResponseReview"]>
 
@@ -517,6 +544,7 @@ export type CarMrResponseReviewSelectCreateManyAndReturn<ExtArgs extends runtime
   reviewedAt?: boolean
   action?: boolean
   comment?: boolean
+  signaturePath?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carMrResponseReview"]>
 
@@ -530,6 +558,7 @@ export type CarMrResponseReviewSelectUpdateManyAndReturn<ExtArgs extends runtime
   reviewedAt?: boolean
   action?: boolean
   comment?: boolean
+  signaturePath?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carMrResponseReview"]>
 
@@ -543,9 +572,10 @@ export type CarMrResponseReviewSelectScalar = {
   reviewedAt?: boolean
   action?: boolean
   comment?: boolean
+  signaturePath?: boolean
 }
 
-export type CarMrResponseReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "mrUserId" | "mrAuthUserId" | "mrUserName" | "mrEmployeeId" | "reviewedAt" | "action" | "comment", ExtArgs["result"]["carMrResponseReview"]>
+export type CarMrResponseReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "mrUserId" | "mrAuthUserId" | "mrUserName" | "mrEmployeeId" | "reviewedAt" | "action" | "comment" | "signaturePath", ExtArgs["result"]["carMrResponseReview"]>
 export type CarMrResponseReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
 }
@@ -571,6 +601,7 @@ export type $CarMrResponseReviewPayload<ExtArgs extends runtime.Types.Extensions
     reviewedAt: Date
     action: string
     comment: string | null
+    signaturePath: string | null
   }, ExtArgs["result"]["carMrResponseReview"]>
   composites: {}
 }
@@ -1004,6 +1035,7 @@ export interface CarMrResponseReviewFieldRefs {
   readonly reviewedAt: Prisma.FieldRef<"CarMrResponseReview", 'DateTime'>
   readonly action: Prisma.FieldRef<"CarMrResponseReview", 'String'>
   readonly comment: Prisma.FieldRef<"CarMrResponseReview", 'String'>
+  readonly signaturePath: Prisma.FieldRef<"CarMrResponseReview", 'String'>
 }
     
 

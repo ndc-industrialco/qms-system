@@ -396,6 +396,11 @@ enum VerificationResult {
   FAILED
 }
 
+enum CarResponseType {
+  FIVE_WHY
+  OTHER
+}
+
 enum SignatureType {
   DRAW
   TYPE
@@ -555,6 +560,7 @@ model Notification {
   recipientAuthUserId String?  @map("recipient_auth_user_id")
   title               String
   body                String
+  htmlBody            String?  @map("html_body")
   module              String
   resourceId          String   @map("resource_id")
   resourceType        String   @map("resource_type")
@@ -605,6 +611,7 @@ model CarMaster {
   issuerName             String?              @map("issuer_name")
   issuerEmployeeId       String?              @map("issuer_employee_id")
   issuerPosition         String
+  issuerSignaturePath    String?              @map("issuer_signature_path") @db.Text
   issuedAt               DateTime?
   targetDepartmentId     String
   targetAuthDepartmentId String?              @map("target_auth_department_id")
@@ -641,8 +648,11 @@ model CarResponse {
   responderEmployeeId   String?         @map("responder_employee_id")
   responderPosition     String
   respondedAt          DateTime        @default(now())
-  whyAnalysis          String
+  responseType         CarResponseType @default(FIVE_WHY) @map("response_type")
+  fiveWhys             Json?           @map("five_whys")
+  whyAnalysis          String          @default("")
   additionalToolDetail String?
+  responderSignaturePath String?        @map("responder_signature_path") @db.Text
   rootCausePerson      Boolean         @default(false)
   rootCauseMaterial    Boolean         @default(false)
   rootCauseMachine     Boolean         @default(false)
@@ -673,6 +683,7 @@ model CarVerification {
   findings         String
   result           VerificationResult
   nextDueDate      DateTime?
+  verifierSignaturePath String?        @map("verifier_signature_path") @db.Text
 
   carMaster        CarMaster          @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
 
@@ -687,8 +698,9 @@ model CarMrSignature {
   mrAuthUserId   String?   @map("mr_auth_user_id")
   mrUserName     String?   @map("mr_user_name")
   mrEmployeeId   String?   @map("mr_employee_id")
-  signedAt       DateTime  @default(now())
-  comment        String?
+  signedAt          DateTime  @default(now())
+  comment           String?
+  signaturePath     String?   @map("signature_path") @db.Text
 
   carMaster   CarMaster @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
 
@@ -726,6 +738,7 @@ model CarMrResponseReview {
   reviewedAt   DateTime  @default(now())
   action       String    // "APPROVED" | "REJECTED"
   comment      String?
+  signaturePath String?  @map("signature_path") @db.Text
 
   carMaster   CarMaster @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
 
