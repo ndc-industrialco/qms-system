@@ -140,8 +140,8 @@ describe("CAR flow — happy path (DRAFT → ISSUED → RESPONDED → VERIFY_1 P
     const { car } = await svc.issueCar(CAR_ID, "actor-1", "auth-actor");
 
     expect(car.status).toBe("ISSUED");
-    expect(carRepo.issue).toHaveBeenCalledWith(CAR_ID, expect.any(Date), expect.any(Date), expect.anything());
-    expect(CarReminderService.schedule).toHaveBeenCalledWith(CAR_ID);
+    expect(carRepo.issue).toHaveBeenCalledWith(CAR_ID, expect.any(Date), expect.any(Date), null, expect.anything());
+    expect(CarReminderService.schedule).toHaveBeenCalledWith(CAR_ID, expect.toSatisfy((v) => v === undefined || typeof v === "string"));
   });
 
   it("step 2 — respondToCar transitions ISSUED → RESPONDED and cancels reminder", async () => {

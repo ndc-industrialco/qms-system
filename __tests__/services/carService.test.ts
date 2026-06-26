@@ -202,6 +202,7 @@ describe("CarService", () => {
       "car-1",
       expect.any(Date),
       expect.any(Date),
+      null,
       expect.anything()
     );
     expect(carRepo.createNotificationLog).toHaveBeenCalledWith(
