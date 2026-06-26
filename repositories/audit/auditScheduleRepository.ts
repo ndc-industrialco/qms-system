@@ -16,4 +16,37 @@ export class AuditScheduleRepository extends BaseRepository<AuditSchedule> {
       orderBy: { startAt: "asc" },
     });
   }
+
+  async findWithPlan(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({
+      where: { id },
+      include: {
+        plan: {
+          select: {
+            id: true,
+            title: true,
+            auditNo: true,
+            ownerAuthUserId: true,
+            ownerEmail: true,
+            ownerNameSnapshot: true,
+          },
+        },
+      },
+    });
+  }
+
+  async markChecklistSubmitted(
+    scheduleId: string,
+    data: { submittedAt: Date; submittedByUserId: string; submittedByName: string },
+    tx?: Prisma.TransactionClient
+  ) {
+    return this.delegate(tx).update({
+      where: { id: scheduleId },
+      data: {
+        checklistSubmittedAt: data.submittedAt,
+        checklistSubmittedByUserId: data.submittedByUserId,
+        checklistSubmittedByName: data.submittedByName,
+      },
+    });
+  }
 }

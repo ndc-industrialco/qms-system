@@ -88,4 +88,141 @@ export class AuditPlanRepository extends BaseRepository<AuditPlan> {
       take: limit,
     });
   }
+
+  async findWithAuditors(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({
+      where: { id },
+      include: { auditors: true },
+    });
+  }
+
+  async findWithAuditorsAndLead(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({
+      where: { id },
+      include: { auditors: { where: { role: "LEAD" } } },
+    });
+  }
+
+  async findForAnnounce(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({ where: { id } });
+  }
+
+  async createAnnouncement(
+    data: {
+      planId: string;
+      title: string;
+      message: string;
+      deliveryMode: string;
+      publishedAt: Date;
+      publishedByAuthUserId: string;
+    },
+    tx?: Prisma.TransactionClient
+  ) {
+    return this.getClient(tx).auditAnnouncement.create({ data });
+  }
+
+  async getDashboardCounts(now: Date, sevenDaysLater: Date, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+    return Promise.all([
+      this.delegate(tx).count(),
+      this.delegate(tx).count({ where: { status: "IN_PROGRESS" } }),
+      this.delegate(tx).count({ where: { status: "WAITING_CORRECTIVE" } }),
+      client.auditFinding.count({ where: { status: { in: ["OPEN", "REOPENED"] } } }),
+      client.auditFinding.count({
+        where: { dueAt: { lt: now }, status: { notIn: ["CLOSED", "REJECTED"] } },
+      }),
+      this.delegate(tx).count({ where: { status: "READY_TO_CLOSE" } }),
+      client.auditSchedule.findMany({
+        where: { startAt: { gte: now, lte: sevenDaysLater } },
+        include: { plan: { select: { id: true, title: true, auditNo: true } } },
+        orderBy: { startAt: "asc" },
+        take: 10,
+      }),
+      client.auditFinding.findMany({
+        where: { status: { in: ["OPEN", "REOPENED"] } },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: {
+          id: true,
+          planId: true,
+          findingNo: true,
+          title: true,
+          category: true,
+          severity: true,
+          status: true,
+          ownerNameSnapshot: true,
+          dueAt: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+  }
+
+  async findForClose(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({
+      where: { id },
+      include: {
+        findings: { select: { status: true } },
+        signoffs: true,
+        report: true,
+        auditors: { where: { role: "LEAD" } },
+      },
+    });
+  }
+
+  async findSignoff(planId: string, authUserId: string, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).auditSignoff.findFirst({
+      where: { planId, signedByAuthUserId: authUserId },
+    });
+  }
+
+  async getMyTasksData(authUserId: string, tx?: Prisma.TransactionClient) {
+    const client = this.getClient(tx);
+    return Promise.all([
+      client.auditFinding.findMany({
+        where: { ownerAuthUserId: authUserId, status: { in: ["OPEN", "REOPENED"] } },
+        orderBy: { dueAt: "asc" },
+        select: {
+          id: true, planId: true, findingNo: true, title: true, category: true,
+          severity: true, status: true, ownerNameSnapshot: true, dueAt: true, createdAt: true,
+          plan: { select: { id: true, title: true, auditNo: true } },
+        },
+      }),
+      this.delegate(tx).findMany({
+        where: {
+          auditors: { some: { assigneeAuthUserId: authUserId, role: "LEAD" } },
+          findings: { some: { status: "RESPONDED" } },
+        },
+        select: {
+          id: true, auditNo: true, title: true, status: true,
+          findings: {
+            where: { status: "RESPONDED" },
+            select: {
+              id: true, planId: true, findingNo: true, title: true, category: true,
+              severity: true, status: true, ownerNameSnapshot: true, dueAt: true, createdAt: true,
+            },
+          },
+        },
+      }),
+      this.delegate(tx).findMany({
+        where: { leadAuditorAuthUserId: authUserId, status: { notIn: ["CLOSED", "CANCELLED"] } },
+        orderBy: { updatedAt: "desc" },
+        select: {
+          id: true, auditNo: true, title: true, status: true,
+          startDate: true, endDate: true, ownerNameSnapshot: true, createdAt: true, updatedAt: true,
+        },
+      }),
+      this.delegate(tx).findMany({
+        where: {
+          status: "READY_TO_CLOSE",
+          OR: [{ ownerAuthUserId: authUserId }, { leadAuditorAuthUserId: authUserId }],
+        },
+        orderBy: { updatedAt: "desc" },
+        select: {
+          id: true, auditNo: true, title: true, status: true,
+          ownerAuthUserId: true, ownerNameSnapshot: true, leadAuditorAuthUserId: true, updatedAt: true,
+        },
+      }),
+    ]);
+  }
 }

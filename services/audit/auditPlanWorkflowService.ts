@@ -6,6 +6,9 @@
 
 import { db } from "@/lib/db";
 import { AuditService } from "@/services/auditService";
+import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
+
+const planRepo = new AuditPlanRepository();
 import { ActionTokenService } from "@/services/actionTokenService";
 import { sendSignRequestOnce, sendAnnouncementOnce, sendRejectionOnce, sendApprovedNotifyOnce, notifyAuditUser } from "./auditNotificationService";
 import { sendDeptScheduleApprovalEmail } from "./auditEmailService";
@@ -35,10 +38,7 @@ export async function submitPlan(
   input: AuditPlanSubmitInput,
   actor: Actor
 ) {
-  const plan = await db.auditPlan.findUnique({
-    where: { id: planId },
-    include: { auditors: true },
-  });
+  const plan = await planRepo.findWithAuditors(planId);
   if (!plan) throw new NotFoundError("Audit plan not found");
   if (plan.status !== "DRAFT") {
     throw new ValidationError(`Plan must be in DRAFT to submit (current: ${plan.status})`);
@@ -108,7 +108,7 @@ export async function submitPlan(
 // ── Review (PENDING_REVIEW → PENDING_APPROVAL) ────────────────────────────────
 
 export async function reviewPlan(planId: string, actor: Actor) {
-  const plan = await db.auditPlan.findUnique({ where: { id: planId } });
+  const plan = await planRepo.findById(planId);
   if (!plan) throw new NotFoundError("Audit plan not found");
   if (plan.status !== "PENDING_REVIEW") {
     throw new ValidationError(`Plan must be in PENDING_REVIEW to review (current: ${plan.status})`);
@@ -181,10 +181,7 @@ export async function reviewPlan(planId: string, actor: Actor) {
 // ── Approve (PENDING_APPROVAL → PLANNED) ──────────────────────────────────────
 
 export async function approvePlan(planId: string, actor: Actor) {
-  const plan = await db.auditPlan.findUnique({
-    where: { id: planId },
-    include: { auditors: true, departments: true, schedules: true },
-  });
+  const plan = await planRepo.findDetailById(planId);
   if (!plan) throw new NotFoundError("Audit plan not found");
   if (plan.status !== "PENDING_APPROVAL") {
     throw new ValidationError(`Plan must be in PENDING_APPROVAL to approve (current: ${plan.status})`);
@@ -320,7 +317,7 @@ export async function approvePlan(planId: string, actor: Actor) {
 // ── Reject (PENDING_REVIEW | PENDING_APPROVAL → DRAFT) ───────────────────────
 
 export async function rejectPlan(planId: string, input: { reason: string; signedRole: "REVIEWER" | "APPROVER" }, actor: Actor) {
-  const plan = await db.auditPlan.findUnique({ where: { id: planId } });
+  const plan = await planRepo.findById(planId);
   if (!plan) throw new NotFoundError("Audit plan not found");
 
   const validStatuses = input.signedRole === "REVIEWER" ? ["PENDING_REVIEW"] : ["PENDING_APPROVAL"];

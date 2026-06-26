@@ -4,8 +4,10 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { ForbiddenError, ValidationError } from "@/lib/errors";
 import { auditAnnounceSchema } from "@/lib/validations/audit";
 import { sendAnnouncementOnce } from "@/services/audit/auditNotificationService";
-import { db } from "@/lib/db";
+import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
 import { type NextRequest } from "next/server";
+
+const repo = new AuditPlanRepository();
 
 export async function POST(
   req: NextRequest,
@@ -21,32 +23,24 @@ export async function POST(
     const body = await req.json();
     const input = auditAnnounceSchema.parse(body);
 
-    const plan = await db.auditPlan.findUniqueOrThrow({ where: { id: planId } });
+    const plan = await repo.findForAnnounce(planId);
+    if (!plan) throw new ValidationError("Plan not found");
 
-    // B-4: only allow announcing when the plan is in a valid pre-announcement status
     if (plan.status !== "PLANNED" && plan.status !== "ANNOUNCED") {
       throw new ValidationError("Plan must be in PLANNED or ANNOUNCED status to announce.");
     }
 
-    // Persist announcement record
-    const announcement = await db.auditAnnouncement.create({
-      data: {
-        planId,
-        title: input.title,
-        message: input.message,
-        deliveryMode: input.deliveryMode,
-        publishedAt: new Date(),
-        publishedByAuthUserId: session.user.authUserId ?? session.user.id,
-      },
+    const announcement = await repo.createAnnouncement({
+      planId,
+      title: input.title,
+      message: input.message,
+      deliveryMode: input.deliveryMode,
+      publishedAt: new Date(),
+      publishedByAuthUserId: session.user.authUserId ?? session.user.id,
     });
 
-    // Advance plan status to ANNOUNCED
-    await db.auditPlan.update({
-      where: { id: planId },
-      data: { status: "ANNOUNCED" },
-    });
+    await repo.updateStatus(planId, "ANNOUNCED");
 
-    // Fire-and-forget email fan-out
     if (input.recipientEmails.length > 0) {
       sendAnnouncementOnce({
         planId,

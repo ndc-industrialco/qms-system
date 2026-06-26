@@ -4,10 +4,11 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { ValidationError, ForbiddenError, NotFoundError } from "@/lib/errors";
 import { uploadFileToAudit } from "@/services/sharepoint";
 import { AuditAttachmentRepository } from "@/repositories/audit/auditAttachmentRepository";
-import { db } from "@/lib/db";
+import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
 import { type NextRequest } from "next/server";
 
 const repo = new AuditAttachmentRepository();
+const planRepo = new AuditPlanRepository();
 
 const ALLOWED_MIME_TYPES = new Set([
   "application/pdf",
@@ -18,23 +19,15 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 
 const ALLOWED_EXTENSIONS = new Set(["pdf", "docx", "xlsx", "png", "jpg", "jpeg"]);
+const MAX_SIZE_BYTES = 20 * 1024 * 1024;
 
-const MAX_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
-
-// B-1: Server-side magic byte detection — do not trust client-supplied file.type
 function detectMimeFromBuffer(buf: Buffer): string | null {
   if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46) return "application/pdf";
-  if (buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04) {
-    // ZIP-based: DOCX, XLSX — Office Open XML files are ZIP-based; accept based on extension
-    return null;
-  }
+  if (buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04) return null;
   if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "image/png";
   if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "image/jpeg";
-  if (buf[0] === 0xd0 && buf[1] === 0xcf && buf[2] === 0x11 && buf[3] === 0xe0) {
-    // Legacy OLE2 (old .doc, .xls) — reject
-    return "__reject__";
-  }
-  return null; // unknown — reject
+  if (buf[0] === 0xd0 && buf[1] === 0xcf && buf[2] === 0x11 && buf[3] === 0xe0) return "__reject__";
+  return null;
 }
 
 export async function POST(req: NextRequest) {
@@ -47,29 +40,14 @@ export async function POST(req: NextRequest) {
     const resourceType = (formData.get("resourceType") as string | null) ?? "PLAN";
     const resourceId = (formData.get("resourceId") as string | null) ?? planId;
 
-    if (!(file instanceof File)) {
-      throw new ValidationError("file is required");
-    }
-    if (!planId || typeof planId !== "string") {
-      throw new ValidationError("planId is required");
-    }
-    if (!resourceId || typeof resourceId !== "string") {
-      throw new ValidationError("resourceId is required");
-    }
-    if (file.size > MAX_SIZE_BYTES) {
-      throw new ValidationError("File exceeds the 20 MB size limit");
-    }
+    if (!(file instanceof File)) throw new ValidationError("file is required");
+    if (!planId || typeof planId !== "string") throw new ValidationError("planId is required");
+    if (!resourceId || typeof resourceId !== "string") throw new ValidationError("resourceId is required");
+    if (file.size > MAX_SIZE_BYTES) throw new ValidationError("File exceeds the 20 MB size limit");
 
-    // B-2: Authorization — must be privileged role OR plan owner OR assigned auditor
     const isPrivileged = ["QMS", "IT", "MR"].includes(session.user.role);
     if (!isPrivileged) {
-      const plan = await db.auditPlan.findUnique({
-        where: { id: planId },
-        select: {
-          ownerAuthUserId: true,
-          auditors: { select: { assigneeAuthUserId: true } },
-        },
-      });
+      const plan = await planRepo.findWithAuditors(planId);
       if (!plan) throw new NotFoundError("Plan");
       const actorId = session.user.authUserId ?? session.user.id;
       const isOwner = plan.ownerAuthUserId === actorId;
@@ -78,16 +56,10 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-
-    // B-1: Magic byte check
     const detectedMime = detectMimeFromBuffer(buffer);
-    if (detectedMime === "__reject__") {
-      throw new ValidationError("File type not allowed.");
-    }
-    if (detectedMime !== null && !ALLOWED_MIME_TYPES.has(detectedMime)) {
-      throw new ValidationError("File type not allowed.");
-    }
-    // For ZIP-based (Office Open XML) and unknown cases, fall back to extension check
+    if (detectedMime === "__reject__") throw new ValidationError("File type not allowed.");
+    if (detectedMime !== null && !ALLOWED_MIME_TYPES.has(detectedMime)) throw new ValidationError("File type not allowed.");
+
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     if (!ALLOWED_EXTENSIONS.has(ext)) {
       throw new ValidationError("File extension not allowed. Accepted types: PDF, Word, Excel, PNG, JPEG");
@@ -102,7 +74,6 @@ export async function POST(req: NextRequest) {
       planId,
     });
 
-    // H-1: Store spDownloadUrl alongside spWebUrl so email attachment download uses the pre-auth CDN URL
     const attachment = await repo.create({
       resourceType,
       resourceId,

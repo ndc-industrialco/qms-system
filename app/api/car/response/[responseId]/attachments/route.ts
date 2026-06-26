@@ -2,10 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ValidationError, NotFoundError, ForbiddenError } from "@/errors/customErrors";
-import { db } from "@/lib/db";
+import { CarAttachmentRepository } from "@/repositories/carAttachmentRepository";
 import { uploadFileToCarResponse, deleteSpItem } from "@/services/sharepoint";
 import { getUserSnapshot } from "@/lib/userSnapshotCache";
 import { logger } from "@/lib/logger";
+
+const repo = new CarAttachmentRepository();
 
 const MAX_SIZE = 20 * 1024 * 1024;
 const ALLOWED_MIME = new Set([
@@ -28,22 +30,7 @@ export async function POST(
     const session = await requireAuth();
     const { responseId } = await params;
 
-    const response = await db.carResponse.findUnique({
-      where: { id: responseId },
-      select: {
-        id: true,
-        responderId: true,
-        carMaster: {
-          select: {
-            id: true,
-            carNo: true,
-            status: true,
-            targetDepartmentId: true,
-            targetAuthDepartmentId: true,
-          },
-        },
-      },
-    });
+    const response = await repo.findResponseWithCar(responseId);
     if (!response) throw new NotFoundError("CAR Response");
 
     const car = response.carMaster;
@@ -77,20 +64,18 @@ export async function POST(
       const snapshot = user.authUserId ? await getUserSnapshot(user.authUserId) : null;
       const uploaderName = snapshot?.name ?? null;
 
-      attachment = await db.carAttachment.create({
-        data: {
-          carResponseId: responseId,
-          fileName: file.name,
-          fileSize: file.size,
-          mimeType: file.type,
-          spItemId: sp.spItemId,
-          spWebUrl: sp.spWebUrl,
-          spDownloadUrl: sp.spDownloadUrl,
-          folderPath: sp.folderPath,
-          uploadedById: user.id,
-          uploadedByAuthUserId: user.authUserId ?? null,
-          uploadedByName: uploaderName,
-        },
+      attachment = await repo.createAttachment({
+        carResponseId: responseId,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        spItemId: sp.spItemId,
+        spWebUrl: sp.spWebUrl,
+        spDownloadUrl: sp.spDownloadUrl,
+        folderPath: sp.folderPath,
+        uploadedById: user.id,
+        uploadedByAuthUserId: user.authUserId ?? null,
+        uploadedByName: uploaderName,
       });
     } catch (dbErr) {
       logger.error("[CAR attachment] DB insert failed, compensating SP delete", dbErr);

@@ -3,7 +3,7 @@ import { CarRepository } from "@/repositories/carRepository";
 import { KpiMonthlyReportRepository } from "@/repositories/kpiMonthlyReportRepository";
 import { KpiRepository } from "@/repositories/kpiRepository";
 import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
-import { db } from "@/lib/db";
+import { AuditAppointmentRepository } from "@/repositories/audit/auditAppointmentRepository";
 import type { UserRole } from "@/generated/prisma/client";
 
 type PendingDarItem = {
@@ -84,6 +84,7 @@ export class ApprovalsService {
   private kpiMonthlyRepo = new KpiMonthlyReportRepository();
   private kpiRepo = new KpiRepository();
   private auditPlanRepo = new AuditPlanRepository();
+  private auditApptRepo = new AuditAppointmentRepository();
 
   async getPendingSummaryForUser(
     userId: string,
@@ -135,28 +136,10 @@ export class ApprovalsService {
       auditId ? this.auditPlanRepo.countPendingApproveByUser(auditId) : Promise.resolve(0),
       auditId ? this.auditPlanRepo.findPendingReviewByUser(auditId, 10) : Promise.resolve([]),
       auditId ? this.auditPlanRepo.findPendingApproveByUser(auditId, 10) : Promise.resolve([]),
-      auditId
-        ? db.auditAppointment.count({ where: { status: "PENDING_REVIEW", reviewerAuthUserId: auditId } })
-        : Promise.resolve(0),
-      auditId
-        ? db.auditAppointment.count({ where: { status: "PENDING_APPROVAL", approverAuthUserId: auditId } })
-        : Promise.resolve(0),
-      auditId
-        ? db.auditAppointment.findMany({
-            where: { status: "PENDING_REVIEW", reviewerAuthUserId: auditId },
-            orderBy: { updatedAt: "desc" },
-            take: 10,
-            select: { id: true, appointmentNo: true, title: true, year: true, status: true, updatedAt: true },
-          })
-        : Promise.resolve([]),
-      auditId
-        ? db.auditAppointment.findMany({
-            where: { status: "PENDING_APPROVAL", approverAuthUserId: auditId },
-            orderBy: { updatedAt: "desc" },
-            take: 10,
-            select: { id: true, appointmentNo: true, title: true, year: true, status: true, updatedAt: true },
-          })
-        : Promise.resolve([]),
+      auditId ? this.auditApptRepo.countPendingReviewByUser(auditId) : Promise.resolve(0),
+      auditId ? this.auditApptRepo.countPendingApproveByUser(auditId) : Promise.resolve(0),
+      auditId ? this.auditApptRepo.findPendingReviewByUser(auditId, 10) : Promise.resolve([]),
+      auditId ? this.auditApptRepo.findPendingApproveByUser(auditId, 10) : Promise.resolve([]),
     ]);
 
     const pendingDarItems: PendingDarItem[] = pendingDarItemsRaw.map((row) => ({

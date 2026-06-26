@@ -4,13 +4,15 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { uploadFileToAudit } from "@/services/sharepoint";
 import { AuditAttachmentRepository } from "@/repositories/audit/auditAttachmentRepository";
-import { db } from "@/lib/db";
-import { AuditService } from "@/services/auditService";
+import { AuditScheduleRepository } from "@/repositories/audit/auditScheduleRepository";
+import { AuditPlanService } from "@/services/audit/auditPlanService";
 import { sendChecklistReceivedEmail } from "@/services/audit/auditEmailService";
 import { logger } from "@/lib/logger";
 import { type NextRequest } from "next/server";
 
 const repo = new AuditAttachmentRepository();
+const scheduleRepo = new AuditScheduleRepository();
+const planService = new AuditPlanService();
 const MAX_SIZE = 20 * 1024 * 1024;
 const ALLOWED_EXT = new Set(["pdf", "docx", "xlsx", "png", "jpg", "jpeg"]);
 
@@ -22,10 +24,7 @@ export async function POST(
     const session = await requireAuth();
     const { id: scheduleId } = await params;
 
-    const schedule = await db.auditSchedule.findUnique({
-      where: { id: scheduleId },
-      include: { plan: { select: { id: true, title: true, auditNo: true, ownerAuthUserId: true, ownerEmail: true, ownerNameSnapshot: true } } },
-    });
+    const schedule = await scheduleRepo.findWithPlan(scheduleId);
     if (!schedule) throw new NotFoundError("Schedule not found");
 
     const actorId = session.user.authUserId ?? session.user.id;
@@ -63,32 +62,12 @@ export async function POST(
       spDownloadUrl: result.spDownloadUrl ?? null,
     } as Parameters<typeof repo.create>[0]);
 
-    const submittedByName = session.user.name ?? actorId;
-    const updated = await db.$transaction(async (tx) => {
-      const u = await tx.auditSchedule.update({
-        where: { id: scheduleId },
-        data: {
-          checklistSubmittedAt: new Date(),
-          checklistSubmittedByUserId: actorId,
-          checklistSubmittedByName: submittedByName,
-        },
-      });
-      await AuditService.record(
-        {
-          actorUserId: session.user.id,
-          actorAuthUserId: actorId,
-          actorRole: session.user.role,
-          action: "UPDATE",
-          resourceType: "AUDIT_SCHEDULE",
-          resourceId: scheduleId,
-          metadata: { action: "CHECKLIST_SUBMITTED", fileName: file.name },
-        },
-        tx
-      );
-      return u;
-    });
+    const updated = await planService.submitChecklist(
+      scheduleId,
+      { userId: session.user.id, authUserId: session.user.authUserId, role: session.user.role, name: session.user.name },
+      file.name
+    );
 
-    // Notify plan owner
     if (schedule.plan.ownerEmail && schedule.departmentName) {
       sendChecklistReceivedEmail({
         to: { name: schedule.plan.ownerNameSnapshot ?? schedule.plan.ownerEmail, email: schedule.plan.ownerEmail },
@@ -96,7 +75,7 @@ export async function POST(
         auditNo: schedule.plan.auditNo,
         departmentName: schedule.departmentName,
         sessionTitle: schedule.sessionTitle,
-        submittedBy: submittedByName,
+        submittedBy: session.user.name ?? actorId,
         planId: schedule.planId,
         senderAccessToken: session.user.accessToken ?? null,
       }).catch((err) => logger.warn("[checklist] notify owner failed", { error: String(err) }));

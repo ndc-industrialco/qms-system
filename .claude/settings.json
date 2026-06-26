@@ -24,7 +24,15 @@
       "Bash(mkdir -p \"d:/NDC_042/NextJS/qms-system/app/\\(dashboard\\)/approve/kpi/[id]/reviewer\")",
       "Bash(mkdir -p \"d:/NDC_042/NextJS/qms-system/app/\\(dashboard\\)/approve/kpi/[id]/approver\")",
       "PowerShell(npx tsc --noEmit -p tsconfig.json 2>&1)",
-      "Bash(xargs grep -l \"approve\")"
+      "Bash(xargs grep -l \"approve\")",
+      "PowerShell(cd d:\\\\NDC_042\\\\NextJS\\\\qms-system; npm run lint 2>&1 | Select-String \"ndc/no-db-in-api\" -Context 1,0 | ForEach-Object { $_.Context.PreContext } | Sort-Object -Unique)",
+      "PowerShell(cd d:\\\\NDC_042\\\\NextJS\\\\qms-system; npm run lint 2>&1 | Select-String \"ndc/no-db-in-api\" -Context 2,0 | ForEach-Object { $_.Context.PreContext })",
+      "PowerShell(cd d:\\\\NDC_042\\\\NextJS\\\\qms-system; npm run lint 2>&1 | Select-String \"no-require-imports\" -Context 1,0 | ForEach-Object { $_.Context.PreContext } | Sort-Object -Unique)",
+      "PowerShell(cd d:\\\\NDC_042\\\\NextJS\\\\qms-system; npm run lint 2>&1 | Select-String \"error\" | Where-Object { $_ -match \"no-require\" -or $_ -match \"ndc/no-db\" -or $_ -match \"no-explicit-any\" } | Select-Object -First 20)",
+      "PowerShell(cd d:\\\\NDC_042\\\\NextJS\\\\qms-system; npm run lint 2>&1 | Where-Object { $_ -match \"^\\\\d\" -and \\($_ -match \"no-require\" -or $_ -match \"ndc/no-db\" -or $_ -match \"no-explicit-any\"\\) })",
+      "PowerShell(cd d:\\\\NDC_042\\\\NextJS\\\\qms-system; npm run lint 2>&1 | Out-String | Select-String \"error\" -AllMatches | Select-Object -ExpandProperty Matches | ForEach-Object { $_.Value } | Select-Object -First 5)",
+      "PowerShell(cd d:\\\\NDC_042\\\\NextJS\\\\qms-system; npx eslint . 2>&1 | Select-String \"error\" | Where-Object { $_ -match \"ndc/no-db|no-require|no-explicit-any\" })",
+      "PowerShell(cd d:\\\\NDC_042\\\\NextJS\\\\qms-system; npx eslint . --max-warnings 9999 2>&1 | Where-Object { $_ -match \"error\" -and $_ -notmatch \"\\\\.claude.skills\" -and $_ -notmatch \"npm\" -and $_ -notmatch \"^>\" })"
     ],
     "additionalDirectories": [
       "d:\\NDC_042\\NextJS\\qms-system\\app\\api\\audit\\appointments\\[id]",

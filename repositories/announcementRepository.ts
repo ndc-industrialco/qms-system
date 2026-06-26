@@ -84,6 +84,33 @@ export class AnnouncementRepository extends BaseRepository<Announcement> {
     });
   }
 
+  async findActivePublic(now: Date, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: {
+        status: "ACTIVE",
+        pushToCompanyCenter: true,
+        OR: [{ startDate: null }, { startDate: { lte: now } }],
+        AND: [{ OR: [{ endDate: null }, { endDate: { gte: now } }] }],
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        sourceSystem: true,
+        displayType: true,
+        startDate: true,
+        endDate: true,
+        fileName: true,
+        spWebUrl: true,
+        bgColor: true,
+        textColor: true,
+        createdAt: true,
+        createdByName: true,
+      },
+    });
+  }
+
   async findActiveTicker(now: Date, take: number, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findMany({
       where: {

@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { AuditService } from "@/services/auditService";
+import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
+import { logger } from "@/lib/logger";
 import { ActionTokenService } from "@/services/actionTokenService";
 import { sendSignRequestOnce } from "./auditNotificationService";
 import { NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
@@ -8,6 +10,7 @@ import type { AuditInAppSignInput, AuditSignRequestInput, AuditSignConsumeInput,
 type Actor = { userId: string; authUserId?: string | null; role: string; accessToken?: string | null };
 
 export class AuditSignReportService {
+  private planRepo = new AuditPlanRepository();
 
   // ── In-App Sign ───────────────────────────────────────────────────────────
 
@@ -22,9 +25,7 @@ export class AuditSignReportService {
     }
     // B-3: prevent duplicate signatures from the same actor
     const actorId = actor.authUserId ?? actor.userId;
-    const existing = await db.auditSignoff.findFirst({
-      where: { planId, signedByAuthUserId: actorId },
-    });
+    const existing = await this.planRepo.findSignoff(planId, actorId);
     if (existing) {
       throw new ValidationError("You have already signed this plan.");
     }
@@ -93,7 +94,6 @@ export class AuditSignReportService {
       targetName: input.targetName ?? input.targetEmail,
       senderAccessToken: actor.accessToken,
     }).catch((err) => {
-      const { logger } = require("@/lib/logger");
       logger.error("[auditSign] sign request email failed", { planId, error: String(err) });
     });
 
@@ -192,15 +192,7 @@ export class AuditSignReportService {
   // ── Close Plan ────────────────────────────────────────────────────────────
 
   async closePlan(planId: string, actor: Actor) {
-    const plan = await db.auditPlan.findUnique({
-      where: { id: planId },
-      include: {
-        findings: { select: { status: true } },
-        signoffs: true,
-        report: true,
-        auditors: { where: { role: "LEAD" } },
-      },
-    });
+    const plan = await this.planRepo.findForClose(planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
     if (plan.status === "CLOSED") throw new ValidationError("Plan is already closed");
     if (plan.status === "CANCELLED") throw new ValidationError("Cannot close a cancelled plan");
@@ -247,10 +239,7 @@ export class AuditSignReportService {
   // ── Private ───────────────────────────────────────────────────────────────
 
   private async loadPlan(planId: string) {
-    const plan = await db.auditPlan.findUnique({
-      where: { id: planId },
-      include: { auditors: true },
-    });
+    const plan = await this.planRepo.findWithAuditors(planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
     return plan;
   }

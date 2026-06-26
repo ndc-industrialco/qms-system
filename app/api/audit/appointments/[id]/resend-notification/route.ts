@@ -2,11 +2,12 @@ import { requireAuth } from "@/lib/auth";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
-import { db } from "@/lib/db";
 import { sendAppointmentSignRequestEmail, sendAppointmentPublishedEmail } from "@/services/audit/auditEmailService";
+import { AuditAppointmentRepository } from "@/repositories/audit/auditAppointmentRepository";
 import { type NextRequest } from "next/server";
 
 const PRIVILEGED = new Set(["QMS", "IT", "MR"]);
+const repo = new AuditAppointmentRepository();
 
 export async function POST(
   _req: NextRequest,
@@ -17,10 +18,7 @@ export async function POST(
     if (!PRIVILEGED.has(session.user.role)) throw new ForbiddenError();
 
     const { id } = await params;
-    const appt = await db.auditAppointment.findUnique({
-      where: { id },
-      include: { members: { orderBy: { orderIndex: "asc" } } },
-    });
+    const appt = await repo.findWithMembers(id);
     if (!appt) throw new NotFoundError("Appointment not found");
 
     const token = session.user.accessToken ?? null;

@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { AuditService } from "@/services/auditService";
 import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
+import { AuditScheduleRepository } from "@/repositories/audit/auditScheduleRepository";
 import { NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
 import type {
   AuditPlanCreateInput,
@@ -21,6 +22,7 @@ const MUTABLE_STATUSES = new Set(["DRAFT", "PENDING_REVIEW", "PENDING_APPROVAL",
 
 export class AuditPlanService {
   private repo = new AuditPlanRepository();
+  private scheduleRepo = new AuditScheduleRepository();
 
   async listPlans(query: AuditPlanListQuery) {
     return this.repo.listPaginated(query);
@@ -265,10 +267,7 @@ export class AuditPlanService {
     input: AuditScheduleCreateInput,
     actor: { userId: string; authUserId?: string | null; role: string }
   ) {
-    const plan = await db.auditPlan.findUnique({
-      where: { id: planId },
-      include: { auditors: { where: { role: "LEAD" } } },
-    });
+    const plan = await this.repo.findWithAuditorsAndLead(planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
     if (!MUTABLE_STATUSES.has(plan.status)) {
       throw new ValidationError(`Cannot add schedule to a plan in status ${plan.status}`);
@@ -351,7 +350,7 @@ export class AuditPlanService {
   async getSchedulesByPlan(planId: string) {
     const plan = await this.repo.findById(planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
-    return db.auditSchedule.findMany({ where: { planId }, orderBy: { startAt: "asc" } });
+    return this.scheduleRepo.findByPlanId(planId);
   }
 
   async updateSchedule(
@@ -359,13 +358,10 @@ export class AuditPlanService {
     input: AuditScheduleUpdateInput,
     actor: { userId: string; authUserId?: string | null; role: string }
   ) {
-    const schedule = await db.auditSchedule.findUnique({ where: { id: scheduleId } });
+    const schedule = await this.scheduleRepo.findById(scheduleId);
     if (!schedule) throw new NotFoundError("Schedule not found");
 
-    const plan = await db.auditPlan.findUnique({
-      where: { id: schedule.planId },
-      include: { auditors: { where: { role: "LEAD" } } },
-    });
+    const plan = await this.repo.findWithAuditorsAndLead(schedule.planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
     if (!MUTABLE_STATUSES.has(plan.status)) {
       throw new ValidationError(`Cannot edit schedule for a plan in status ${plan.status}`);
@@ -471,10 +467,10 @@ export class AuditPlanService {
     input: AuditScheduleConfirmInput,
     actor: { userId: string; authUserId?: string | null; role: string; nameSnapshot?: string | null; accessToken?: string | null }
   ) {
-    const schedule = await db.auditSchedule.findUnique({ where: { id: scheduleId } });
+    const schedule = await this.scheduleRepo.findById(scheduleId);
     if (!schedule) throw new NotFoundError("Schedule not found");
 
-    const plan = await db.auditPlan.findUnique({ where: { id: schedule.planId } });
+    const plan = await this.repo.findById(schedule.planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
 
     const now = new Date();
@@ -550,13 +546,10 @@ export class AuditPlanService {
     scheduleId: string,
     actor: { userId: string; authUserId?: string | null; role: string }
   ) {
-    const schedule = await db.auditSchedule.findUnique({ where: { id: scheduleId } });
+    const schedule = await this.scheduleRepo.findById(scheduleId);
     if (!schedule) throw new NotFoundError("Schedule not found");
 
-    const plan = await db.auditPlan.findUnique({
-      where: { id: schedule.planId },
-      include: { auditors: { where: { role: "LEAD" } } },
-    });
+    const plan = await this.repo.findWithAuditorsAndLead(schedule.planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
     if (!MUTABLE_STATUSES.has(plan.status)) {
       throw new ValidationError(`Cannot delete schedule for a plan in status ${plan.status}`);
@@ -596,42 +589,7 @@ export class AuditPlanService {
       pendingSignoffs,
       upcomingSchedules,
       recentOpenFindings,
-    ] = await Promise.all([
-      db.auditPlan.count(),
-      db.auditPlan.count({ where: { status: "IN_PROGRESS" } }),
-      db.auditPlan.count({ where: { status: "WAITING_CORRECTIVE" } }),
-      db.auditFinding.count({ where: { status: { in: ["OPEN", "REOPENED"] } } }),
-      db.auditFinding.count({
-        where: {
-          dueAt: { lt: now },
-          status: { notIn: ["CLOSED", "REJECTED"] },
-        },
-      }),
-      db.auditPlan.count({ where: { status: "READY_TO_CLOSE" } }),
-      db.auditSchedule.findMany({
-        where: { startAt: { gte: now, lte: sevenDaysLater } },
-        include: { plan: { select: { id: true, title: true, auditNo: true } } },
-        orderBy: { startAt: "asc" },
-        take: 10,
-      }),
-      db.auditFinding.findMany({
-        where: { status: { in: ["OPEN", "REOPENED"] } },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        select: {
-          id: true,
-          planId: true,
-          findingNo: true,
-          title: true,
-          category: true,
-          severity: true,
-          status: true,
-          ownerNameSnapshot: true,
-          dueAt: true,
-          createdAt: true,
-        },
-      }),
-    ]);
+    ] = await this.repo.getDashboardCounts(now, sevenDaysLater);
 
     return {
       counts: {
@@ -675,93 +633,7 @@ export class AuditPlanService {
       toVerifyPlans,
       leadingPlans,
       pendingSignoffs,
-    ] = await Promise.all([
-      db.auditFinding.findMany({
-        where: {
-          ownerAuthUserId: authUserId,
-          status: { in: ["OPEN", "REOPENED"] },
-        },
-        orderBy: { dueAt: "asc" },
-        select: {
-          id: true,
-          planId: true,
-          findingNo: true,
-          title: true,
-          category: true,
-          severity: true,
-          status: true,
-          ownerNameSnapshot: true,
-          dueAt: true,
-          createdAt: true,
-          plan: { select: { id: true, title: true, auditNo: true } },
-        },
-      }),
-      db.auditPlan.findMany({
-        where: {
-          auditors: { some: { assigneeAuthUserId: authUserId, role: "LEAD" } },
-          findings: { some: { status: "RESPONDED" } },
-        },
-        select: {
-          id: true,
-          auditNo: true,
-          title: true,
-          status: true,
-          findings: {
-            where: { status: "RESPONDED" },
-            select: {
-              id: true,
-              planId: true,
-              findingNo: true,
-              title: true,
-              category: true,
-              severity: true,
-              status: true,
-              ownerNameSnapshot: true,
-              dueAt: true,
-              createdAt: true,
-            },
-          },
-        },
-      }),
-      db.auditPlan.findMany({
-        where: {
-          leadAuditorAuthUserId: authUserId,
-          status: { notIn: ["CLOSED", "CANCELLED"] },
-        },
-        orderBy: { updatedAt: "desc" },
-        select: {
-          id: true,
-          auditNo: true,
-          title: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-          ownerNameSnapshot: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      }),
-      db.auditPlan.findMany({
-        where: {
-          status: "READY_TO_CLOSE",
-          OR: [
-            { ownerAuthUserId: authUserId },
-            { leadAuditorAuthUserId: authUserId },
-          ],
-        },
-        orderBy: { updatedAt: "desc" },
-        select: {
-          id: true,
-          auditNo: true,
-          title: true,
-          status: true,
-          ownerAuthUserId: true,
-          ownerNameSnapshot: true,
-          leadAuditorAuthUserId: true,
-          updatedAt: true,
-        },
-      }),
-    ]);
+    ] = await this.repo.getMyTasksData(authUserId);
 
     const toVerify = toVerifyPlans.flatMap((plan) =>
       plan.findings.map((f) => ({
@@ -809,6 +681,37 @@ export class AuditPlanService {
         updatedAt: p.updatedAt instanceof Date ? p.updatedAt.toISOString() : p.updatedAt,
       })),
     };
+  }
+
+  // ── Checklist Submit ─────────────────────────────────────────────────────
+
+  async submitChecklist(
+    scheduleId: string,
+    actor: { userId: string; authUserId?: string | null; role: string; name?: string | null },
+    fileName: string
+  ) {
+    const actorId = actor.authUserId ?? actor.userId;
+    const submittedByName = actor.name ?? actorId;
+    return db.$transaction(async (tx) => {
+      const updated = await this.scheduleRepo.markChecklistSubmitted(
+        scheduleId,
+        { submittedAt: new Date(), submittedByUserId: actorId, submittedByName },
+        tx
+      );
+      await AuditService.record(
+        {
+          actorUserId: actor.userId,
+          actorAuthUserId: actorId,
+          actorRole: actor.role,
+          action: "UPDATE",
+          resourceType: "AUDIT_SCHEDULE",
+          resourceId: scheduleId,
+          metadata: { action: "CHECKLIST_SUBMITTED", fileName },
+        },
+        tx
+      );
+      return updated;
+    });
   }
 
   // ── private ──────────────────────────────────────────────────────────────

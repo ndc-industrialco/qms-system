@@ -3,6 +3,7 @@
  */
 import { db } from "@/lib/db";
 import { AuditService } from "@/services/auditService";
+import { AuditAppointmentRepository } from "@/repositories/audit/auditAppointmentRepository";
 import { NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import type { AuditAppointmentCreateInput, AuditAppointmentUpdateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
@@ -197,6 +198,7 @@ async function nextAppointmentNo(
 }
 
 export class AuditAppointmentService {
+  private repo = new AuditAppointmentRepository();
   async create(input: AuditAppointmentCreateInput, actor: Actor) {
     if (!isPrivileged(actor.role))
       throw new ForbiddenError("Only QMS/IT/MR can create appointment letters");
@@ -253,30 +255,18 @@ export class AuditAppointmentService {
   }
 
   async findAll() {
-    return db.auditAppointment.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        members: { orderBy: { orderIndex: "asc" } },
-        signoffs: true,
-      },
-    });
+    return this.repo.findAll();
   }
 
   async findById(id: string) {
-    return db.auditAppointment.findUnique({
-      where: { id },
-      include: {
-        members: { orderBy: { orderIndex: "asc" } },
-        signoffs: true,
-      },
-    });
+    return this.repo.findDetailById(id);
   }
 
   async update(id: string, input: AuditAppointmentUpdateInput, actor: Actor) {
     if (!isPrivileged(actor.role))
       throw new ForbiddenError("Only QMS/IT/MR can update appointment letters");
 
-    const appt = await db.auditAppointment.findUnique({ where: { id } });
+    const appt = await this.repo.findById(id);
     if (!appt) throw new NotFoundError("Appointment not found");
     if (appt.status !== "DRAFT")
       throw new ValidationError("Can only edit appointments in DRAFT status");
@@ -340,7 +330,7 @@ export class AuditAppointmentService {
     if (!isPrivileged(actor.role))
       throw new ForbiddenError("Only QMS/IT/MR can delete appointment letters");
 
-    const appt = await db.auditAppointment.findUnique({ where: { id } });
+    const appt = await this.repo.findById(id);
     if (!appt) throw new NotFoundError("Appointment not found");
     if (!["DRAFT", "PUBLISHED"].includes(appt.status) && !isPrivileged(actor.role))
       throw new ValidationError("Cannot delete a pending appointment");
@@ -368,7 +358,7 @@ export class AuditAppointmentService {
   }
 
   async submit(id: string, actor: Actor, ownerSignaturePath?: string) {
-    const appt = await db.auditAppointment.findUnique({ where: { id } });
+    const appt = await this.repo.findById(id);
     if (!appt) throw new NotFoundError("Appointment not found");
     if (appt.status !== "DRAFT")
       throw new ValidationError(`Cannot submit from status ${appt.status}`);
@@ -420,7 +410,7 @@ export class AuditAppointmentService {
   }
 
   async review(id: string, actor: Actor, sigBody?: SigBody | null) {
-    const appt = await db.auditAppointment.findUnique({ where: { id } });
+    const appt = await this.repo.findById(id);
     if (!appt) throw new NotFoundError("Appointment not found");
     if (appt.status !== "PENDING_REVIEW")
       throw new ValidationError(`Cannot review from status ${appt.status}`);
@@ -486,10 +476,7 @@ export class AuditAppointmentService {
   }
 
   async approve(id: string, actor: Actor, sigBody?: SigBody | null) {
-    const appt = await db.auditAppointment.findUnique({
-      where: { id },
-      include: { members: { orderBy: { orderIndex: "asc" } } },
-    });
+    const appt = await this.repo.findWithMembers(id);
     if (!appt) throw new NotFoundError("Appointment not found");
     if (appt.status !== "PENDING_APPROVAL")
       throw new ValidationError(`Cannot approve from status ${appt.status}`);
@@ -652,7 +639,7 @@ export class AuditAppointmentService {
   }
 
   async reject(id: string, input: AuditAppointmentRejectInput, actor: Actor) {
-    const appt = await db.auditAppointment.findUnique({ where: { id } });
+    const appt = await this.repo.findById(id);
     if (!appt) throw new NotFoundError("Appointment not found");
 
     const validStatuses =

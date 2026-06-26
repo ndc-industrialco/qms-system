@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { AuditService } from "@/services/auditService";
 import { AuditFindingRepository } from "@/repositories/audit/auditFindingRepository";
+import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
 import { NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
 import type {
   AuditFindingCreateInput,
@@ -17,6 +18,7 @@ const EDITABLE_FINDING_STATUSES = new Set<FindingStatus>(["OPEN", "REOPENED"]);
 
 export class AuditFindingService {
   private repo = new AuditFindingRepository();
+  private planRepo = new AuditPlanRepository();
 
   // ── List / Detail ─────────────────────────────────────────────────────────
 
@@ -280,10 +282,7 @@ export class AuditFindingService {
   // ── Private helpers ───────────────────────────────────────────────────────
 
   private async loadPlanWithAuditors(planId: string) {
-    const plan = await db.auditPlan.findUnique({
-      where: { id: planId },
-      include: { auditors: true },
-    });
+    const plan = await this.planRepo.findWithAuditors(planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
     return plan;
   }
