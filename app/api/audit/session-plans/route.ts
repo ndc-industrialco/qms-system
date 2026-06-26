@@ -1,10 +1,13 @@
 import { requireAuth } from "@/lib/auth";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
-import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
+import { ForbiddenError, NotFoundError } from "@/lib/errors";
 import { AuditSessionPlanRepository } from "@/repositories/audit/auditSessionPlanRepository";
 import { AuditAppointmentRepository } from "@/repositories/audit/auditAppointmentRepository";
 import { type NextRequest } from "next/server";
+import { z } from "zod";
+
+const createSchema = z.object({ appointmentId: z.string().min(1) });
 
 const PRIVILEGED = new Set(["QMS", "IT", "MR"]);
 const repo = new AuditSessionPlanRepository();
@@ -15,8 +18,7 @@ export async function POST(req: NextRequest) {
     const session = await requireAuth();
     if (!PRIVILEGED.has(session.user.role)) throw new ForbiddenError();
 
-    const body = await req.json() as { appointmentId: string };
-    if (!body.appointmentId) throw new ValidationError("appointmentId required");
+    const body = createSchema.parse(await req.json());
 
     const appt = await apptRepo.findById(body.appointmentId);
     if (!appt) throw new NotFoundError("Appointment not found");

@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
+import { sendSuccess } from "@/lib/apiResponse";
+import { handleApiError } from "@/lib/apiErrorHandler";
 import { rejectPlan } from "@/services/audit/auditPlanWorkflowService";
 import { z } from "zod";
 
@@ -14,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const session = await requireAuth();
     const body = schema.parse(await req.json());
 
-    await rejectPlan(id, body, {
+    const updated = await rejectPlan(id, body, {
       userId: session.user.id,
       authUserId: session.user.authUserId ?? session.user.id,
       role: session.user.role,
@@ -22,9 +24,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       nameSnapshot: session.user.name ?? null,
     });
 
-    return NextResponse.json({ ok: true });
-  } catch (err: unknown) {
-    const e = err as { statusCode?: number; message?: string };
-    return NextResponse.json({ error: e.message ?? "เกิดข้อผิดพลาด" }, { status: e.statusCode ?? 500 });
+    return sendSuccess(updated, "Plan rejected");
+  } catch (err) {
+    return handleApiError(err);
   }
 }

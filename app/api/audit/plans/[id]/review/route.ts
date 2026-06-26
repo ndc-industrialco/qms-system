@@ -3,6 +3,9 @@ import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { reviewPlan } from "@/services/audit/auditPlanWorkflowService";
 import { type NextRequest } from "next/server";
+import { z } from "zod";
+
+const reviewSchema = z.object({ signaturePath: z.string().nullable().optional() });
 
 export async function POST(
   req: NextRequest,
@@ -11,7 +14,7 @@ export async function POST(
   try {
     const session = await requireAuth();
     const { id } = await params;
-    const body = await req.json().catch(() => ({}));
+    const body = reviewSchema.parse(await req.json().catch(() => ({})));
 
     const plan = await reviewPlan(id, {
       userId: session.user.id,

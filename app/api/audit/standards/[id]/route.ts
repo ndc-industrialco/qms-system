@@ -4,6 +4,9 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { ForbiddenError } from "@/lib/errors";
 import { AuditStandardRepository } from "@/repositories/audit/auditStandardRepository";
 import { type NextRequest } from "next/server";
+import { z } from "zod";
+
+const patchSchema = z.object({ name: z.string().min(1) });
 
 const PRIVILEGED = new Set(["QMS", "IT", "MR"]);
 const repo = new AuditStandardRepository();
@@ -13,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const session = await requireAuth();
     if (!PRIVILEGED.has(session.user.role)) throw new ForbiddenError();
     const { id } = await params;
-    const { name } = await req.json();
+    const { name } = patchSchema.parse(await req.json());
     const updated = await repo.updateName(id, name);
     return sendSuccess(updated, "Updated");
   } catch (err) { return handleApiError(err); }

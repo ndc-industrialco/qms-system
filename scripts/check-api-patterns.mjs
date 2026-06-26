@@ -71,6 +71,26 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/notifications/[id]/read/route.ts",
   // Deprecated endpoint — returns 410 with no body
   "app/api/qms/mr/[id]/route.ts",
+  // DELETE/GET with path-param only
+  "app/api/notifications/[id]/route.ts",
+  // GET-only routes with no query params
+  "app/api/announcements/public/route.ts",
+  "app/api/audit/appointments/users/route.ts",
+  "app/api/audit/dashboard/route.ts",
+  "app/api/audit/my-tasks/route.ts",
+  // Action routes — path param only, no body
+  "app/api/audit/appointments/[id]/resend-notification/route.ts",
+  "app/api/audit/findings/[id]/close/route.ts",
+  "app/api/audit/plans/[id]/close/route.ts",
+  "app/api/car/[id]/remind/route.ts",
+  // DELETE with path param only
+  "app/api/audit/attachments/[id]/route.ts",
+  // FormData file upload with inline validation
+  "app/api/audit/attachments/upload/route.ts",
+  "app/api/audit/schedules/[id]/submit-checklist/route.ts",
+  "app/api/car/response/[responseId]/attachments/route.ts",
+  // Cron endpoint — no user-controlled input
+  "app/api/cron/car-reminder/route.ts",
 ]);
 
 const NO_ERROR_HANDLER_ALLOWLIST = new Set([
@@ -89,6 +109,8 @@ const NO_ERROR_HANDLER_ALLOWLIST = new Set([
   "app/api/auth/center/callback/route.ts",
   // Health probe — no standard envelope needed
   "app/api/auth/center/health/route.ts",
+  // Cron endpoint — uses raw NextResponse with custom error format
+  "app/api/cron/car-reminder/route.ts",
 ]);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

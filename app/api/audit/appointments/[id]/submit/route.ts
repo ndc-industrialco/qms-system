@@ -4,6 +4,9 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { AuditAppointmentService } from "@/services/audit/auditAppointmentService";
 import { logger } from "@/lib/logger";
 import { type NextRequest } from "next/server";
+import { z } from "zod";
+
+const submitSchema = z.object({ ownerSignatureDataUrl: z.string().optional() });
 
 const svc = new AuditAppointmentService();
 
@@ -15,7 +18,7 @@ export async function POST(
     const session = await requireAuth();
     const { id } = await params;
 
-    const body = await req.json().catch(() => ({})) as { ownerSignatureDataUrl?: string };
+    const body = submitSchema.parse(await req.json().catch(() => ({})));
 
     logger.info("[appointment/submit] hit", {
       id,
