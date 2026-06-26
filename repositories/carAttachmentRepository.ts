@@ -29,22 +29,7 @@ export class CarAttachmentRepository extends BaseRepository<CarAttachment> {
     });
   }
 
-  async createAttachment(
-    data: {
-      carResponseId: string;
-      fileName: string;
-      fileSize: number;
-      mimeType: string;
-      spItemId: string;
-      spWebUrl: string;
-      spDownloadUrl: string | null;
-      folderPath: string;
-      uploadedById: string;
-      uploadedByAuthUserId: string | null;
-      uploadedByName: string | null;
-    },
-    tx?: Prisma.TransactionClient
-  ) {
+  async createAttachment(data: Prisma.CarAttachmentUncheckedCreateInput, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).create({ data });
   }
 }

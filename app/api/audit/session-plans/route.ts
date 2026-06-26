@@ -1,7 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
-import { ForbiddenError, NotFoundError } from "@/lib/errors";
+import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { AuditSessionPlanRepository } from "@/repositories/audit/auditSessionPlanRepository";
 import { AuditAppointmentRepository } from "@/repositories/audit/auditAppointmentRepository";
 import { type NextRequest } from "next/server";

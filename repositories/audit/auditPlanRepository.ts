@@ -1,5 +1,5 @@
 import { BaseRepository, PaginatedResult } from "../baseRepository";
-import { AuditPlan, Prisma, AuditPlanStatus, AuditType } from "@/generated/prisma/client";
+import { AuditPlan, Prisma, AuditPlanStatus, AuditType, AuditDeliveryMode } from "@/generated/prisma/client";
 
 export interface AuditPlanListQuery {
   page?: number;
@@ -112,7 +112,7 @@ export class AuditPlanRepository extends BaseRepository<AuditPlan> {
       planId: string;
       title: string;
       message: string;
-      deliveryMode: string;
+      deliveryMode: AuditDeliveryMode;
       publishedAt: Date;
       publishedByAuthUserId: string;
     },
