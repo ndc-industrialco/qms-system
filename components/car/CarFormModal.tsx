@@ -16,6 +16,8 @@ import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/com
 import { carCreateSchema, type CarCreateInput } from "@/lib/validations/car";
 import { ISO_STANDARDS, CAR_SOURCE_LABELS } from "@/types/car";
 import type { CarDetail, CarSourceType } from "@/types/car";
+import SignaturePad from "@/components/dar/SignaturePad";
+import type { SignatureType } from "@/types/dar";
 
 interface Props {
   open: boolean;
@@ -97,6 +99,9 @@ function GroupCheckList({
   );
 }
 
+// ponytail: step controls form→sign flow without extra components
+type ModalStep = "form" | "sign";
+
 export default function CarFormModal({
   open,
   onClose,
@@ -108,6 +113,8 @@ export default function CarFormModal({
   const t = useT();
   const qc = useQueryClient();
   const [isMobile, setIsMobile] = useState(false);
+  const [step, setStep] = useState<ModalStep>("form");
+  const [pendingData, setPendingData] = useState<CarCreateInput | null>(null);
 
   const {
     data: departmentsData,
@@ -140,6 +147,11 @@ export default function CarFormModal({
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
+
+  // Reset step whenever the modal opens
+  useEffect(() => {
+    if (open) { setStep("form"); setPendingData(null); }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -183,11 +195,14 @@ export default function CarFormModal({
   }
 
   const mutation = useMutation({
-    mutationFn: async (data: CarCreateInput) => {
+    mutationFn: async ({ data, signaturePath }: { data: CarCreateInput; signaturePath: string | null }) => {
       const car = await saveCar(data, editCar?.id);
       if (editCar) return { car, issue: null };
-      // New CAR: auto-issue immediately
-      const res = await fetch(`/api/car/${car.id}/issue`, { method: "POST" });
+      const res = await fetch(`/api/car/${car.id}/issue`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ issuerSignaturePath: signaturePath }),
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.message ?? "Failed to issue CAR");
       return { car, issue: json.data as { emailQueued: boolean; emailSkipReason?: string } };
@@ -197,7 +212,7 @@ export default function CarFormModal({
       if (editCar) qc.invalidateQueries({ queryKey: ["car", editCar.id] });
       qc.invalidateQueries({ queryKey: ["notifications"] });
       onSuccess?.(car);
-      onClose();
+      handleClose();
       if (issue) {
         if (issue.emailQueued) {
           toast.success(`ออก CAR ${car.carNo} แล้ว — ส่งอีเมลแจ้งเตือนแล้ว`, {
@@ -216,9 +231,40 @@ export default function CarFormModal({
     },
   });
 
-  function onSubmit(data: CarCreateInput) {
-    mutation.mutate(data);
+  function handleClose() {
+    setStep("form");
+    setPendingData(null);
+    onClose();
   }
+
+  // For edits: save directly. For new CARs: go to sign step first.
+  function onSubmit(data: CarCreateInput) {
+    if (editCar) {
+      mutation.mutate({ data, signaturePath: null });
+    } else {
+      setPendingData(data);
+      setStep("sign");
+    }
+  }
+
+  function handleSignConfirm(dataUrl: string, _type: SignatureType, _save: boolean) {
+    if (!pendingData) return;
+    mutation.mutate({ data: pendingData, signaturePath: dataUrl });
+  }
+
+  // Sign step — shown after form is valid (new CAR only)
+  const signSection = (
+    <>
+      <div className="flex-1 overflow-y-auto p-5 md:p-7 space-y-4">
+        <p className="text-sm text-slate-600">กรุณาเซ็นลายเซ็นผู้ออก CAR เพื่อยืนยันการออก CAR</p>
+        <SignaturePad
+          onConfirm={handleSignConfirm}
+          onCancel={() => setStep("form")}
+          isLoading={mutation.isPending}
+        />
+      </div>
+    </>
+  );
 
   const formSections = (
     <>
@@ -469,7 +515,7 @@ export default function CarFormModal({
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={mutation.isPending}
           >
             {t("common.cancel")}
@@ -492,7 +538,7 @@ export default function CarFormModal({
           <Button
             type="button"
             variant="outline"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={mutation.isPending}
           >
             {t("common.cancel")}
@@ -514,37 +560,35 @@ export default function CarFormModal({
     </>
   );
 
+  const titleLabel = step === "sign"
+    ? "เซ็นลายเซ็นผู้ออก CAR"
+    : editCar ? t("car.form.editTitle", { carNo: editCar.carNo }) : t("car.form.createTitle");
+
+  const content = step === "sign" ? signSection : formSections;
+
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={(value) => !value && onClose()}>
+      <Sheet open={open} onOpenChange={(value) => !value && handleClose()}>
         <SheetContent
           side="bottom"
           className="flex h-[92vh] flex-col gap-0 rounded-t-3xl p-0"
         >
           <SheetHeader className="border-b border-slate-100 px-4 pb-4 pt-2 text-left">
-            <SheetTitle className="pr-10 text-lg font-bold text-slate-900">
-              {editCar
-                ? t("car.form.editTitle", { carNo: editCar.carNo })
-                : t("car.form.createTitle")}
-            </SheetTitle>
+            <SheetTitle className="pr-10 text-lg font-bold text-slate-900">{titleLabel}</SheetTitle>
           </SheetHeader>
-          {formSections}
+          {content}
         </SheetContent>
       </Sheet>
     );
   }
 
   return (
-    <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
+    <Dialog open={open} onOpenChange={(value) => !value && handleClose()}>
       <DialogContent className="flex max-h-[94vh] w-[min(96vw,80rem)] max-w-5xl flex-col gap-0 overflow-hidden p-0">
         <DialogHeader className="border-b border-slate-100 px-6 py-4">
-          <DialogTitle className="text-lg font-bold text-slate-900">
-            {editCar
-              ? t("car.form.editTitle", { carNo: editCar.carNo })
-              : t("car.form.createTitle")}
-          </DialogTitle>
+          <DialogTitle className="text-lg font-bold text-slate-900">{titleLabel}</DialogTitle>
         </DialogHeader>
-        {formSections}
+        {content}
       </DialogContent>
     </Dialog>
   );

@@ -189,14 +189,22 @@ export default function DashboardClientView({
                 <Megaphone className="w-4 h-4" />
                 {t("dashboard.announcements.title")}
               </h2>
-              {canManage && (
+              <div className="flex items-center gap-3">
                 <Link
-                  href="/qms/announcements"
-                  className="text-xs text-[rgb(15,16,89)] font-semibold hover:underline"
+                  href="/announcements"
+                  className="text-xs text-slate-500 hover:text-[rgb(15,16,89)] hover:underline"
                 >
-                  {t("dashboard.announcements.manage")}
+                  {t("dashboard.announcements.viewAll")}
                 </Link>
-              )}
+                {canManage && (
+                  <Link
+                    href="/qms/announcements"
+                    className="text-xs text-[rgb(15,16,89)] font-semibold hover:underline"
+                  >
+                    {t("dashboard.announcements.manage")}
+                  </Link>
+                )}
+              </div>
             </div>
             <DashboardAnnouncementsFeed
               announcements={announcements}

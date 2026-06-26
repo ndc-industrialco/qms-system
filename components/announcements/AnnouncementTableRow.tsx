@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Home, Link as LinkIcon, List, Zap } from "lucide-react";
+import { Home, Link as LinkIcon, List, Zap } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import type { AnnouncementRow } from "@/services/announcementService";
 import { TableCell, TableRow } from "@/components/ui/table";

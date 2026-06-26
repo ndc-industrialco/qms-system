@@ -7,10 +7,11 @@ import { useT } from "@/lib/i18n";
 import type { SignatureType } from "@/types/dar";
 
 interface Props {
-  onConfirm: (dataUrl: string, type: SignatureType, saveToProfile: boolean) => void;
+  onConfirm: (dataUrl: string, type: SignatureType, saveToProfile: boolean) => void | Promise<void>;
   onCancel: () => void;
   savedSignatureUrl?: string | null;
   savedSignatureType?: SignatureType | null;
+  isLoading?: boolean;
 }
 
 type Mode = "DRAW" | "TYPE" | "IMAGE";
@@ -218,12 +219,14 @@ function IconImage() {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, savedSignatureType }: Props) {
+export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, savedSignatureType, isLoading = false }: Props) {
   const t = useT();
   const [mode, setMode] = useState<Mode>("DRAW");
   const [pending, setPending] = useState<string | null>(null);
   const [saveToProfile, setSaveToProfile] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { url: resolvedUrl, type: resolvedType } = useSavedSignature(savedSignatureUrl, savedSignatureType);
+  const busy = isLoading || submitting;
 
   const tabs: { key: Mode; label: string; icon: React.ReactNode }[] = [
     { key: "DRAW",  label: t("dar.approval.sigModeDrawLabel"),  icon: <IconDraw /> },
@@ -244,9 +247,13 @@ export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, s
             <p className="text-sm font-medium text-emerald-800">{t("dar.approval.savedSigLabel")}</p>
           </div>
           <button type="button"
-            onClick={() => onConfirm(resolvedUrl, resolvedType, false)}
-            className="shrink-0 h-8 px-3 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
-            {t("dar.approval.btnUseSavedSig")}
+            disabled={busy}
+            onClick={async () => {
+              setSubmitting(true);
+              try { await onConfirm(resolvedUrl, resolvedType, false); } finally { setSubmitting(false); }
+            }}
+            className="shrink-0 h-8 px-3 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {busy ? "..." : t("dar.approval.btnUseSavedSig")}
           </button>
         </div>
       )}
@@ -279,17 +286,25 @@ export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, s
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <Button variant="ghost" size="sm" type="button" onClick={onCancel}>
+        <Button variant="ghost" size="sm" type="button" onClick={onCancel} disabled={busy}>
           {t("common.cancel")}
         </Button>
         <button type="button"
-          disabled={!pending}
-          onClick={() => { if (pending) onConfirm(pending, mode, saveToProfile); }}
+          disabled={!pending || busy}
+          onClick={async () => {
+            if (!pending) return;
+            setSubmitting(true);
+            try { await onConfirm(pending, mode, saveToProfile); } finally { setSubmitting(false); }
+          }}
           className="h-8 px-5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1.5">
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          {t("dar.approval.btnConfirmSign")}
+          {busy ? (
+            <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+          {busy ? "กำลังส่ง..." : t("dar.approval.btnConfirmSign")}
         </button>
       </div>
     </div>

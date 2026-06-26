@@ -42,6 +42,8 @@ export default async function UserCarDetailPage({
         userId={session.user.id}
         userDepartmentId={session.user.authDepartmentId ?? session.user.departmentId ?? null}
         isPrivileged={false}
+        userJobTitle={session.user.jobTitle ?? null}
+        listPath="/car"
       />
     </div>
   );

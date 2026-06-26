@@ -32,6 +32,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
         issuerName: true,
         issuerEmployeeId: true,
         issuerPosition: true,
+        issuerSignaturePath: true,
         issuedAt: true,
         targetDepartmentId: true,
         targetAuthDepartmentId: true,
@@ -54,8 +55,11 @@ export class CarRepository extends BaseRepository<CarMaster> {
             responderEmployeeId: true,
             responderPosition: true,
             respondedAt: true,
+            responseType: true,
+            fiveWhys: true,
             whyAnalysis: true,
             additionalToolDetail: true,
+            responderSignaturePath: true,
             rootCausePerson: true,
             rootCauseMaterial: true,
             rootCauseMachine: true,
@@ -97,6 +101,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
             findings: true,
             result: true,
             nextDueDate: true,
+            verifierSignaturePath: true,
           },
         },
         mrSignature: {
@@ -225,15 +230,22 @@ export class CarRepository extends BaseRepository<CarMaster> {
       select: {
         id: true,
         status: true,
+        carNo: true,
+        sourceType: true,
+        sourceDetail: true,
+        isoStandards: true,
+        defectDetail: true,
+        nonConformanceRef: true,
+        issuerPosition: true,
+        issuerName: true,
+        issuerId: true,
+        issuerAuthUserId: true,
+        responseDueAt: true,
         targetEmailGroups: true,
         targetEmailGroupsCc: true,
         targetDepartmentId: true,
         targetAuthDepartmentId: true,
         targetDepartmentName: true,
-        issuerId: true,
-        issuerAuthUserId: true,
-        issuerName: true,
-        carNo: true,
       },
     });
   }
@@ -245,8 +257,13 @@ export class CarRepository extends BaseRepository<CarMaster> {
         id: true,
         status: true,
         carNo: true,
+        defectDetail: true,
+        isoStandards: true,
         targetDepartmentId: true,
         targetAuthDepartmentId: true,
+        targetDepartmentName: true,
+        targetEmailGroups: true,
+        targetEmailGroupsCc: true,
         issuerId: true,
         issuerAuthUserId: true,
         issuerName: true,
@@ -264,6 +281,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
         targetDepartmentId: true,
         targetAuthDepartmentId: true,
         targetDepartmentName: true,
+        defectDetail: true,
+        isoStandards: true,
         issuerId: true,
         issuerAuthUserId: true,
         issuerName: true,
@@ -291,7 +310,69 @@ export class CarRepository extends BaseRepository<CarMaster> {
         targetEmailGroups: true,
         targetEmailGroupsCc: true,
         targetDepartmentName: true,
+        defectDetail: true,
+        isoStandards: true,
         response: { select: { plannedCompletionDate: true, responderAuthUserId: true } },
+      },
+    });
+  }
+
+  async countPendingMrResponseReviews(tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).count({
+      where: {
+        status: "RESPONDED",
+        mrResponseReview: null,
+      },
+    });
+  }
+
+  async countPendingMrSignatures(tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).count({
+      where: {
+        status: "CLOSED",
+        mrSignature: null,
+      },
+    });
+  }
+
+  async findPendingMrResponseReviews(take = 10, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: {
+        status: "RESPONDED",
+        mrResponseReview: null,
+      },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      take,
+      select: {
+        id: true,
+        carNo: true,
+        status: true,
+        defectDetail: true,
+        targetDepartmentName: true,
+        issuedAt: true,
+        responseDueAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async findPendingMrSignatures(take = 10, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: {
+        status: "CLOSED",
+        mrSignature: null,
+      },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      take,
+      select: {
+        id: true,
+        carNo: true,
+        status: true,
+        defectDetail: true,
+        targetDepartmentName: true,
+        issuedAt: true,
+        responseDueAt: true,
+        updatedAt: true,
       },
     });
   }
@@ -304,7 +385,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
     action: "APPROVED" | "REJECTED",
     comment: string | null | undefined,
     nextStatus: import("@/generated/prisma/client").CarStatus,
-    tx?: Prisma.TransactionClient
+    tx?: Prisma.TransactionClient,
+    signaturePath?: string | null,
   ) {
     const client = this.getClient(tx);
 
@@ -317,6 +399,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
         mrEmployeeId: snapshot.mrEmployeeId ?? null,
         action,
         comment: comment ?? null,
+        signaturePath: signaturePath ?? null,
       },
     });
 
@@ -411,10 +494,10 @@ export class CarRepository extends BaseRepository<CarMaster> {
     });
   }
 
-  async issue(id: string, issuedAt: Date, responseDueAt: Date, tx?: Prisma.TransactionClient) {
+  async issue(id: string, issuedAt: Date, responseDueAt: Date, issuerSignaturePath: string | null, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).update({
       where: { id },
-      data: { status: "ISSUED", issuedAt, responseDueAt },
+      data: { status: "ISSUED", issuedAt, responseDueAt, issuerSignaturePath },
     });
   }
 
@@ -435,7 +518,9 @@ export class CarRepository extends BaseRepository<CarMaster> {
         responderName: snapshot.responderName ?? null,
         responderEmployeeId: snapshot.responderEmployeeId ?? null,
         responderPosition: input.responderPosition,
-        whyAnalysis: input.whyAnalysis,
+        responseType: input.responseType ?? "FIVE_WHY",
+        fiveWhys: (input.responseType === "FIVE_WHY" && input.fiveWhys) ? input.fiveWhys : Prisma.JsonNull,
+        whyAnalysis: input.whyAnalysis ?? "",
         additionalToolDetail: input.additionalToolDetail ?? null,
         rootCausePerson: input.rootCausePerson,
         rootCauseMaterial: input.rootCauseMaterial,
@@ -447,6 +532,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
         immediateAction: input.immediateAction,
         preventiveAction: input.preventiveAction,
         plannedCompletionDate: new Date(input.plannedCompletionDate),
+        responderSignaturePath: input.responderSignaturePath ?? null,
       },
     });
 
@@ -475,6 +561,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
         findings: input.findings,
         result: input.result,
         nextDueDate: input.nextDueDate ? new Date(input.nextDueDate) : null,
+        verifierSignaturePath: input.verifierSignaturePath ?? null,
       },
     });
 
@@ -487,7 +574,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
     mrUserId: string,
     snapshot: { mrAuthUserId?: string | null; mrUserName?: string | null; mrEmployeeId?: string | null },
     comment: string | null | undefined,
-    tx?: Prisma.TransactionClient
+    tx?: Prisma.TransactionClient,
+    signaturePath?: string | null,
   ) {
     const client = this.getClient(tx);
 
@@ -499,6 +587,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
         mrUserName: snapshot.mrUserName ?? null,
         mrEmployeeId: snapshot.mrEmployeeId ?? null,
         comment: comment ?? null,
+        signaturePath: signaturePath ?? null,
       },
     });
 
@@ -510,6 +599,57 @@ export class CarRepository extends BaseRepository<CarMaster> {
     if (result.count === 0) {
       throw new ConflictError("This approval link has already been used by a concurrent request.");
     }
+  }
+
+  async createMrResponseReview(
+    carId: string,
+    mrUserId: string,
+    snapshot: { mrAuthUserId?: string | null; mrUserName?: string | null; mrEmployeeId?: string | null },
+    action: "APPROVED" | "REJECTED",
+    comment: string | null | undefined,
+    nextStatus: import("@/generated/prisma/client").CarStatus,
+    tx?: Prisma.TransactionClient,
+    signaturePath?: string | null,
+  ) {
+    const client = this.getClient(tx);
+
+    await client.carMrResponseReview.create({
+      data: {
+        carMasterId: carId,
+        mrUserId,
+        mrAuthUserId: snapshot.mrAuthUserId ?? null,
+        mrUserName: snapshot.mrUserName ?? null,
+        mrEmployeeId: snapshot.mrEmployeeId ?? null,
+        action,
+        comment: comment ?? null,
+        signaturePath: signaturePath ?? null,
+      },
+    });
+
+    await this.updateStatus(carId, nextStatus, tx);
+  }
+
+  async createMrSignature(
+    carId: string,
+    mrUserId: string,
+    snapshot: { mrAuthUserId?: string | null; mrUserName?: string | null; mrEmployeeId?: string | null },
+    comment: string | null | undefined,
+    tx?: Prisma.TransactionClient,
+    signaturePath?: string | null,
+  ) {
+    const client = this.getClient(tx);
+
+    await client.carMrSignature.create({
+      data: {
+        carMasterId: carId,
+        mrUserId,
+        mrAuthUserId: snapshot.mrAuthUserId ?? null,
+        mrUserName: snapshot.mrUserName ?? null,
+        mrEmployeeId: snapshot.mrEmployeeId ?? null,
+        comment: comment ?? null,
+        signaturePath: signaturePath ?? null,
+      },
+    });
   }
 
   async createReCarFromOriginal(

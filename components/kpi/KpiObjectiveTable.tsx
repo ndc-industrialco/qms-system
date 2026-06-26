@@ -13,8 +13,6 @@ function UnitLabel({ unit, t }: { unit: string | null | undefined; t: ReturnType
   }
   return <span className="ml-0.5 text-slate-400 font-normal">{unit}</span>;
 }
-import { Button } from "@/components/ui/button";
-
 interface Props {
   data: KPIObjective[];
   canEdit: boolean;

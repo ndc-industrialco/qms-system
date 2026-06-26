@@ -80,7 +80,27 @@ export const ModelName = {
   CarMrSignature: 'CarMrSignature',
   CarAttachment: 'CarAttachment',
   CarMrResponseReview: 'CarMrResponseReview',
-  CarNotificationLog: 'CarNotificationLog'
+  CarNotificationLog: 'CarNotificationLog',
+  AuditAppointment: 'AuditAppointment',
+  AuditAppointmentMember: 'AuditAppointmentMember',
+  AuditAppointmentSignoff: 'AuditAppointmentSignoff',
+  AuditSessionPlan: 'AuditSessionPlan',
+  AuditSessionRow: 'AuditSessionRow',
+  AuditSessionTeamMember: 'AuditSessionTeamMember',
+  AuditGanttRow: 'AuditGanttRow',
+  AuditPlan: 'AuditPlan',
+  AuditStandard: 'AuditStandard',
+  AuditPlanDepartment: 'AuditPlanDepartment',
+  AuditAuditorAssignment: 'AuditAuditorAssignment',
+  AuditSchedule: 'AuditSchedule',
+  AuditScheduleTeamMember: 'AuditScheduleTeamMember',
+  AuditAttachment: 'AuditAttachment',
+  AuditAnnouncement: 'AuditAnnouncement',
+  AuditFinding: 'AuditFinding',
+  AuditCorrectiveAction: 'AuditCorrectiveAction',
+  AuditVerification: 'AuditVerification',
+  AuditSignoff: 'AuditSignoff',
+  AuditReport: 'AuditReport'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -506,6 +526,7 @@ export const NotificationScalarFieldEnum = {
   recipientAuthUserId: 'recipientAuthUserId',
   title: 'title',
   body: 'body',
+  htmlBody: 'htmlBody',
   module: 'module',
   resourceId: 'resourceId',
   resourceType: 'resourceType',
@@ -549,6 +570,7 @@ export const CarMasterScalarFieldEnum = {
   issuerName: 'issuerName',
   issuerEmployeeId: 'issuerEmployeeId',
   issuerPosition: 'issuerPosition',
+  issuerSignaturePath: 'issuerSignaturePath',
   issuedAt: 'issuedAt',
   targetDepartmentId: 'targetDepartmentId',
   targetAuthDepartmentId: 'targetAuthDepartmentId',
@@ -574,8 +596,11 @@ export const CarResponseScalarFieldEnum = {
   responderEmployeeId: 'responderEmployeeId',
   responderPosition: 'responderPosition',
   respondedAt: 'respondedAt',
+  responseType: 'responseType',
+  fiveWhys: 'fiveWhys',
   whyAnalysis: 'whyAnalysis',
   additionalToolDetail: 'additionalToolDetail',
+  responderSignaturePath: 'responderSignaturePath',
   rootCausePerson: 'rootCausePerson',
   rootCauseMaterial: 'rootCauseMaterial',
   rootCauseMachine: 'rootCauseMachine',
@@ -603,7 +628,8 @@ export const CarVerificationScalarFieldEnum = {
   verifiedAt: 'verifiedAt',
   findings: 'findings',
   result: 'result',
-  nextDueDate: 'nextDueDate'
+  nextDueDate: 'nextDueDate',
+  verifierSignaturePath: 'verifierSignaturePath'
 } as const
 
 export type CarVerificationScalarFieldEnum = (typeof CarVerificationScalarFieldEnum)[keyof typeof CarVerificationScalarFieldEnum]
@@ -617,7 +643,8 @@ export const CarMrSignatureScalarFieldEnum = {
   mrUserName: 'mrUserName',
   mrEmployeeId: 'mrEmployeeId',
   signedAt: 'signedAt',
-  comment: 'comment'
+  comment: 'comment',
+  signaturePath: 'signaturePath'
 } as const
 
 export type CarMrSignatureScalarFieldEnum = (typeof CarMrSignatureScalarFieldEnum)[keyof typeof CarMrSignatureScalarFieldEnum]
@@ -651,7 +678,8 @@ export const CarMrResponseReviewScalarFieldEnum = {
   mrEmployeeId: 'mrEmployeeId',
   reviewedAt: 'reviewedAt',
   action: 'action',
-  comment: 'comment'
+  comment: 'comment',
+  signaturePath: 'signaturePath'
 } as const
 
 export type CarMrResponseReviewScalarFieldEnum = (typeof CarMrResponseReviewScalarFieldEnum)[keyof typeof CarMrResponseReviewScalarFieldEnum]
@@ -666,6 +694,331 @@ export const CarNotificationLogScalarFieldEnum = {
 } as const
 
 export type CarNotificationLogScalarFieldEnum = (typeof CarNotificationLogScalarFieldEnum)[keyof typeof CarNotificationLogScalarFieldEnum]
+
+
+export const AuditAppointmentScalarFieldEnum = {
+  id: 'id',
+  appointmentNo: 'appointmentNo',
+  year: 'year',
+  title: 'title',
+  standards: 'standards',
+  status: 'status',
+  rejectReason: 'rejectReason',
+  ownerAuthUserId: 'ownerAuthUserId',
+  ownerEmail: 'ownerEmail',
+  ownerNameSnapshot: 'ownerNameSnapshot',
+  reviewerAuthUserId: 'reviewerAuthUserId',
+  reviewerEmail: 'reviewerEmail',
+  reviewerNameSnapshot: 'reviewerNameSnapshot',
+  approverAuthUserId: 'approverAuthUserId',
+  approverEmail: 'approverEmail',
+  approverNameSnapshot: 'approverNameSnapshot',
+  emailGroupMails: 'emailGroupMails',
+  emailGroupMailsCc: 'emailGroupMailsCc',
+  ownerSignaturePath: 'ownerSignaturePath',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AuditAppointmentScalarFieldEnum = (typeof AuditAppointmentScalarFieldEnum)[keyof typeof AuditAppointmentScalarFieldEnum]
+
+
+export const AuditAppointmentMemberScalarFieldEnum = {
+  id: 'id',
+  appointmentId: 'appointmentId',
+  authUserId: 'authUserId',
+  name: 'name',
+  department: 'department',
+  role: 'role',
+  standards: 'standards',
+  orderIndex: 'orderIndex'
+} as const
+
+export type AuditAppointmentMemberScalarFieldEnum = (typeof AuditAppointmentMemberScalarFieldEnum)[keyof typeof AuditAppointmentMemberScalarFieldEnum]
+
+
+export const AuditAppointmentSignoffScalarFieldEnum = {
+  id: 'id',
+  appointmentId: 'appointmentId',
+  signedByAuthUserId: 'signedByAuthUserId',
+  signedRole: 'signedRole',
+  signerNameSnapshot: 'signerNameSnapshot',
+  signaturePath: 'signaturePath',
+  signedAt: 'signedAt'
+} as const
+
+export type AuditAppointmentSignoffScalarFieldEnum = (typeof AuditAppointmentSignoffScalarFieldEnum)[keyof typeof AuditAppointmentSignoffScalarFieldEnum]
+
+
+export const AuditSessionPlanScalarFieldEnum = {
+  id: 'id',
+  appointmentId: 'appointmentId',
+  reviseNo: 'reviseNo',
+  reviseDate: 'reviseDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AuditSessionPlanScalarFieldEnum = (typeof AuditSessionPlanScalarFieldEnum)[keyof typeof AuditSessionPlanScalarFieldEnum]
+
+
+export const AuditSessionRowScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  orderIndex: 'orderIndex',
+  auditDate: 'auditDate',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  department: 'department',
+  remark: 'remark'
+} as const
+
+export type AuditSessionRowScalarFieldEnum = (typeof AuditSessionRowScalarFieldEnum)[keyof typeof AuditSessionRowScalarFieldEnum]
+
+
+export const AuditSessionTeamMemberScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  role: 'role',
+  name: 'name',
+  authUserId: 'authUserId'
+} as const
+
+export type AuditSessionTeamMemberScalarFieldEnum = (typeof AuditSessionTeamMemberScalarFieldEnum)[keyof typeof AuditSessionTeamMemberScalarFieldEnum]
+
+
+export const AuditGanttRowScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  orderIndex: 'orderIndex',
+  department: 'department',
+  processes: 'processes',
+  planWeeks: 'planWeeks',
+  actualWeeks: 'actualWeeks'
+} as const
+
+export type AuditGanttRowScalarFieldEnum = (typeof AuditGanttRowScalarFieldEnum)[keyof typeof AuditGanttRowScalarFieldEnum]
+
+
+export const AuditPlanScalarFieldEnum = {
+  id: 'id',
+  auditNo: 'auditNo',
+  title: 'title',
+  auditType: 'auditType',
+  mode: 'mode',
+  status: 'status',
+  standard: 'standard',
+  scope: 'scope',
+  objective: 'objective',
+  ownerAuthUserId: 'ownerAuthUserId',
+  ownerEmail: 'ownerEmail',
+  ownerNameSnapshot: 'ownerNameSnapshot',
+  leadAuditorAuthUserId: 'leadAuditorAuthUserId',
+  sourceOrganization: 'sourceOrganization',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  calendarEventId: 'calendarEventId',
+  summary: 'summary',
+  standards: 'standards',
+  reviewerAuthUserId: 'reviewerAuthUserId',
+  reviewerEmail: 'reviewerEmail',
+  reviewerNameSnapshot: 'reviewerNameSnapshot',
+  approverAuthUserId: 'approverAuthUserId',
+  approverEmail: 'approverEmail',
+  approverNameSnapshot: 'approverNameSnapshot',
+  emailGroupMails: 'emailGroupMails',
+  rejectReason: 'rejectReason',
+  appointmentId: 'appointmentId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AuditPlanScalarFieldEnum = (typeof AuditPlanScalarFieldEnum)[keyof typeof AuditPlanScalarFieldEnum]
+
+
+export const AuditStandardScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  active: 'active',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditStandardScalarFieldEnum = (typeof AuditStandardScalarFieldEnum)[keyof typeof AuditStandardScalarFieldEnum]
+
+
+export const AuditPlanDepartmentScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  departmentId: 'departmentId',
+  departmentCode: 'departmentCode',
+  departmentName: 'departmentName'
+} as const
+
+export type AuditPlanDepartmentScalarFieldEnum = (typeof AuditPlanDepartmentScalarFieldEnum)[keyof typeof AuditPlanDepartmentScalarFieldEnum]
+
+
+export const AuditAuditorAssignmentScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  assigneeAuthUserId: 'assigneeAuthUserId',
+  assigneeNameSnapshot: 'assigneeNameSnapshot',
+  assigneeEmailSnapshot: 'assigneeEmailSnapshot',
+  role: 'role',
+  assignedAt: 'assignedAt'
+} as const
+
+export type AuditAuditorAssignmentScalarFieldEnum = (typeof AuditAuditorAssignmentScalarFieldEnum)[keyof typeof AuditAuditorAssignmentScalarFieldEnum]
+
+
+export const AuditScheduleScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  sessionTitle: 'sessionTitle',
+  location: 'location',
+  agenda: 'agenda',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  calendarEventId: 'calendarEventId',
+  departmentId: 'departmentId',
+  departmentName: 'departmentName',
+  contactEmail: 'contactEmail',
+  confirmStatus: 'confirmStatus',
+  unavailableReason: 'unavailableReason',
+  confirmedAt: 'confirmedAt',
+  confirmedByAuthUserId: 'confirmedByAuthUserId',
+  confirmedByName: 'confirmedByName',
+  leadAuditorAuthUserId: 'leadAuditorAuthUserId',
+  leadAuditorNameSnapshot: 'leadAuditorNameSnapshot',
+  leadAuditorEmailSnapshot: 'leadAuditorEmailSnapshot',
+  checklistDueAt: 'checklistDueAt',
+  checklistSubmittedAt: 'checklistSubmittedAt',
+  checklistSubmittedByUserId: 'checklistSubmittedByUserId',
+  checklistSubmittedByName: 'checklistSubmittedByName',
+  auditeeNotifyDept: 'auditeeNotifyDept'
+} as const
+
+export type AuditScheduleScalarFieldEnum = (typeof AuditScheduleScalarFieldEnum)[keyof typeof AuditScheduleScalarFieldEnum]
+
+
+export const AuditScheduleTeamMemberScalarFieldEnum = {
+  id: 'id',
+  scheduleId: 'scheduleId',
+  authUserId: 'authUserId',
+  nameSnapshot: 'nameSnapshot',
+  emailSnapshot: 'emailSnapshot',
+  role: 'role'
+} as const
+
+export type AuditScheduleTeamMemberScalarFieldEnum = (typeof AuditScheduleTeamMemberScalarFieldEnum)[keyof typeof AuditScheduleTeamMemberScalarFieldEnum]
+
+
+export const AuditAttachmentScalarFieldEnum = {
+  id: 'id',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  fileName: 'fileName',
+  fileUrl: 'fileUrl',
+  spDownloadUrl: 'spDownloadUrl',
+  sharePointItemId: 'sharePointItemId',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  uploadedByAuthUserId: 'uploadedByAuthUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditAttachmentScalarFieldEnum = (typeof AuditAttachmentScalarFieldEnum)[keyof typeof AuditAttachmentScalarFieldEnum]
+
+
+export const AuditAnnouncementScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  title: 'title',
+  message: 'message',
+  deliveryMode: 'deliveryMode',
+  publishedAt: 'publishedAt',
+  publishedByAuthUserId: 'publishedByAuthUserId'
+} as const
+
+export type AuditAnnouncementScalarFieldEnum = (typeof AuditAnnouncementScalarFieldEnum)[keyof typeof AuditAnnouncementScalarFieldEnum]
+
+
+export const AuditFindingScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  findingNo: 'findingNo',
+  departmentId: 'departmentId',
+  category: 'category',
+  severity: 'severity',
+  clause: 'clause',
+  title: 'title',
+  detail: 'detail',
+  evidenceSummary: 'evidenceSummary',
+  ownerAuthUserId: 'ownerAuthUserId',
+  ownerNameSnapshot: 'ownerNameSnapshot',
+  dueAt: 'dueAt',
+  status: 'status',
+  createdByAuthUserId: 'createdByAuthUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AuditFindingScalarFieldEnum = (typeof AuditFindingScalarFieldEnum)[keyof typeof AuditFindingScalarFieldEnum]
+
+
+export const AuditCorrectiveActionScalarFieldEnum = {
+  id: 'id',
+  findingId: 'findingId',
+  rootCause: 'rootCause',
+  correction: 'correction',
+  correctiveActionPlan: 'correctiveActionPlan',
+  targetDate: 'targetDate',
+  respondedByAuthUserId: 'respondedByAuthUserId',
+  respondedAt: 'respondedAt'
+} as const
+
+export type AuditCorrectiveActionScalarFieldEnum = (typeof AuditCorrectiveActionScalarFieldEnum)[keyof typeof AuditCorrectiveActionScalarFieldEnum]
+
+
+export const AuditVerificationScalarFieldEnum = {
+  id: 'id',
+  findingId: 'findingId',
+  verifierAuthUserId: 'verifierAuthUserId',
+  result: 'result',
+  comment: 'comment',
+  verifiedAt: 'verifiedAt'
+} as const
+
+export type AuditVerificationScalarFieldEnum = (typeof AuditVerificationScalarFieldEnum)[keyof typeof AuditVerificationScalarFieldEnum]
+
+
+export const AuditSignoffScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  signedByAuthUserId: 'signedByAuthUserId',
+  signedRole: 'signedRole',
+  signType: 'signType',
+  tokenId: 'tokenId',
+  signedAt: 'signedAt',
+  signerNameSnapshot: 'signerNameSnapshot',
+  signaturePath: 'signaturePath'
+} as const
+
+export type AuditSignoffScalarFieldEnum = (typeof AuditSignoffScalarFieldEnum)[keyof typeof AuditSignoffScalarFieldEnum]
+
+
+export const AuditReportScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  summary: 'summary',
+  conclusion: 'conclusion',
+  pdfFileUrl: 'pdfFileUrl',
+  generatedAt: 'generatedAt',
+  generatedByAuthUserId: 'generatedByAuthUserId'
+} as const
+
+export type AuditReportScalarFieldEnum = (typeof AuditReportScalarFieldEnum)[keyof typeof AuditReportScalarFieldEnum]
 
 
 export const SortOrder = {

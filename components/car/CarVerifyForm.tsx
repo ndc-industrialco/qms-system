@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,11 +9,14 @@ import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { carVerifySchema, type CarVerifyInput } from "@/lib/validations/car";
+import SignaturePad from "@/components/dar/SignaturePad";
 import type { CarStatus } from "@/types/car";
+import type { SignatureType } from "@/types/dar";
 
 interface Props {
   carId: string;
   currentStatus: CarStatus;
+  defaultPosition?: string;
   onSuccess?: () => void;
 }
 
@@ -34,13 +38,15 @@ async function submitVerification(carId: string, data: CarVerifyInput): Promise<
 
 const INPUT_CLASS = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-colors";
 
-export default function CarVerifyForm({ carId, currentStatus, onSuccess }: Props) {
+export default function CarVerifyForm({ carId, currentStatus, defaultPosition = "", onSuccess }: Props) {
   const t = useT();
   const round = getRound(currentStatus);
+  const [showSignPad, setShowSignPad] = useState(false);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
 
-  const { register, watch, handleSubmit, formState: { errors } } = useForm<CarVerifyInput>({
+  const { register, watch, handleSubmit, setValue, formState: { errors } } = useForm<CarVerifyInput>({
     resolver: zodResolver(carVerifySchema),
-    defaultValues: { round, result: "PASSED" },
+    defaultValues: { round, result: "PASSED", verifierSignaturePath: "", verifierPosition: defaultPosition },
   });
 
   const resultValue = watch("result");
@@ -58,6 +64,12 @@ export default function CarVerifyForm({ carId, currentStatus, onSuccess }: Props
       toast.error((err as Error).message, { duration: Infinity });
     },
   });
+
+  function handleSignConfirm(dataUrl: string, _type: SignatureType, _save: boolean) {
+    setValue("verifierSignaturePath", dataUrl, { shouldValidate: true });
+    setSignaturePreview(dataUrl);
+    setShowSignPad(false);
+  }
 
   return (
     <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5">
@@ -116,10 +128,49 @@ export default function CarVerifyForm({ carId, currentStatus, onSuccess }: Props
         <input
           {...register("verifierPosition")}
           type="text"
+          disabled={!!defaultPosition}
           placeholder={t("car.verify.verifierPositionPlaceholder")}
-          className={INPUT_CLASS}
+          className={cn(INPUT_CLASS, defaultPosition && "bg-slate-50 text-slate-500 cursor-not-allowed")}
         />
         {errors.verifierPosition && <p className="mt-1 text-xs text-rose-500">{errors.verifierPosition.message}</p>}
+      </div>
+
+      {/* Verifier signature */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-2">
+          ลายเซ็นผู้ตรวจติดตาม
+        </label>
+        {signaturePreview ? (
+          <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={signaturePreview} alt="ลายเซ็น" className="h-10 object-contain" />
+            <button
+              type="button"
+              onClick={() => { setSignaturePreview(null); setValue("verifierSignaturePath", "", { shouldValidate: true }); setShowSignPad(true); }}
+              className="text-xs text-slate-400 hover:text-slate-600"
+            >
+              เปลี่ยน
+            </button>
+          </div>
+        ) : showSignPad ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <SignaturePad
+              onConfirm={handleSignConfirm}
+              onCancel={() => setShowSignPad(false)}
+            />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowSignPad(true)}
+            className="rounded-xl border border-dashed border-slate-300 w-full py-4 text-sm text-slate-500 hover:bg-slate-50 transition-colors"
+          >
+            คลิกเพื่อเซ็นลายเซ็น
+          </button>
+        )}
+        {errors.verifierSignaturePath && (
+          <p className="mt-1 text-xs text-rose-500">{errors.verifierSignaturePath.message}</p>
+        )}
       </div>
 
       <div className="flex justify-end">

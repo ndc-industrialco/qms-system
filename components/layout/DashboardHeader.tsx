@@ -20,6 +20,7 @@ type Props = {
 };
 
 const ROUTE_LABELS: Record<string, { th: string; en: string }> = {
+  "/announcements":          { th: "ประกาศทั้งหมด",   en: "All Announcements" },
   "/dar":                    { th: "คำขอเอกสาร",     en: "Document Requests" },
   "/dar/new":                { th: "สร้างคำขอใหม่",   en: "New Request" },
   "/qms/dar":                { th: "จัดการ DAR",      en: "Manage DAR" },

@@ -47,6 +47,7 @@ export type CarVerificationMinAggregateOutputType = {
   findings: string | null
   result: $Enums.VerificationResult | null
   nextDueDate: Date | null
+  verifierSignaturePath: string | null
 }
 
 export type CarVerificationMaxAggregateOutputType = {
@@ -62,6 +63,7 @@ export type CarVerificationMaxAggregateOutputType = {
   findings: string | null
   result: $Enums.VerificationResult | null
   nextDueDate: Date | null
+  verifierSignaturePath: string | null
 }
 
 export type CarVerificationCountAggregateOutputType = {
@@ -77,6 +79,7 @@ export type CarVerificationCountAggregateOutputType = {
   findings: number
   result: number
   nextDueDate: number
+  verifierSignaturePath: number
   _all: number
 }
 
@@ -102,6 +105,7 @@ export type CarVerificationMinAggregateInputType = {
   findings?: true
   result?: true
   nextDueDate?: true
+  verifierSignaturePath?: true
 }
 
 export type CarVerificationMaxAggregateInputType = {
@@ -117,6 +121,7 @@ export type CarVerificationMaxAggregateInputType = {
   findings?: true
   result?: true
   nextDueDate?: true
+  verifierSignaturePath?: true
 }
 
 export type CarVerificationCountAggregateInputType = {
@@ -132,6 +137,7 @@ export type CarVerificationCountAggregateInputType = {
   findings?: true
   result?: true
   nextDueDate?: true
+  verifierSignaturePath?: true
   _all?: true
 }
 
@@ -234,6 +240,7 @@ export type CarVerificationGroupByOutputType = {
   findings: string
   result: $Enums.VerificationResult
   nextDueDate: Date | null
+  verifierSignaturePath: string | null
   _count: CarVerificationCountAggregateOutputType | null
   _avg: CarVerificationAvgAggregateOutputType | null
   _sum: CarVerificationSumAggregateOutputType | null
@@ -272,6 +279,7 @@ export type CarVerificationWhereInput = {
   findings?: Prisma.StringFilter<"CarVerification"> | string
   result?: Prisma.EnumVerificationResultFilter<"CarVerification"> | $Enums.VerificationResult
   nextDueDate?: Prisma.DateTimeNullableFilter<"CarVerification"> | Date | string | null
+  verifierSignaturePath?: Prisma.StringNullableFilter<"CarVerification"> | string | null
   carMaster?: Prisma.XOR<Prisma.CarMasterScalarRelationFilter, Prisma.CarMasterWhereInput>
 }
 
@@ -288,6 +296,7 @@ export type CarVerificationOrderByWithRelationInput = {
   findings?: Prisma.SortOrder
   result?: Prisma.SortOrder
   nextDueDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  verifierSignaturePath?: Prisma.SortOrderInput | Prisma.SortOrder
   carMaster?: Prisma.CarMasterOrderByWithRelationInput
 }
 
@@ -308,6 +317,7 @@ export type CarVerificationWhereUniqueInput = Prisma.AtLeast<{
   findings?: Prisma.StringFilter<"CarVerification"> | string
   result?: Prisma.EnumVerificationResultFilter<"CarVerification"> | $Enums.VerificationResult
   nextDueDate?: Prisma.DateTimeNullableFilter<"CarVerification"> | Date | string | null
+  verifierSignaturePath?: Prisma.StringNullableFilter<"CarVerification"> | string | null
   carMaster?: Prisma.XOR<Prisma.CarMasterScalarRelationFilter, Prisma.CarMasterWhereInput>
 }, "id" | "carMasterId_round">
 
@@ -324,6 +334,7 @@ export type CarVerificationOrderByWithAggregationInput = {
   findings?: Prisma.SortOrder
   result?: Prisma.SortOrder
   nextDueDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  verifierSignaturePath?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.CarVerificationCountOrderByAggregateInput
   _avg?: Prisma.CarVerificationAvgOrderByAggregateInput
   _max?: Prisma.CarVerificationMaxOrderByAggregateInput
@@ -347,6 +358,7 @@ export type CarVerificationScalarWhereWithAggregatesInput = {
   findings?: Prisma.StringWithAggregatesFilter<"CarVerification"> | string
   result?: Prisma.EnumVerificationResultWithAggregatesFilter<"CarVerification"> | $Enums.VerificationResult
   nextDueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"CarVerification"> | Date | string | null
+  verifierSignaturePath?: Prisma.StringNullableWithAggregatesFilter<"CarVerification"> | string | null
 }
 
 export type CarVerificationCreateInput = {
@@ -361,6 +373,7 @@ export type CarVerificationCreateInput = {
   findings: string
   result: $Enums.VerificationResult
   nextDueDate?: Date | string | null
+  verifierSignaturePath?: string | null
   carMaster: Prisma.CarMasterCreateNestedOneWithoutVerificationsInput
 }
 
@@ -377,6 +390,7 @@ export type CarVerificationUncheckedCreateInput = {
   findings: string
   result: $Enums.VerificationResult
   nextDueDate?: Date | string | null
+  verifierSignaturePath?: string | null
 }
 
 export type CarVerificationUpdateInput = {
@@ -391,6 +405,7 @@ export type CarVerificationUpdateInput = {
   findings?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumVerificationResultFieldUpdateOperationsInput | $Enums.VerificationResult
   nextDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifierSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   carMaster?: Prisma.CarMasterUpdateOneRequiredWithoutVerificationsNestedInput
 }
 
@@ -407,6 +422,7 @@ export type CarVerificationUncheckedUpdateInput = {
   findings?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumVerificationResultFieldUpdateOperationsInput | $Enums.VerificationResult
   nextDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifierSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarVerificationCreateManyInput = {
@@ -422,6 +438,7 @@ export type CarVerificationCreateManyInput = {
   findings: string
   result: $Enums.VerificationResult
   nextDueDate?: Date | string | null
+  verifierSignaturePath?: string | null
 }
 
 export type CarVerificationUpdateManyMutationInput = {
@@ -436,6 +453,7 @@ export type CarVerificationUpdateManyMutationInput = {
   findings?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumVerificationResultFieldUpdateOperationsInput | $Enums.VerificationResult
   nextDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifierSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarVerificationUncheckedUpdateManyInput = {
@@ -451,6 +469,7 @@ export type CarVerificationUncheckedUpdateManyInput = {
   findings?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumVerificationResultFieldUpdateOperationsInput | $Enums.VerificationResult
   nextDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifierSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarVerificationListRelationFilter = {
@@ -481,6 +500,7 @@ export type CarVerificationCountOrderByAggregateInput = {
   findings?: Prisma.SortOrder
   result?: Prisma.SortOrder
   nextDueDate?: Prisma.SortOrder
+  verifierSignaturePath?: Prisma.SortOrder
 }
 
 export type CarVerificationAvgOrderByAggregateInput = {
@@ -500,6 +520,7 @@ export type CarVerificationMaxOrderByAggregateInput = {
   findings?: Prisma.SortOrder
   result?: Prisma.SortOrder
   nextDueDate?: Prisma.SortOrder
+  verifierSignaturePath?: Prisma.SortOrder
 }
 
 export type CarVerificationMinOrderByAggregateInput = {
@@ -515,6 +536,7 @@ export type CarVerificationMinOrderByAggregateInput = {
   findings?: Prisma.SortOrder
   result?: Prisma.SortOrder
   nextDueDate?: Prisma.SortOrder
+  verifierSignaturePath?: Prisma.SortOrder
 }
 
 export type CarVerificationSumOrderByAggregateInput = {
@@ -579,6 +601,7 @@ export type CarVerificationCreateWithoutCarMasterInput = {
   findings: string
   result: $Enums.VerificationResult
   nextDueDate?: Date | string | null
+  verifierSignaturePath?: string | null
 }
 
 export type CarVerificationUncheckedCreateWithoutCarMasterInput = {
@@ -593,6 +616,7 @@ export type CarVerificationUncheckedCreateWithoutCarMasterInput = {
   findings: string
   result: $Enums.VerificationResult
   nextDueDate?: Date | string | null
+  verifierSignaturePath?: string | null
 }
 
 export type CarVerificationCreateOrConnectWithoutCarMasterInput = {
@@ -637,6 +661,7 @@ export type CarVerificationScalarWhereInput = {
   findings?: Prisma.StringFilter<"CarVerification"> | string
   result?: Prisma.EnumVerificationResultFilter<"CarVerification"> | $Enums.VerificationResult
   nextDueDate?: Prisma.DateTimeNullableFilter<"CarVerification"> | Date | string | null
+  verifierSignaturePath?: Prisma.StringNullableFilter<"CarVerification"> | string | null
 }
 
 export type CarVerificationCreateManyCarMasterInput = {
@@ -651,6 +676,7 @@ export type CarVerificationCreateManyCarMasterInput = {
   findings: string
   result: $Enums.VerificationResult
   nextDueDate?: Date | string | null
+  verifierSignaturePath?: string | null
 }
 
 export type CarVerificationUpdateWithoutCarMasterInput = {
@@ -665,6 +691,7 @@ export type CarVerificationUpdateWithoutCarMasterInput = {
   findings?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumVerificationResultFieldUpdateOperationsInput | $Enums.VerificationResult
   nextDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifierSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarVerificationUncheckedUpdateWithoutCarMasterInput = {
@@ -679,6 +706,7 @@ export type CarVerificationUncheckedUpdateWithoutCarMasterInput = {
   findings?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumVerificationResultFieldUpdateOperationsInput | $Enums.VerificationResult
   nextDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifierSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CarVerificationUncheckedUpdateManyWithoutCarMasterInput = {
@@ -693,6 +721,7 @@ export type CarVerificationUncheckedUpdateManyWithoutCarMasterInput = {
   findings?: Prisma.StringFieldUpdateOperationsInput | string
   result?: Prisma.EnumVerificationResultFieldUpdateOperationsInput | $Enums.VerificationResult
   nextDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifierSignaturePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -710,6 +739,7 @@ export type CarVerificationSelect<ExtArgs extends runtime.Types.Extensions.Inter
   findings?: boolean
   result?: boolean
   nextDueDate?: boolean
+  verifierSignaturePath?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carVerification"]>
 
@@ -726,6 +756,7 @@ export type CarVerificationSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   findings?: boolean
   result?: boolean
   nextDueDate?: boolean
+  verifierSignaturePath?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carVerification"]>
 
@@ -742,6 +773,7 @@ export type CarVerificationSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   findings?: boolean
   result?: boolean
   nextDueDate?: boolean
+  verifierSignaturePath?: boolean
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carVerification"]>
 
@@ -758,9 +790,10 @@ export type CarVerificationSelectScalar = {
   findings?: boolean
   result?: boolean
   nextDueDate?: boolean
+  verifierSignaturePath?: boolean
 }
 
-export type CarVerificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "round" | "verifierId" | "verifierAuthUserId" | "verifierName" | "verifierEmployeeId" | "verifierPosition" | "verifiedAt" | "findings" | "result" | "nextDueDate", ExtArgs["result"]["carVerification"]>
+export type CarVerificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "round" | "verifierId" | "verifierAuthUserId" | "verifierName" | "verifierEmployeeId" | "verifierPosition" | "verifiedAt" | "findings" | "result" | "nextDueDate" | "verifierSignaturePath", ExtArgs["result"]["carVerification"]>
 export type CarVerificationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
 }
@@ -789,6 +822,7 @@ export type $CarVerificationPayload<ExtArgs extends runtime.Types.Extensions.Int
     findings: string
     result: $Enums.VerificationResult
     nextDueDate: Date | null
+    verifierSignaturePath: string | null
   }, ExtArgs["result"]["carVerification"]>
   composites: {}
 }
@@ -1225,6 +1259,7 @@ export interface CarVerificationFieldRefs {
   readonly findings: Prisma.FieldRef<"CarVerification", 'String'>
   readonly result: Prisma.FieldRef<"CarVerification", 'VerificationResult'>
   readonly nextDueDate: Prisma.FieldRef<"CarVerification", 'DateTime'>
+  readonly verifierSignaturePath: Prisma.FieldRef<"CarVerification", 'String'>
 }
     
 

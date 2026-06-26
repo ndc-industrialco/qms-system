@@ -65,6 +65,14 @@ export class ActionTokenService {
     await repo.revokeByDocument(module, documentId);
   }
 
+  static async revokeByDocumentAndRecipient(
+    module: ApprovalModule,
+    documentId: string,
+    issuedTo: string
+  ): Promise<void> {
+    await repo.revokeByDocumentAndRecipient(module, documentId, issuedTo);
+  }
+
   static async cleanupExpired(olderThanDays = 30): Promise<void> {
     await repo.cleanupExpired(olderThanDays);
   }

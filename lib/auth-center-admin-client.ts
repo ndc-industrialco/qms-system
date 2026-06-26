@@ -1,3 +1,5 @@
+import { UnauthorizedError } from "@/lib/errors";
+
 /**
  * Auth Center consumer API client for QMS operations.
  *
@@ -396,6 +398,7 @@ export async function listAuthCenterDepartments(options?: AuthCenterClientAuthOp
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    if (res.status === 401) throw new UnauthorizedError();
     throw new Error(`Auth Center department list failed (${res.status}): ${text}`);
   }
 

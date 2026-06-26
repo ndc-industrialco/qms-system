@@ -133,6 +133,12 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
     });
   }
 
+  async countPendingReviewByUser(userId: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).count({
+      where: { status: "PENDING_REVIEW", kpi: { reviewerUserId: userId } },
+    });
+  }
+
   async findPendingApproveByUser(userId: string, take = 10, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findMany({
       where: { status: "PENDING_APPROVAL", kpi: { approverUserId: userId } },
@@ -141,6 +147,12 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
       include: {
         kpi: { select: { id: true, department: true } },
       },
+    });
+  }
+
+  async countPendingApproveByUser(userId: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).count({
+      where: { status: "PENDING_APPROVAL", kpi: { approverUserId: userId } },
     });
   }
 }

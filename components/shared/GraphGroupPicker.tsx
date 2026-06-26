@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 export interface GraphGroupResult {
   id: string;
@@ -133,7 +134,7 @@ export default function GraphGroupPicker({ label, value, onChange, placeholder, 
           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">...</span>
         )}
 
-        {open && (
+        {open && createPortal(
           <div
             ref={dropdownRef}
             style={dropdownStyle}
@@ -165,7 +166,8 @@ export default function GraphGroupPicker({ label, value, onChange, placeholder, 
                 ))}
               </ul>
             )}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 

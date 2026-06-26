@@ -34,6 +34,8 @@ export default async function QmsCarDetailPage({
         userId={session.user.id}
         userDepartmentId={session.user.authDepartmentId ?? session.user.departmentId ?? null}
         isPrivileged={role === "QMS" || role === "IT" || role === "MR"}
+        userJobTitle={session.user.jobTitle ?? null}
+        listPath="/qms/car"
       />
     </div>
   );

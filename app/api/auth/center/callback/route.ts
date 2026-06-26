@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
       token: {
         id: user.authUserId,
         sub: user.authUserId,
+        authUserId: user.authUserId,
         email: user.email,
         name: user.name,
         jobTitle: user.jobTitle,
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
       },
       secret: process.env.AUTH_SECRET!,
       salt: cookieName,
-      maxAge: 60 * 60 * 8, // 8 hours — matches Auth Center token TTL
+      maxAge: 60 * 60 * 24 * 30, // 30 days — matches Auth Center token TTL
     });
 
     const cookieStore = await cookies();
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest) {
       secure: isProduction,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 8,
+      maxAge: 60 * 60 * 24 * 30,
     });
 
     try {

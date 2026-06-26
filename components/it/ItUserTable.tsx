@@ -443,7 +443,7 @@ export default function ItUserTable({ users, departments, authCenterMode = false
               <TableHead>{t.colPosition}</TableHead>
               <TableHead>{t.colM365}</TableHead>
               {thSort(t.colRole, "role")}
-              {!authCenterMode && <TableHead>{t.colChangeRole}</TableHead>}
+              <TableHead>{t.colChangeRole}</TableHead>
               {thSort(t.colDept, "department")}
               <TableHead className="text-center">{t.colUpdateM365}</TableHead>
             </TableRow>
@@ -513,24 +513,22 @@ export default function ItUserTable({ users, departments, authCenterMode = false
                   <span className={ROLE_BADGE[roleSafe]}>{ROLE_LABELS[roleSafe]}</span>
                 </TableCell>
 
-                {/* Change role — hidden in auth_center mode */}
-                {!authCenterMode && (
-                  <TableCell>
-                    <select
-                      className="h-7 px-2 py-0.5 text-[13px] rounded-md border border-slate-300 bg-white"
-                      value={roleSafe}
-                      disabled={isBusy(uid)}
-                      onChange={(e) => patchUser(user, { role: e.target.value as UserRole })}
-                    >
-                      {(Object.entries(ROLE_LABELS) as [UserRole, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                    </select>
-                  </TableCell>
-                )}
+                {/* Change role */}
+                <TableCell>
+                  <select
+                    className="h-7 px-2 py-0.5 text-[13px] rounded-md border border-slate-300 bg-white"
+                    value={roleSafe}
+                    disabled={isBusy(uid)}
+                    onChange={(e) => patchUser(user, { role: e.target.value as UserRole })}
+                  >
+                    {(Object.entries(ROLE_LABELS) as [UserRole, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </select>
+                </TableCell>
 
                 {/* Change dept */}
                 <TableCell>
                   <select
-                    className="h-7 px-2 py-0.5 text-[13px] min-w-[130px] rounded-md border border-slate-300 bg-white"
+                    className="h-7 px-2 py-0.5 text-[13px] min-w-32 rounded-md border border-slate-300 bg-white"
                     value={user.department?.id ?? ""}
                     disabled={isBusy(uid)}
                     onChange={(e) => {
@@ -641,22 +639,14 @@ export default function ItUserTable({ users, departments, authCenterMode = false
             </p>
 
             <div className="flex flex-col gap-2">
-              {authCenterMode ? (
-                <p className="text-[11px] text-neutral opacity-60 italic">
-                  {locale === "th"
-                    ? "จัดการ Role ได้ที่ Auth Center"
-                    : "Roles are managed in Auth Center"}
-                </p>
-              ) : (
-                <select
-                  className="w-full h-8 px-2 py-1 text-[13px] rounded-md border border-slate-300 bg-white"
-                  value={roleSafe}
-                  disabled={isBusy(uid)}
-                  onChange={(e) => patchUser(user, { role: e.target.value as UserRole })}
-                >
-                  {(Object.entries(ROLE_LABELS) as [UserRole, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                </select>
-              )}
+              <select
+                className="w-full h-8 px-2 py-1 text-[13px] rounded-md border border-slate-300 bg-white"
+                value={roleSafe}
+                disabled={isBusy(uid)}
+                onChange={(e) => patchUser(user, { role: e.target.value as UserRole })}
+              >
+                {(Object.entries(ROLE_LABELS) as [UserRole, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
               <select
                 className="w-full h-8 px-2 py-1 text-[13px] rounded-md border border-slate-300 bg-white"
                 value={user.department?.id ?? ""}

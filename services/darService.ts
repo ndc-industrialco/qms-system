@@ -64,19 +64,29 @@ export class DarService {
 
   /**
    * Resolve a designated user (MR or QMS) for approval routing.
-   * Identity comes entirely from Auth Center — no local User table.
-   * Returns { authUserId } from SystemConfig.
+   * Priority: SystemConfig authKey → SystemConfig localKey → first Auth Center role grant match.
    */
   private async resolveDesignatedUser(
     authConfigKey: string,
     localConfigKey: string,
-    _fallbackRoleFinder?: never,
+    fallbackRole?: string,
   ): Promise<{ authUserId: string } | null> {
     const authUserKey = await this.configRepo.findValueByKey(authConfigKey);
     if (authUserKey) return { authUserId: authUserKey };
 
     const localKey = await this.configRepo.findValueByKey(localConfigKey);
     if (localKey) return { authUserId: localKey };
+
+    if (fallbackRole) {
+      try {
+        const { listAuthCenterRoleGrants } = await import("@/lib/auth-center-admin-client");
+        const grants = await listAuthCenterRoleGrants();
+        const match = grants.find((g) => g.role === fallbackRole);
+        if (match) return { authUserId: match.userId };
+      } catch (err) {
+        logger.warn("[DarService.resolveDesignatedUser] Auth Center role grant lookup failed", { fallbackRole, error: String(err) });
+      }
+    }
 
     return null;
   }
@@ -432,18 +442,19 @@ export class DarService {
   }
 
   private async generateDarNo(year: number, tx: Prisma.TransactionClient): Promise<string> {
-    const counterKey = `DAR_COUNTER_${year}`;
-    const existingValue = await this.configRepo.findValueByKey(counterKey, tx);
-    const nextSeq = existingValue ? parseInt(existingValue, 10) + 1 : 1;
-
-    await this.configRepo.upsertConfig(
-      counterKey,
-      String(nextSeq),
-      `DAR counter for ${year}`,
-      tx
-    );
-
-    return `DAR-${year}-${String(nextSeq).padStart(4, "0")}`;
+    const prefix = `DAR-${year}-`;
+    const likePattern = `${prefix}%`;
+    const startPos = prefix.length + 1;
+    const existing = await tx.$queryRaw<{ seq: number }[]>`
+      SELECT CAST(SUBSTRING("darNo" FROM ${startPos}) AS INTEGER) AS seq
+      FROM "DarMaster"
+      WHERE "darNo" LIKE ${likePattern}
+      ORDER BY seq
+    `;
+    const used = new Set(existing.map((r) => r.seq));
+    let next = 1;
+    while (used.has(next)) next++;
+    return `${prefix}${String(next).padStart(4, "0")}`;
   }
 
   async submitDar(id: string, actor: ActorIdentity): Promise<DarDetail> {
@@ -560,19 +571,6 @@ export class DarService {
 
     const detail = await this.fetchDarDetail(darId);
 
-    // Notify reviewer in-app
-    const reviewerAuthId = reviewerSnapshot?.authUserId ?? reviewerUserId;
-    if (reviewerAuthId) {
-      NotificationService.createInAppNotification({
-        recipientId: reviewerAuthId,
-        title: 'DAR รอการตรวจสอบจากคุณ',
-        body: `DAR ${dar.darNo ?? darId} รอการตรวจสอบ`,
-        module: 'DAR',
-        resourceId: darId,
-        resourceType: 'DAR',
-      }).catch(() => {});
-    }
-
     return detail!;
   }
 
@@ -613,13 +611,16 @@ export class DarService {
     let mrUser: { authUserId: string } | null = null;
     let qmsUser: { authUserId: string } | null = null;
     if (createMrStep) {
-      mrUser = await this.resolveDesignatedUser("CURRENT_MR_AUTH_USER_ID", "CURRENT_MR_USER_ID");
+      mrUser = await this.resolveDesignatedUser("CURRENT_MR_AUTH_USER_ID", "CURRENT_MR_USER_ID", "QMS_MR");
+      // If MR config not set but actor IS the MR (same person is reviewer + MR), use actor directly
+      if (!mrUser && actor.authUserId) mrUser = { authUserId: actor.authUserId };
       if (!mrUser) throw new AppError("MR user is not configured. Please contact QMS/IT administrator.", 400, "MR_NOT_CONFIGURED");
     }
     if (myStep.stepRole === "APPROVER_MR") {
       qmsUser = await this.resolveDesignatedUser(
         "CURRENT_QMS_AUTH_USER_ID",
         "CURRENT_QMS_USER_ID",
+        "QMS_QMS",
       );
       if (!qmsUser) throw new AppError("QMS signer is not configured in the system", 400, "QMS_NOT_CONFIGURED");
     }
@@ -766,27 +767,9 @@ export class DarService {
 
     const detail = await this.fetchDarDetail(darId);
 
-    // Notifications based on which step completed
-    if (myStep.stepRole === 'REVIEWER' && mrUser?.authUserId) {
-      NotificationService.createInAppNotification({
-        recipientId: mrUser.authUserId,
-        title: 'DAR รอการอนุมัติจาก MR',
-        body: `DAR ${dar.darNo ?? darId} ผ่าน Reviewer แล้ว`,
-        module: 'DAR', resourceId: darId, resourceType: 'DAR',
-      }).catch(() => {});
-    }
     if (myStep.stepRole === 'QMS_PROCESSOR') {
       // Completed — notify requester's dept
       const completedDeptId = (dar as Record<string, unknown>).authDepartmentId as string | null | undefined;
-      const requesterAuthId = (dar as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
-      if (requesterAuthId) {
-        NotificationService.createInAppNotification({
-          recipientId: requesterAuthId,
-          title: 'DAR ของคุณเสร็จสมบูรณ์แล้ว',
-          body: `DAR ${dar.darNo ?? darId} ถูกดำเนินการเสร็จสิ้นแล้ว`,
-          module: 'DAR', resourceId: darId, resourceType: 'DAR',
-        }).catch(() => {});
-      }
       if (completedDeptId && actor.accessToken) {
         NotificationService.notifyDeptMembers(completedDeptId, actor.accessToken, {
           title: 'DAR เสร็จสมบูรณ์', body: `DAR ${dar.darNo ?? darId} เสร็จสมบูรณ์แล้ว`,

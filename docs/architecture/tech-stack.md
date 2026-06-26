@@ -1,7 +1,7 @@
 # Tech Stack
 
 ## Core
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js (App Router)
 - **Language**: TypeScript
 - **Runtime**: Node.js
 

@@ -47,7 +47,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
               achievedStatus: d.achievedStatus,
             })),
             reportId: reportId,
-            senderEmail: session.user.email ?? undefined,
+            senderAccessToken: session.user.accessToken,
           }),
           preparer.email,
           'Monthly KPI Rejected',

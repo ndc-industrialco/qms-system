@@ -18,7 +18,13 @@ export type AuditAction =
   | 'VERIFY_1'
   | 'VERIFY_2'
   | 'CLOSE'
-  | 'RE_CAR';
+  | 'RE_CAR'
+  // Audit module actions
+  | 'ASSIGN_AUDITOR'
+  | 'ANNOUNCE'
+  | 'GENERATE_REPORT'
+  | 'SIGN'
+  | 'REOPEN';
 
 export type AuditResourceType =
   | 'KPI'
@@ -28,7 +34,14 @@ export type AuditResourceType =
   | 'USER'
   | 'DOCUMENT'
   | 'DOCUMENT_CATEGORY'
-  | 'CAR';
+  | 'CAR'
+  // Audit module resource types
+  | 'AUDIT_PLAN'
+  | 'AUDIT_SCHEDULE'
+  | 'AUDIT_FINDING'
+  | 'AUDIT_REPORT'
+  | 'AUDIT_ANNOUNCEMENT'
+  | 'AUDIT_APPOINTMENT';
 
 export interface AuditEntry {
   actorUserId: string;

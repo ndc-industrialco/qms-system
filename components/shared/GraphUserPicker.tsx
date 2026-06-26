@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export interface GraphUserResult {
   id: string;
@@ -20,17 +20,31 @@ interface Props {
   error?: string;
 }
 
-function useUserSearch(query: string) {
+export default function GraphUserPicker({ label, value, onChange, placeholder, required, error }: Props) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
   const [results, setResults] = useState<GraphUserResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // close on click outside — no blur/focus tricks needed
   useEffect(() => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(async () => {
+    function handlePointerDown(e: PointerEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, []);
+
+  function search(q: string) {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/ms-graph/users/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/ms-graph/users/search?q=${encodeURIComponent(q)}`);
         const json = await res.json();
         setResults(json.data ?? []);
       } catch {
@@ -39,29 +53,18 @@ function useUserSearch(query: string) {
         setLoading(false);
       }
     }, 300);
-    return () => { if (timer.current) clearTimeout(timer.current); };
-  }, [query]);
+  }
 
-  return { results, loading };
-}
+  function handleFocus() {
+    setOpen(true);
+    search(query);
+  }
 
-export default function GraphUserPicker({ label, value, onChange, placeholder, required, error }: Props) {
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-  const { results, loading } = useUserSearch(query);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (!inputRef.current?.contains(e.target as Node) && !dropdownRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(e.target.value);
+    setOpen(true);
+    search(e.target.value);
+  }
 
   function select(user: GraphUserResult) {
     onChange(user);
@@ -99,13 +102,12 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
           </button>
         </div>
       ) : (
-        <div className="relative">
+        <div ref={wrapperRef} className="relative">
           <input
-            ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-            onFocus={() => setOpen(true)}
+            onChange={handleChange}
+            onFocus={handleFocus}
             placeholder={placeholder ?? "ค้นหาชื่อ หรืออีเมล..."}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8"
           />
@@ -114,10 +116,7 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
           )}
 
           {open && (
-            <div
-              ref={dropdownRef}
-              className="absolute z-50 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg overflow-hidden"
-            >
+            <div className="absolute top-full left-0 right-0 z-[200] mt-1 rounded-md border border-gray-200 bg-white shadow-lg overflow-hidden">
               {results.length === 0 ? (
                 <p className="px-3 py-2.5 text-sm text-gray-400 text-center">
                   {loading ? "กำลังค้นหา..." : query ? "ไม่พบผู้ใช้" : "พิมพ์เพื่อค้นหา"}
@@ -128,7 +127,7 @@ export default function GraphUserPicker({ label, value, onChange, placeholder, r
                     <li key={u.id}>
                       <button
                         type="button"
-                        onMouseDown={(e) => { e.preventDefault(); select(u); }}
+                        onClick={() => select(u)}
                         className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left hover:bg-blue-50 transition-colors"
                       >
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-bold mt-0.5">

@@ -61,11 +61,15 @@ export type CarAttachmentRow = {
   uploadedBy: { id: string; name: string | null };
 };
 
+export type FiveWhyItem = { question: string; answer: string };
+
 export type CarResponseDetail = {
   id: string;
   responderId: string;
   responderPosition: string;
   respondedAt: string;
+  responseType: "FIVE_WHY" | "OTHER";
+  fiveWhys: FiveWhyItem[] | null;
   whyAnalysis: string;
   additionalToolDetail: string | null;
   rootCausePerson: boolean;
@@ -78,6 +82,7 @@ export type CarResponseDetail = {
   immediateAction: string;
   preventiveAction: string;
   plannedCompletionDate: string;
+  responderSignaturePath: string | null;
   responder: { id: string; name: string | null; employeeId: string | null };
   attachments: CarAttachmentRow[];
 };
@@ -91,6 +96,7 @@ export type CarVerificationDetail = {
   findings: string;
   result: VerificationResult;
   nextDueDate: string | null;
+  verifierSignaturePath: string | null;
   verifier: { id: string; name: string | null; employeeId: string | null };
 };
 
@@ -123,6 +129,7 @@ export type CarDetail = {
   defectDetail: string;
   nonConformanceRef: string;
   issuerPosition: string;
+  issuerSignaturePath: string | null;
   issuedAt: string | null;
   responseDueAt: string | null;
   reCar: boolean;

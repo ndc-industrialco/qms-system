@@ -3,6 +3,8 @@ import { AnnouncementService } from "@/services/announcementService";
 import { createAnnouncementSchema } from "@/schemas/announcementSchema";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
+import { sendAnnouncementEmail } from "@/services/email";
+import { logger } from "@/lib/logger";
 import { type NextRequest } from "next/server";
 
 const announcementService = new AnnouncementService();
@@ -21,6 +23,11 @@ export async function POST(req: NextRequest) {
   try {
     const session = await requireRole("QMS", "IT", "MR");
     const formData = await req.formData();
+
+    const emailGroupMailsRaw = formData.get("emailGroupMails");
+    const emailGroupMails: string[] = emailGroupMailsRaw
+      ? (JSON.parse(emailGroupMailsRaw as string) as string[]).filter(Boolean)
+      : [];
 
     const rawData = {
       title: formData.get("title"),
@@ -63,6 +70,17 @@ export async function POST(req: NextRequest) {
       session.user.authUserId ?? null,
       session.user.name ?? null,
     );
+
+    if (emailGroupMails.length) {
+      sendAnnouncementEmail({
+        groupEmails: emailGroupMails,
+        title: validatedData.title,
+        content: validatedData.content,
+        sourceSystem: validatedData.sourceSystem ?? "QMS",
+        senderAccessToken: session.user.accessToken,
+        announcementId: result.id,
+      }).catch((err: unknown) => logger.warn("[announcements] Email send failed", { err }));
+    }
 
     return sendSuccess(result, "Announcement created successfully", 201);
   } catch (error) {

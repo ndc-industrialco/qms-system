@@ -86,7 +86,7 @@ export default function DarReviewerSelectModal({ open, isSending, onBack, onSend
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !isSending) onBack(); }}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl z-200" overlayClassName="z-[199]">
         <DialogHeader>
           <DialogTitle>{t("dar.reviewerSelect.title")}</DialogTitle>
           <p className="text-sm text-slate-500 mt-1">

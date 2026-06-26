@@ -19,7 +19,7 @@ import Pagination from '@/components/common/Pagination';
 import { ActionIconButton } from '@/components/common/ActionButtons';
 import { useUrlFilters } from '@/hooks/use-url-filters';
 import {
-  Plus, ChevronRight, Hash, Download, Upload, Eye, Home,
+  Plus, ChevronRight, Hash, Download, Upload, Home,
 } from 'lucide-react';
 
 interface DocumentControlListClientProps {

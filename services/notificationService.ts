@@ -28,11 +28,53 @@ export class NotificationService {
     recipientAuthUserId?: string | null;
     title: string;
     body: string;
+    htmlBody?: string | null;
     module: string;
     resourceId: string;
     resourceType: string;
   }) {
     return notificationRepo.create(data);
+  }
+
+  static async createInAppNotificationOnce(
+    idempotencyKey: string,
+    recipient: string,
+    subject: string,
+    data: {
+      recipientId: string;
+      recipientAuthUserId?: string | null;
+      title: string;
+      body: string;
+      htmlBody?: string | null;
+      module: string;
+      resourceId: string;
+      resourceType: string;
+    },
+  ): Promise<void> {
+    const existing = await notifRepo.findByIdempotencyKey(idempotencyKey);
+
+    if (existing?.status === "SENT") {
+      logger.info("[notification] Skipped duplicate in-app notification", { idempotencyKey, recipientId: data.recipientId });
+      return;
+    }
+
+    const log = existing ?? (await notifRepo.create({
+      idempotencyKey,
+      channel: "IN_APP",
+      status: "PENDING",
+      recipient,
+      subject,
+    }));
+
+    try {
+      await NotificationService.createInAppNotification(data);
+      await notifRepo.markSent(log.id);
+      logger.info("[notification] In-app notification created", { idempotencyKey, recipientId: data.recipientId });
+    } catch (error) {
+      await notifRepo.markFailed(log.id, error instanceof Error ? error.message : String(error));
+      logger.error("[notification] In-app notification failed", { idempotencyKey, recipientId: data.recipientId, error });
+      throw error;
+    }
   }
 
   /**
@@ -72,9 +114,10 @@ export class NotificationService {
    * If the key has already been SENT, the call is a no-op.
    * If it is PENDING or FAILED (from a previous attempt), it will retry.
    *
-   * When recipientUserId is provided, the channel is resolved:
-   * - "email": proceed with sendFn as normal
-   * - "in_app": create Notification record, skip sendFn
+   * When recipientUserId is provided with notificationData:
+   * - always create an in-app Notification record once
+   * - "email": also proceed with sendFn
+   * - "in_app": skip sendFn after the in-app notification is created
    *
    * Key convention:  {RESOURCE_TYPE}:{resourceId}:{EVENT}:{recipientId}
    * e.g.  "KPI:abc123:SUBMITTED:reviewer:user456"
@@ -88,6 +131,7 @@ export class NotificationService {
     notificationData?: {
       title: string;
       body: string;
+      htmlBody?: string | null;
       module: string;
       resourceId: string;
       resourceType: string;
@@ -100,29 +144,29 @@ export class NotificationService {
       return;
     }
 
-    // Resolve channel when a recipientUserId is provided
+    // Create the in-app notification once, then decide whether email is also needed.
     if (recipientUserId && notificationData) {
+      await NotificationService.createInAppNotificationOnce(
+        `${idempotencyKey}:IN_APP`,
+        recipient || recipientUserId,
+        subject,
+        {
+          recipientId: recipientUserId,
+          recipientAuthUserId: recipientUserId,
+          ...notificationData,
+        },
+      );
+
       const channel = await NotificationService.resolveChannel(recipientUserId);
 
       if (channel === "in_app") {
-        // Create in-app notification
-        await NotificationService.createInAppNotification({
-          recipientId: recipientUserId,
-          ...notificationData,
-        });
-
-        // Log to NotificationLog so idempotency key is recorded
-        await notifRepo.create({
-          idempotencyKey,
-          channel: "IN_APP",
-          status: "SENT",
-          recipient,
-          subject,
-        });
-
-        logger.info("[notification] In-app notification created", { idempotencyKey, recipientUserId });
         return;
       }
+    }
+
+    if (!recipient) {
+      logger.info("[notification] Email skipped because recipient is missing", { idempotencyKey, recipientUserId });
+      return;
     }
 
     const log = existing ?? (await notifRepo.create({

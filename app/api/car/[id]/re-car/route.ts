@@ -18,7 +18,7 @@ export async function POST(
     }
 
     const { id } = await params;
-    const result = await carService.createReCar(id, session.user.id, session.user.authUserId);
+    const result = await carService.createReCar(id, session.user.id, session.user.authUserId, session.user.accessToken);
     return sendSuccess(result, "Re-CAR created successfully", 201);
   } catch (err) {
     return handleApiError(err);

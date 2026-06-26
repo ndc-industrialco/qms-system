@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import type { DarSummary } from "@/types/dar";
 import { OBJECTIVE_LABELS, DOC_TYPE_LABELS, DAR_STATUS_LABELS } from "@/types/dar";
 import type { DarStatus, DarObjective, DarDocType } from "@/types/dar";
@@ -65,8 +66,23 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
   });
   const dars = (queryResult.data ?? []) as DarSummary[];
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [modalOpen, setModalOpen] = useState(() => searchParams.get("newRequest") === "1");
   const [editDarId, setEditDarId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get("newRequest") === "1") {
+      setModalOpen(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("newRequest");
+      const qs = params.toString();
+      router.replace(pathname + (qs ? `?${qs}` : ""), { scroll: false });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [sortKey, setSortKey] = useState<SortKey>("requestDate");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 

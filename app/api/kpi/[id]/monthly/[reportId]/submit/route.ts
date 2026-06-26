@@ -59,7 +59,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
               achievedStatus: d.achievedStatus,
             })),
             actionToken: reviewerToken,
-            senderEmail: session.user.email ?? undefined,
+            senderAccessToken: session.user.accessToken,
           }),
           reviewer.email,
           'Monthly KPI Review Request',

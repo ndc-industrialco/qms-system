@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const reCarRefIdSchema = z.string().trim().optional();
+
 const carBaseSchema = z.object({
   sourceType: z.enum(["I", "C", "N", "O"]),
   sourceDetail: z.string().optional(),
@@ -12,11 +14,32 @@ const carBaseSchema = z.object({
   targetEmailGroups: z.array(z.string()).optional().default([]),
   targetEmailGroupsCc: z.array(z.string()).optional().default([]),
   reCar: z.boolean().optional().default(false),
-  reCarRefId: z.string().optional(),
+  reCarRefId: reCarRefIdSchema,
 });
 
 export const carCreateSchema = carBaseSchema.superRefine((data, ctx) => {
-  if (data.reCar && !data.reCarRefId) {
+  const refId = data.reCarRefId?.trim();
+  if (data.reCar && !refId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reCarRefId"],
+      message: "กรุณาระบุ CAR ที่อ้างอิงเมื่อเป็น Re-CAR",
+    });
+    return;
+  }
+
+  if (data.reCar && refId && !z.uuid().safeParse(refId).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["reCarRefId"],
+      message: "กรุณากรอก CAR ID ที่ถูกต้อง (UUID)",
+    });
+  }
+});
+
+export const carUpdateSchema = carBaseSchema.partial().superRefine((data, ctx) => {
+  const refId = data.reCarRefId?.trim();
+  if (data.reCar && !refId) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["reCarRefId"],
@@ -25,11 +48,16 @@ export const carCreateSchema = carBaseSchema.superRefine((data, ctx) => {
   }
 });
 
-export const carUpdateSchema = carBaseSchema.partial();
+const fiveWhyItemSchema = z.object({
+  question: z.string().default(""),
+  answer: z.string().default(""),
+});
 
 export const carRespondSchema = z.object({
   responderPosition: z.string().min(1, "กรุณากรอกตำแหน่ง"),
-  whyAnalysis: z.string().min(1, "กรุณากรอกการวิเคราะห์สาเหตุ"),
+  responseType: z.enum(["FIVE_WHY", "OTHER"]).default("FIVE_WHY"),
+  fiveWhys: z.array(fiveWhyItemSchema).length(5).optional(),
+  whyAnalysis: z.string().optional().default(""),
   additionalToolDetail: z.string().optional(),
   rootCausePerson: z.boolean().default(false),
   rootCauseMaterial: z.boolean().default(false),
@@ -41,6 +69,7 @@ export const carRespondSchema = z.object({
   immediateAction: z.string().min(1, "กรุณากรอกการดำเนินการแก้ไขเบื้องต้น"),
   preventiveAction: z.string().min(1, "กรุณากรอกการดำเนินการป้องกัน"),
   plannedCompletionDate: z.string().min(1, "กรุณาเลือกวันที่กำหนดเสร็จ"),
+  responderSignaturePath: z.string().min(1, "กรุณาเซ็นลายเซ็น"),
 });
 
 export const carVerifySchema = z.object({
@@ -49,21 +78,25 @@ export const carVerifySchema = z.object({
   result: z.enum(["PASSED", "FAILED"]),
   nextDueDate: z.string().optional(),
   verifierPosition: z.string().min(1, "กรุณากรอกตำแหน่ง"),
+  verifierSignaturePath: z.string().min(1, "กรุณาเซ็นลายเซ็น"),
 }).refine(
   (data) => !(data.result === "FAILED" && data.round === 1 && !data.nextDueDate),
   { message: "กรุณาระบุวันติดตามครั้งที่ 2", path: ["nextDueDate"] },
 );
 
 export const carCloseSchema = z.object({
-  // Token must be exactly 64 hex chars (32 random bytes from crypto.randomBytes)
-  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format"),
+  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format").optional(),
   comment: z.string().optional(),
+  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(524288).optional(),
+  signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
 });
 
 export const carReviewResponseSchema = z.object({
-  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format"),
+  token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format").optional(),
   action: z.enum(["APPROVED", "REJECTED"]),
   comment: z.string().optional(),
+  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(524288).optional(),
+  signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
 });
 
 export const carListQuerySchema = z.object({

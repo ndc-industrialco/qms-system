@@ -12,7 +12,9 @@ import {
   FileText,
   FolderOpen,
   House,
+  LayoutDashboard,
   Megaphone,
+  Search,
   Settings,
   ShieldCheck,
   User,
@@ -23,6 +25,7 @@ import {
 import type { UserRole } from "@/generated/prisma/client";
 import SignOutButton from "./SignOutButton";
 import { t } from "@/lib/i18n";
+import { useAppQuery } from "@/hooks/use-app-query";
 
 type NavItem = {
   labelTh: string;
@@ -79,10 +82,35 @@ function getSections(
       icon: <CalendarDays className="h-[18px] w-[18px] shrink-0" />,
     },
     {
+      labelTh: "ประกาศทั้งหมด",
+      labelEn: "Announcements",
+      href: "/announcements",
+      icon: <Megaphone className="h-[18px] w-[18px] shrink-0" />,
+    },
+    {
       labelTh: "CAR ของแผนก",
       labelEn: "CAR (My Dept)",
       href: "/car",
       icon: <ClipboardCheck className="h-[18px] w-[18px] shrink-0" />,
+    },
+    {
+      labelTh: "ภาพรวมตรวจสอบ",
+      labelEn: "Audit Dashboard",
+      href: "/audit",
+      icon: <LayoutDashboard className="h-[18px] w-[18px] shrink-0" />,
+      exact: true,
+    },
+    {
+      labelTh: "แผนการตรวจสอบ",
+      labelEn: "Audit Plans",
+      href: "/audit/plans",
+      icon: <Search className="h-[18px] w-[18px] shrink-0" />,
+    },
+    {
+      labelTh: "ประกาศแต่งตั้งผู้ตรวจ",
+      labelEn: "Audit Appointments",
+      href: "/audit/appointments",
+      icon: <FileText className="h-[18px] w-[18px] shrink-0" />,
     },
     {
       labelTh: "งานรออนุมัติ",
@@ -99,6 +127,12 @@ function getSections(
   ];
 
   const qmsItems: NavItem[] = [
+    {
+      labelTh: "มาตรฐาน Audit",
+      labelEn: "Audit Standards",
+      href: "/qms/audit-standards",
+      icon: <ClipboardCheck className="h-[18px] w-[18px] shrink-0" />,
+    },
     {
       labelTh: "จัดการข่าวสาร",
       labelEn: "Manage Announcements",
@@ -195,6 +229,18 @@ export default function DashboardSidebar({
   const sections = getSections(role, locale);
   const signOutLabel = t("auth.signOut", locale);
 
+  const { data: pendingSummary } = useAppQuery<{ totalPending: number }>({
+    queryKey: ["approvals", "pending-summary"],
+    realtimeClass: "A",
+    queryFn: async () => {
+      const res = await fetch("/api/approvals/pending-summary");
+      if (!res.ok) return { totalPending: 0 };
+      const json = await res.json();
+      return json.data ?? { totalPending: 0 };
+    },
+  });
+  const pendingCount = pendingSummary?.totalPending ?? 0;
+
   return (
     <>
       {isOpen && (
@@ -249,6 +295,8 @@ export default function DashboardSidebar({
                   : pathname === item.href || pathname.startsWith(item.href + "/");
                 const label = locale === "en" ? item.labelEn : item.labelTh;
 
+                const showBadge = item.href === "/approve" && pendingCount > 0;
+
                 return (
                   <div key={item.href} className="relative group">
                     <Link
@@ -278,12 +326,19 @@ export default function DashboardSidebar({
                       >
                         {label}
                       </span>
-                      {isActive && (
-                        <span
-                          className="ml-auto w-1.5 h-6 rounded-full shrink-0"
-                          style={{ background: "var(--sidebar-icon-active)" }}
-                        />
-                      )}
+                      <span className="ml-auto flex items-center gap-1 shrink-0">
+                        {showBadge && (
+                          <span className="flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-red-500 px-1 text-[10px] font-bold text-white leading-none">
+                            {pendingCount > 99 ? "99+" : pendingCount}
+                          </span>
+                        )}
+                        {isActive && (
+                          <span
+                            className="w-1.5 h-6 rounded-full"
+                            style={{ background: "var(--sidebar-icon-active)" }}
+                          />
+                        )}
+                      </span>
                     </Link>
                   </div>
                 );

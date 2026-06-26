@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       id,
       { ...body, preparerAuthUserId: body.preparerAuthUserId ?? session.user.authUserId ?? null },
       session.user.id,
-      session.user.email ?? undefined,
+      session.user.accessToken,
     );
 
     return sendSuccess(updated, 'KPI objectives submitted successfully');

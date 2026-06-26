@@ -10,7 +10,8 @@ export async function PATCH(_req: Request, { params }: Params) {
   try {
     const session = await requireAuth();
     const { id } = await params;
-    await repo.markRead(id, session.user.id);
+    const recipientId = session.user.authUserId ?? session.user.id;
+    await repo.markRead(id, recipientId);
     return sendSuccess({ id }, "Marked as read");
   } catch (err) {
     return handleApiError(err);

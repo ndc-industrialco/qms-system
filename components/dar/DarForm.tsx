@@ -138,7 +138,7 @@ export default function DarForm({ mode, initialData, departments, requesterInfo,
         <h2 className="text-slate-800 text-base font-semibold mb-2">{t("sectionAttach")}</h2>
         <p className="text-slate-400 text-sm mb-4">{t("attachDesc")}</p>
 
-        {mode === "edit" && savedDarId ? (
+        {savedDarId ? (
           <DarAttachmentUpload
             mode="saved"
             darId={savedDarId}

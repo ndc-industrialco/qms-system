@@ -35,10 +35,9 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     // Resolve reviewer identity from snapshot cache (no User table)
     const reviewerSnapshot = await getUserSnapshot(parsed.reviewerUserId);
-    const reviewerEmail = reviewerSnapshot?.email;
     const reviewerName = reviewerSnapshot?.name ?? "";
 
-    if (reviewerEmail && dar.darNo) {
+    if (dar.darNo) {
       await ActionTokenService.revokeByDocument(ApprovalModule.DAR, id);
       const reviewerToken = await ActionTokenService.issue({
         module: ApprovalModule.DAR,
@@ -50,7 +49,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       NotificationService.sendEmailOnce(
         `DAR:${id}:REVIEWER_ASSIGNED:reviewer:${parsed.reviewerUserId}:${reviewerToken.substring(0, 16)}`,
         () => sendReviewerAssignedEmail({
-          reviewer: { name: reviewerName, email: reviewerEmail },
+          reviewer: { name: reviewerName, email: reviewerSnapshot?.email ?? "" },
           requesterName: dar.requester.name ?? session.user.name ?? "",
           requesterDepartment: dar.requester.department?.name ?? null,
           darNo: dar.darNo!,
@@ -67,9 +66,9 @@ export async function POST(req: NextRequest, { params }: Params) {
             spWebUrl: a.spWebUrl,
           })),
           actionToken: reviewerToken,
-          senderEmail: dar.requester.email ?? session.user.email ?? undefined,
+          senderAccessToken: session.user.accessToken,
         }),
-        reviewerEmail,
+        reviewerSnapshot?.email ?? "",
         'DAR Reviewer Assigned',
         parsed.reviewerUserId,
         {
