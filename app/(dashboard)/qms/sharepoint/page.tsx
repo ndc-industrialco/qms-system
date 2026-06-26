@@ -2,7 +2,7 @@
 
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ExternalLink, FileText, FolderOpen, RefreshCw, Trash2, X } from "lucide-react";
+import { ChevronLeft, ExternalLink, FileText, FolderOpen, RefreshCw, X } from "lucide-react";
 import type { SpFile } from "@/lib/sharepoint";
 import { useT } from "@/lib/i18n";
 import { ActionIconButton } from "@/components/common/ActionButtons";

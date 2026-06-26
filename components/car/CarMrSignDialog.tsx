@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircle2, ClipboardList, PenLine, ShieldCheck } from "lucide-react";
 import type { CarDetail } from "@/types/car";
@@ -178,7 +179,7 @@ export default function CarMrSignDialog({ carId, car, token, savedSignatureUrl, 
             {signatureData ? (
               <div className="mb-4">
                 <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                  <img src={signatureData.url} alt="ลายมือชื่อ" className="h-16 w-full object-contain" />
+                  <Image src={signatureData.url} alt="ลายมือชื่อ" width={400} height={64} className="h-16 w-full object-contain" unoptimized />
                 </div>
                 <button
                   onClick={() => setShowPad(true)}

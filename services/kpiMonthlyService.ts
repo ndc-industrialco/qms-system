@@ -8,8 +8,6 @@ import { KpiObjectiveRepository } from '@/repositories/kpiObjectiveRepository';
 import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRepository';
 import { UserRepository } from '@/repositories/userRepository';
 import { UserPreferenceRepository } from '@/repositories/userPreferenceRepository';
-import { getUserSnapshot } from '@/lib/userSnapshotCache';
-import { NotificationService } from '@/services/notificationService';
 import { ActorContext, CreateMonthlyReportDTO, CreateCorrectiveActionDTO, ListMonthlyQuery, UpdateMonthlyDetailDTO, UpdateMonthlyReportDTO } from '@/types/kpi';
 import type { MonthlyStatus, SignatureType } from '@/generated/prisma/client';
 import { ALLOWED_MIME, MAX_FILE_SIZE, hasValidMagicBytes } from '@/lib/fileValidation';

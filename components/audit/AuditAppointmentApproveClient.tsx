@@ -31,11 +31,6 @@ const MEMBER_ROLE_LABELS: Record<string, string> = {
   ADVISOR: "ที่ปรึกษา (Advisor)",
 };
 
-function fmtDate(iso: string | null) {
-  if (!iso) return "-";
-  return new Date(iso).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" });
-}
-
 type Props = {
   appt: AuditAppointmentRow;
   mode: "reviewer" | "approver";

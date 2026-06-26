@@ -356,7 +356,7 @@ export default function NotificationsView() {
 
   function toggleCheck(id: string, e: React.MouseEvent) {
     e.stopPropagation();
-    setCheckedIds((prev) => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+    setCheckedIds((prev) => { const s = new Set(prev); if (s.has(id)) s.delete(id); else s.add(id); return s; });
   }
 
   const allFilteredChecked = filtered.length > 0 && filtered.every((n) => checkedIds.has(n.id));

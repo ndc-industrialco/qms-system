@@ -1,6 +1,6 @@
 import { NotificationRepository } from "@/repositories/notificationRepository";
 import { logger } from "@/lib/logger";
-import { carMailHtml, esc, getAppUrl, fmtDate } from "./carEmailService";
+import { carMailHtml, getAppUrl, fmtDate } from "./carEmailService";
 
 const repo = new NotificationRepository();
 
