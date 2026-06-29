@@ -159,9 +159,14 @@ export default function AuditDashboardClient() {
                   href={`/audit/plans/${s.planId}`}
                   className="flex flex-col gap-1 px-5 py-3 hover:bg-slate-50 transition-colors"
                 >
-                  <p className="text-xs font-semibold text-primary leading-snug line-clamp-1">
-                    {s.planTitle}
-                  </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-semibold text-primary leading-snug line-clamp-1 flex-1">
+                      {s.planTitle}
+                    </p>
+                    <span className="text-xs text-muted-foreground font-mono shrink-0">
+                      {s.planAuditNo}
+                    </span>
+                  </div>
                   <p className="text-[11px] text-slate-500 leading-snug">{s.sessionTitle}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Clock className="h-3 w-3 text-slate-400 shrink-0" />
