@@ -100,7 +100,7 @@ jobs:
   deploy:
     name: CD — Deploy to On-Prem
     runs-on: [self-hosted, Linux, X64]
-    needs: build
+    needs: docker
     environment: production
     timeout-minutes: 15
 
