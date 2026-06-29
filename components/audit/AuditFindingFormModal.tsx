@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { auditFindingCreateSchema, type AuditFindingCreateInput } from "@/lib/validations/audit";
+import { INPUT_CLASS } from "@/lib/styles";
 import { useCreateFinding, useUpdateFinding } from "@/hooks/api/use-audit-findings";
 import {
   FINDING_CATEGORY_LABELS,
@@ -25,9 +26,6 @@ interface Props {
   editFinding?: AuditFindingRow;
   onSuccess?: () => void;
 }
-
-const INPUT_CLASS =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 const CATEGORIES: FindingCategory[] = ["NC", "OBSERVATION", "OFI"];
 const SEVERITIES: FindingSeverity[] = ["MINOR", "MAJOR", "CRITICAL"];

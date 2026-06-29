@@ -14,6 +14,7 @@ import SignaturePad from "@/components/dar/SignaturePad";
 import { useReviewerCandidates, type ReviewerCandidate } from "@/hooks/api/use-reviewer-candidates";
 import { useDepartments } from "@/hooks/api/use-departments";
 import { useEmailGroups } from "@/hooks/api/use-email-groups";
+import { INPUT_CLASS } from "@/lib/styles";
 import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -76,9 +77,6 @@ type Props = {
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const INPUT_CLASS =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 const ROLE_LABELS: Record<TeamMemberEntry["role"], string> = {
   LEAD_AUDITOR: "หัวผู้ตรวจสอบ",
@@ -630,11 +628,12 @@ export function AuditPlanCreatePage({ appointments, dbStandards }: Props) {
     setMaxStep((m) => Math.max(m, target));
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(signatureOverride?: string) {
     if (form.selectedDeptIds.length === 0) { toast.error("กรุณาเลือกอย่างน้อย 1 แผนก"); return; }
     if (!form.reviewerAuthUserId) { toast.error("กรุณาเลือก Reviewer"); return; }
     if (!form.approverAuthUserId) { toast.error("กรุณาเลือก Approver"); return; }
-    if (!form.signaturePath) { setShowSignature(true); return; }
+    const signaturePath = signatureOverride ?? form.signaturePath;
+    if (!signaturePath) { setShowSignature(true); return; }
 
     setIsSubmitting(true);
     try {
@@ -699,7 +698,7 @@ export function AuditPlanCreatePage({ appointments, dbStandards }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           signedRole: "PREPARER",
-          signaturePath: form.signaturePath || undefined,
+          signaturePath: signaturePath || undefined,
           reviewerAuthUserId: form.reviewerAuthUserId,
           reviewerEmail: form.reviewerEmail,
           reviewerNameSnapshot: form.reviewerName || undefined,
@@ -722,7 +721,11 @@ export function AuditPlanCreatePage({ appointments, dbStandards }: Props) {
     <>
       {showSignature && (
         <SignatureModal
-          onConfirm={(dataUrl) => { patch({ signaturePath: dataUrl }); setShowSignature(false); setTimeout(handleSubmit, 50); }}
+          onConfirm={(dataUrl) => {
+            patch({ signaturePath: dataUrl });
+            setShowSignature(false);
+            handleSubmit(dataUrl);
+          }}
           onCancel={() => setShowSignature(false)}
         />
       )}
@@ -1391,7 +1394,7 @@ export function AuditPlanCreatePage({ appointments, dbStandards }: Props) {
                 ถัดไป <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             ) : (
-              <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+              <Button type="button" onClick={() => handleSubmit()} disabled={isSubmitting}>
                 {isSubmitting && <span className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />}
                 {isSubmitting ? "กำลังบันทึก..." : "บันทึกและส่งอนุมัติ"}
               </Button>

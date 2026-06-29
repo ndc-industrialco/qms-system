@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { fmtDate } from "@/lib/format";
+import { INPUT_CLASS } from "@/lib/styles";
 import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
 import AuditFindingStatusBadge from "./AuditFindingStatusBadge";
 import AuditFindingFormModal from "./AuditFindingFormModal";
@@ -65,9 +66,6 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: "attachments", label: "ไฟล์แนบ", icon: <Paperclip className="h-4 w-4" /> },
   { key: "report-sign", label: "รายงาน & ลงนาม", icon: <PenLine className="h-4 w-4" /> },
 ];
-
-const INPUT_CLASS =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) return "-";

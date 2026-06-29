@@ -11,6 +11,7 @@ import { Mail, MailX, Send } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { INPUT_CLASS } from "@/lib/styles";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { carCreateSchema, type CarCreateInput } from "@/lib/validations/car";
@@ -45,9 +46,6 @@ async function saveCar(data: CarCreateInput, editId?: string): Promise<CarDetail
 }
 
 const SOURCE_TYPES: CarSourceType[] = ["I", "C", "N", "O"];
-
-const INPUT_CLASS =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 function groupShortName(mail: string) {
   return mail.split("@")[0];
