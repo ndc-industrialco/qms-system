@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
-import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck, ChevronRight } from "lucide-react";
 import CarStatusBadge from "./CarStatusBadge";
 import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
@@ -140,9 +140,7 @@ export default function CarDetailClient({
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-slate-400">
         <Link href={listPath} className="hover:text-slate-600 transition-colors">CAR</Link>
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        <ChevronRight className="h-3.5 w-3.5 shrink-0" />
         <span className="font-mono font-medium text-slate-600">{car.carNo}</span>
       </nav>
 
