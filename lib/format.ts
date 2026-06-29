@@ -1,6 +1,7 @@
 /**
- * Shared date-formatting utility.
- * Returns an em dash (—) for null/undefined/invalid dates.
+ * QMS module date formatter — formats ISO date strings for CAR, DAR, Audit, KPI.
+ * For document-control datetime formatting (DD/MM/YYYY HH:mm), see lib/formatters.ts.
+ * Returns "—" for null/undefined/invalid.
  *
  * Accepts a BCP 47 locale tag or the short aliases "th" → "th-TH" and "en" → "en-GB".
  */
