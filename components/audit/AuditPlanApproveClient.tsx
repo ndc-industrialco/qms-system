@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
 import { FilePreviewModal, type FilePreviewTarget } from "@/components/common/FilePreviewModal";
 import type { SignatureType } from "@/types/dar";
+import { fmtDate } from "@/lib/format";
 
 type Signoff = {
   signedRole: string;
@@ -69,11 +70,6 @@ const ROLE_LABELS: Record<string, { th: string; en: string }> = {
   REVIEWER: { th: "ผู้ตรวจสอบ", en: "Reviewer" },
   APPROVER: { th: "ผู้อนุมัติ", en: "Approver" },
 };
-
-function fmtDate(iso: string | null) {
-  if (!iso) return "-";
-  return new Date(iso).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" });
-}
 
 export default function AuditPlanApproveClient({ plan, mode }: Props) {
   const router = useRouter();

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
-import { Send, ClipboardCheck, BellRing, FileText, Download, Eye } from "lucide-react";
+import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck } from "lucide-react";
 import CarStatusBadge from "./CarStatusBadge";
 import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
@@ -15,9 +16,13 @@ import CarVerifyForm from "./CarVerifyForm";
 import CarRespondForm from "./CarRespondForm";
 import CarAttachmentUpload from "./CarAttachmentUpload";
 import CarFormModal from "./CarFormModal";
+import CarMrResponseReviewPanel from "./CarMrResponseReviewPanel";
+import CarMrSignDialog from "./CarMrSignDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { CarDetail, CarAttachmentRow } from "@/types/car";
 import { CAR_SOURCE_LABELS } from "@/types/car";
 import { FilePreviewModal } from "@/components/common/FilePreviewModal";
+import { fmtDate } from "@/lib/format";
 
 interface Props {
   car: CarDetail;
@@ -57,11 +62,14 @@ export default function CarDetailClient({
 }: Props) {
   const t = useT();
   const qc = useQueryClient();
+  const router = useRouter();
   void _userId;
   void _isPrivileged;
   const [showRespond, setShowRespond] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showMrReview, setShowMrReview] = useState(false);
+  const [showMrClose, setShowMrClose] = useState(false);
   const [previewFile, setPreviewFile] = useState<CarAttachmentRow | null>(null);
 
   const { data: car = initialCar } = useQuery({
@@ -87,7 +95,7 @@ export default function CarDetailClient({
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ["cars"] });
       qc.invalidateQueries({ queryKey: ["car", car.id] });
-      window.location.href = `/qms/car/${result.newCarId}`;
+      router.push(`${listPath}/${result.newCarId}`);
     },
     onError: (err) => {
       toast.error((err as Error).message, { duration: Infinity });
@@ -118,8 +126,14 @@ export default function CarDetailClient({
     car.status === "ISSUED" &&
     (userRole === "QMS" || userRole === "IT");
 
-  const fmt = (iso: string | null | undefined) =>
-    iso ? new Date(iso).toLocaleDateString("th-TH", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+  const canMrReview =
+    car.status === "RESPONDED" &&
+    userRole === "MR";
+
+  const canMrClose =
+    car.status === "CLOSED" &&
+    !car.mrSignature &&
+    userRole === "MR";
 
   return (
     <div className="space-y-5">
@@ -178,6 +192,20 @@ export default function CarDetailClient({
               {t("car.detail.btnVerify")}
             </Button>
           )}
+          {canMrReview && (
+            <>
+              <Button onClick={() => { setShowMrReview(true); }} className="bg-emerald-600 hover:bg-emerald-700">
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                อนุมัติ / ส่งคืน
+              </Button>
+            </>
+          )}
+          {canMrClose && (
+            <Button onClick={() => setShowMrClose(true)} className="bg-emerald-600 hover:bg-emerald-700">
+              <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
+              ลงนามปิด CAR
+            </Button>
+          )}
           {canReCar && (
             <Button
               onClick={() => reCarMutation.mutate()}
@@ -217,12 +245,12 @@ export default function CarDetailClient({
             </div>
             <div>
               <p className="text-xs text-slate-500">{t("car.detail.labelIssuedAt")}</p>
-              <p className="text-sm font-medium">{fmt(car.issuedAt)}</p>
+              <p className="text-sm font-medium">{fmtDate(car.issuedAt)}</p>
             </div>
             <div>
               <p className="text-xs text-slate-500">{t("car.detail.labelDueAt")}</p>
               <p className={`text-sm font-medium ${car.responseDueAt && new Date(car.responseDueAt) < new Date() && car.status === "ISSUED" ? "text-rose-600" : ""}`}>
-                {fmt(car.responseDueAt)}
+                {fmtDate(car.responseDueAt)}
               </p>
             </div>
             <div className="sm:col-span-2">
@@ -278,11 +306,11 @@ export default function CarDetailClient({
                 </div>
                 <div>
                   <dt className="text-xs text-slate-500">{t("car.detail.labelRespondedAt")}</dt>
-                  <dd className="text-slate-800">{fmt(car.response.respondedAt)}</dd>
+                  <dd className="text-slate-800">{fmtDate(car.response.respondedAt)}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-slate-500">{t("car.detail.labelPlannedDate")}</dt>
-                  <dd className="text-slate-800">{fmt(car.response.plannedCompletionDate)}</dd>
+                  <dd className="text-slate-800">{fmtDate(car.response.plannedCompletionDate)}</dd>
                 </div>
                 {car.response.responseType === "FIVE_WHY" && car.response.fiveWhys && car.response.fiveWhys.length > 0 && (
                   <div className="sm:col-span-2">
@@ -375,6 +403,40 @@ export default function CarDetailClient({
 
       {/* Edit modal */}
       <CarFormModal open={showEdit} onClose={() => setShowEdit(false)} editCar={car} />
+
+      {/* MR — review response modal */}
+      <Dialog open={showMrReview} onOpenChange={setShowMrReview}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>ตรวจสอบแผนแก้ไข — {car.carNo}</DialogTitle>
+          </DialogHeader>
+          <CarMrResponseReviewPanel
+            carId={car.id}
+            car={car}
+            onSuccess={() => {
+              setShowMrReview(false);
+              qc.invalidateQueries({ queryKey: ["car", car.id] });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* MR — sign to close modal */}
+      <Dialog open={showMrClose} onOpenChange={setShowMrClose}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>ลงนามปิด CAR — {car.carNo}</DialogTitle>
+          </DialogHeader>
+          <CarMrSignDialog
+            carId={car.id}
+            car={car}
+            onSuccess={() => {
+              setShowMrClose(false);
+              qc.invalidateQueries({ queryKey: ["car", car.id] });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Attachment preview */}
       {previewFile && (

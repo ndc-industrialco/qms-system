@@ -22,6 +22,7 @@ import {
   type AuditType,
 } from "@/types/audit";
 import { useAuditPlans, useCancelAuditPlan, type AuditPlanListParams } from "@/hooks/api/use-audit-plans";
+import { fmtDate } from "@/lib/format";
 
 interface Props {
   initialData?: AuditPlanListResponse;
@@ -68,11 +69,6 @@ function TableSkeleton() {
       </div>
     </div>
   );
-}
-
-function formatDate(value: string | null | undefined) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(value));
 }
 
 export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivileged = false, canEdit = false }: Props) {
@@ -186,7 +182,7 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                     </p>
                   )}
                   <p className="text-slate-500">
-                    วันที่: <span className="text-slate-700 font-mono">{formatDate(plan.startDate)} — {formatDate(plan.endDate)}</span>
+                    วันที่: <span className="text-slate-700 font-mono">{fmtDate(plan.startDate)} — {fmtDate(plan.endDate)}</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-1 border-t border-slate-100 pt-3">
@@ -244,10 +240,10 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                         <AuditPlanStatusBadge status={plan.status} />
                       </TableCell>
                       <TableCell className="text-slate-500 text-xs text-center font-mono">
-                        {formatDate(plan.startDate)}
+                        {fmtDate(plan.startDate)}
                       </TableCell>
                       <TableCell className="text-slate-500 text-xs text-center font-mono">
-                        {formatDate(plan.endDate)}
+                        {fmtDate(plan.endDate)}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-1.5">

@@ -24,6 +24,7 @@ import { AuditAppointmentFormModal } from "./AuditAppointmentFormModal";
 import SignaturePad from "@/components/dar/SignaturePad";
 import { useAuditAppointment, useSubmitAuditAppointment, useDeleteAuditAppointment } from "@/hooks/api/use-audit-appointments";
 import type { AuditAppointmentRow } from "@/types/audit";
+import { fmtDate } from "@/lib/format";
 
 const MEMBER_ROLE_LABELS: Record<string, string> = {
   LEAD_AUDITOR: "หัวหน้าทีมผู้ตรวจ",
@@ -73,11 +74,6 @@ function SessionPlanButton({ appointmentId }: { appointmentId: string }) {
   );
 }
 
-function fmtDate(iso: string | null) {
-  if (!iso) return "-";
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(iso));
-}
-
 type Props = {
   initialData: AuditAppointmentRow;
   canSubmit: boolean;
@@ -98,6 +94,17 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit, canCrud =
   async function handleSignConfirm(dataUrl: string, _type?: unknown, _save?: unknown) {
     try {
       await submitMutation.mutateAsync({ id: appt.id, ownerSignatureDataUrl: dataUrl });
+      toast.success("ส่งประกาศเพื่อตรวจสอบเรียบร้อยแล้ว");
+      setSignPadOpen(false);
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
+    }
+  }
+
+  async function handleSignSkip() {
+    try {
+      await submitMutation.mutateAsync({ id: appt.id });
       toast.success("ส่งประกาศเพื่อตรวจสอบเรียบร้อยแล้ว");
       setSignPadOpen(false);
       router.refresh();
@@ -325,6 +332,7 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit, canCrud =
           <SignaturePad
             onConfirm={handleSignConfirm}
             onCancel={() => setSignPadOpen(false)}
+            onSkip={handleSignSkip}
           />
         </DialogContent>
       </Dialog>
