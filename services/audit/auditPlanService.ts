@@ -473,7 +473,6 @@ export class AuditPlanService {
 
     const PRIVILEGED = new Set(["QMS", "MR", "IT"]);
     if (!PRIVILEGED.has(actor.role)) {
-      const actorDept = actor.authUserId ?? actor.userId;
       const scheduleDept = schedule.departmentId;
       if (!scheduleDept || (actor.departmentId && actor.departmentId !== scheduleDept)) {
         throw new ForbiddenError("You are not authorized to confirm this schedule");
