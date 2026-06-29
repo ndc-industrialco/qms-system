@@ -100,7 +100,13 @@ export async function submitPlan(
     targetName: input.reviewerNameSnapshot ?? input.reviewerEmail,
     signedRole: "REVIEWER",
     senderAccessToken: actor.accessToken,
-  });
+  }).catch((err) =>
+    logger.error("[auditWorkflow] failed to issue token/notify reviewer", {
+      planId,
+      signedRole: "REVIEWER",
+      error: String(err),
+    })
+  );
 
   return updated;
 }
@@ -162,7 +168,13 @@ export async function reviewPlan(planId: string, actor: Actor) {
       targetName: plan.approverNameSnapshot ?? plan.approverEmail,
       signedRole: "APPROVER",
       senderAccessToken: actor.accessToken,
-    });
+    }).catch((err) =>
+      logger.error("[auditWorkflow] failed to issue token/notify approver", {
+        planId,
+        signedRole: "APPROVER",
+        error: String(err),
+      })
+    );
   }
 
   // In-app: notify plan owner that reviewer has signed

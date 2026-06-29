@@ -14,7 +14,6 @@ import type {
 } from "@/lib/validations/audit";
 import { sendScheduleInviteEmail, sendScheduleStatusEmail } from "./auditEmailService";
 import { NotificationService } from "@/services/notificationService";
-import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
 import { logger } from "@/lib/logger";
 import type { AuditPlanListQuery } from "@/repositories/audit/auditPlanRepository";
 
@@ -466,19 +465,10 @@ export class AuditPlanService {
   async confirmSchedule(
     scheduleId: string,
     input: AuditScheduleConfirmInput,
-    actor: { userId: string; authUserId?: string | null; role: string; nameSnapshot?: string | null; accessToken?: string | null; departmentId?: string | null }
+    actor: { userId: string; authUserId?: string | null; role: string; nameSnapshot?: string | null; accessToken?: string | null }
   ) {
     const schedule = await this.scheduleRepo.findById(scheduleId);
     if (!schedule) throw new NotFoundError("Schedule not found");
-
-    const PRIVILEGED = new Set(["QMS", "MR", "IT"]);
-    if (!PRIVILEGED.has(actor.role)) {
-      const actorDept = actor.authUserId ?? actor.userId;
-      const scheduleDept = schedule.departmentId;
-      if (!scheduleDept || (actor.departmentId && actor.departmentId !== scheduleDept)) {
-        throw new ForbiddenError("You are not authorized to confirm this schedule");
-      }
-    }
 
     const plan = await this.repo.findById(schedule.planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
@@ -603,11 +593,11 @@ export class AuditPlanService {
 
     return {
       counts: {
-        totalPlans: total,
-        inProgressPlans: inProgress,
-        waitingCorrectivePlans: waitingCorrective,
+        total,
+        inProgress,
+        waitingCorrective,
         openFindings,
-        overdueCorrectiveActions: overdueFindings,
+        overdueFindings,
         pendingSignoffs,
       },
       upcomingSchedules: upcomingSchedules.map((s) => ({
@@ -751,19 +741,21 @@ export class AuditPlanService {
   }
 
   private async nextAuditNo(tx: Parameters<Parameters<typeof db.$transaction>[0]>[0]): Promise<string> {
-    const format = await getDocNoFormat("AUDIT_PLAN");
     const year = new Date().getFullYear();
-    const { likePrefix } = buildLikePrefix(format, { year });
-    const startPos = likePrefix.length + 1;
+    const yy = String(year).slice(-2);
+    const prefix = `AUD-${yy}-`;
+    const likePattern = `${prefix}%`;
+    const startPos = prefix.length + 1;
+
     const existing = await tx.$queryRaw<{ seq: number }[]>`
       SELECT CAST(SUBSTRING(audit_no FROM ${startPos}) AS INTEGER) AS seq
       FROM audit_plans
-      WHERE audit_no LIKE ${`${likePrefix}%`}
+      WHERE audit_no LIKE ${likePattern}
       ORDER BY seq
     `;
     const used = new Set(existing.map((r) => r.seq));
     let next = 1;
     while (used.has(next)) next++;
-    return renderDocNo(format, { year, seq: next });
+    return `${prefix}${String(next).padStart(3, "0")}`;
   }
 }
