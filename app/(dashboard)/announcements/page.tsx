@@ -1,15 +1,12 @@
-"use client";
+import { requireAuth } from "@/lib/auth";
+import PageHeader from "@/components/common/PageHeader";
+import AnnouncementsClient from "./AnnouncementsClient";
+import { AnnouncementRepository } from "@/repositories/announcementRepository";
+import type { Metadata } from "next";
 
-import { useEffect, useState } from "react";
-import { useT } from "@/lib/i18n";
-import { useLocale } from "@/lib/locale-context";
-import AnnouncementViewModal from "@/components/announcements/AnnouncementViewModal";
-import type { AnnouncementRow } from "@/services/announcementService";
-import { Megaphone, Link as LinkIcon, CalendarDays } from "lucide-react";
+export const metadata: Metadata = { title: "ประกาศ - QMS" };
 
-const SOURCE_COLORS: Record<string, string> = {
-  QMS: "#0F1059", IT: "#1D6A8A", HR: "#7C3AED", GA: "#059669", SAFETY: "#DC2626",
-};
+export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 type PublicAnnouncement = {
   id: string;
@@ -24,109 +21,39 @@ type PublicAnnouncement = {
   bgColor: string | null;
   textColor: string | null;
   createdAt: string;
-  createdBy: { name: string | null } | null;
+  createdByName: string | null;
 };
 
-export default function AnnouncementsPage() {
-  const t = useT();
-  const locale = useLocale();
-  const [items, setItems] = useState<PublicAnnouncement[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [viewItem, setViewItem] = useState<AnnouncementRow | null>(null);
+export default async function AnnouncementsPage() {
+  await requireAuth();
 
-  useEffect(() => {
-    fetch("/api/announcements/public")
-      .then((r) => r.json())
-      .then((j) => setItems(j.data ?? []))
-      .finally(() => setLoading(false));
-  }, []);
-
-  function toRow(a: PublicAnnouncement): AnnouncementRow {
-    return {
-      ...a,
-      startDate: a.startDate ? new Date(a.startDate) : null,
-      endDate: a.endDate ? new Date(a.endDate) : null,
-      createdAt: new Date(a.createdAt),
-      pushToCompanyCenter: true,
-      status: "ACTIVE",
-      bgImageUrl: null,
-      bgImageSpId: null,
-      createdByName: a.createdBy?.name ?? null,
-    };
+  let initialData: PublicAnnouncement[] = [];
+  try {
+    const repo = new AnnouncementRepository();
+    const rows = await repo.findActivePublic(new Date());
+    initialData = rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      content: r.content,
+      sourceSystem: r.sourceSystem,
+      displayType: r.displayType,
+      startDate: r.startDate ? r.startDate.toISOString() : null,
+      endDate: r.endDate ? r.endDate.toISOString() : null,
+      fileName: r.fileName,
+      spWebUrl: r.spWebUrl,
+      bgColor: r.bgColor,
+      textColor: r.textColor,
+      createdAt: r.createdAt.toISOString(),
+      createdByName: r.createdByName ?? null,
+    }));
+  } catch {
+    // fail silently — client will fetch on mount
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full flex flex-col gap-6 pb-10 pt-6 px-4">
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-[#0F1059]/10 flex items-center justify-center">
-          <Megaphone className="w-5 h-5 text-[#0F1059]" />
-        </div>
-        <h1 className="text-xl font-bold text-[#0F1059]">{t("announcement.allTitle")}</h1>
-      </div>
-
-      {loading ? (
-        <div className="py-16 text-center text-sm text-slate-400">{t("common.loading")}</div>
-      ) : items.length === 0 ? (
-        <div className="py-16 text-center text-sm text-slate-400">{t("dashboard.announcements.empty")}</div>
-      ) : (
-        <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] divide-y divide-slate-100 overflow-hidden">
-          {items.map((a) => {
-            const color = SOURCE_COLORS[a.sourceSystem] ?? "#6B7280";
-            const dateStr = new Date(a.createdAt).toLocaleDateString(locale === "th" ? "th-TH" : "en-US", {
-              day: "2-digit", month: "short", year: "numeric",
-            });
-            return (
-              <div
-                key={a.id}
-                onClick={() => setViewItem(toRow(a))}
-                className="group flex gap-0 hover:bg-slate-50 transition-colors duration-150 cursor-pointer"
-              >
-                <div
-                  className="w-1 shrink-0 rounded-r-sm my-4 ml-5 transition-all duration-200 group-hover:w-1.5"
-                  style={{ background: color }}
-                />
-                <div className="flex flex-1 items-start gap-3 px-5 py-4 min-w-0">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span
-                        className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full text-white"
-                        style={{ background: color }}
-                      >
-                        {a.sourceSystem}
-                      </span>
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
-                        <CalendarDays className="w-3 h-3" />
-                        {dateStr}
-                      </span>
-                    </div>
-                    <h3 className="text-sm font-semibold text-slate-800 group-hover:text-[#0F1059] transition-colors leading-snug">
-                      {a.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">{a.content}</p>
-                  </div>
-                  {a.spWebUrl && (
-                    <a
-                      href={a.spWebUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="shrink-0 w-8 h-8 mt-0.5 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:border-[#0F1059] hover:text-[#0F1059] transition-all"
-                    >
-                      <LinkIcon className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <AnnouncementViewModal
-        item={viewItem}
-        open={!!viewItem}
-        onClose={() => setViewItem(null)}
-      />
+    <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 pb-10 pt-6 px-4 sm:px-6 lg:px-8">
+      <PageHeader title="ประกาศ" subtitle="Announcements" />
+      <AnnouncementsClient initialData={initialData} />
     </div>
   );
 }
