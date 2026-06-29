@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import { useReviewerCandidates, type ReviewerCandidate } from "@/hooks/api/use-reviewer-candidates";
 import { useDepartments } from "@/hooks/api/use-departments";
 import { useEmailGroups } from "@/hooks/api/use-email-groups";

@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogD
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AuditAppointmentStatusBadge } from "./AuditAppointmentStatusBadge";
 import { AuditAppointmentFormModal } from "./AuditAppointmentFormModal";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import { useAuditAppointment, useSubmitAuditAppointment, useDeleteAuditAppointment } from "@/hooks/api/use-audit-appointments";
 import type { AuditAppointmentRow } from "@/types/audit";
 import { fmtDate } from "@/lib/format";

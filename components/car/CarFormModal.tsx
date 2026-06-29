@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/com
 import { carCreateSchema, type CarCreateInput } from "@/lib/validations/car";
 import { ISO_STANDARDS, CAR_SOURCE_LABELS } from "@/types/car";
 import type { CarDetail, CarSourceType } from "@/types/car";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import type { SignatureType } from "@/types/dar";
 
 interface Props {

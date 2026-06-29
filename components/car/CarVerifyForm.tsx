@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { carVerifySchema, type CarVerifyInput } from "@/lib/validations/car";
 import { INPUT_CLASS } from "@/lib/styles";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { CarStatus } from "@/types/car";
 import type { SignatureType } from "@/types/dar";

@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import type { SignatureType } from "@/types/dar";
 
 interface Props {

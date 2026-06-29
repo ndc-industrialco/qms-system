@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { carRespondSchema, type CarRespondInput } from "@/lib/validations/car";
 import { INPUT_CLASS } from "@/lib/styles";
 import CarRootCauseCheckbox from "./CarRootCauseCheckbox";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { CarDetail } from "@/types/car";
 import type { SignatureType } from "@/types/dar";

@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useT } from "@/lib/i18n";
-import SignaturePad from "./SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import type { SignatureType } from "@/types/dar";
 
 interface Props {
