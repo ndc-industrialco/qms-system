@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { fmtDate } from "@/lib/formatters";
+import { fmtDate } from "@/lib/format";
 import { Card } from "@/components/ui/card";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import type { DarSummary } from "@/types/dar";

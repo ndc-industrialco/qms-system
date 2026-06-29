@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { fmtDate } from "@/lib/format";
 import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
 import AuditFindingStatusBadge from "./AuditFindingStatusBadge";
 import AuditFindingFormModal from "./AuditFindingFormModal";
@@ -67,11 +68,6 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
 
 const INPUT_CLASS =
   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30";
-
-function formatDate(value: string | null | undefined) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(value));
-}
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) return "-";
@@ -504,7 +500,7 @@ function FindingsTab({ plan, canCreate, canVerify }: { plan: AuditPlanDetail; ca
                   </TableCell>
                   <TableCell className="max-w-xs truncate text-slate-800 text-sm">{f.title}</TableCell>
                   <TableCell className="text-center"><AuditFindingStatusBadge status={f.status} /></TableCell>
-                  <TableCell className="text-center text-xs font-mono text-slate-500">{formatDate(f.dueAt)}</TableCell>
+                  <TableCell className="text-center text-xs font-mono text-slate-500">{fmtDate(f.dueAt)}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1">
                       {canCreate && (f.status === "OPEN" || f.status === "REOPENED") && (
@@ -842,11 +838,11 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
               </div>
               <div>
                 <p className="text-xs text-slate-500">วันที่เริ่มต้น</p>
-                <p className="text-sm font-medium">{formatDate(plan.startDate)}</p>
+                <p className="text-sm font-medium">{fmtDate(plan.startDate)}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">วันที่สิ้นสุด</p>
-                <p className="text-sm font-medium">{formatDate(plan.endDate)}</p>
+                <p className="text-sm font-medium">{fmtDate(plan.endDate)}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">เจ้าของแผน</p>
@@ -1106,17 +1102,21 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
         initialReviewerAuthUserId={plan.reviewerAuthUserId ?? undefined}
         initialApproverAuthUserId={plan.approverAuthUserId ?? undefined}
         onConfirm={async (reviewer, approver) => {
-          await submitMutation.mutateAsync({
-            signedRole: "PREPARER",
-            reviewerAuthUserId: reviewer.id,
-            reviewerEmail: reviewer.email,
-            reviewerNameSnapshot: reviewer.name,
-            approverAuthUserId: approver.id,
-            approverEmail: approver.email,
-            approverNameSnapshot: approver.name,
-            emailGroupMails: [],
-          });
-          toast.success("ส่งแผนเพื่ออนุมัติสำเร็จ");
+          try {
+            await submitMutation.mutateAsync({
+              signedRole: "PREPARER",
+              reviewerAuthUserId: reviewer.id,
+              reviewerEmail: reviewer.email,
+              reviewerNameSnapshot: reviewer.name,
+              approverAuthUserId: approver.id,
+              approverEmail: approver.email,
+              approverNameSnapshot: approver.name,
+              emailGroupMails: [],
+            });
+            toast.success("ส่งแผนเพื่ออนุมัติสำเร็จ");
+          } catch (err) {
+            toast.error((err as Error).message ?? "เกิดข้อผิดพลาด");
+          }
         }}
       />
 

@@ -12,6 +12,7 @@ import DarAttachmentUpload from "./DarAttachmentUpload";
 import DarDraftActions from "./DarDraftActions";
 import QmsDarActions from "./QmsDarActions";
 import Link from "next/link";
+import { fmtDate } from "@/lib/format";
 import { 
   User, Hash, Building2, Calendar, Target, FileText, FileSignature,
   MessageSquare, FileStack, Users, Paperclip, Printer
@@ -38,11 +39,7 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
   const locale = useLocale();
   const isDraft = dar.status === "DRAFT";
 
-  function fmtDate(iso: string) {
-    return new Date(iso).toLocaleDateString(locale === "en" ? "en-GB" : "th-TH", {
-      day: "2-digit", month: "long", year: "numeric",
-    });
-  }
+  const darLocale = locale === "en" ? "en-GB" : "th-TH";
 
   return (
     <div className="space-y-4">
@@ -56,7 +53,7 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
             ) : (
               <p className="text-lg font-semibold text-slate-400">{t("fieldDarNoDraft")}</p>
             )}
-            <p className="text-xs text-slate-400 mt-1 font-mono">{fmtDate(dar.requestDate)}</p>
+            <p className="text-xs text-slate-400 mt-1 font-mono">{fmtDate(dar.requestDate, darLocale)}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <DarStatusBadge status={dar.status} />
@@ -106,7 +103,7 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
           </div>
           <div className="flex flex-col justify-center border-l border-slate-100 pl-6">
             <p className={sectionLabel}><Calendar className="w-3.5 h-3.5" /> {t("fieldDate")}</p>
-            <p className={`${sectionValue}`}>{fmtDate(dar.requestDate)}</p>
+            <p className={`${sectionValue}`}>{fmtDate(dar.requestDate, darLocale)}</p>
           </div>
         </div>
       </div>
