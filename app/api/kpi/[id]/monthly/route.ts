@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireRole } from '@/lib/auth';
 import { createMonthlyReportSchema, monthlyQuerySchema } from '@/schemas/kpiSchema';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireAuth();
+    await requireRole('QMS', 'MR', 'IT');
     const { id } = await params;
     const body = createMonthlyReportSchema.omit({ kpiId: true }).parse(await request.json());
     const report = await service.createMonthlyReport({ ...body, kpiId: id });

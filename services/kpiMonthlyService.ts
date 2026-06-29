@@ -1,4 +1,5 @@
 import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
+import { AuditService } from '@/services/auditService';
 import { db } from '@/lib/db'; // used only for $transaction boundaries
 import { ensureMonthlyStatusTransition } from '@/lib/kpi-state-machine';
 import { KpiMonthlyReportRepository } from '@/repositories/kpiMonthlyReportRepository';
@@ -50,7 +51,15 @@ export class KpiMonthlyService {
       this.approvalSignatureRepo.findByDocument('KPI_MONTHLY', id),
     ]);
     if (!report) throw new NotFoundError(`Monthly report ${id} not found`);
-    return { ...report, approvalSignatures };
+    return {
+      ...report,
+      approvalSignatures: approvalSignatures.map(s => ({
+        ...s,
+        signerUser: s.signerName || s.signerEmail
+          ? { id: s.signerUserId, name: s.signerName ?? null, email: s.signerEmail ?? null, department: s.signerDepartmentName ? { name: s.signerDepartmentName } : null }
+          : null,
+      })),
+    };
   }
 
   async updateDetail(detailId: string, dto: UpdateMonthlyDetailDTO) {
@@ -114,11 +123,11 @@ export class KpiMonthlyService {
   }
 
   async submitReport(
-    reportId: string, 
+    reportId: string,
     actor: ActorContext,
-    sigBody?: { 
-      signatureDataUrl?: string; 
-      signatureType?: SignatureType; 
+    sigBody?: {
+      signatureDataUrl?: string;
+      signatureType?: SignatureType;
       saveSignature?: boolean;
       reviewerUserId?: string;
       approverUserId?: string;
@@ -282,6 +291,16 @@ export class KpiMonthlyService {
         action: 'REJECTED',
         actionDate: new Date(),
         comment: reason,
+      }, tx);
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
+        actorRole: actor.role,
+        action: 'REJECT',
+        resourceType: 'KPI_MONTHLY_REPORT',
+        resourceId: reportId,
+        before: { status: report.status },
+        after: { status: 'REJECTED', reason },
       }, tx);
       return updated;
     });

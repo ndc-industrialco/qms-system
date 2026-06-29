@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { AuditPlanService } from "@/services/audit/auditPlanService";
 import AuditPlanDetailClient from "@/components/audit/AuditPlanDetailClient";
 import type { AuditPlanDetail } from "@/types/audit";
@@ -14,8 +14,7 @@ export default async function AuditPlanDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/auth/login");
+  const session = await requireAuth();
 
   const { id } = await params;
 

@@ -9,6 +9,10 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/SystemConfig'
+export type * from './models/LocalRoleGrant'
+export type * from './models/DepartmentCode'
+export type * from './models/KpiDept'
+export type * from './models/DocControlDept'
 export type * from './models/UserPreference'
 export type * from './models/Announcement'
 export type * from './models/DarMaster'

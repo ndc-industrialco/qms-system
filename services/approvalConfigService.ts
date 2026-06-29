@@ -1,5 +1,5 @@
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
-import { listAuthCenterAppMembers, listAuthCenterUsers } from "@/lib/auth-center-admin-client";
+import { listAuthCenterAppMembers, listAuthCenterUsers, listAuthCenterRoleGrants } from "@/lib/auth-center-admin-client";
 import { pickRole } from "@/lib/auth-center-token";
 import { db } from "@/lib/db";
 
@@ -12,30 +12,43 @@ export class ApprovalConfigService {
   private configRepo = new SystemConfigRepository();
 
   async getConfig(accessToken?: string | null) {
-    const [authUsers, appMembers, mrConfig, qmsConfig] = await Promise.all([
-      listAuthCenterUsers({ accessToken }),
+    const [appMembers, mrConfig, qmsConfig] = await Promise.all([
       listAuthCenterAppMembers({ accessToken }),
       this.configRepo.findValueByKey(MR_AUTH_CONFIG_KEY),
       this.configRepo.findValueByKey(QMS_AUTH_CONFIG_KEY),
     ]);
 
-    const authUsersById = new Map(authUsers.map((u) => [u.id, u]));
+    // IT: full roles per user; QMS/MR: merge role-grants
+    let rolesByUser = new Map<string, string[]>();
+    try {
+      const authUsers = await listAuthCenterUsers({ accessToken });
+      for (const u of authUsers) rolesByUser.set(u.id, u.roles);
+    } catch {
+      const grants = await listAuthCenterRoleGrants({ accessToken });
+      for (const g of grants) {
+        const list = rolesByUser.get(g.userId) ?? [];
+        list.push(g.role);
+        rolesByUser.set(g.userId, list);
+      }
+    }
 
     const users = appMembers
       .filter((u) => Boolean(u.id))
-      .map((member) => {
-        const authUser = authUsersById.get(member.id);
-        return {
-          id: member.id,
-          authUserId: member.id,
-          name: authUser?.displayName ?? member.displayName ?? null,
-          email: authUser?.email ?? member.email ?? null,
-          role: pickRole(authUser?.roles ?? []),
-          department: authUser?.department ? { id: authUser.department, name: authUser.department } : null,
-        };
-      });
+      .map((member) => ({
+        id: member.id,
+        authUserId: member.id,
+        name: member.displayName ?? null,
+        email: member.email ?? null,
+        role: pickRole(rolesByUser.get(member.id) ?? []),
+        department: null,
+      }));
 
-    return { users, currentMrUserId: mrConfig, currentQmsUserId: qmsConfig };
+    const [mrEmail, qmsEmail] = await Promise.all([
+      this.configRepo.findValueByKey(MR_EMAIL_CONFIG_KEY),
+      this.configRepo.findValueByKey(QMS_EMAIL_CONFIG_KEY),
+    ]);
+
+    return { users, currentMrUserId: mrConfig, currentQmsUserId: qmsConfig, currentMrEmail: mrEmail, currentQmsEmail: qmsEmail };
   }
 
   async updateConfig(

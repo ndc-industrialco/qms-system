@@ -137,11 +137,24 @@ async function ensureFolderPath(driveId: string, token: string, folderPath: stri
         body: JSON.stringify({
           name: segment,
           folder: {},
-          "@microsoft.graph.conflictBehavior": "replace",
+          "@microsoft.graph.conflictBehavior": "fail",
         }),
       },
     );
     if (!createRes.ok) {
+      // ponytail: 409 = folder already exists (concurrent upload race) — GET it instead
+      if (createRes.status === 409) {
+        const encodedAcc = segments.slice(0, segments.indexOf(segment) + 1).join("/").split("/").map(encodeURIComponent).join("/");
+        const retryGet = await graphFetch(
+          `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodedAcc}?$select=id`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (retryGet.ok) {
+          const item = await retryGet.json() as { id: string };
+          parentId = item.id;
+          continue;
+        }
+      }
       const t = await createRes.text();
       throw new Error(`Graph create folder "${segment}" ${createRes.status}: ${t}`);
     }

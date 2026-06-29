@@ -5,7 +5,9 @@ import { useT } from "@/lib/i18n";
 import { KPI_UNITS } from "@/lib/kpi-units";
 import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye } from "lucide-react";
+import { Plus, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye, XCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -107,6 +109,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [recallConfirmOpen, setRecallConfirmOpen] = useState(false);
   const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatureMode, setSignatureMode] = useState<"submit" | "review" | "approve">("submit");
   const [pendingSignature, setPendingSignature] = useState<string | null>(null);
@@ -182,7 +185,12 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
     );
   }
 
-  if (!kpi) return null;
+  if (!kpi) return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <p className="text-slate-600 font-semibold text-base mb-1">ไม่พบข้อมูล KPI</p>
+      <p className="text-slate-400 text-sm">KPI สำหรับแผนกนี้ยังไม่มีในระบบ</p>
+    </div>
+  );
 
   const objectives: KPIObjective[] = kpi.objectives ?? [];
   const kpiStatus = kpi.status as keyof typeof STATUS_CONFIG;
@@ -261,7 +269,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
             )}
             {canReject && (
               <Button
-                onClick={() => setRejectConfirmOpen(true)}
+                onClick={() => { setRejectReason(""); setRejectConfirmOpen(true); }}
                 variant="outline"
                 className="rounded-xl border-rose-200 text-rose-700 hover:bg-rose-50"
                 disabled={rejectMutation.isPending}
@@ -384,6 +392,8 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
           <KpiApprovalTimeline
             signatures={(kpi as typeof kpi & { approvalSignatures?: Parameters<typeof KpiApprovalTimeline>[0]["signatures"] }).approvalSignatures ?? []}
             preparerName={kpi.prepare || null}
+            reviewerName={(kpi as typeof kpi & { reviewerUser?: { name?: string | null; email?: string } | null }).reviewerUser?.name || kpi.reviewer || null}
+            approverName={(kpi as typeof kpi & { approverUser?: { name?: string | null; email?: string } | null }).approverUser?.name || kpi.approver || null}
             layout="horizontal"
           />
         </div>
@@ -510,28 +520,47 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
         />
       )}
 
-      {/* Reject Confirm */}
-      {rejectConfirmOpen && (
-        <ConfirmModal
-          title={t("kpi.reject.confirmTitle")}
-          message={t("kpi.reject.confirmMessage")}
-          confirmLabel={t("kpi.reject.button")}
-          cancelLabel={t("common.cancel")}
-          danger
-          loading={rejectMutation.isPending}
-          onConfirm={async () => {
-            try {
-              await rejectMutation.mutateAsync(kpiId);
-              toast.success(t("kpi.reject.success"));
-            } catch (err) {
-              toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
-            } finally {
-              setRejectConfirmOpen(false);
-            }
-          }}
-          onCancel={() => setRejectConfirmOpen(false)}
-        />
-      )}
+      {/* Reject Dialog with reason */}
+      <Dialog open={rejectConfirmOpen} onOpenChange={(o) => { if (!rejectMutation.isPending) { setRejectConfirmOpen(o); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-rose-600 flex items-center gap-2">
+              <XCircle className="w-5 h-5" />
+              {t("kpi.reject.confirmTitle")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-slate-500">กรุณาระบุเหตุผลการปฏิเสธ / Please provide a reason for rejection</p>
+            <Textarea
+              placeholder="เหตุผล / Reason..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setRejectConfirmOpen(false)} disabled={rejectMutation.isPending}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={rejectMutation.isPending || !rejectReason.trim()}
+              onClick={async () => {
+                try {
+                  await rejectMutation.mutateAsync({ kpiId, reason: rejectReason.trim() });
+                  toast.success(t("kpi.reject.success"));
+                  setRejectConfirmOpen(false);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+                }
+              }}
+            >
+              {rejectMutation.isPending ? "..." : t("kpi.reject.button")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Step 1: Signature */}
       <KpiSignatureDialog

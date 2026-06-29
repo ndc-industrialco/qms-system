@@ -36,6 +36,8 @@ export const KPI_MONTHLY_STEPS: StepConfig[] = [
 interface Props {
   signatures: KpiApprovalSignature[];
   preparerName?: string | null;
+  reviewerName?: string | null;
+  approverName?: string | null;
   /** "horizontal" (default in detail page) or "vertical" (sidebar panel) */
   layout?: "horizontal" | "vertical";
   /** Override the default 3-step config. Pass KPI_MONTHLY_STEPS for monthly reports. */
@@ -45,6 +47,8 @@ interface Props {
 export default function KpiApprovalTimeline({
   signatures,
   preparerName,
+  reviewerName,
+  approverName,
   layout = "vertical",
   steps = KPI_STEPS,
 }: Props) {
@@ -54,6 +58,13 @@ export default function KpiApprovalTimeline({
   const byStep = Object.fromEntries(
     signatures.map((s) => [s.step, s])
   ) as Partial<Record<ApprovalStep, KpiApprovalSignature>>;
+
+  const assignedName = (step: ApprovalStep): string | null => {
+    if (step === "PREPARER") return preparerName ?? null;
+    if (step === "REVIEWER") return reviewerName ?? null;
+    if (step === "APPROVER") return approverName ?? null;
+    return null;
+  };
 
   const actionLabel = (action: ApprovalAction) =>
     ({ APPROVED: t("dar.approval.actionApproved"), REJECTED: t("dar.approval.actionRejected"), PENDING: t("dar.approval.actionPending") })[action];
@@ -96,7 +107,7 @@ export default function KpiApprovalTimeline({
           const sig = byStep[step];
           const label = t(labelKey as never) ?? step;
           const action: ApprovalAction = sig?.action ?? "PENDING";
-          const userName = sig?.signerUser?.name ?? sig?.signerUser?.email ?? (step === "PREPARER" ? preparerName : null) ?? "—";
+          const userName = sig?.signerUser?.name ?? sig?.signerUser?.email ?? assignedName(step) ?? "—";
           const deptName = sig?.signerUser?.department?.name;
 
           return (
@@ -165,7 +176,7 @@ export default function KpiApprovalTimeline({
     <div className="flex flex-col">
       {steps.map(({ step, labelKey }, idx) => {
         const sig = byStep[step];
-        const isLast = idx === KPI_STEPS.length - 1;
+        const isLast = idx === steps.length - 1;
         const label = t(labelKey as never) ?? step;
 
         if (!sig) {
@@ -179,13 +190,13 @@ export default function KpiApprovalTimeline({
               </div>
               <div className="pb-6 flex-1 min-w-0 mt-2">
                 <span className="text-sm font-semibold text-slate-400">{label}</span>
-                <p className="text-xs text-slate-300 mt-0.5">{step === "PREPARER" && preparerName ? preparerName : "—"}</p>
+                <p className="text-xs text-slate-300 mt-0.5">{assignedName(step) ?? "—"}</p>
               </div>
             </div>
           );
         }
 
-        const userName = sig.signerUser?.name ?? sig.signerUser?.email ?? preparerName ?? "—";
+        const userName = sig.signerUser?.name ?? sig.signerUser?.email ?? assignedName(step) ?? "—";
         const deptName = sig.signerUser?.department?.name;
         const action = sig.action;
 

@@ -757,6 +757,7 @@
       "create": "Create Document",
       "edit": "Edit",
       "delete": "Delete",
+      "preview": "Preview",
       "download": "Download",
       "upload": "Upload File",
       "replace": "Replace File",
@@ -917,7 +918,8 @@
       "viewAll": "View all",
       "allDepartments": "All departments",
       "searchPlaceholder": "Filter departments...",
-      "documentsUnit": "documents"
+      "documentsUnit": "documents",
+      "emptySearch": "No departments found"
     },
     "announcements": {
       "title": "Announcements",
@@ -939,9 +941,27 @@
       "stripFailed": "Failed",
       "stripPending": "Pending",
       "stripInReview": "In Review",
+      "widgetTitle": "KPI Achievement",
       "widgetNoData": "No data",
       "widgetTotal": "total",
-      "widgetPending": "Pending"
+      "widgetPending": "Pending",
+      "viewAll": "View all",
+      "monthlyTitle": "KPI Monthly Status",
+      "noKpiWarning": "The following departments have no KPI set for",
+      "notSubmittedThisMonth": "Not yet submitted for",
+      "ngThisMonth": "KPI Not OK (NG) for",
+      "colDepartment": "Department",
+      "noApprovedKpi": "No departments with approved KPI in",
+      "statusDraft": "Not submitted",
+      "statusPendingReview": "Pending review",
+      "statusPendingApproval": "Pending approval",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "statusNoData": "No data",
+      "deptUnit": "dept(s)",
+      "viewKpi": "View KPI",
+      "monthlyWidgetTitle": "Monthly KPI Results —",
+      "widgetAllOk": "All departments passed"
     },
     "carWidget": {
       "production": "Production",
@@ -968,7 +988,9 @@
       "users": "Manage Users",
       "userAccounts": "User Accounts",
       "departments": "Departments",
-      "organization": "Organization"
+      "organization": "Organization",
+      "myCar": "View CAR",
+      "correctiveAction": "Corrective Actions"
     },
     "heroBanner": {
       "viewDetails": "View Details",

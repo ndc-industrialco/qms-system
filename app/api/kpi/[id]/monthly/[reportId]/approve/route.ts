@@ -5,7 +5,7 @@ import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth } from '@/lib/auth';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
-import { sendKpiMonthlyResultEmail } from '@/services/email';
+import { sendKpiMonthlyResultEmail, makeBilingualMail } from '@/services/email';
 
 const service = new KpiMonthlyService();
 
@@ -52,6 +52,18 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           {
             title: "KPI รายเดือนได้รับการอนุมัติ",
             body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
+            htmlBody: makeBilingualMail({
+              titleTh: `KPI รายเดือน ${detail.kpi.department} ได้รับการอนุมัติ`,
+              titleEn: `Monthly KPI ${detail.kpi.department} Approved`,
+              facts: [
+                { labelTh: "หน่วยงาน", labelEn: "Department", value: detail.kpi.department },
+                { labelTh: "รอบเดือน", labelEn: "Period", value: `${detail.month}/${detail.year}` },
+                { labelTh: "อนุมัติโดย", labelEn: "Approved By", value: session.user.name ?? '' },
+              ],
+              actionLabelTh: "ดู KPI รายเดือน",
+              actionLabelEn: "View Monthly KPI",
+              actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/monthly`,
+            }),
             module: "KPI",
             resourceId: reportId,
             resourceType: "KPI_MONTHLY",
@@ -63,7 +75,25 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
     NotificationService.notifyDeptMembers(
       detail.kpi.department,
       session.user.accessToken,
-      { title: 'KPI รายเดือนได้รับการอนุมัติ', body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`, module: 'KPI_MONTHLY', resourceId: reportId, resourceType: 'KPI_MONTHLY' },
+      {
+        title: 'KPI รายเดือนได้รับการอนุมัติ',
+        body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
+        htmlBody: makeBilingualMail({
+          titleTh: `KPI รายเดือน ${detail.kpi.department} ได้รับการอนุมัติ`,
+          titleEn: `Monthly KPI ${detail.kpi.department} Approved`,
+          facts: [
+            { labelTh: "หน่วยงาน", labelEn: "Department", value: detail.kpi.department },
+            { labelTh: "รอบเดือน", labelEn: "Period", value: `${detail.month}/${detail.year}` },
+            { labelTh: "อนุมัติโดย", labelEn: "Approved By", value: session.user.name ?? '' },
+          ],
+          actionLabelTh: "ดู KPI รายเดือน",
+          actionLabelEn: "View Monthly KPI",
+          actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/monthly`,
+        }),
+        module: 'KPI',
+        resourceId: reportId,
+        resourceType: 'KPI_MONTHLY',
+      },
     ).catch(() => {});
 
     return sendSuccess(updated, 'Monthly report approved successfully');

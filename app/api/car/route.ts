@@ -1,5 +1,5 @@
 import { ForbiddenError } from "@/errors/customErrors";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { sendSuccess } from "@/lib/apiResponse";
 import { carCreateSchema, carListQuerySchema } from "@/lib/validations/car";
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireAuth();
+    const session = await requireRole("QMS", "MR", "IT");
     const body = await req.json();
     const input = carCreateSchema.parse(body);
     const car = await carService.createCar(session.user.id, input, session.user.authUserId);

@@ -12,8 +12,8 @@ export const runtime = "nodejs";
 
 const { auth } = NextAuth(authConfig);
 
-const AUTH_LIMIT = { limit: 10, windowMs: 60_000 };
-const API_LIMIT = { limit: 60, windowMs: 60_000 };
+const AUTH_LIMIT = { limit: 60, windowMs: 60_000 };
+const API_LIMIT = { limit: 300, windowMs: 60_000 };
 
 const PUBLIC_PATHS = ["/auth/login", "/auth/error", "/unauthorized"];
 
@@ -68,6 +68,12 @@ export default auth(async (req) => {
   requestHeaders.set("x-request-id", requestId);
 
   if (path.startsWith("/api/")) {
+    // ponytail: /api/auth/session is a read-only JWT decode hit on every tab focus — no brute-force risk, skip rate limit
+    if (path === "/api/auth/session") {
+      logRequest(req.method, path, 200, ip, requestId, session?.user?.id);
+      return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId);
+    }
+
     const config = path.startsWith("/api/auth") ? AUTH_LIMIT : API_LIMIT;
     let rateLimitKey = `api:ip:${ip}:${path}`;
 

@@ -71,7 +71,7 @@ const createUserSchema = z.object({
   departmentCode: z.string().max(100).optional(),
   department: z.string().max(200).optional(),
   jobTitle: z.string().max(200).optional(),
-  initialPassword: z.string().min(5).max(128).optional(),
+  initialPassword: z.string().min(8).max(128).optional(),
   initialRole: z.enum(["USER", "QMS", "MR", "IT", "QMS_USER", "QMS_QMS", "QMS_MR", "QMS_IT"]).optional(),
 });
 
@@ -99,10 +99,13 @@ export async function POST(req: NextRequest) {
       initialPassword: parsed.initialPassword,
     }, { accessToken: session.user.accessToken });
 
-    // Optionally assign initial QMS role
+    // Optionally assign initial QMS role (best-effort; user is already created)
     if (parsed.initialRole) {
       const renamedRole = toRenamedQmsRole(normalizeQmsRole(parsed.initialRole));
-      await grantAuthCenterRole(created.id, renamedRole, { accessToken: session.user.accessToken });
+      await grantAuthCenterRole(created.id, renamedRole, { accessToken: session.user.accessToken })
+        .catch((e) => {
+          console.error(`[POST /api/it/users] Failed to grant role for ${created.id}:`, e);
+        });
     }
 
     return sendSuccess(

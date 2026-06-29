@@ -26,7 +26,9 @@ export async function POST(req: NextRequest) {
 
     const emailGroupMailsRaw = formData.get("emailGroupMails");
     const emailGroupMails: string[] = emailGroupMailsRaw
-      ? (JSON.parse(emailGroupMailsRaw as string) as string[]).filter(Boolean)
+      ? (JSON.parse(emailGroupMailsRaw as string) as string[]).filter(
+          (v): v is string => typeof v === "string" && v.includes("@")
+        )
       : [];
 
     const rawData = {
@@ -71,6 +73,7 @@ export async function POST(req: NextRequest) {
       session.user.name ?? null,
     );
 
+    logger.info("[announcements] debug", { emailGroupMails, hasToken: !!session.user.accessToken, createdByName: session.user.name, userId: session.user.id });
     if (emailGroupMails.length) {
       sendAnnouncementEmail({
         groupEmails: emailGroupMails,
@@ -79,7 +82,7 @@ export async function POST(req: NextRequest) {
         sourceSystem: validatedData.sourceSystem ?? "QMS",
         senderAccessToken: session.user.accessToken,
         announcementId: result.id,
-      }).catch((err: unknown) => logger.warn("[announcements] Email send failed", { err }));
+      }).catch((err: unknown) => logger.warn("[announcements] Email send failed", { err: err instanceof Error ? err.message : String(err) }));
     }
 
     return sendSuccess(result, "Announcement created successfully", 201);

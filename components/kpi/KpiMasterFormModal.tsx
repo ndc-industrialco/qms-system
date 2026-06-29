@@ -7,6 +7,7 @@ import { z } from "zod";
 import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
 import { createKpiSchema } from "@/schemas/kpiSchema";
 import { useCreateKpi, useUpdateKpi } from "@/hooks/api/use-kpi";
+import { useKpiDepts } from "@/hooks/api/use-kpi-depts";
 import { useT } from "@/lib/i18n";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -27,6 +28,7 @@ export function KpiMasterFormModal({ open, onOpenChange, kpi }: Props) {
   const t = useT();
   const createMutation = useCreateKpi();
   const updateMutation = useUpdateKpi();
+  const { data: kpiDepts } = useKpiDepts();
   const isEdit = !!kpi;
 
   const form = useForm<FormValues>({
@@ -89,7 +91,15 @@ export function KpiMasterFormModal({ open, onOpenChange, kpi }: Props) {
             </div>
             <div>
               <label className={labelBase}>{t("kpi.form.department")} <span className="text-rose-600">*</span></label>
-              <input className={inputBase} {...form.register("department")} />
+              <select className={inputBase} {...form.register("department")}>
+                <option value="">-- เลือกแผนก --</option>
+                {(kpiDepts ?? []).map(d => (
+                  <option key={d.id} value={d.name}>{d.name}</option>
+                ))}
+              </select>
+              {form.formState.errors.department && (
+                <p className="text-rose-500 text-xs mt-1">{form.formState.errors.department.message}</p>
+              )}
             </div>
           </div>
           <div>

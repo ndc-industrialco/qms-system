@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { AuditSessionPlanClient } from "@/components/audit/AuditSessionPlanClient";
 import type { Metadata } from "next";
@@ -11,8 +11,7 @@ export default async function AuditSessionPlanPage({
 }: {
   params: Promise<{ planId: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/auth/login");
+  const session = await requireAuth();
 
   const role = session.user.role;
   const isPrivileged = role === "QMS" || role === "IT" || role === "MR";

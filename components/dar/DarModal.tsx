@@ -62,6 +62,7 @@ export default function DarModal({ isOpen, onClose, requesterInfo }: Props) {
               tempId={tempId}
               departments={departments}
               requesterInfo={requesterInfo}
+              onClose={onClose}
             />
           )}
     </ResponsiveFormOverlay>

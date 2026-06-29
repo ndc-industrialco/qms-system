@@ -24,7 +24,7 @@ export default function HeroBanner({ announcements }: { announcements: Announcem
     if (announcements.length <= 1) return;
     const timer = setInterval(() => go((current + 1) % announcements.length), 7000);
     return () => clearInterval(timer);
-  });
+  }, [current, announcements.length]);
 
   const slide = announcements[current];
   const accent = slide ? (SOURCE_ACCENT[slide.sourceSystem] ?? "#38BDF8") : "#38BDF8";

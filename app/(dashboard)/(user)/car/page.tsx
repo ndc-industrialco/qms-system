@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { getAuthCenterMe, getAuthCenterUserProfile } from "@/lib/auth-center-admin-client";
 // ponytail: getAuthCenterMe still used when token is fresh; session.user.jobTitle is the stable fallback
 import { redirect } from "next/navigation";
@@ -18,8 +18,7 @@ export default async function UserCarListPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  const session = await requireAuth();
 
   const authDepartmentId = session.user.authDepartmentId ?? null;
   const hasScope = Boolean(authDepartmentId);

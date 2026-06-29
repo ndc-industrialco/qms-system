@@ -25,8 +25,19 @@ interface NotificationItem {
 
 function getActionPath(item: NotificationItem): string | null {
   if (item.module === "CAR")   return `/car/${item.resourceId}`;
-  if (item.module === "DAR")   return `/dar/${item.resourceId}`;
-  if (item.module === "KPI")   return `/qms/kpi/${item.resourceId}`;
+  if (item.module === "DAR") {
+    if (item.resourceType === "DAR_REVIEWER") return `/approve/dar/${item.resourceId}/reviewer`;
+    if (item.resourceType === "DAR_APPROVER") return `/approve/dar/${item.resourceId}/approver`;
+    return `/dar/${item.resourceId}`;
+  }
+  if (item.module === "KPI") {
+    if (item.resourceType === "KPI_REVIEWER") return `/approve/kpi/${item.resourceId}/reviewer`;
+    if (item.resourceType === "KPI_APPROVER") return `/approve/kpi/${item.resourceId}/approver`;
+    if (item.resourceType === "KPI_MONTHLY_REVIEWER") return `/approve/kpi/${item.resourceId}/reviewer?type=kpi-monthly`;
+    if (item.resourceType === "KPI_MONTHLY_APPROVER") return `/approve/kpi/${item.resourceId}/approver?type=kpi-monthly`;
+    if (item.resourceType === "KPI_MONTHLY") return `/qms/kpi/monthly`;
+    return `/qms/kpi/${item.resourceId}`;
+  }
   if (item.module === "AUDIT") {
     if (item.resourceType === "AUDIT_APPOINTMENT") {
       if (item.title.startsWith("Signature Required"))  return `/approve/audit/appointments/${item.resourceId}/reviewer`;
@@ -112,15 +123,7 @@ function HtmlFrame({ html, itemId }: { html: string; itemId: string }) {
   );
 }
 
-function NotificationDetail({
-  item,
-  onDelete,
-  deleting,
-}: {
-  item: NotificationItem;
-  onDelete: () => void;
-  deleting: boolean;
-}) {
+function NotificationDetail({ item }: { item: NotificationItem }) {
   const mod = getModuleMeta(item.module);
   const actionPath = getActionPath(item);
   const { thLine, enLine, rows } = parseBody(item.body);
@@ -132,26 +135,16 @@ function NotificationDetail({
       {/* Action bar */}
       <div className={cn("flex items-center justify-between gap-2 mb-3", hasHtml && "px-4 pt-4 sm:px-6 sm:pt-5")}>
         <p className="text-xs text-slate-400">{fullDate(item.createdAt)}</p>
-        <div className="flex items-center gap-2">
-          {actionPath && (
-            <Link
-              href={actionPath}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: mod.brand }}
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              เปิดรายการ
-            </Link>
-          )}
-          <button
-            onClick={onDelete}
-            disabled={deleting}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+        {actionPath && (
+          <Link
+            href={actionPath}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ background: mod.brand }}
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            ลบ
-          </button>
-        </div>
+            <ExternalLink className="h-3.5 w-3.5" />
+            เปิดรายการ
+          </Link>
+        )}
       </div>
 
       {/* HTML email template — fills full width, no extra border/wrapper */}
@@ -514,11 +507,7 @@ export default function NotificationsView() {
             </div>
           ) : (
             <div className={cn(selected.htmlBody ? "p-0" : "mx-auto max-w-2xl p-4 sm:p-6")}>
-              <NotificationDetail
-                item={selected}
-                onDelete={() => deleteOne.mutate(selected.id)}
-                deleting={deleteOne.isPending}
-              />
+              <NotificationDetail item={selected} />
             </div>
           )}
         </div>

@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
       session.user.role === "MR";
 
     const result = await svc.listPlans({
-      page: Number(sp.get("page") ?? 1),
-      limit: Number(sp.get("limit") ?? 20),
+      page: Math.max(1, parseInt(sp.get("page") ?? "1", 10) || 1),
+      limit: Math.min(100, Math.max(1, parseInt(sp.get("limit") ?? "20", 10) || 20)),
       auditType: (sp.get("auditType") as AuditType) || undefined,
       status: (sp.get("status") as AuditPlanStatus) || undefined,
       departmentId: sp.get("departmentId") || undefined,

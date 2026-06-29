@@ -207,7 +207,7 @@ export function useDarForm(
     signatureType: SignatureType,
     saveSignature: boolean,
     reviewer: ReviewerUser,
-  ): Promise<void> {
+  ): Promise<boolean> {
     setIsSubmitting(true);
     try {
       const values = getValues();
@@ -220,7 +220,7 @@ export function useDarForm(
           body: JSON.stringify({ ...buildBody(values, "SUBMIT"), tempAttachments }),
         });
         const json = await res.json();
-        if (!res.ok || json.error) { onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด")); return; }
+        if (!res.ok || json.error) { onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด")); return false; }
         darId = json.data.id as string;
       } else {
         const id = savedDarId ?? initialData!.id;
@@ -231,7 +231,7 @@ export function useDarForm(
         });
         const res = await fetch(`/api/dar/${id}/submit`, { method: "POST" });
         const json = await res.json();
-        if (!res.ok || json.error) { onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด")); return; }
+        if (!res.ok || json.error) { onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด")); return false; }
         darId = id;
       }
 
@@ -242,7 +242,7 @@ export function useDarForm(
       });
       const approveJson = await approveRes.json();
       if (!approveRes.ok || approveJson.error) {
-        onError(getErrorMessage(approveJson.error, "เกิดข้อผิดพลาดในการลงลายมือชื่อ")); return;
+        onError(getErrorMessage(approveJson.error, "เกิดข้อผิดพลาดในการลงลายมือชื่อ")); return false;
       }
 
       const assignRes = await fetch(`/api/dar/${darId}/assign-reviewer`, {
@@ -252,14 +252,16 @@ export function useDarForm(
       });
       const assignJson = await assignRes.json();
       if (!assignRes.ok || assignJson.error) {
-        onError(getErrorMessage(assignJson.error, "เกิดข้อผิดพลาดในการกำหนดผู้ตรวจสอบ")); return;
+        onError(getErrorMessage(assignJson.error, "เกิดข้อผิดพลาดในการกำหนดผู้ตรวจสอบ")); return false;
       }
 
       onSuccess("ส่งคำขอสำเร็จ");
-      router.push(`/dar/${darId}`);
       router.refresh();
+      router.push(`/dar/${darId}`);
+      return true;
     } catch {
       onError("เกิดข้อผิดพลาด กรุณาลองใหม่");
+      return false;
     } finally {
       setIsSubmitting(false);
     }

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = submitKpiObjectivesSchema.parse(await request.json());
     const updated = await service.submitObjectives(
       id,
-      { ...body, preparerAuthUserId: body.preparerAuthUserId ?? session.user.authUserId ?? null },
+      { ...body, preparerAuthUserId: session.user.authUserId ?? null },
       session.user.id,
       session.user.accessToken,
     );

@@ -1,4 +1,4 @@
-import { listAuthCenterUsers } from "@/lib/auth-center-admin-client";
+import { listAuthCenterUsers, listAuthCenterAppMembers, listAuthCenterRoleGrants } from "@/lib/auth-center-admin-client";
 import type { UserWithDept } from "@/types/user";
 import type { UserRole } from "@/generated/prisma/client";
 import { pickHighestQmsRole } from "@/lib/qms-roles";
@@ -6,26 +6,56 @@ import { pickHighestQmsRole } from "@/lib/qms-roles";
 export class UserService {
   /**
    * Return all users from Auth Center.
-   * No local User table — identity comes entirely from Auth Center.
+   * IT role: uses /consumer/users (full data including roles per user).
+   * QMS/MR role: uses /consumer/app-members + /consumer/role-grants (no IT permission needed).
    */
   async getAllUsers(accessToken?: string | null): Promise<UserWithDept[]> {
-    const authUsers = await listAuthCenterUsers({ accessToken });
-    return authUsers
-      .filter((u) => u.id)
-      .map((u) => ({
-        id: u.id,
-        authUserId: u.id,
-        name: u.displayName ?? null,
-        email: u.email ?? null,
-        employeeId: u.employeeId ?? null,
-        position: u.jobTitle ?? null,
-        role: pickHighestQmsRole(u.roles) as UserRole,
-        msUserId: null,
-        department: u.department
-          ? { id: u.department, name: u.department, authDepartmentId: u.department }
-          : null,
-        createdAt: new Date().toISOString(),
-      }));
+    // Try IT-only endpoint first; fall back to app-members + role-grants for QMS/MR callers
+    try {
+      const authUsers = await listAuthCenterUsers({ accessToken });
+      return authUsers
+        .filter((u) => u.id)
+        .map((u) => ({
+          id: u.id,
+          authUserId: u.id,
+          name: u.displayName ?? null,
+          email: u.email ?? null,
+          employeeId: u.employeeId ?? null,
+          position: u.jobTitle ?? null,
+          role: pickHighestQmsRole(u.roles) as UserRole,
+          msUserId: null,
+          department: u.department
+            ? { id: u.department, name: u.department, authDepartmentId: u.department }
+            : null,
+          createdAt: new Date().toISOString(),
+        }));
+    } catch {
+      // QMS/MR callers: merge app-members (identity) with role-grants (roles)
+      const [members, grants] = await Promise.all([
+        listAuthCenterAppMembers({ accessToken }),
+        listAuthCenterRoleGrants({ accessToken }),
+      ]);
+      const rolesByUser = new Map<string, string[]>();
+      for (const g of grants) {
+        const list = rolesByUser.get(g.userId) ?? [];
+        list.push(g.role);
+        rolesByUser.set(g.userId, list);
+      }
+      return members
+        .filter((m) => m.id)
+        .map((m) => ({
+          id: m.id,
+          authUserId: m.id,
+          name: m.displayName ?? null,
+          email: m.email ?? null,
+          employeeId: m.employeeId ?? null,
+          position: null,
+          role: pickHighestQmsRole(rolesByUser.get(m.id) ?? []) as UserRole,
+          msUserId: null,
+          department: null,
+          createdAt: new Date().toISOString(),
+        }));
+    }
   }
 
   /**

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useUrlFilters } from "@/hooks/use-url-filters";
-import { useKpiList } from "@/hooks/api/use-kpi";
+import { useQuery } from "@tanstack/react-query";
 import { useKpiMonthlyList } from "@/hooks/api/use-kpi-monthly";
 import { KpiMonthlyTable } from "@/components/kpi/KpiMonthlyTable";
 import KpiMonthlyDetailModal from "@/components/kpi/KpiMonthlyDetailModal";
@@ -11,18 +11,56 @@ import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  ArrowLeft, Building2, CalendarDays, CheckCircle2, ChevronRight,
-  Clock, FileText, Info, ShieldCheck, XCircle,
+  ArrowLeft, Building2, Info, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
+const MONTHS_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."] as const;
+const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
 const STATUSES = ["DRAFT", "PENDING_REVIEW", "PENDING_APPROVAL", "APPROVED", "REJECTED"] as const;
 
+type MonthlyStatus = typeof STATUSES[number];
 type UserRole = "USER" | "IT" | "QMS" | "MR";
 const PRIVILEGED_ROLES: UserRole[] = ["IT", "QMS", "MR"];
 function isPrivileged(role: UserRole): boolean {
   return PRIVILEGED_ROLES.includes(role);
+}
+
+// dot color per status
+const DOT_COLOR: Record<MonthlyStatus, string> = {
+  DRAFT:            "bg-amber-400",
+  PENDING_REVIEW:   "bg-sky-400",
+  PENDING_APPROVAL: "bg-violet-500",
+  APPROVED:         "bg-emerald-500",
+  REJECTED:         "bg-rose-500",
+};
+const DOT_LABEL: Record<MonthlyStatus, string> = {
+  DRAFT:            "ยังไม่ส่ง",
+  PENDING_REVIEW:   "รออนุมัติ",
+  PENDING_APPROVAL: "รออนุมัติขั้นสุดท้าย",
+  APPROVED:         "อนุมัติแล้ว",
+  REJECTED:         "ถูกปฏิเสธ",
+};
+
+interface MonthEntry { id: string; status: MonthlyStatus }
+interface DeptSummaryRow {
+  id: string;
+  department: string;
+  yearly: number;
+  objectiveCount: number;
+  months: Record<string, MonthEntry | null>;
+}
+
+function useKpiMonthlySummary(year: number) {
+  return useQuery<DeptSummaryRow[]>({
+    queryKey: ["kpiMonthlySummary", year],
+    queryFn: async () => {
+      const res = await fetch(`/api/kpi/monthly-summary?year=${year}`);
+      if (!res.ok) throw new Error("Failed to load summary");
+      const json = await res.json();
+      return json.data ?? [];
+    },
+  });
 }
 
 interface Props {
@@ -30,30 +68,13 @@ interface Props {
   userId?: string;
 }
 
-type KpiDepartmentRow = {
-  id: string;
-  department: string;
-  yearly: number;
-  status: "DRAFT" | "PENDING_REVIEW" | "APPROVED" | "REJECTED";
-  objectives?: unknown[];
-};
-
-const KPI_STATUS_CONFIG: Record<KpiDepartmentRow["status"], { style: string; icon: React.ElementType | null; dot: string }> = {
-  DRAFT:          { style: "bg-slate-50 text-slate-500 border-slate-200",   icon: null,         dot: "bg-slate-400"  },
-  PENDING_REVIEW: { style: "bg-amber-50 text-amber-600 border-amber-200",   icon: Clock,        dot: "bg-amber-400"  },
-  APPROVED:       { style: "bg-emerald-50 text-emerald-600 border-emerald-200", icon: CheckCircle2, dot: "bg-emerald-500" },
-  REJECTED:       { style: "bg-rose-50 text-rose-600 border-rose-200",      icon: XCircle,      dot: "bg-rose-500"   },
-};
-
 function RoleBanner({ role }: { role: UserRole }) {
   const t = useT();
   const privileged = isPrivileged(role);
   return (
     <div className={cn(
       "flex items-start gap-3 rounded-xl border px-4 py-3",
-      privileged
-        ? "border-emerald-200 bg-emerald-50"
-        : "border-sky-200 bg-sky-50"
+      privileged ? "border-emerald-200 bg-emerald-50" : "border-sky-200 bg-sky-50"
     )}>
       {privileged
         ? <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
@@ -69,28 +90,52 @@ function RoleBanner({ role }: { role: UserRole }) {
   );
 }
 
-function DepartmentSkeleton() {
+function StatusLegend() {
   return (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="h-18 animate-pulse rounded-2xl bg-slate-100" />
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1 pt-1">
+      {(Object.keys(DOT_LABEL) as MonthlyStatus[]).map((s) => (
+        <div key={s} className="flex items-center gap-1.5">
+          <span className={cn("inline-block h-2.5 w-2.5 rounded-full", DOT_COLOR[s])} />
+          <span className="text-xs text-slate-500">{DOT_LABEL[s]}</span>
+        </div>
+      ))}
+      <div className="flex items-center gap-1.5">
+        <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-200" />
+        <span className="text-xs text-slate-400">ไม่มีข้อมูล</span>
+      </div>
+    </div>
+  );
+}
+
+function DeptDashboardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 border-b border-slate-50 px-5 py-4 last:border-0">
+          <div className="h-4 w-36 animate-pulse rounded-full bg-slate-100" />
+          <div className="flex flex-1 gap-2">
+            {Array.from({ length: 12 }).map((_, j) => (
+              <div key={j} className="h-3 w-3 animate-pulse rounded-full bg-slate-100" />
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   );
 }
 
-function KpiDepartmentList({
+function DeptDashboard({
   data,
   isLoading,
   onSelect,
+  onDotClick,
 }: {
-  data: KpiDepartmentRow[];
+  data: DeptSummaryRow[];
   isLoading: boolean;
   onSelect: (kpiId: string) => void;
+  onDotClick: (kpiId: string, reportId: string) => void;
 }) {
-  const t = useT();
-
-  if (isLoading) return <DepartmentSkeleton />;
+  if (isLoading) return <DeptDashboardSkeleton />;
 
   if (data.length === 0) {
     return (
@@ -98,114 +143,78 @@ function KpiDepartmentList({
         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50">
           <Building2 className="h-6 w-6 text-slate-400" />
         </div>
-        <p className="text-sm font-semibold text-slate-700">{t("common.noData")}</p>
-        <p className="mt-1 text-xs text-slate-400">{t("kpi.monthly.table.empty")}</p>
+        <p className="text-sm font-semibold text-slate-700">ไม่มีข้อมูล</p>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] lg:block">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-100">
-              <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
-                {t("kpi.monthly.table.department")}
-              </th>
-              <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
-                {t("kpi.monthly.table.objectives")}
-              </th>
-              <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
-                {t("kpi.monthly.table.month")}
-              </th>
-              <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
-                {t("kpi.monthly.table.status")}
-              </th>
-              <th className="w-8 px-5 py-3" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {data.map((kpi) => {
-              const cfg = KPI_STATUS_CONFIG[kpi.status];
-              const Icon = cfg.icon;
-              return (
-                <tr
-                  key={kpi.id}
-                  className="cursor-pointer transition-colors hover:bg-slate-50/70"
-                  onClick={() => onSelect(kpi.id)}
-                >
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className={cn("h-2 w-2 shrink-0 rounded-full", cfg.dot)} />
-                      <span className="text-sm font-semibold text-slate-800">{kpi.department}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 text-center">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-                      <FileText className="h-3 w-3" />
-                      {kpi.objectives?.length ?? 0}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-center">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-600">
-                      <CalendarDays className="h-3 w-3" />
-                      12
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-center">
-                    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium", cfg.style)}>
-                      {Icon && <Icon className="h-3 w-3" />}
-                      {t(`kpi.monthly.status.${kpi.status}` as Parameters<typeof t>[0])}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-right">
-                    <ChevronRight className="inline-block h-4 w-4 text-slate-300" />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      {/* header row */}
+      <div className="flex items-center border-b border-slate-100 bg-slate-50/60 px-5 py-2.5">
+        <div className="w-44 shrink-0 text-xs font-semibold uppercase tracking-wider text-slate-400">แผนก</div>
+        <div className="grid flex-1 grid-cols-12 gap-1">
+          {MONTHS_TH.map((m) => (
+            <div key={m} className="text-center text-[10px] font-semibold text-slate-400">{m}</div>
+          ))}
+        </div>
       </div>
 
-      {/* Mobile cards */}
-      <div className="space-y-2.5 lg:hidden">
-        {data.map((kpi) => {
-          const cfg = KPI_STATUS_CONFIG[kpi.status];
-          const Icon = cfg.icon;
-          return (
-            <button
-              key={kpi.id}
-              type="button"
-              className="w-full rounded-2xl border border-slate-100 bg-white p-4 text-left shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-colors hover:bg-slate-50"
-              onClick={() => onSelect(kpi.id)}
-            >
-              <div className="mb-2.5 flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <div className={cn("h-2 w-2 shrink-0 rounded-full", cfg.dot)} />
-                  <p className="truncate text-sm font-semibold text-slate-800">{kpi.department}</p>
+      {/* dept rows */}
+      {data.map((row, idx) => (
+        <div
+          key={row.id}
+          className={cn(
+            "flex items-center px-5 py-3.5 transition-colors hover:bg-slate-50/70",
+            idx !== data.length - 1 && "border-b border-slate-50"
+          )}
+        >
+          <button
+            className="w-44 shrink-0 text-left"
+            onClick={() => onSelect(row.id)}
+          >
+            <span className="text-sm font-semibold text-slate-800 hover:text-primary hover:underline transition-colors">
+              {row.department}
+            </span>
+          </button>
+
+          <div className="grid flex-1 grid-cols-12 gap-1">
+            {MONTHS_EN.map((month, i) => {
+              const entry = row.months[month] ?? null;
+              if (!entry) {
+                return (
+                  <div key={month} className="flex justify-center">
+                    <span
+                      title={`${MONTHS_TH[i]} — ไม่มีข้อมูล`}
+                      className="h-3 w-3 rounded-full bg-slate-200"
+                    />
+                  </div>
+                );
+              }
+              const color = DOT_COLOR[entry.status as MonthlyStatus] ?? "bg-slate-300";
+              return (
+                <div key={month} className="flex justify-center">
+                  <button
+                    type="button"
+                    title={`${MONTHS_TH[i]} — ${DOT_LABEL[entry.status as MonthlyStatus] ?? entry.status}`}
+                    className={cn(
+                      "h-3 w-3 rounded-full transition-transform hover:scale-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      color
+                    )}
+                    onClick={() => onDotClick(row.id, entry.id)}
+                  />
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
-                  <FileText className="h-3 w-3" />{kpi.objectives?.length ?? 0}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 font-medium text-sky-600">
-                  <CalendarDays className="h-3 w-3" />12
-                </span>
-                <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-medium", cfg.style)}>
-                  {Icon && <Icon className="h-3 w-3" />}
-                  {t(`kpi.monthly.status.${kpi.status}` as Parameters<typeof t>[0])}
-                </span>
-              </div>
-            </button>
-          );
-        })}
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      {/* legend */}
+      <div className="border-t border-slate-100 bg-slate-50/40 px-5 py-3">
+        <StatusLegend />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -215,19 +224,19 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
   const privileged = isPrivileged(userRole);
 
   const { params, setParam, setParams } = useUrlFilters({
-    keys: ["mKpi", "mYear", "mMonth", "mDept", "mStatus", "mPage", "mReport"],
+    keys: ["mKpi", "mYear", "mMonth", "mStatus", "mPage", "mReport"],
   });
 
   const year = Number(params.mYear) || currentYear;
-  const month = (params.mMonth as (typeof MONTHS)[number]) || undefined;
-  const status = (params.mStatus as (typeof STATUSES)[number]) || undefined;
+  const month = params.mMonth || undefined;
+  const status = params.mStatus || undefined;
   const page = Number(params.mPage) || 1;
 
-  const kpiListQuery = useKpiList({ yearly: year, department: privileged ? params.mDept : undefined });
-  const kpis = (kpiListQuery.data?.data ?? []) as KpiDepartmentRow[];
+  const summaryQuery = useKpiMonthlySummary(year);
+  const summary = summaryQuery.data ?? [];
 
   const selectedKpiId = params.mKpi || null;
-  const selectedKpi = selectedKpiId ? kpis.find((k) => k.id === selectedKpiId) : null;
+  const selectedKpi = selectedKpiId ? summary.find((k) => k.id === selectedKpiId) : null;
 
   const { data, isLoading } = useKpiMonthlyList(selectedKpiId ?? "", {
     page, limit: 12, year, month, status,
@@ -252,10 +261,17 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
     setParams({ mKpi: kpiId, mPage: "", mReport: "" });
   }
 
-  function handleBackToDepartments() {
+  function handleBack() {
     setParams({ mKpi: "", mMonth: "", mStatus: "", mPage: "", mReport: "" });
     setModalOpen(false);
     setSelectedReportId(null);
+  }
+
+  function handleDotClick(kpiId: string, reportId: string) {
+    setSelectedReportId(reportId);
+    setModalOpen(true);
+    // also set kpiId so modal has context
+    if (selectedKpiId !== kpiId) setParam("mKpi", kpiId);
   }
 
   return (
@@ -264,14 +280,14 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
 
       <RoleBanner role={userRole} />
 
-      {/* Filter / Toolbar */}
+      {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2.5 rounded-2xl border border-slate-100 bg-white px-5 py-3.5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         {selectedKpiId && (
           <Button
             variant="outline"
             size="sm"
             className="rounded-xl border-slate-200 text-slate-600"
-            onClick={handleBackToDepartments}
+            onClick={handleBack}
           >
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
             {t("common.back")}
@@ -285,7 +301,6 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
           </div>
         )}
 
-        {/* Year selector */}
         <Select value={String(year)} onValueChange={handleYearChange}>
           <SelectTrigger className="h-9 w-28 rounded-xl border-slate-200 bg-slate-50/50 text-sm">
             <SelectValue />
@@ -299,7 +314,6 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
 
         {selectedKpiId && (
           <>
-            {/* Month filter */}
             <Select
               value={params.mMonth ?? "all"}
               onValueChange={(v) => setParam("mMonth", v === "all" ? "" : v)}
@@ -309,11 +323,10 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("kpi.monthly.filter.allMonths")}</SelectItem>
-                {MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                {MONTHS_EN.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
 
-            {/* Status filter */}
             <Select
               value={params.mStatus ?? "all"}
               onValueChange={(v) => setParam("mStatus", v === "all" ? "" : v)}
@@ -330,7 +343,6 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
                 ))}
               </SelectContent>
             </Select>
-
           </>
         )}
       </div>
@@ -348,22 +360,22 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
           }}
         />
       ) : (
-        <KpiDepartmentList
-          data={kpis}
-          isLoading={kpiListQuery.isLoading}
+        <DeptDashboard
+          data={summary}
+          isLoading={summaryQuery.isLoading}
           onSelect={handleSelectKpi}
+          onDotClick={handleDotClick}
         />
       )}
 
       <KpiMonthlyDetailModal
-        kpiId={selectedKpiId}
+        kpiId={selectedKpiId ?? (selectedReportId ? (summary.find(k => Object.values(k.months).some(m => m?.id === selectedReportId))?.id ?? null) : null)}
         reportId={modalOpen ? selectedReportId : null}
         open={modalOpen}
         onOpenChange={setModalOpen}
         userRole={userRole}
         userId={userId}
       />
-
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ForbiddenError, NotFoundError } from "@/lib/errors";
 import { AuditSessionPlanRepository } from "@/repositories/audit/auditSessionPlanRepository";
+import { AuditService } from "@/services/auditService";
+import { db } from "@/lib/db";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 
@@ -70,7 +72,21 @@ export async function PUT(
 
     const body = putSchema.parse(await req.json());
 
-    const plan = await repo.saveById(planId, body, existing);
+    const plan = await db.$transaction(async (tx) => {
+      const saved = await repo.saveById(planId, body, existing, tx);
+      await AuditService.record({
+        actorUserId: session.user.id,
+        actorAuthUserId: session.user.authUserId,
+        actorRole: session.user.role,
+        action: "UPDATE",
+        resourceType: "AUDIT_SCHEDULE",
+        resourceId: planId,
+        before: { reviseNo: existing.reviseNo },
+        after: { reviseNo: body.reviseNo },
+      }, tx);
+      return saved;
+    });
+
     return sendSuccess(plan, "Session plan saved");
   } catch (err) {
     return handleApiError(err);

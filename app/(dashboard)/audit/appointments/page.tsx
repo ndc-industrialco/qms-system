@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
 import PageHeader from "@/components/common/PageHeader";
 import { AuditAppointmentService } from "@/services/audit/auditAppointmentService";
 import AuditAppointmentsPageClient from "./AuditAppointmentsPageClient";
@@ -10,8 +9,7 @@ export const metadata: Metadata = { title: "ประกาศแต่งตั
 const svc = new AuditAppointmentService();
 
 export default async function AuditAppointmentsPage() {
-  const session = await auth();
-  if (!session) redirect("/auth/login");
+  const session = await requireAuth();
 
   const role = session.user.role;
   const canCreate = role === "QMS" || role === "IT" || role === "MR";

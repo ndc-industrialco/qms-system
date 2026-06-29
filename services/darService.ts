@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 import { AuditService } from "@/services/auditService";
 import { NotificationService } from "@/services/notificationService";
 import { DarRepository } from "@/repositories/darRepository";
+import { DepartmentCodeRepository } from "@/repositories/departmentCodeRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 import { DepartmentRepository } from "@/repositories/departmentRepository";
@@ -14,6 +15,7 @@ import { getFileInfo } from "@/lib/sharepoint";
 import type { DarDetail, DarSummary, CreateDarInput, DarApprovalRow, ReviewerCandidate, DarAttachmentRow, TempAttachmentInput } from "@/types/dar";
 import { Prisma, type DarStatus, type SignatureType } from "@/generated/prisma/client";
 import { redis } from "@/lib/redis";
+import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
 
 type DarDetailRaw = NonNullable<Awaited<ReturnType<DarRepository["findDetailById"]>>>;
 type DarApprovalRaw = DarDetailRaw["approvals"][number];
@@ -23,6 +25,7 @@ type ApproveDarInput = {
   signatureType: SignatureType;
   saveSignature: boolean;
   comment: string | null;
+  targetAuthUserId?: string | null; // MR (from REVIEWER step) or QMS (from APPROVER_MR step)
   qmsProcessing?: {
     chkHasAttachment: boolean;
     chkPrintAndValidate: boolean;
@@ -61,6 +64,7 @@ export class DarService {
   private configRepo = new SystemConfigRepository();
   private userPrefRepo = new UserPreferenceRepository();
   private deptRepo = new DepartmentRepository();
+  private deptCodeRepo = new DepartmentCodeRepository();
 
   /**
    * Resolve a designated user (MR or QMS) for approval routing.
@@ -70,6 +74,7 @@ export class DarService {
     authConfigKey: string,
     localConfigKey: string,
     fallbackRole?: string,
+    accessToken?: string | null,
   ): Promise<{ authUserId: string } | null> {
     const authUserKey = await this.configRepo.findValueByKey(authConfigKey);
     if (authUserKey) return { authUserId: authUserKey };
@@ -80,7 +85,7 @@ export class DarService {
     if (fallbackRole) {
       try {
         const { listAuthCenterRoleGrants } = await import("@/lib/auth-center-admin-client");
-        const grants = await listAuthCenterRoleGrants();
+        const grants = await listAuthCenterRoleGrants({ accessToken });
         const match = grants.find((g) => g.role === fallbackRole);
         if (match) return { authUserId: match.userId };
       } catch (err) {
@@ -441,20 +446,28 @@ export class DarService {
     return detail!;
   }
 
-  private async generateDarNo(year: number, tx: Prisma.TransactionClient): Promise<string> {
-    const prefix = `DAR-${year}-`;
-    const likePattern = `${prefix}%`;
-    const startPos = prefix.length + 1;
-    const existing = await tx.$queryRaw<{ seq: number }[]>`
-      SELECT CAST(SUBSTRING("darNo" FROM ${startPos}) AS INTEGER) AS seq
+  private async generateDarNo(deptCode: string, tx: Prisma.TransactionClient): Promise<string> {
+    const format = await getDocNoFormat("DAR");
+    const year = new Date().getFullYear();
+    const { likePrefix, pad } = buildLikePrefix(format, { dept: deptCode, year });
+    // ponytail: two-arg advisory lock avoids hashtext 32-bit collision; serializes concurrent submits per prefix
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(1984512301, hashtext(${`dar_no_gen_${likePrefix}`}))`;
+    const escPrefix = likePrefix.replace(/[$()*+.[\\\]^{|}?]/g, "\\$&");
+    const regexPattern = `^${escPrefix}[0-9]+$`;
+    const startPos = likePrefix.length + 1;
+    const rows = await tx.$queryRaw<{ next_seq: number }[]>`
+      SELECT COALESCE(MAX(
+        CASE WHEN "darNo" ~ ${regexPattern}
+          THEN CAST(SUBSTR("darNo", ${startPos}) AS INTEGER)
+          ELSE 0 END
+      ), 0) + 1 AS next_seq
       FROM "DarMaster"
-      WHERE "darNo" LIKE ${likePattern}
-      ORDER BY seq
+      WHERE "darNo" LIKE ${`${likePrefix}%`}
     `;
-    const used = new Set(existing.map((r) => r.seq));
-    let next = 1;
-    while (used.has(next)) next++;
-    return `${prefix}${String(next).padStart(4, "0")}`;
+    const next = rows[0]?.next_seq ?? 1;
+    const darNo = renderDocNo(format, { dept: deptCode, year, seq: next });
+    logger.info(`[generateDarNo] format=${format} dept=${deptCode} prefix=${likePrefix} next=${next} result=${darNo}`);
+    return darNo;
   }
 
   async submitDar(id: string, actor: ActorIdentity): Promise<DarDetail> {
@@ -463,60 +476,69 @@ export class DarService {
 
     if (!existing) throw new NotFoundError("DAR");
     const submitAuthId = (existing as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
-    const isSubmitOwner = (actor.authUserId && submitAuthId) ? submitAuthId === actor.authUserId : existing.requesterId === requesterId;
+    // ponytail: match either authUserId or legacy local requesterId — old DARs may have null requesterAuthUserId
+    const isSubmitOwner =
+      (actor.authUserId && submitAuthId && submitAuthId === actor.authUserId) ||
+      existing.requesterId === actor.userId ||
+      existing.requesterId === actor.authUserId;
     if (!isSubmitOwner) throw new ForbiddenError();
     if (existing.status !== "DRAFT") throw new ValidationError("Only DRAFT requests can be submitted");
 
-    const year = new Date().getFullYear();
+    const authDeptId = (existing as Record<string, unknown>).authDepartmentId as string | null | undefined;
+    const deptCodeRow = authDeptId ? await this.deptCodeRepo.findByAuthDeptId(authDeptId) : null;
+    const deptCode = deptCodeRow?.code ?? "GEN";
 
-    await db.$transaction(async (tx) => {
-      const requester = await this.getIdentitySnapshot(requesterId, tx);
-      const darNo = existing.darNo || await this.generateDarNo(year, tx);
-      await this.darRepo.update(id, { status: "PENDING_REVIEW" as DarStatus, darNo, requesterAuthUserId: actor.authUserId ?? null }, tx);
-      await this.darRepo.deleteApprovalsByDarId(id, tx);
-      await this.approvalSignatureRepo.deleteByDocument("DAR", id, tx);
-      await this.darRepo.createApproval(
-        {
-          stepRole: "PREPARER",
-          action: "PENDING",
-          assignedUserId: requesterId,
-          assignedAuthUserId: actor.authUserId ?? null,
-          assignedUserName: requester?.name ?? null,
-          assignedEmployeeId: requester?.employeeId ?? null,
-          assignedDepartmentName: requester?.department?.name ?? null,
-          darMasterId: id,
-        },
-        tx
-      );
-      await this.approvalSignatureRepo.upsertStep(
-        {
-          module: "DAR",
-          documentId: id,
-          step: "PREPARER",
-          signerUserId: requesterId,
-          signerAuthUserId: actor.authUserId ?? null,
-          signerName: requester?.name ?? null,
-          signerEmail: requester?.email ?? null,
-          signerDepartmentName: requester?.department?.name ?? null,
-          action: "PENDING",
-        },
-        tx
-      );
-    });
-
-    const detail = await this.fetchDarDetail(id);
-
-    // Notify all members of requester's department
-    const darAuthDeptId = (existing as Record<string, unknown>).authDepartmentId as string | null | undefined;
-    if (darAuthDeptId && actor.accessToken) {
-      NotificationService.notifyDeptMembers(
-        darAuthDeptId,
-        actor.accessToken,
-        { title: 'DAR ถูกส่งเพื่อขออนุมัติ', body: `DAR ${detail?.darNo ?? id} ถูกส่งเพื่อขออนุมัติ`, module: 'DAR', resourceId: id, resourceType: 'DAR' },
-      ).catch(() => {});
+    // ponytail: retry on darNo unique conflict — concurrent submits can race past advisory lock
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        await db.$transaction(async (tx) => {
+          const requester = await this.getIdentitySnapshot(requesterId, tx);
+          // ponytail: reuse existing darNo on resubmit after reject — avoids re-sequencing
+          const darNo = (existing as Record<string, unknown>).darNo as string | null ?? await this.generateDarNo(deptCode, tx);
+          await this.darRepo.update(id, { status: "PENDING_REVIEW" as DarStatus, darNo, requesterAuthUserId: actor.authUserId ?? null }, tx);
+          await this.darRepo.deleteApprovalsByDarId(id, tx);
+          await this.approvalSignatureRepo.deleteByDocument("DAR", id, tx);
+          await this.darRepo.createApproval(
+            {
+              stepRole: "PREPARER",
+              action: "PENDING",
+              assignedUserId: requesterId,
+              assignedAuthUserId: actor.authUserId ?? null,
+              assignedUserName: requester?.name ?? null,
+              assignedEmployeeId: requester?.employeeId ?? null,
+              assignedDepartmentName: requester?.department?.name ?? null,
+              darMasterId: id,
+            },
+            tx
+          );
+          await this.approvalSignatureRepo.upsertStep(
+            {
+              module: "DAR",
+              documentId: id,
+              step: "PREPARER",
+              signerUserId: requesterId,
+              signerAuthUserId: actor.authUserId ?? null,
+              signerName: requester?.name ?? null,
+              signerEmail: requester?.email ?? null,
+              signerDepartmentName: requester?.department?.name ?? null,
+              action: "PENDING",
+            },
+            tx
+          );
+        });
+        break; // success
+      } catch (err: unknown) {
+        const isUniqueConflict =
+          err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002";
+        if (!isUniqueConflict || attempt === 4) throw err;
+        logger.warn(`[submitDar] darNo unique conflict on attempt ${attempt}, retrying in ${100 * (attempt + 1)}ms`);
+        await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
+      }
     }
 
-    return detail!;
+    const detail = await this.fetchDarDetail(id);
+    if (!detail) throw new NotFoundError("DAR");
+    return detail;
   }
 
   async assignReviewer(darId: string, requester: ActorIdentity, reviewerUserId: string): Promise<DarDetail> {
@@ -524,11 +546,12 @@ export class DarService {
     const dar = await this.darRepo.findById(darId);
 
     if (!dar) throw new NotFoundError("DAR");
-    // Prefer authUserId check when both sides populated
     const darAuthUserId = (dar as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
-    const isOwner = (requester.authUserId && darAuthUserId)
-      ? darAuthUserId === requester.authUserId
-      : dar.requesterId === requesterId;
+    // ponytail: match either authUserId or legacy local requesterId
+    const isOwner =
+      (requester.authUserId && darAuthUserId && darAuthUserId === requester.authUserId) ||
+      dar.requesterId === requester.userId ||
+      dar.requesterId === requester.authUserId;
     if (!isOwner) throw new ForbiddenError();
     if (dar.status !== "PENDING_REVIEW") throw new ValidationError("DAR must be in PENDING_REVIEW status");
 
@@ -611,17 +634,24 @@ export class DarService {
     let mrUser: { authUserId: string } | null = null;
     let qmsUser: { authUserId: string } | null = null;
     if (createMrStep) {
-      mrUser = await this.resolveDesignatedUser("CURRENT_MR_AUTH_USER_ID", "CURRENT_MR_USER_ID", "QMS_MR");
-      // If MR config not set but actor IS the MR (same person is reviewer + MR), use actor directly
-      if (!mrUser && actor.authUserId) mrUser = { authUserId: actor.authUserId };
-      if (!mrUser) throw new AppError("MR user is not configured. Please contact QMS/IT administrator.", 400, "MR_NOT_CONFIGURED");
+      if (input.targetAuthUserId) {
+        mrUser = { authUserId: input.targetAuthUserId };
+      } else {
+        mrUser = await this.resolveDesignatedUser("CURRENT_MR_AUTH_USER_ID", "CURRENT_MR_USER_ID", "QMS_MR", actor.accessToken);
+      }
+      if (!mrUser) throw new AppError("MR user is not configured. Please select an MR user.", 400, "MR_NOT_CONFIGURED");
     }
     if (myStep.stepRole === "APPROVER_MR") {
-      qmsUser = await this.resolveDesignatedUser(
-        "CURRENT_QMS_AUTH_USER_ID",
-        "CURRENT_QMS_USER_ID",
-        "QMS_QMS",
-      );
+      if (input.targetAuthUserId) {
+        qmsUser = { authUserId: input.targetAuthUserId };
+      } else {
+        qmsUser = await this.resolveDesignatedUser(
+          "CURRENT_QMS_AUTH_USER_ID",
+          "CURRENT_QMS_USER_ID",
+          "QMS_QMS",
+          actor.accessToken,
+        );
+      }
       if (!qmsUser) throw new AppError("QMS signer is not configured in the system", 400, "QMS_NOT_CONFIGURED");
     }
 
@@ -881,10 +911,6 @@ export class DarService {
     if (!isPrivileged && dar.status !== "DRAFT") throw new ValidationError("Only DRAFT DAR can be deleted");
 
     const attachments = await this.darRepo.findAttachmentsByDarId(id);
-    if (attachments.length > 0) {
-      const { deleteSpItem } = await import("@/services/sharepoint");
-      await Promise.allSettled(attachments.map((a) => deleteSpItem(a.spItemId)));
-    }
 
     await db.$transaction(async (tx) => {
       await this.darRepo.deleteApprovalsByDarId(id, tx);
@@ -904,6 +930,11 @@ export class DarService {
         before: { status: dar.status, darNo: dar.darNo },
       }, tx);
     });
+
+    if (attachments.length > 0) {
+      const { deleteSpItem } = await import("@/services/sharepoint");
+      await Promise.allSettled(attachments.map((a) => deleteSpItem(a.spItemId)));
+    }
   }
 
   async getSavedSignature(authUserId: string): Promise<{ url: string; type: SignatureType } | null> {

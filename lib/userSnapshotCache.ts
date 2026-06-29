@@ -1,7 +1,7 @@
 import { redis } from "@/lib/redis";
 
 const CACHE_PREFIX = "user:snapshot:";
-const CACHE_TTL_SEC = 28800; // 8 hours — matches Auth Center session TTL
+const CACHE_TTL_SEC = 2592000; // 30 days
 
 export type UserSnapshot = {
   authUserId: string;

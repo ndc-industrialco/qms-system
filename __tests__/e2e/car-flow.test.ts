@@ -158,7 +158,7 @@ describe("CAR flow — happy path (DRAFT → ISSUED → RESPONDED → VERIFY_1 P
 
     const result = await svc.respondToCar(
       CAR_ID, "responder-1", "dept-1",
-      { responderPosition: "Dept Officer", responseType: "FIVE_WHY" as const, whyAnalysis: "x", rootCausePerson: false, rootCauseMaterial: false, rootCauseMachine: false, rootCauseMethod: false, rootCauseOther: false, rootCauseSummary: "y", immediateAction: "z", preventiveAction: "w", plannedCompletionDate: "2026-07-01", responderSignaturePath: "data:image/png;base64,test" },
+      { responderPosition: "Dept Officer", responseType: "FIVE_WHY" as const, whyAnalysis: "x", rootCausePerson: false, rootCauseMaterial: false, rootCauseMachine: false, rootCauseMethod: false, rootCauseOther: false, rootCauseSummary: "y", immediateAction: "z", preventiveAction: "w", plannedCompletionDate: "2026-07-01", responderSignaturePath: "data:image/png;base64,test", targetMrAuthUserId: "mr-auth-1" },
       "auth-responder-1", "dept-1"
     );
 

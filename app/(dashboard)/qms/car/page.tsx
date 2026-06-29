@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { getAuthCenterMe, getAuthCenterUserProfile } from "@/lib/auth-center-admin-client";
 import { redirect } from "next/navigation";
 import { CarService } from "@/services/carService";
@@ -17,11 +17,8 @@ export default async function QmsCarListPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
-
+  const session = await requireRole("QMS", "IT", "MR");
   const role = session.user.role;
-  if (role !== "QMS" && role !== "IT" && role !== "MR") redirect("/dashboard");
 
   const authUserId = session.user.authUserId ?? session.user.id;
   const authDepartmentId = session.user.authDepartmentId ?? null;

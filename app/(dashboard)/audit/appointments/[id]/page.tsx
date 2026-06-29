@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { AuditAppointmentService } from "@/services/audit/auditAppointmentService";
 import { AuditAppointmentDetailClient } from "@/components/audit/AuditAppointmentDetailClient";
 import type { Metadata } from "next";
@@ -13,8 +13,7 @@ export default async function AuditAppointmentDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/auth/login");
+  const session = await requireAuth();
 
   const { id } = await params;
   const raw = await svc.findById(id);

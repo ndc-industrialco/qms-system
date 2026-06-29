@@ -141,7 +141,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
 
     return this.delegate(tx).findMany({
       where: {
-        status: "PENDING_REVIEW",
+        status: "PENDING_APPROVAL",
         approverUserId: userId,
         id: { in: reviewedIdSet },
       },
@@ -162,14 +162,14 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
 
     return this.delegate(tx).count({
       where: {
-        status: "PENDING_REVIEW",
+        status: "PENDING_APPROVAL",
         approverUserId: userId,
         id: { in: reviewedIdSet },
       },
     });
   }
 
-  async setStatus(id: string, status: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED', tx?: Prisma.TransactionClient) {
+  async setStatus(id: string, status: 'DRAFT' | 'PENDING_REVIEW' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED', tx?: Prisma.TransactionClient) {
     return this.delegate(tx).update({
       where: { id },
       data: { status },

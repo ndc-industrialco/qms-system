@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import KpiObjectivesClient from "@/components/kpi/KpiObjectivesClient";
 import { getUserSnapshot } from "@/lib/userSnapshotCache";
 import type { Metadata } from "next";
@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "KPI" };
 
 export default async function KpiObjectivesPage() {
-  const session = await auth();
+  const session = await requireAuth();
   const userId = session?.user?.id ?? "";
   const role = (session?.user?.role ?? "USER") as "USER" | "IT" | "QMS" | "MR";
 

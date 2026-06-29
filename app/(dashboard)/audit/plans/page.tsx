@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
 import PageHeader from "@/components/common/PageHeader";
 import AuditPlanListTable from "@/components/audit/AuditPlanListTable";
 import { AuditPlanService } from "@/services/audit/auditPlanService";
@@ -13,8 +12,7 @@ export const metadata: Metadata = { title: "แผนการตรวจสอ
 const auditPlanService = new AuditPlanService();
 
 export default async function AuditPlansPage() {
-  const session = await auth();
-  if (!session) redirect("/auth/login");
+  const session = await requireAuth();
 
   const role = session.user.role;
   const isPrivileged = role === "QMS" || role === "IT" || role === "MR";

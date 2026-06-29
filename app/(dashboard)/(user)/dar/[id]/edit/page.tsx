@@ -43,7 +43,7 @@ export default async function DarEditPage({ params }: Props) {
       <DarEditHeader darNo={dar.darNo} darId={id} />
       <DarForm
         mode="edit"
-        tempId={"temp_" + Math.random().toString(36).substring(2, 15) + "_" + Date.now()}
+        tempId={id}
         initialData={dar}
         departments={departments}
         hideSubmit={!isDraft}

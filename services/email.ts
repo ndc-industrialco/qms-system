@@ -31,15 +31,21 @@ interface SendMailOptions {
   }>;
 }
 
-async function sendMail(opts: SendMailOptions): Promise<void> {
-  if (!opts.senderAccessToken) {
-    logger.warn("[email] No Auth Center token — mail skipped (local-credential user?)", { subject: opts.subject });
-    return;
-  }
+function getM2MHeaders(): Record<string, string> | null {
+  const appId = process.env.AUTH_CENTER_APP_ID?.trim() || process.env.AUTH_CENTER_CLIENT_ID?.trim();
+  const secret = process.env.AUTH_CENTER_CLIENT_SECRET?.trim();
+  if (!appId || !secret) return null;
+  return {
+    "X-Consumer-App-Id": appId,
+    "X-Consumer-App-Secret": secret,
+    "Content-Type": "application/json",
+  };
+}
 
+async function sendMail(opts: SendMailOptions): Promise<void> {
   const base = process.env.AUTH_CENTER_URL?.replace(/\/$/, "");
   if (!base) {
-    logger.warn("[email] AUTH_CENTER_URL not set — mail skipped", { subject: opts.subject });
+    logger.warn("[email] AUTH_CENTER_URL not set — mail skipped", { subject: opts.subject, to: opts.to.map((r) => r.email) });
     return;
   }
 
@@ -58,19 +64,44 @@ async function sendMail(opts: SendMailOptions): Promise<void> {
         : {}),
     };
 
-    const res = await fetch(`${base}/api/auth/mail/send`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${opts.senderAccessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+    const endpoint = `${base}/api/auth/mail/send`;
+    const bodyStr = JSON.stringify(body);
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`Auth Center sendMail ${res.status}: ${text}`);
+    // Try user Bearer token first (email appears FROM logged-in user)
+    if (opts.senderAccessToken) {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${opts.senderAccessToken}`, "Content-Type": "application/json" },
+        body: bodyStr,
+      });
+
+      if (res.ok) {
+        const responseText = await res.text().catch(() => "");
+        logger.info("[email] Auth Center response (bearer)", { status: res.status, body: responseText.slice(0, 200), to: recipient.email });
+        continue;
+      }
+
+      // On token-related failures, fall through to M2M
+      const responseText = await res.text().catch(() => "");
+      if (res.status !== 401 && res.status !== 403) {
+        throw new Error(`Auth Center sendMail ${res.status}: ${responseText}`);
+      }
+      logger.warn("[email] Bearer token rejected, trying M2M fallback", { status: res.status, to: recipient.email });
     }
+
+    // M2M fallback (or when no user token available)
+    const m2mHeaders = getM2MHeaders();
+    if (!m2mHeaders) {
+      logger.warn("[email] No Auth Center token or M2M credentials — mail skipped", { subject: opts.subject, to: recipient.email });
+      continue;
+    }
+
+    const m2mRes = await fetch(endpoint, { method: "POST", headers: m2mHeaders, body: bodyStr });
+    const m2mText = await m2mRes.text().catch(() => "");
+    if (!m2mRes.ok) {
+      throw new Error(`Auth Center sendMail (M2M) ${m2mRes.status}: ${m2mText}`);
+    }
+    logger.info("[email] Auth Center response (M2M)", { status: m2mRes.status, body: m2mText.slice(0, 200), to: recipient.email });
   }
 }
 
@@ -88,7 +119,7 @@ function getAppUrl(path: string): string {
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-function makeBilingualMail(opts: {
+export function makeBilingualMail(opts: {
   titleTh: string;
   titleEn: string;
   subtitleTh?: string;
@@ -383,19 +414,27 @@ export async function sendRejectionEmail(opts: {
   darNo: string;
   darId: string;
   rejectorName: string;
+  stepLabel: string;
   reason: string;
+  requesterName: string;
+  objective: string;
+  itemCount: number;
   senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/dar/${opts.darId}`);
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
-    subject: `[DAR] ${opts.darNo} - Rejected`,
+    subject: `[DAR] ${opts.darNo} ถูกปฏิเสธโดย ${opts.stepLabel} / Rejected by ${opts.stepLabel}`,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอ DAR ${opts.darNo} ถูกปฏิเสธ`,
       titleEn: `DAR ${opts.darNo} Rejected`,
       facts: [
-        { labelTh: "ผู้ปฏิเสธ", labelEn: "Rejected By", value: opts.rejectorName },
+        { labelTh: "เลขที่คำขอ", labelEn: "DAR No.", value: opts.darNo },
+        { labelTh: "ผู้ร้องขอ", labelEn: "Requester", value: opts.requesterName },
+        { labelTh: "วัตถุประสงค์", labelEn: "Objective", value: opts.objective },
+        { labelTh: "จำนวนรายการ", labelEn: "Item Count", value: String(opts.itemCount) },
+        { labelTh: "ปฏิเสธโดย", labelEn: "Rejected By", value: `${opts.rejectorName} (${opts.stepLabel})` },
         { labelTh: "เหตุผล", labelEn: "Reason", value: opts.reason },
       ],
       actionLabelTh: "ดูคำขอ DAR",
@@ -511,7 +550,7 @@ export async function sendKpiResultEmail(opts: {
   objectives?: KpiObjectiveRow[];
   senderAccessToken?: string | null;
 }) {
-  const url = getAppUrl(opts.kpiId ? `/qms/kpi/${opts.kpiId}` : `/qms/kpi`);
+  const url = getAppUrl(`/qms/kpi`);
   const statusTh = opts.status === "APPROVED" ? "อนุมัติแล้ว" : "ถูกปฏิเสธ";
   await sendMail({
     to: [opts.to],
@@ -543,7 +582,7 @@ export async function sendKpiRecallEmail(opts: {
   kpiId: string;
   senderAccessToken?: string | null;
 }) {
-  const url = getAppUrl(`/qms/kpi/${opts.kpiId}`);
+  const url = getAppUrl(`/qms/kpi`);
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
@@ -573,7 +612,7 @@ export async function sendKpiRejectedPreparerEmail(opts: {
   objectives?: KpiObjectiveRow[];
   senderAccessToken?: string | null;
 }) {
-  const url = getAppUrl(`/qms/kpi/${opts.kpiId}`);
+  const url = getAppUrl(`/qms/kpi`);
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
@@ -669,7 +708,7 @@ export async function sendKpiMonthlyResultEmail(opts: {
   reportId?: string;
   senderAccessToken?: string | null;
 }) {
-  const url = getAppUrl(opts.reportId ? `/qms/kpi/monthly/${opts.reportId}` : `/qms/kpi/monthly`);
+  const url = getAppUrl(`/qms/kpi/monthly`);
   const statusTh = opts.status === "APPROVED" ? "อนุมัติแล้ว" : "ถูกปฏิเสธ";
   await sendMail({
     to: [opts.to],
@@ -688,6 +727,36 @@ export async function sendKpiMonthlyResultEmail(opts: {
       extraHtml: opts.details ? makeMonthlyDetailsTable(opts.details) : undefined,
       actionLabelTh: "เปิด KPI รายเดือน",
       actionLabelEn: "Open Monthly KPI",
+      actionUrl: url,
+    }),
+  });
+}
+
+export async function sendKpiMonthlyReminderEmail(opts: {
+  to: MailRecipient[];
+  departmentName: string;
+  month: string;
+  year: number;
+  isLastDay: boolean;
+  senderAccessToken?: string | null;
+}): Promise<void> {
+  if (!opts.to.length) return;
+  const url = getAppUrl(`/qms/kpi/monthly`);
+  const urgency = opts.isLastDay ? "วันนี้เป็นวันสุดท้าย / Today is the last day" : "กรุณาส่งภายในสิ้นเดือน / Please submit by end of month";
+  await sendMail({
+    to: opts.to,
+    senderAccessToken: opts.senderAccessToken,
+    subject: `[KPI Monthly] แจ้งเตือนการส่งรายงาน ${opts.departmentName} / ${opts.month} ${opts.year}`,
+    bodyHtml: makeBilingualMail({
+      titleTh: `แจ้งเตือน: KPI รายเดือน ${opts.departmentName}`,
+      titleEn: `Reminder: Monthly KPI ${opts.departmentName}`,
+      facts: [
+        { labelTh: "รอบเดือน", labelEn: "Period", value: `${opts.month} ${opts.year}` },
+        { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
+        { labelTh: "สถานะ", labelEn: "Status", value: urgency },
+      ],
+      actionLabelTh: "ส่ง KPI รายเดือน",
+      actionLabelEn: "Submit Monthly KPI",
       actionUrl: url,
     }),
   });

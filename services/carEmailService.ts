@@ -137,13 +137,7 @@ export function carMailHtml(opts: {
       </div>
     </div>` : "";
 
-  const actionBtn = actionUrl
-    ? `<div style="margin-top:18px">
-        <a href="${actionUrl}" style="display:inline-block;padding:12px 22px;background:#0f1059;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">${esc(actionLabel ?? "Open CAR")}</a>
-        ${extraButtons ?? ""}
-        <div style="margin-top:6px;font-size:11px;color:#94a3b8;word-break:break-all">${esc(actionUrl)}</div>
-      </div>`
-    : (extraButtons ?? "");
+  const actionBtn = extraButtons ?? "";
 
   return `
 <div style="width:100%;margin:0;padding:20px 0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif">
@@ -292,6 +286,52 @@ export async function sendCarReminderEmail(opts: {
   });
 }
 
+// ─── Overdue (7-day) ──────────────────────────────────────────────────────────
+export async function sendCarOverdueEmail(opts: {
+  carId: string;
+  carNo: string;
+  targetEmail: string;
+  cc?: string[];
+  senderAccessToken?: string | null;
+  targetDepartmentName?: string;
+  isoStandards?: string[];
+  defectDetail?: string;
+  responseDueAt?: string;
+}): Promise<void> {
+  const deptName = opts.targetDepartmentName ?? "-";
+  const dueTh = fmtDate(opts.responseDueAt);
+
+  const html = carMailHtml({
+    carNo: opts.carNo,
+    statusBadgeTh: "เกินกำหนด — ยังไม่ได้รับการตอบกลับ",
+    statusBadgeEn: "Overdue — No Response Received",
+    greeting: {
+      th: `เรียน ${deptName} และผู้ที่เกี่ยวข้อง,`,
+      en: `Dear ${deptName} Department and All Concerned,`,
+    },
+    intro: {
+      th: `CAR ${opts.carNo} เกินกำหนดตอบกลับแล้ว${dueTh !== "-" ? ` (${dueTh})` : ""} กรุณาดำเนินการตอบกลับโดยด่วน`,
+      en: `CAR ${opts.carNo} is overdue${dueTh !== "-" ? ` (due ${dueTh})` : ""}. Please respond immediately.`,
+    },
+    carBlock: {
+      targetDeptTh: deptName,
+      isoStandards: opts.isoStandards,
+      defectTh: opts.defectDetail,
+      responseDueTh: dueTh !== "-" ? dueTh : undefined,
+    },
+    closingTh: "กรุณาดำเนินการตอบกลับ CAR โดยด่วน เพื่อหลีกเลี่ยงผลกระทบต่อระบบบริหารคุณภาพ",
+    closingEn: "Please respond to this CAR urgently to avoid impact on the quality management system.",
+  });
+
+  await sendMail({
+    to: opts.targetEmail,
+    cc: opts.cc,
+    subject: `[CAR Overdue] เกินกำหนดตอบกลับ / Overdue – ${opts.carNo}`,
+    bodyHtml: html,
+    senderAccessToken: opts.senderAccessToken,
+  });
+}
+
 // ─── Responded (notify QMS) ────────────────────────────────────────────────────
 export async function sendCarRespondedEmail(opts: {
   carId: string;
@@ -350,10 +390,6 @@ export async function sendCarMrReviewRequestEmail(opts: {
   const viewUrl = getAppUrl(`/qms/car/${opts.carId}`);
   const dueTh   = fmtDate(opts.plannedCompletionDate);
 
-  const extraButtons = opts.token ? `
-    <a href="${getAppUrl(`/approve/car/${opts.carId}/mr-response?token=${opts.token}&action=APPROVED`)}" style="display:inline-block;margin-left:8px;padding:12px 20px;background:#16a34a;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">อนุมัติ / Approve</a>
-    <a href="${getAppUrl(`/approve/car/${opts.carId}/mr-response?token=${opts.token}&action=REJECTED`)}" style="display:inline-block;margin-left:8px;padding:12px 20px;background:#dc2626;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700">ปฏิเสธ / Reject</a>` : undefined;
-
   const html = carMailHtml({
     carNo: opts.carNo,
     statusBadgeTh: "รออนุมัติแผนแก้ไข (MR)",
@@ -363,21 +399,14 @@ export async function sendCarMrReviewRequestEmail(opts: {
       en: "Dear Management Representative (MR),",
     },
     intro: {
-      th: `CAR ${opts.carNo} ได้รับแผนการดำเนินการแก้ไขจากหน่วยงานที่รับผิดชอบแล้ว กรุณาตรวจสอบและให้ความเห็นชอบหรือปฏิเสธแผนดังกล่าว`,
-      en: `CAR ${opts.carNo} has received a corrective action plan. Please review and approve or reject the plan.`,
+      th: `CAR ${opts.carNo} ได้รับแผนการดำเนินการแก้ไขจากหน่วยงานที่รับผิดชอบแล้ว กรุณาเข้าระบบเพื่อตรวจสอบและให้ความเห็นชอบหรือปฏิเสธแผนดังกล่าว`,
+      en: `CAR ${opts.carNo} has received a corrective action plan. Please log in to the system to review and approve or reject the plan.`,
     },
     carBlock: {
       responseDueTh: dueTh !== "-" ? `วันที่แผนกำหนดเสร็จ: ${dueTh}` : undefined,
     },
-    closingTh: opts.token
-      ? "กรุณาอนุมัติหรือปฏิเสธแผนการดำเนินการแก้ไขโดยคลิกปุ่มด้านล่าง หรือเข้าระบบเพื่อดูรายละเอียดเพิ่มเติม"
-      : "กรุณาเข้าสู่ระบบเพื่อตรวจสอบและอนุมัติหรือปฏิเสธแผนการดำเนินการแก้ไข",
-    closingEn: opts.token
-      ? "Please approve or reject the corrective action plan by clicking the buttons below, or log in to the system for more details."
-      : "Please log in to the system to review and approve or reject the corrective action plan.",
-    actionLabel: "ดูรายละเอียด / View Details",
-    actionUrl: viewUrl,
-    extraButtons,
+    closingTh: "กรุณาเข้าสู่ระบบเพื่อตรวจสอบและอนุมัติหรือปฏิเสธแผนการดำเนินการแก้ไข",
+    closingEn: "Please log in to the system to review and approve or reject the corrective action plan.",
   });
 
   await sendMail({

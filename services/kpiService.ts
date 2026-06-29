@@ -1,7 +1,7 @@
 import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
 import { AuditService } from '@/services/auditService';
 import { NotificationService } from '@/services/notificationService';
-import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail } from '@/services/email';
+import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail } from '@/services/email';
 import { ActionTokenService } from '@/services/actionTokenService';
 import { ApprovalModule, ApprovalStep } from '@/generated/prisma/client';
 import { db } from '@/lib/db';
@@ -79,11 +79,18 @@ export class KpiService {
       approverUser: kpi.approverUserId
         ? (userMap.get(kpi.approverUserId) ?? (kpi.approverEmail ? { id: kpi.approverUserId, name: kpi.approver || null, email: kpi.approverEmail } : null))
         : null,
-      approvalSignatures: signatures,
+      approvalSignatures: signatures.map(s => ({
+        ...s,
+        signerUser: s.signerName || s.signerEmail
+          ? { id: s.signerUserId, name: s.signerName ?? null, email: s.signerEmail ?? null, department: s.signerDepartmentName ? { name: s.signerDepartmentName } : null }
+          : null,
+      })),
     };
   }
 
   async createKpi(dto: CreateKpiDTO) {
+    const dept = await db.kpiDept.findFirst({ where: { name: dto.department, isActive: true } });
+    if (!dept) throw new NotFoundError(`Department "${dto.department}" not found in KPI department list`);
     const existing = await this.kpiRepo.findByDepartmentYear(dto.department, dto.yearly);
     if (existing) throw new ConflictError(`KPI for ${dto.department} in ${dto.yearly} already exists`);
     try {
@@ -101,13 +108,27 @@ export class KpiService {
     return this.kpiRepo.update(id, dto);
   }
 
-  async deleteKpi(id: string) {
+  async deleteKpi(id: string, actor?: ActorContext) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
     if (kpi.monthlyReports.length > 0) {
       throw new ConflictError('Cannot delete KPI with existing monthly reports');
     }
-    return this.kpiRepo.delete(id);
+    return db.$transaction(async (tx) => {
+      const deleted = await this.kpiRepo.delete(id, tx);
+      if (actor) {
+        await AuditService.record({
+          actorUserId: actor.userId,
+          actorAuthUserId: actor.authUserId,
+          actorRole: actor.role,
+          action: 'DELETE',
+          resourceType: 'KPI',
+          resourceId: id,
+          before: { department: kpi.department, yearly: kpi.yearly, status: kpi.status },
+        }, tx);
+      }
+      return deleted;
+    });
   }
 
   async addObjective(dto: CreateKpiObjectiveDTO) {
@@ -245,9 +266,23 @@ export class KpiService {
         {
           title: "มี KPI รอการ Review",
           body: `KPI ${updated.department} ${updated.yearly}`,
+          htmlBody: makeBilingualMail({
+            titleTh: `KPI ${updated.department} ปี ${updated.yearly} รอตรวจสอบ`,
+            titleEn: `KPI ${updated.department} ${updated.yearly} Pending Review`,
+            facts: [
+              { labelTh: "ผู้ตรวจสอบ", labelEn: "Reviewer", value: reviewerName },
+              { labelTh: "ผู้มอบหมาย", labelEn: "Assigned By", value: preparerName },
+              { labelTh: "หน่วยงาน", labelEn: "Department", value: updated.department },
+              { labelTh: "ปี", labelEn: "Year", value: String(updated.yearly) },
+              { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(updated.objectives.length) },
+            ],
+            actionLabelTh: "ตรวจสอบ KPI",
+            actionLabelEn: "Review KPI",
+            actionUrl: reviewerToken ? `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/approve?token=${encodeURIComponent(reviewerToken)}` : undefined,
+          }),
           module: "KPI",
           resourceId: id,
-          resourceType: "KPI",
+          resourceType: "KPI_REVIEWER",
         },
       ).catch(() => { /* logged inside NotificationService */ });
     }
@@ -270,7 +305,7 @@ export class KpiService {
     if (!isReviewer) throw new ForbiddenError('You are not assigned as reviewer');
 
     const updated = await db.$transaction(async (tx) => {
-      const result = await this.kpiRepo.setStatus(id, 'PENDING_REVIEW', tx);
+      const result = await this.kpiRepo.setStatus(id, 'PENDING_APPROVAL', tx);
       await this.approvalSignatureRepo.upsertStep({
         module: 'KPI',
         documentId: id,
@@ -329,7 +364,26 @@ export class KpiService {
         kpi.approverEmail ?? '',
         'KPI Approval Request',
         kpi.approverUserId,
-        { title: 'มี KPI รอการอนุมัติ', body: `KPI ${kpi.department} ${kpi.yearly}`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
+        {
+          title: 'มี KPI รอการอนุมัติ',
+          body: `KPI ${kpi.department} ${kpi.yearly}`,
+          htmlBody: makeBilingualMail({
+            titleTh: `KPI ${kpi.department} ปี ${kpi.yearly} รออนุมัติ`,
+            titleEn: `KPI ${kpi.department} ${kpi.yearly} Pending Approval`,
+            facts: [
+              { labelTh: "ผู้ตรวจสอบแล้ว", labelEn: "Reviewed By", value: actor.name ?? '' },
+              { labelTh: "หน่วยงาน", labelEn: "Department", value: kpi.department },
+              { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
+              { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(kpi.objectives.length) },
+            ],
+            actionLabelTh: "อนุมัติ KPI",
+            actionLabelEn: "Approve KPI",
+            actionUrl: approverToken ? `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/approve?token=${encodeURIComponent(approverToken)}` : undefined,
+          }),
+          module: 'KPI',
+          resourceId: id,
+          resourceType: 'KPI_APPROVER',
+        },
       ).catch(() => {});
     }
 
@@ -343,7 +397,7 @@ export class KpiService {
   ) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
-    if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI is not pending approval');
+    if (kpi.status !== 'PENDING_APPROVAL') throw new ConflictError('KPI is not pending approval');
     const approverAuthId = (kpi as Record<string, unknown>).approverAuthUserId as string | null | undefined;
     const isApprover = (actor.authUserId && approverAuthId)
       ? approverAuthId === actor.authUserId
@@ -419,7 +473,27 @@ export class KpiService {
           preparer?.email ?? '',
           'KPI Approved',
           preparerAuthId,
-          { title: 'KPI ได้รับการอนุมัติแล้ว', body: `KPI ${kpi.department} ${kpi.yearly} ได้รับการอนุมัติ`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
+          {
+            title: 'KPI ได้รับการอนุมัติแล้ว',
+            body: `KPI ${kpi.department} ${kpi.yearly} ได้รับการอนุมัติ`,
+            htmlBody: makeBilingualMail({
+              titleTh: `ผลการอนุมัติ KPI ${kpi.department} ปี ${kpi.yearly}`,
+              titleEn: `KPI ${kpi.department} ${kpi.yearly} Approval Result`,
+              facts: [
+                { labelTh: "สถานะ", labelEn: "Status", value: "อนุมัติแล้ว / APPROVED" },
+                { labelTh: "ดำเนินการโดย", labelEn: "Action By", value: actor.name ?? '' },
+                { labelTh: "หน่วยงาน", labelEn: "Department", value: kpi.department },
+                { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
+                { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(kpi.objectives.length) },
+              ],
+              actionLabelTh: "เปิด KPI",
+              actionLabelEn: "Open KPI",
+              actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`,
+            }),
+            module: 'KPI',
+            resourceId: id,
+            resourceType: 'KPI',
+          },
         ).catch(() => {});
     }
 
@@ -430,16 +504,19 @@ export class KpiService {
     payload: { kpiId: string; year: number; objectiveIds: string[] },
     tx: Prisma.TransactionClient,
   ) {
-    for (const month of KPI_MONTHS) {
-      const report = await this.monthlyReportRepo.findOrCreate(payload.kpiId, month, payload.year, tx);
-      await this.monthlyDetailRepo.createManyForReport(report.id, payload.objectiveIds, tx);
-    }
+    // Upsert all 12 month reports in parallel, then batch-create details
+    const reports = await Promise.all(
+      KPI_MONTHS.map((month) => this.monthlyReportRepo.findOrCreate(payload.kpiId, month, payload.year, tx))
+    );
+    await Promise.all(
+      reports.map((report) => this.monthlyDetailRepo.createManyForReport(report.id, payload.objectiveIds, tx))
+    );
   }
 
   async recallObjectives(id: string, actor: ActorContext) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
-    if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI can only be recalled when pending review');
+    if (kpi.status !== 'PENDING_REVIEW' && kpi.status !== 'PENDING_APPROVAL') throw new ConflictError('KPI can only be recalled when pending review or approval');
 
     const signatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
     const preparerSig = signatures.find(s => s.step === 'PREPARER');
@@ -500,6 +577,19 @@ export class KpiService {
           {
             title: "KPI ถูก Recall",
             body: `KPI ${kpi.department} ${kpi.yearly}`,
+            htmlBody: makeBilingualMail({
+              titleTh: `KPI ${kpi.department} ปี ${kpi.yearly} ถูกเรียกคืนแล้ว`,
+              titleEn: `KPI ${kpi.department} ${kpi.yearly} Recalled`,
+              facts: [
+                { labelTh: "เรียกคืนโดย", labelEn: "Recalled By", value: actor.name ?? '' },
+                { labelTh: "หน่วยงาน", labelEn: "Department", value: kpi.department },
+                { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
+                { labelTh: "หมายเหตุ", labelEn: "Note", value: "KPI ถูกเรียกคืนกลับเป็นแบบร่าง งานที่มอบหมายถูกยกเลิก / KPI has been recalled to Draft. Your assignment has been cancelled." },
+              ],
+              actionLabelTh: "เปิด KPI",
+              actionLabelEn: "Open KPI",
+              actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`,
+            }),
             module: "KPI",
             resourceId: id,
             resourceType: "KPI",
@@ -511,10 +601,10 @@ export class KpiService {
     return { ...updated, notifyUserIds };
   }
 
-  async rejectObjectives(id: string, actor: ActorContext) {
+  async rejectObjectives(id: string, actor: ActorContext, reason?: string) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
-    if (kpi.status !== 'PENDING_REVIEW') throw new ConflictError('KPI cannot be rejected in current status');
+    if (kpi.status !== 'PENDING_REVIEW' && kpi.status !== 'PENDING_APPROVAL') throw new ConflictError('KPI cannot be rejected in current status');
     const rejectReviewerAuthId = (kpi as Record<string, unknown>).reviewerAuthUserId as string | null | undefined;
     const rejectApproverAuthId = (kpi as Record<string, unknown>).approverAuthUserId as string | null | undefined;
     const isRejectReviewer = (actor.authUserId && rejectReviewerAuthId)
@@ -535,6 +625,7 @@ export class KpiService {
         signerAuthUserId: actor.authUserId ?? null,
         action: 'REJECTED',
         actionDate: new Date(),
+        comment: reason ?? null,
       }, tx);
 
       await AuditService.record({
@@ -576,7 +667,26 @@ export class KpiService {
           preparer.email,
           'KPI Rejected',
           rejectPreparerAuthId,
-          { title: 'KPI ถูกปฏิเสธ', body: `KPI ${kpi.department} ${kpi.yearly} ถูกปฏิเสธ`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
+          {
+            title: 'KPI ถูกปฏิเสธ',
+            body: `KPI ${kpi.department} ${kpi.yearly} ถูกปฏิเสธ`,
+            htmlBody: makeBilingualMail({
+              titleTh: `KPI ${kpi.department} ปี ${kpi.yearly} ถูกปฏิเสธ`,
+              titleEn: `KPI ${kpi.department} ${kpi.yearly} Rejected`,
+              facts: [
+                { labelTh: "ปฏิเสธโดย", labelEn: "Rejected By", value: actor.name ?? '' },
+                { labelTh: "หน่วยงาน", labelEn: "Department", value: kpi.department },
+                { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
+                { labelTh: "หมายเหตุ", labelEn: "Note", value: "กรุณาแก้ไขและส่งตรวจสอบใหม่ / Please revise and resubmit." },
+              ],
+              actionLabelTh: "แก้ไข KPI",
+              actionLabelEn: "Edit KPI",
+              actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`,
+            }),
+            module: 'KPI',
+            resourceId: id,
+            resourceType: 'KPI',
+          },
         ).catch(() => {});
       }
     }

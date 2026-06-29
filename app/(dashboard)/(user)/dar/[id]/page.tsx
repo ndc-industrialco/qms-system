@@ -1,10 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
 import DarReadOnlyDetail from "@/components/dar/DarReadOnlyDetail";
-import DarReviewLayout from "@/components/dar/DarReviewLayout";
 import type { DarApprovalRow } from "@/types/dar";
 import { db } from "@/lib/db";
 
@@ -37,22 +36,10 @@ export default async function DarDetailPage({ params }: Props) {
         a.stepRole !== "PREPARER",
     );
 
+    // Redirect to the dedicated approve page — /dar/[id] is read-only view only
     if (myPendingStep) {
-      const isMrStep = myPendingStep.stepRole === "APPROVER_MR";
-      return (
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
-          <DarReviewLayout
-            dar={dar}
-            darId={id}
-            darNo={dar.darNo}
-            currentUserId={session.user.id}
-            savedSignatureUrl={savedSig?.url ?? null}
-            savedSignatureType={savedSig?.type ?? null}
-            isAssignedReviewer={true}
-            isMrApprove={isMrStep}
-          />
-        </div>
-      );
+      const isReviewer = myPendingStep.stepRole === "REVIEWER";
+      redirect(isReviewer ? `/approve/dar/${id}/reviewer` : `/approve/dar/${id}/approver`);
     }
 
     return (

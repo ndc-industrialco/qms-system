@@ -5,7 +5,7 @@ import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth } from '@/lib/auth';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
-import { sendKpiMonthlyApprovalRequestEmail } from '@/services/email';
+import { sendKpiMonthlyApprovalRequestEmail, makeBilingualMail } from '@/services/email';
 import { ActionTokenService } from '@/services/actionTokenService';
 import { ApprovalModule, ApprovalStep } from '@/generated/prisma/client';
 
@@ -67,9 +67,21 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
           {
             title: "มี KPI รายเดือนรอการ Review",
             body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
+            htmlBody: makeBilingualMail({
+              titleTh: `KPI รายเดือน ${detail.kpi.department} รอการตรวจสอบ`,
+              titleEn: `Monthly KPI ${detail.kpi.department} Pending Review`,
+              facts: [
+                { labelTh: "หน่วยงาน", labelEn: "Department", value: detail.kpi.department },
+                { labelTh: "รอบเดือน", labelEn: "Period", value: `${detail.month}/${detail.year}` },
+                { labelTh: "ผู้จัดเตรียม", labelEn: "Prepared By", value: preparerSnapshot?.name ?? session.user.name ?? '' },
+              ],
+              actionLabelTh: "ตรวจสอบ KPI รายเดือน",
+              actionLabelEn: "Review Monthly KPI",
+              actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/approve?token=${encodeURIComponent(reviewerToken)}`,
+            }),
             module: "KPI",
             resourceId: reportId,
-            resourceType: "KPI_MONTHLY",
+            resourceType: "KPI_MONTHLY_REVIEWER",
           },
         ).catch(() => { /* logged inside NotificationService */ });
       }
