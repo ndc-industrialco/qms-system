@@ -102,17 +102,6 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit, canCrud =
     }
   }
 
-  async function handleSignSkip() {
-    try {
-      await submitMutation.mutateAsync({ id: appt.id });
-      toast.success("ส่งประกาศเพื่อตรวจสอบเรียบร้อยแล้ว");
-      setSignPadOpen(false);
-      router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
-    }
-  }
-
   async function handleDelete() {
     try {
       await deleteMutation.mutateAsync(appt.id);
@@ -332,7 +321,6 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit, canCrud =
           <SignaturePad
             onConfirm={handleSignConfirm}
             onCancel={() => setSignPadOpen(false)}
-            onSkip={handleSignSkip}
           />
         </DialogContent>
       </Dialog>

@@ -12,8 +12,6 @@ interface Props {
   savedSignatureUrl?: string | null;
   savedSignatureType?: SignatureType | null;
   isLoading?: boolean;
-  /** Called when user clicks "ส่งโดยไม่ลงนาม" — only shown when set */
-  onSkip?: () => void | Promise<void>;
 }
 
 type Mode = "DRAW" | "TYPE" | "IMAGE";
@@ -221,7 +219,7 @@ function IconImage() {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, savedSignatureType, isLoading = false, onSkip }: Props) {
+export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, savedSignatureType, isLoading = false }: Props) {
   const t = useT();
   const [mode, setMode] = useState<Mode>("DRAW");
   const [pending, setPending] = useState<string | null>(null);
@@ -291,17 +289,6 @@ export default function SignaturePad({ onConfirm, onCancel, savedSignatureUrl, s
         <Button variant="ghost" size="sm" type="button" onClick={onCancel} disabled={busy}>
           {t("common.cancel")}
         </Button>
-        {onSkip && !pending && (
-          <button type="button"
-            disabled={busy}
-            onClick={async () => {
-              setSubmitting(true);
-              try { await onSkip(); } finally { setSubmitting(false); }
-            }}
-            className="h-8 px-4 text-xs font-medium rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-            ส่งโดยไม่ลงนาม
-          </button>
-        )}
         <button type="button"
           disabled={!pending || busy}
           onClick={async () => {
