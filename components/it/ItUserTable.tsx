@@ -48,7 +48,7 @@ const ROLE_LABELS_EN: Record<UserRole, string> = {
   IT:   "IT Officer",
 };
 const ROLE_BADGE: Record<UserRole, string> = {
-  USER: "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral",
+  USER: "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-slate-100 text-slate-500",
   QMS:  "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-info/15 text-info",
   MR:   "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-warning/15 text-warning",
   IT:   "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-success/15 text-success",
@@ -423,10 +423,10 @@ export default function ItUserTable({ users, departments, authCenterMode = false
       )}
 
       {/* Desktop table */}
-      <div className="hidden md:block card-premium overflow-x-auto border border-base-300 rounded-xl shadow-sm">
+      <div className="hidden md:block card-premium overflow-x-auto border border-slate-100 rounded-xl shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="border-b border-base-200">
+            <TableRow className="border-b border-slate-100">
               <TableHead className="w-10">
                 <input
                   type="checkbox"
@@ -456,7 +456,7 @@ export default function ItUserTable({ users, departments, authCenterMode = false
               const m365Linked = isM365Linked(user);
               const roleSafe = (user.role in ROLE_BADGE ? user.role : "USER") as UserRole;
               return (
-              <TableRow key={uid} className={`transition-colors duration-100 ${selected.has(uid) ? "bg-primary/5" : "hover:bg-base-200"}`}>
+              <TableRow key={uid} className={`transition-colors duration-100 ${selected.has(uid) ? "bg-primary/5" : "hover:bg-slate-100"}`}>
                 <TableCell>
                   {!authCenterMode && m365Linked
                     ? <input type="checkbox" className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500" checked={selected.has(uid)} onChange={() => toggleOne(uid)} />
@@ -505,7 +505,7 @@ export default function ItUserTable({ users, departments, authCenterMode = false
                 <TableCell>
                   {m365Linked
                     ? <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-success/15 text-success"><IconCheck className="w-3 h-3" />{t.linked}</span>
-                    : <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral">{t.unlinked}</span>}
+                    : <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-slate-100 text-slate-500">{t.unlinked}</span>}
                 </TableCell>
 
                 {/* Role badge */}
@@ -584,7 +584,7 @@ export default function ItUserTable({ users, departments, authCenterMode = false
           const m365Linked = isM365Linked(user);
           const roleSafe = (user.role in ROLE_BADGE ? user.role : "USER") as UserRole;
           return (
-          <div key={uid} className={`card-premium p-4 border rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${selected.has(uid) ? "border-primary" : "border-base-300"}`}>
+          <div key={uid} className={`card-premium p-4 border rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${selected.has(uid) ? "border-primary" : "border-slate-100"}`}>
             <div className="flex items-start gap-2 mb-1">
               {!authCenterMode && m365Linked && (
                 <input

@@ -50,7 +50,7 @@ export default function PostAnnouncementModal() {
           </span>
         }
         desktopContentClassName="w-[min(96vw,56rem)] max-w-2xl"
-        headerClassName="m-0 border-base-300 bg-base-100/50 px-5 py-4"
+        headerClassName="m-0 border-slate-100 bg-white/50 px-5 py-4"
         bodyClassName="px-4 py-5 md:px-5"
         footer={
           <>
@@ -75,7 +75,7 @@ export default function PostAnnouncementModal() {
               name="title" 
               required 
               placeholder={t("announcement.placeholderTitle")}
-              className="w-full px-3 py-2 bg-base-100 border border-base-300 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+              className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
             />
           </div>
 
@@ -94,7 +94,7 @@ export default function PostAnnouncementModal() {
               <label className="block text-[13px] font-semibold text-base-content mb-1.5">{t("announcement.fieldSourceSystem")}</label>
               <select 
                 name="sourceSystem" 
-                className="w-full px-3 py-2 bg-base-100 border border-base-300 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               >
                 <option value="QMS">QMS</option>
                 <option value="IT">IT</option>
@@ -106,7 +106,7 @@ export default function PostAnnouncementModal() {
               <label className="block text-[13px] font-semibold text-base-content mb-1.5">{t("announcement.fieldDisplayType")}</label>
               <select 
                 name="displayType" 
-                className="w-full px-3 py-2 bg-base-100 border border-base-300 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                className="w-full px-3 py-2 bg-white border border-slate-100 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               >
                 <option value="LIST">{t("announcement.displayTypeList")}</option>
                 <option value="SCROLLING">{t("announcement.displayTypeScrolling")}</option>
@@ -115,7 +115,7 @@ export default function PostAnnouncementModal() {
           </div>
 
           <div className="pt-2">
-            <label className="flex items-center gap-3 p-3 border border-base-300 rounded-lg hover:bg-base-200/50 cursor-pointer transition-colors">
+            <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-lg hover:bg-slate-100/50 cursor-pointer transition-colors">
               <input 
                 type="checkbox" 
                 name="pushToCompanyCenter" 

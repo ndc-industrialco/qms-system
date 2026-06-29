@@ -19,9 +19,9 @@ export default function DashboardDocsFeed({ docs }: Props) {
   }
 
   return (
-    <div className="divide-y divide-base-200">
+    <div className="divide-y divide-slate-100">
       {docs.map((doc) => (
-        <div key={doc.id} className="flex items-center gap-3 px-5 py-3.5 group hover:bg-base-200/50 transition-colors">
+        <div key={doc.id} className="flex items-center gap-3 px-5 py-3.5 group hover:bg-slate-100/50 transition-colors">
           <div className="w-8 h-8 rounded-lg bg-error/10 text-error flex items-center justify-center shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
