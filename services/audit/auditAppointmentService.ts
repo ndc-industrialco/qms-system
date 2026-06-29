@@ -9,6 +9,7 @@ import { logger } from "@/lib/logger";
 import type { AuditAppointmentCreateInput, AuditAppointmentUpdateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
 import { sendAppointmentSignRequestEmail, sendAppointmentPublishedEmail, sendAppointmentRejectedEmail, buildAppointmentPublishedHtml, layout, esc } from "./auditEmailService";
 import { NotificationService } from "@/services/notificationService";
+import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 
 // ─── HTML notification builders (same template as email, minus send wrapper) ──
@@ -27,9 +28,7 @@ function buildSignRequestHtml(opts: {
   signedRole: "REVIEWER" | "APPROVER";
 }): string {
   const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : "Reviewer";
-  const rolePath = opts.signedRole === "APPROVER" ? "approver" : "reviewer";
   const yearEn = opts.year - 543;
-  const url = getAppUrl(`/approve/audit/appointments/${opts.appointmentId}/${rolePath}`);
 
   const standardsBadges = opts.standards.length
     ? `<div style="margin-top:16px">
@@ -38,10 +37,7 @@ function buildSignRequestHtml(opts: {
       </div>`
     : "";
 
-  const urgentBanner = `<div style="margin:16px 0 0;padding:14px 16px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
-    <strong>Your signature is required.</strong> Please click the button below to review and sign this appointment letter as <strong>${esc(roleLabel)}</strong>.
-    The process cannot proceed without your signature.
-  </div>`;
+  const detailUrl = getAppUrl(`/audit/appointments/${opts.appointmentId}`);
 
   return layout({
     badgeColor: "#f59e0b",
@@ -55,9 +51,9 @@ function buildSignRequestHtml(opts: {
       ...(opts.ownerName ? [{ label: "Prepared by", value: opts.ownerName }] : []),
       { label: "Your Role", value: roleLabel },
     ],
-    body: standardsBadges + urgentBanner,
-    actionLabel: opts.signedRole === "APPROVER" ? "Review & Approve" : "Review & Sign",
-    actionUrl: url,
+    body: standardsBadges,
+    actionLabel: "เปิดรายการ",
+    actionUrl: detailUrl,
   });
 }
 
@@ -177,24 +173,21 @@ const isPrivileged = (role: string) => PRIVILEGED.has(role);
 async function nextAppointmentNo(
   tx: Parameters<Parameters<typeof db.$transaction>[0]>[0]
 ) {
+  const format = await getDocNoFormat("AUDIT_APPT");
   const year = new Date().getFullYear();
-  const yy = String(year).slice(-2);
-  const prefix = `APPT-${yy}-`;
-
-  // Find the lowest positive integer not already in use this year
-  const likePattern = `${prefix}%`;
-  const startPos = prefix.length + 1;
+  const { likePrefix, pad } = buildLikePrefix(format, { year });
+  const startPos = likePrefix.length + 1;
   const existing = await tx.$queryRaw<{ seq: number }[]>`
     SELECT CAST(SUBSTRING(appointment_no FROM ${startPos}) AS INTEGER) AS seq
     FROM audit_appointments
-    WHERE appointment_no LIKE ${likePattern}
+    WHERE appointment_no LIKE ${`${likePrefix}%`}
     ORDER BY seq
   `;
   const used = new Set(existing.map((r) => r.seq));
   let next = 1;
   while (used.has(next)) next++;
-
-  return `${prefix}${String(next).padStart(3, "0")}`;
+  return renderDocNo(format, { year, seq: next });
+  void pad;
 }
 
 export class AuditAppointmentService {
@@ -430,11 +423,17 @@ export class AuditAppointmentService {
         },
       });
 
-      if (sigBody?.saveSignature && sigBody.signatureDataUrl && actor.userId) {
-        await userPrefRepo.upsertSignature(actor.userId, {
-          savedSignatureUrl: sigBody.signatureDataUrl,
-          signatureType: (sigBody.signatureType as "DRAW" | "TYPE" | "IMAGE") ?? "DRAW",
-        }, tx);
+      if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
+        if (actor.userId) {
+          await userPrefRepo.upsertSignature(actor.userId, {
+            savedSignatureUrl: sigBody.signatureDataUrl,
+            signatureType: (sigBody.signatureType as "DRAW" | "TYPE" | "IMAGE") ?? "DRAW",
+          }, tx);
+        } else {
+          logger.warn("[appointment] cannot save signature pref — no local userId", {
+            actorAuthUserId: actor.authUserId,
+          });
+        }
       }
 
       const u = await tx.auditAppointment.update({
@@ -496,11 +495,17 @@ export class AuditAppointmentService {
         },
       });
 
-      if (sigBody?.saveSignature && sigBody.signatureDataUrl && actor.userId) {
-        await userPrefRepo.upsertSignature(actor.userId, {
-          savedSignatureUrl: sigBody.signatureDataUrl,
-          signatureType: (sigBody.signatureType as "DRAW" | "TYPE" | "IMAGE") ?? "DRAW",
-        }, tx);
+      if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
+        if (actor.userId) {
+          await userPrefRepo.upsertSignature(actor.userId, {
+            savedSignatureUrl: sigBody.signatureDataUrl,
+            signatureType: (sigBody.signatureType as "DRAW" | "TYPE" | "IMAGE") ?? "DRAW",
+          }, tx);
+        } else {
+          logger.warn("[appointment] cannot save signature pref — no local userId", {
+            actorAuthUserId: actor.authUserId,
+          });
+        }
       }
 
       const u = await tx.auditAppointment.update({
