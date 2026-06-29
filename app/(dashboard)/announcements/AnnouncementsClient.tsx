@@ -6,11 +6,7 @@ import { useLocale } from "@/lib/locale-context";
 import AnnouncementViewModal from "@/components/announcements/AnnouncementViewModal";
 import type { AnnouncementRow } from "@/services/announcementService";
 import { CalendarDays, Link as LinkIcon } from "lucide-react";
-
-// Keep the SOURCE_COLORS map — will be replaced by lib/module-colors in Task 8
-const SOURCE_COLORS: Record<string, string> = {
-  QMS: "#0F1059", IT: "#1D6A8A", HR: "#7C3AED", GA: "#059669", SAFETY: "#DC2626",
-};
+import { SOURCE_BRAND_COLORS } from "@/lib/module-colors";
 
 type PublicAnnouncement = {
   id: string;
@@ -75,7 +71,7 @@ export default function AnnouncementsClient({ initialData }: Props) {
     <>
       <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] divide-y divide-slate-100 overflow-hidden">
         {items.map((a) => {
-          const color = SOURCE_COLORS[a.sourceSystem] ?? "#6B7280";
+          const color = SOURCE_BRAND_COLORS[a.sourceSystem] ?? "#6B7280";
           const dateStr = new Date(a.createdAt).toLocaleDateString(
             locale === "th" ? "th-TH" : "en-US",
             { day: "2-digit", month: "short", year: "numeric" },

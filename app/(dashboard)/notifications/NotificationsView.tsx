@@ -7,6 +7,7 @@ import { ArrowLeft, Bell, CheckCheck, ExternalLink, Filter, Trash2 } from "lucid
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
+import { getModuleMeta } from "@/lib/module-colors";
 
 interface NotificationItem {
   id: string;
@@ -19,18 +20,6 @@ interface NotificationItem {
   isRead: boolean;
   createdAt: string;
 }
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const MODULE_META: Record<string, { bg: string; text: string; dot: string; brand: string; label: string }> = {
-  CAR:         { bg: "bg-orange-100",  text: "text-orange-700",  dot: "bg-orange-400",  brand: "#ea580c", label: "CAR"        },
-  DAR:         { bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-500",    brand: "#2563eb", label: "DAR"        },
-  KPI:         { bg: "bg-green-100",   text: "text-green-700",   dot: "bg-green-500",   brand: "#16a34a", label: "KPI"        },
-  KPI_MONTHLY: { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500", brand: "#059669", label: "KPI Monthly"},
-  AUDIT:       { bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-500",  brand: "#7c3aed", label: "Audit"      },
-};
-
-const FALLBACK_META = { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400", brand: "#64748b", label: "—" };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -132,7 +121,7 @@ function NotificationDetail({
   onDelete: () => void;
   deleting: boolean;
 }) {
-  const mod = MODULE_META[item.module] ?? FALLBACK_META;
+  const mod = getModuleMeta(item.module);
   const actionPath = getActionPath(item);
   const { thLine, enLine, rows } = parseBody(item.body);
 
@@ -219,7 +208,7 @@ function NotifRow({
   onCheck: (e: React.MouseEvent) => void;
   onDelete: () => void;
 }) {
-  const mod = MODULE_META[n.module] ?? FALLBACK_META;
+  const mod = getModuleMeta(n.module);
   const { thLine } = parseBody(n.body);
 
   return (
@@ -426,7 +415,7 @@ export default function NotificationsView() {
               >
                 <option value="ALL">ทุกระบบ</option>
                 {modules.map((m) => (
-                  <option key={m} value={m}>{MODULE_META[m]?.label ?? m}</option>
+                  <option key={m} value={m}>{getModuleMeta(m).label}</option>
                 ))}
               </select>
             </div>
