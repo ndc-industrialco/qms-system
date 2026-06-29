@@ -593,11 +593,11 @@ export class AuditPlanService {
 
     return {
       counts: {
-        total,
-        inProgress,
-        waitingCorrective,
+        totalPlans: total,
+        inProgressPlans: inProgress,
+        waitingCorrectivePlans: waitingCorrective,
         openFindings,
-        overdueFindings,
+        overdueCorrectiveActions: overdueFindings,
         pendingSignoffs,
       },
       upcomingSchedules: upcomingSchedules.map((s) => ({
