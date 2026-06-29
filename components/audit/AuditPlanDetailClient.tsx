@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { fmtDate } from "@/lib/format";
+import { formatBytes } from "@/lib/formatters";
 import { INPUT_CLASS } from "@/lib/styles";
 import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
 import AuditFindingStatusBadge from "./AuditFindingStatusBadge";
@@ -684,10 +685,12 @@ function AttachmentsTab({ plan, canUpload }: { plan: AuditPlanDetail; canUpload:
             <div key={a.id} className="rounded-xl border border-slate-100 bg-white p-3 flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-slate-800 truncate">{a.fileName}</p>
-                {a.fileUrl && (
-                  <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">{a.fileUrl}</a>
+                {(a.spDownloadUrl ?? a.fileUrl) && (
+                  <a href={a.spDownloadUrl ?? a.fileUrl ?? undefined} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">{a.fileName}</a>
                 )}
-                <p className="text-xs text-slate-400 mt-0.5">{formatDateTime(a.createdAt)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {a.sizeBytes ? formatBytes(a.sizeBytes) + " · " : ""}{formatDateTime(a.createdAt)}
+                </p>
               </div>
               {canUpload && (
                 <button type="button" aria-label="ลบ" onClick={() => setDeleteTarget(a.id)}

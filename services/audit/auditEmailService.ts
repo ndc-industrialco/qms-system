@@ -698,7 +698,9 @@ export async function sendAuditSignRequestEmail(opts: {
   senderAccessToken?: string | null;
 }) {
   const rolePath = opts.signedRole === "APPROVER" ? "approver" : "reviewer";
-  const url = getAppUrl(`/approve/audit/${opts.planId}/${rolePath}`);
+  const url = opts.token
+    ? getAppUrl(`/approve/audit/${opts.planId}/${rolePath}?token=${encodeURIComponent(opts.token)}`)
+    : getAppUrl(`/approve/audit/${opts.planId}/${rolePath}`);
   const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : opts.signedRole === "REVIEWER" ? "Reviewer" : opts.signedRole;
 
   await sendMail({

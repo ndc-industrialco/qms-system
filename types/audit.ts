@@ -272,6 +272,7 @@ export type AuditAttachmentRow = {
   resourceId: string;
   fileName: string;
   fileUrl: string | null;
+  spDownloadUrl: string | null;
   sharePointItemId: string | null;
   mimeType: string | null;
   sizeBytes: number | null;
