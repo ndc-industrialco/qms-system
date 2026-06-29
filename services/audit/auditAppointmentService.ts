@@ -9,7 +9,6 @@ import { logger } from "@/lib/logger";
 import type { AuditAppointmentCreateInput, AuditAppointmentUpdateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
 import { sendAppointmentSignRequestEmail, sendAppointmentPublishedEmail, sendAppointmentRejectedEmail, buildAppointmentPublishedHtml, layout, esc } from "./auditEmailService";
 import { NotificationService } from "@/services/notificationService";
-import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 
 // ─── HTML notification builders (same template as email, minus send wrapper) ──
@@ -21,14 +20,17 @@ function getAppUrl(path: string) {
 function buildSignRequestHtml(opts: {
   appointmentId: string;
   appointmentNo: string;
-  title: string;
   year: number;
+  title: string;
   standards: string[];
-  ownerName: string | null;
+  ownerName?: string | null;
+  reviewerName?: string | null;
   signedRole: "REVIEWER" | "APPROVER";
 }): string {
   const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : "Reviewer";
+  const rolePath = opts.signedRole === "APPROVER" ? "approver" : "reviewer";
   const yearEn = opts.year - 543;
+  const url = getAppUrl(`/approve/audit/appointments/${opts.appointmentId}/${rolePath}`);
 
   const standardsBadges = opts.standards.length
     ? `<div style="margin-top:16px">
@@ -37,23 +39,24 @@ function buildSignRequestHtml(opts: {
       </div>`
     : "";
 
-  const detailUrl = getAppUrl(`/audit/appointments/${opts.appointmentId}`);
+  const urgentBanner = `<div style="margin:16px 0 0;padding:14px 16px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
+    <strong>Your signature is required.</strong> Please click the button below to review and sign this appointment letter as <strong>${esc(roleLabel)}</strong>.
+    The process cannot proceed without your signature.
+  </div>`;
 
   return layout({
     badgeColor: "#f59e0b",
     badgeText: "Signature Required",
-    title: "Appointment Letter — Signature Request",
-    subtitle: `${opts.appointmentNo} · ${roleLabel}`,
+    title: `${esc(opts.appointmentNo)} (${esc(yearEn.toString())})`,
+    subtitle: esc(opts.title),
     rows: [
-      { label: "Document No.", value: opts.appointmentNo },
-      { label: "Title", value: opts.title },
-      { label: "Year", value: `${yearEn} (B.E. ${opts.year})` },
+      ...(opts.reviewerName ? [{ label: "Reviewer", value: opts.reviewerName }] : []),
       ...(opts.ownerName ? [{ label: "Prepared by", value: opts.ownerName }] : []),
       { label: "Your Role", value: roleLabel },
     ],
-    body: standardsBadges,
-    actionLabel: "เปิดรายการ",
-    actionUrl: detailUrl,
+    body: standardsBadges + urgentBanner,
+    actionLabel: opts.signedRole === "APPROVER" ? "Review & Approve" : "Review & Sign",
+    actionUrl: url,
   });
 }
 
@@ -173,21 +176,23 @@ const isPrivileged = (role: string) => PRIVILEGED.has(role);
 async function nextAppointmentNo(
   tx: Parameters<Parameters<typeof db.$transaction>[0]>[0]
 ) {
-  const format = await getDocNoFormat("AUDIT_APPT");
   const year = new Date().getFullYear();
-  const { likePrefix, pad } = buildLikePrefix(format, { year });
-  const startPos = likePrefix.length + 1;
+  const yy = String(year).slice(-2);
+  const prefix = `APPT-${yy}-`;
+
+  const likePattern = `${prefix}%`;
+  const startPos = prefix.length + 1;
   const existing = await tx.$queryRaw<{ seq: number }[]>`
     SELECT CAST(SUBSTRING(appointment_no FROM ${startPos}) AS INTEGER) AS seq
     FROM audit_appointments
-    WHERE appointment_no LIKE ${`${likePrefix}%`}
+    WHERE appointment_no LIKE ${likePattern}
     ORDER BY seq
   `;
   const used = new Set(existing.map((r) => r.seq));
   let next = 1;
   while (used.has(next)) next++;
-  return renderDocNo(format, { year, seq: next });
-  void pad;
+
+  return `${prefix}${String(next).padStart(3, "0")}`;
 }
 
 export class AuditAppointmentService {
