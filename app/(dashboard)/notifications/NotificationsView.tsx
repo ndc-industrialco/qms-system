@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Bell, CheckCheck, ExternalLink, Filter, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import PageHeader from "@/components/common/PageHeader";
 
 interface NotificationItem {
   id: string;
@@ -35,7 +36,11 @@ const FALLBACK_META = { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-sla
 
 function getActionPath(item: NotificationItem): string | null {
   if (item.module === "CAR")   return `/car/${item.resourceId}`;
-  if (item.module === "DAR")   return `/dar/${item.resourceId}`;
+  if (item.module === "DAR") {
+    if (item.resourceType === "DAR_REVIEWER") return `/approve/dar/${item.resourceId}/reviewer`;
+    if (item.resourceType === "DAR_APPROVER") return `/approve/dar/${item.resourceId}/approver`;
+    return `/dar/${item.resourceId}`;
+  }
   if (item.module === "KPI")   return `/qms/kpi/${item.resourceId}`;
   if (item.module === "AUDIT") {
     if (item.resourceType === "AUDIT_APPOINTMENT") {
@@ -115,7 +120,7 @@ function HtmlFrame({ html, itemId }: { html: string; itemId: string }) {
       key={itemId}
       title="notification-html"
       srcDoc={srcDoc}
-      sandbox="allow-same-origin allow-popups allow-scripts"
+      sandbox="allow-popups allow-scripts"
       className="w-full border-0 block"
       style={{ height, minHeight: 200 }}
     />
@@ -304,15 +309,24 @@ export default function NotificationsView() {
   const unreadCount = raw?.data?.unreadCount   ?? 0;
 
   const markRead = useMutation({
-    mutationFn: async (id: string) => { await fetch(`/api/notifications/${id}/read`, { method: "PATCH" }); },
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/notifications/${id}/read`, { method: "PATCH" });
+      if (!res.ok) throw new Error("Failed to mark as read");
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
   const markAllRead = useMutation({
-    mutationFn: async () => { await fetch("/api/notifications/read-all", { method: "PATCH" }); },
+    mutationFn: async () => {
+      const res = await fetch("/api/notifications/read-all", { method: "PATCH" });
+      if (!res.ok) throw new Error("Failed to mark all as read");
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
   const deleteOne = useMutation({
-    mutationFn: async (id: string) => { await fetch(`/api/notifications/${id}`, { method: "DELETE" }); },
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete notification");
+    },
     onSuccess: (_d, id) => {
       if (selected?.id === id) { setSelected(null); setShowDetail(false); }
       setCheckedIds((prev) => { const s = new Set(prev); s.delete(id); return s; });
@@ -321,11 +335,12 @@ export default function NotificationsView() {
   });
   const deleteBulk = useMutation({
     mutationFn: async (ids: string[]) => {
-      await fetch("/api/notifications", {
+      const res = await fetch("/api/notifications", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
       });
+      if (!res.ok) throw new Error("Failed to delete notifications");
     },
     onSuccess: (_d, ids) => {
       if (selected && ids.includes(selected.id)) { setSelected(null); setShowDetail(false); }
@@ -374,6 +389,8 @@ export default function NotificationsView() {
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
 
+      <PageHeader title="การแจ้งเตือน" subtitle="Notifications" className="shrink-0 mb-3 mx-4 mt-4" />
+
       {/* ── Top bar ── */}
       <div className="shrink-0 border-b border-slate-100 bg-white">
         <div className="flex items-center justify-between gap-2 px-4 py-3">
@@ -388,7 +405,6 @@ export default function NotificationsView() {
               </button>
             )}
             <Bell className="h-4 w-4 text-[#0f1059]" />
-            <h1 className="text-sm font-bold text-slate-900 sm:text-base">การแจ้งเตือน</h1>
             {unreadCount > 0 && (
               <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
                 {unreadCount}
