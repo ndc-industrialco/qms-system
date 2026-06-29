@@ -36,11 +36,7 @@ const FALLBACK_META = { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-sla
 
 function getActionPath(item: NotificationItem): string | null {
   if (item.module === "CAR")   return `/car/${item.resourceId}`;
-  if (item.module === "DAR") {
-    if (item.resourceType === "DAR_REVIEWER") return `/approve/dar/${item.resourceId}/reviewer`;
-    if (item.resourceType === "DAR_APPROVER") return `/approve/dar/${item.resourceId}/approver`;
-    return `/dar/${item.resourceId}`;
-  }
+  if (item.module === "DAR")   return `/dar/${item.resourceId}`;
   if (item.module === "KPI")   return `/qms/kpi/${item.resourceId}`;
   if (item.module === "AUDIT") {
     if (item.resourceType === "AUDIT_APPOINTMENT") {
@@ -120,7 +116,7 @@ function HtmlFrame({ html, itemId }: { html: string; itemId: string }) {
       key={itemId}
       title="notification-html"
       srcDoc={srcDoc}
-      sandbox="allow-popups allow-scripts"
+      sandbox="allow-same-origin allow-popups allow-scripts"
       className="w-full border-0 block"
       style={{ height, minHeight: 200 }}
     />
@@ -310,22 +306,19 @@ export default function NotificationsView() {
 
   const markRead = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/notifications/${id}/read`, { method: "PATCH" });
-      if (!res.ok) throw new Error("Failed to mark as read");
+      await fetch(`/api/notifications/${id}/read`, { method: "PATCH" });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
   const markAllRead = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/notifications/read-all", { method: "PATCH" });
-      if (!res.ok) throw new Error("Failed to mark all as read");
+      await fetch("/api/notifications/read-all", { method: "PATCH" });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
   const deleteOne = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/notifications/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete notification");
+      await fetch(`/api/notifications/${id}`, { method: "DELETE" });
     },
     onSuccess: (_d, id) => {
       if (selected?.id === id) { setSelected(null); setShowDetail(false); }
@@ -335,12 +328,11 @@ export default function NotificationsView() {
   });
   const deleteBulk = useMutation({
     mutationFn: async (ids: string[]) => {
-      const res = await fetch("/api/notifications", {
+      await fetch("/api/notifications", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
       });
-      if (!res.ok) throw new Error("Failed to delete notifications");
     },
     onSuccess: (_d, ids) => {
       if (selected && ids.includes(selected.id)) { setSelected(null); setShowDetail(false); }
