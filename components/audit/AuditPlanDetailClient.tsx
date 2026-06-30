@@ -97,8 +97,14 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
   });
 
   function onSubmit(data: AuditScheduleCreateInput) {
-    createMutation.mutate(data, {
-      onSuccess: () => { toast.success("เพิ่มตารางเวลาสำเร็จ"); setShowAdd(false); reset(); },
+    const lead = addTeam.find((m) => m.role === "LEAD_AUDITOR");
+    createMutation.mutate({
+      ...data,
+      team: addTeam.map((m) => ({ authUserId: m.authUserId, nameSnapshot: m.nameSnapshot ?? undefined, emailSnapshot: m.emailSnapshot ?? undefined, role: m.role })),
+      leadAuditorAuthUserId: lead?.authUserId,
+      leadAuditorNameSnapshot: lead?.nameSnapshot ?? undefined,
+    }, {
+      onSuccess: () => { toast.success("เพิ่มตารางเวลาสำเร็จ"); setShowAdd(false); reset(); setAddTeam([]); },
       onError: (err) => toast.error(err.message),
     });
   }
@@ -183,8 +189,42 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
             <label className="mb-1 block text-xs font-medium text-slate-600">วาระการประชุม</label>
             <textarea {...register("agenda")} rows={2} className={cn(INPUT_CLASS, "resize-none")} />
           </div>
+
+          {/* Team picker */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-slate-600">ทีมตรวจสอบ</p>
+            {SCHEDULE_TEAM_ROLES.map(({ role, label }) => {
+              const members = addTeam.filter((m) => m.role === role);
+              return (
+                <div key={role}>
+                  <p className="mb-1 text-[11px] text-slate-500">{label}</p>
+                  <AuditPersonSearch
+                    placeholder={`ค้นหา${label}...`}
+                    exclude={members.map((m) => m.authUserId)}
+                    onSelect={(c) => {
+                      if (addTeam.some((m) => m.authUserId === c.id && m.role === role)) return;
+                      setAddTeam((prev) => [...prev, { authUserId: c.id, nameSnapshot: c.name, emailSnapshot: c.email ?? null, role }]);
+                    }}
+                  />
+                  {members.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {members.map((m) => (
+                        <span key={m.authUserId} className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-medium px-2 py-0.5">
+                          {m.nameSnapshot}
+                          <button type="button" onClick={() => setAddTeam((prev) => prev.filter((x) => !(x.authUserId === m.authUserId && x.role === role)))} className="opacity-60 hover:opacity-100">
+                            <XCircle className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
           <div className="flex gap-2 justify-end">
-            <Button type="button" variant="outline" size="sm" onClick={() => { setShowAdd(false); reset(); }}>ยกเลิก</Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => { setShowAdd(false); reset(); setAddTeam([]); }}>ยกเลิก</Button>
             <Button type="submit" size="sm" disabled={createMutation.isPending}>
               {createMutation.isPending ? "กำลังบันทึก..." : "บันทึก"}
             </Button>
