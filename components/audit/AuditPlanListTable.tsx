@@ -21,7 +21,7 @@ import {
   type AuditPlanStatus,
   type AuditType,
 } from "@/types/audit";
-import { useAuditPlans, useCancelAuditPlan, type AuditPlanListParams } from "@/hooks/api/use-audit-plans";
+import { useAuditPlans, useCancelAuditPlan, useDeleteAuditPlan, type AuditPlanListParams } from "@/hooks/api/use-audit-plans";
 import { fmtDate } from "@/lib/format";
 
 interface Props {
@@ -73,8 +73,10 @@ function TableSkeleton() {
 
 export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivileged = false, canEdit = false }: Props) {
   const [cancelTarget, setCancelTarget] = useState<AuditPlanSummary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AuditPlanSummary | null>(null);
 
   const cancelMutation = useCancelAuditPlan();
+  const deleteMutation = useDeleteAuditPlan();
 
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
     keys: ["search", "auditType", "status", "page"] as const,
@@ -201,6 +203,15 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                       ยกเลิก
                     </button>
                   )}
+                  {canEdit && (plan.status === "DRAFT" || plan.status === "CANCELLED") && (
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(plan)}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-red-200 bg-white px-3 text-xs font-medium text-red-500 hover:bg-red-50"
+                    >
+                      ลบ
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -257,6 +268,13 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                               onClick={() => setCancelTarget(plan)}
                             />
                           )}
+                          {canEdit && (plan.status === "DRAFT" || plan.status === "CANCELLED") && (
+                            <ActionIconButton
+                              tone="delete"
+                              label="ลบ"
+                              onClick={() => setDeleteTarget(plan)}
+                            />
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -280,6 +298,45 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
         <p className="text-xs text-slate-400 text-right">กำลังโหลด...</p>
       )}
 
+
+      {/* Delete confirm dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการลบแผน</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-600">
+            คุณต้องการลบ{" "}
+            <span className="font-mono font-semibold text-slate-800">{deleteTarget?.auditNo}</span>{" "}
+            ออกจากระบบถาวร ใช่หรือไม่?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              ยกเลิก
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (deleteTarget) {
+                  deleteMutation.mutate(
+                    { id: deleteTarget.id },
+                    {
+                      onSuccess: () => {
+                        toast.success("ลบแผนสำเร็จ");
+                        setDeleteTarget(null);
+                      },
+                      onError: (err) => toast.error(err.message),
+                    }
+                  );
+                }
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "กำลังลบ..." : "ยืนยันลบ"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Cancel confirm dialog */}
       <Dialog open={!!cancelTarget} onOpenChange={(v) => !v && setCancelTarget(null)}>

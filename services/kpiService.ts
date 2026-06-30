@@ -693,4 +693,13 @@ export class KpiService {
 
     return { ...updated, objectives: kpi.objectives };
   }
+
+  async getMonthlySummary(year: number) {
+    const kpis = await this.kpiRepo.findMonthlySummary(year);
+    return kpis.map((k) => {
+      const monthMap: Record<string, { id: string; status: string } | null> = {};
+      for (const r of k.monthlyReports) monthMap[r.month] = { id: r.id, status: r.status };
+      return { id: k.id, department: k.department, yearly: k.yearly, objectiveCount: k.objectives.length, months: monthMap };
+    });
+  }
 }

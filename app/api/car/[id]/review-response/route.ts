@@ -34,7 +34,7 @@ export async function POST(
       car = await carService.reviewResponseByMRAuthenticated(
         id,
         session.user.id,
-        { action: input.action, comment: input.comment, signaturePath: input.signaturePath },
+        { action: input.action, comment: input.comment, signaturePath: input.signaturePath, qmsAuthUserId: input.qmsAuthUserId },
         session.user.authUserId,
         session.user.accessToken,
       );

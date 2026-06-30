@@ -686,6 +686,30 @@ export async function sendAppointmentRejectedEmail(opts: {
   });
 }
 
+// ─── Audit plan: sign request html (reused for in-app notification body) ─────
+
+export function buildAuditSignRequestHtml(opts: {
+  planTitle: string;
+  auditNo: string;
+  signedRole: string;
+}): string {
+  const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : opts.signedRole === "REVIEWER" ? "Reviewer" : opts.signedRole;
+  return layout({
+    badgeColor: "#f59e0b",
+    badgeText: "Signature Required",
+    title: "Audit Plan — Signature Request",
+    subtitle: `${esc(opts.auditNo)} · ${esc(roleLabel)}`,
+    rows: [
+      { label: "Audit No.", value: opts.auditNo },
+      { label: "Title", value: opts.planTitle },
+      { label: "Your Role", value: roleLabel },
+    ],
+    body: `<div style="margin:16px 0 0;padding:14px 16px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
+      <strong>Your signature is required</strong> to proceed with the audit plan approval workflow.
+    </div>`,
+  });
+}
+
 // ─── Audit plan: sign request (for audit plan, not appointment) ───────────────
 
 export async function sendAuditSignRequestEmail(opts: {

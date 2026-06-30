@@ -189,6 +189,34 @@ export class AuditSignReportService {
     });
   }
 
+  // ── Mark Audit Complete (QMS → READY_TO_CLOSE) ───────────────────────────
+
+  async markComplete(planId: string, actor: Actor) {
+    const plan = await this.loadPlan(planId);
+    const completeable = new Set(["PLANNED", "ANNOUNCED", "IN_PROGRESS", "WAITING_CORRECTIVE"]);
+    if (!completeable.has(plan.status)) {
+      throw new ValidationError(`Cannot mark complete from status ${plan.status}`);
+    }
+
+    return db.$transaction(async (tx) => {
+      await tx.auditPlan.update({ where: { id: planId }, data: { status: "READY_TO_CLOSE" } });
+
+      await AuditService.record(
+        {
+          actorUserId: actor.userId,
+          actorAuthUserId: actor.authUserId,
+          actorRole: actor.role,
+          action: "COMPLETE",
+          resourceType: "AUDIT_PLAN",
+          resourceId: planId,
+          before: { status: plan.status },
+          after: { status: "READY_TO_CLOSE" },
+        },
+        tx
+      );
+    });
+  }
+
   // ── Close Plan ────────────────────────────────────────────────────────────
 
   async closePlan(planId: string, actor: Actor) {

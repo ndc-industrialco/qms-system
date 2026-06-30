@@ -13,6 +13,7 @@ export class AuditScheduleRepository extends BaseRepository<AuditSchedule> {
   async findByPlanId(planId: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findMany({
       where: { planId },
+      include: { team: { orderBy: { role: "asc" } } },
       orderBy: { startAt: "asc" },
     });
   }

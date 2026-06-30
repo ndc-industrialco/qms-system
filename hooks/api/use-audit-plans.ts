@@ -65,6 +65,14 @@ async function updateAuditPlan(id: string, input: AuditPlanUpdateInput): Promise
   return json.data;
 }
 
+async function deleteAuditPlan(id: string): Promise<void> {
+  const res = await fetch(`/api/audit/plans/${id}/delete`, { method: "DELETE" });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error((json as { message?: string }).message ?? "Failed to delete audit plan");
+  }
+}
+
 async function cancelAuditPlan(id: string, reason?: string): Promise<void> {
   const res = await fetch(`/api/audit/plans/${id}`, {
     method: "DELETE",
@@ -104,6 +112,16 @@ export function useUpdateAuditPlan(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: auditPlanKeys.all });
       qc.invalidateQueries({ queryKey: ["audit-plan", id] });
+    },
+  });
+}
+
+export function useDeleteAuditPlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string }) => deleteAuditPlan(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: auditPlanKeys.all });
     },
   });
 }

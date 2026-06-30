@@ -288,6 +288,9 @@ export class CarRepository extends BaseRepository<CarMaster> {
         issuerName: true,
         targetEmailGroups: true,
         targetEmailGroupsCc: true,
+        response: {
+          select: { responderAuthUserId: true },
+        },
       },
     });
   }
@@ -315,6 +318,10 @@ export class CarRepository extends BaseRepository<CarMaster> {
         response: { select: { plannedCompletionDate: true, responderAuthUserId: true } },
       },
     });
+  }
+
+  async countIssuedForDept(authDepartmentId: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).count({ where: { targetAuthDepartmentId: authDepartmentId, status: "ISSUED" } });
   }
 
   async countPendingMrResponseReviews(tx?: Prisma.TransactionClient) {
@@ -509,6 +516,10 @@ export class CarRepository extends BaseRepository<CarMaster> {
     tx?: Prisma.TransactionClient
   ) {
     const client = this.getClient(tx);
+
+    // delete existing response + review first (re-respond after MR rejection)
+    await client.carMrResponseReview.deleteMany({ where: { carMasterId: id } });
+    await client.carResponse.deleteMany({ where: { carMasterId: id } });
 
     await client.carResponse.create({
       data: {

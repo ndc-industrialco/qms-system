@@ -41,8 +41,8 @@ export const KpiMonthlyReminderService = {
         select: { status: true },
       });
 
-      // Skip if already submitted or approved — reminder not needed
-      if (report?.status === "APPROVED" || report?.status === "SUBMITTED") {
+      // Skip if already submitted (in review/approval flow) or approved — reminder not needed
+      if (report?.status === "APPROVED" || report?.status === "PENDING_REVIEW" || report?.status === "PENDING_APPROVAL") {
         skipped++;
         continue;
       }

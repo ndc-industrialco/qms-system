@@ -78,18 +78,6 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
       {
         title: 'KPI รายเดือนได้รับการอนุมัติ',
         body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year}`,
-        htmlBody: makeBilingualMail({
-          titleTh: `KPI รายเดือน ${detail.kpi.department} ได้รับการอนุมัติ`,
-          titleEn: `Monthly KPI ${detail.kpi.department} Approved`,
-          facts: [
-            { labelTh: "หน่วยงาน", labelEn: "Department", value: detail.kpi.department },
-            { labelTh: "รอบเดือน", labelEn: "Period", value: `${detail.month}/${detail.year}` },
-            { labelTh: "อนุมัติโดย", labelEn: "Approved By", value: session.user.name ?? '' },
-          ],
-          actionLabelTh: "ดู KPI รายเดือน",
-          actionLabelEn: "View Monthly KPI",
-          actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/monthly`,
-        }),
         module: 'KPI',
         resourceId: reportId,
         resourceType: 'KPI_MONTHLY',

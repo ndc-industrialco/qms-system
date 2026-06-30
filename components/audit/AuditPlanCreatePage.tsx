@@ -1202,7 +1202,7 @@ export function AuditPlanCreatePage({ appointments, dbStandards }: Props) {
 
           {/* ── Step 4: Email groups + Reviewer/Approver ── */}
           {step === 3 && (
-            <div className="space-y-6">
+            <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-1">
               {/* Email groups — accordion */}
               {emailGroups.length > 0 && (
                 <div className="rounded-xl border border-slate-200 overflow-hidden">

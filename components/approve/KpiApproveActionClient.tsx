@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
 import KpiApprovalTimeline, { KPI_MONTHLY_STEPS, type KpiApprovalSignature } from "@/components/kpi/KpiApprovalTimeline";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ApproveSuccessScreen from "@/components/shared/ApproveSuccessScreen";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -148,6 +149,17 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
       setSubmitting(false);
       setPendingAction(null);
     }
+  }
+
+  if (successOpen) {
+    return (
+      <ApproveSuccessScreen
+        title="ดำเนินการเรียบร้อย"
+        subtitle={mode === "reviewer" ? "ตรวจสอบ KPI เรียบร้อยแล้ว" : "อนุมัติ KPI เรียบร้อยแล้ว"}
+        backHref="/notifications"
+        backLabel="กลับหน้าหลัก"
+      />
+    );
   }
 
   if (query.isLoading) {
@@ -440,22 +452,6 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
         </DialogContent>
       </Dialog>
 
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-sm rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>{t("approve.successTitle")}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-slate-600">{t("approve.successDesc")}</p>
-          <DialogFooter>
-            <Button
-              className="rounded-xl bg-primary hover:bg-[#161875]"
-              onClick={() => { setSuccessOpen(false); router.push("/approve"); router.refresh(); }}
-            >
-              {t("approve.backToQueue")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

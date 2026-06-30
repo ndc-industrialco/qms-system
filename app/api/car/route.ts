@@ -1,4 +1,3 @@
-import { ForbiddenError } from "@/errors/customErrors";
 import { requireAuth, requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { sendSuccess } from "@/lib/apiResponse";
@@ -26,9 +25,6 @@ export async function GET(req: NextRequest) {
     });
 
     const requestedScope = query.scope ?? (isPrivileged ? "all" : "my-department");
-    if (requestedScope === "all" && !isPrivileged) {
-      throw new ForbiddenError("Insufficient permissions for all-department CAR access.");
-    }
 
     const result = await carService.listCars(query, {
       scope: requestedScope,

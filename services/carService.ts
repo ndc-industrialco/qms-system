@@ -350,6 +350,10 @@ export class CarService {
     return this.mapSummaries(raws);
   }
 
+  async countPendingForDept(authDepartmentId: string): Promise<number> {
+    return this.carRepo.countIssuedForDept(authDepartmentId);
+  }
+
   async listCars(
     query: CarListQuery,
     scope: { scope: CarListScope; issuerAuthUserId?: string; authDepartmentId?: string | null }
@@ -997,6 +1001,11 @@ export class CarService {
       notifyCarUser({ recipientAuthUserId: uid, event, carNo: car.carNo, carId: id, targetDepartmentName: car.targetDepartmentName ?? undefined, defectDetail: (car as Record<string, unknown>).defectDetail as string | undefined, isoStandards: (car as Record<string, unknown>).isoStandards as string[] | undefined, comment: input.comment });
     }
 
+    // Notify selected QMS user to prepare for verification
+    if (input.action === "APPROVED" && input.qmsAuthUserId) {
+      notifyCarUser({ recipientAuthUserId: input.qmsAuthUserId, event: "QMS_NOTIFY", carNo: car.carNo, carId: id, targetDepartmentName: car.targetDepartmentName ?? undefined, defectDetail: (car as Record<string, unknown>).defectDetail as string | undefined, isoStandards: (car as Record<string, unknown>).isoStandards as string[] | undefined });
+    }
+
     if (input.action === "REJECTED") {
       CarReminderService.schedule(id).catch((err) =>
         logger.error("[CarService.reviewResponseByMRAuthenticated] Failed to reschedule reminder after rejection", err)
@@ -1108,8 +1117,24 @@ export class CarService {
     const verifyIso    = (car as Record<string, unknown>).isoStandards as string[] | undefined;
     if (input.result === "PASSED" && mrUserForVerify) {
       notifyCarUser({ recipientAuthUserId: mrUserForVerify.authUserId, event: "VERIFY_1_PASS", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, mrReviewToken: actionTokenValue });
-    } else if (input.result === "FAILED" && input.round === 1 && car.issuerAuthUserId) {
-      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "VERIFY_2_SCHEDULED", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, nextDueDate: input.nextDueDate });
+    } else if (input.result === "FAILED" && input.round === 1) {
+      // Notify issuer that round 2 is scheduled
+      if (car.issuerAuthUserId) {
+        notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "VERIFY_2_SCHEDULED", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, nextDueDate: input.nextDueDate });
+      }
+      // Notify responder (dept) that they need to complete corrective actions before round 2
+      if (car.response?.responderAuthUserId) {
+        notifyCarUser({ recipientAuthUserId: car.response.responderAuthUserId, event: "VERIFY_FAILED_DEPT", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, nextDueDate: input.nextDueDate });
+      }
+    } else if (input.result === "FAILED" && input.round === 2) {
+      // Notify issuer that re-CAR is required
+      if (car.issuerAuthUserId) {
+        notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "RE_CAR", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso });
+      }
+      // Notify responder (dept) about re-CAR
+      if (car.response?.responderAuthUserId) {
+        notifyCarUser({ recipientAuthUserId: car.response.responderAuthUserId, event: "RE_CAR_DEPT", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso });
+      }
     }
 
     const detail = await this.carRepo.findDetailById(id);
@@ -1288,17 +1313,21 @@ export class CarService {
       );
     }
 
-    // In-app notify dept members (same pattern as issueCar)
+    // In-app notify: always reach known users from DB (no token needed)
+    const reCarNotifOpts = { event: "RE_CAR" as const, carNo: newCarNo, carId: newId, targetDepartmentName: original.targetDepartmentName ?? undefined, defectDetail: original.defectDetail ?? undefined, isoStandards: original.isoStandards ?? [] };
+    const knownRecipients = [...new Set([
+      original.issuerAuthUserId,
+      original.response?.responderAuthUserId,
+    ].filter(Boolean) as string[])];
+    await Promise.all(knownRecipients.map((uid) => notifyCarUser({ recipientAuthUserId: uid, ...reCarNotifOpts }).catch(() => {})));
+
+    // Best-effort: also notify all current dept members if token is available
     const targetDeptCode = (original as Record<string, unknown>).targetAuthDepartmentId as string | null | undefined ?? original.targetDepartmentId;
     if (targetDeptCode && accessToken) {
       getAuthCenterDepartmentMembers(targetDeptCode, { accessToken })
         .then(async (deptResult) => {
-          const recipients = [...new Set((deptResult?.members ?? []).map((m) => m.id).filter(Boolean))];
-          await Promise.all(
-            recipients.map((recipientAuthUserId) =>
-              notifyCarUser({ recipientAuthUserId, event: "RE_CAR", carNo: newCarNo, carId: newId, targetDepartmentName: original.targetDepartmentName ?? undefined, defectDetail: original.defectDetail ?? undefined, isoStandards: original.isoStandards ?? [] })
-            )
-          );
+          const deptRecipients = (deptResult?.members ?? []).map((m) => m.id).filter((id): id is string => !!id && !knownRecipients.includes(id));
+          await Promise.all([...new Set(deptRecipients)].map((uid) => notifyCarUser({ recipientAuthUserId: uid, ...reCarNotifOpts })));
         })
         .catch((err) => logger.error("[CarService.createReCar] Department notification failed", { carId: newId, error: String(err) }));
     }

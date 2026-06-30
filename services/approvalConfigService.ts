@@ -19,7 +19,7 @@ export class ApprovalConfigService {
     ]);
 
     // IT: full roles per user; QMS/MR: merge role-grants
-    let rolesByUser = new Map<string, string[]>();
+    const rolesByUser = new Map<string, string[]>();
     try {
       const authUsers = await listAuthCenterUsers({ accessToken });
       for (const u of authUsers) rolesByUser.set(u.id, u.roles);

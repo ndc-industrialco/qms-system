@@ -2,49 +2,36 @@
 
 import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { Users, Calendar, Building2, FileText, Paperclip, ClipboardCheck, Plus, Trash2, CheckCircle2, XCircle, RotateCcw, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail } from "lucide-react";
+import { Users, Calendar, Building2, FileText, Paperclip, ClipboardCheck, Plus, Trash2, CheckCircle2, XCircle, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { fmtDate } from "@/lib/format";
 import { formatBytes } from "@/lib/formatters";
 import { INPUT_CLASS } from "@/lib/styles";
 import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
-import AuditFindingStatusBadge from "./AuditFindingStatusBadge";
-import AuditFindingFormModal from "./AuditFindingFormModal";
 import AuditPlanFormModal from "./AuditPlanFormModal";
 import AuditPlanAssignDialog from "./AuditPlanAssignDialog";
-import { useAuditPlanDetail, useAnnouncePlan, useSignPlanInApp, useGenerateReport, useClosePlan, useIssueSignRequest, useSubmitPlan } from "@/hooks/api/use-audit-plan-detail";
-import { useAuditFindings, useRespondToFinding, useVerifyFinding, useCloseFinding } from "@/hooks/api/use-audit-findings";
+import { useAuditPlanDetail, useAnnouncePlan, useSignPlanInApp, useGenerateReport, useClosePlan, useIssueSignRequest, useSubmitPlan, useCompleteAudit } from "@/hooks/api/use-audit-plan-detail";
 import { useAuditSchedules, useCreateSchedule, useDeleteSchedule, useConfirmSchedule, useSubmitChecklist } from "@/hooks/api/use-audit-schedules";
+import { AuditPersonSearch } from "./AuditPersonSearch";
 import { useAuditAttachments, useDeleteAuditAttachment, useUploadAuditAttachment } from "@/hooks/api/use-audit-attachments";
 import {
   AUDIT_TYPE_LABELS,
   AUDIT_MODE_LABELS,
   AUDITOR_ROLE_LABELS,
   AUDIT_TEAM_ROLE_LABELS,
-  FINDING_CATEGORY_LABELS,
-  FINDING_SEVERITY_LABELS,
-  FINDING_SEVERITY_COLORS,
-  FINDING_STATUS_LABELS,
   type AuditPlanDetail,
-  type AuditFindingRow,
-  type FindingStatus,
   type AuditTeamRole,
 } from "@/types/audit";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   auditScheduleCreateSchema,
-  auditCorrectiveActionSchema,
-  auditVerifySchema,
   auditReportSchema,
   auditAnnounceSchema,
   type AuditScheduleCreateInput,
-  type AuditCorrectiveActionInput,
-  type AuditVerifyInput,
   type AuditReportInput,
   type AuditAnnounceInput,
 } from "@/lib/validations/audit";
@@ -81,6 +68,14 @@ const CONFIRM_STATUS_CONFIG = {
   UNAVAILABLE: { label: "ไม่ว่าง",    icon: AlertTriangle, className: "border-red-200    bg-red-50    text-red-700"    },
 } as const;
 
+type TeamEntry = { authUserId: string; nameSnapshot: string | null; emailSnapshot: string | null; role: AuditTeamRole };
+
+const SCHEDULE_TEAM_ROLES: { role: AuditTeamRole; label: string }[] = [
+  { role: "LEAD_AUDITOR", label: "หัวหน้าผู้ตรวจสอบ" },
+  { role: "AUDITOR", label: "ผู้ตรวจสอบ" },
+  { role: "OBSERVER", label: "ผู้สังเกตการณ์" },
+];
+
 function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: boolean }) {
   const [showAdd, setShowAdd] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -88,6 +83,7 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
   const [unavailableReason, setUnavailableReason] = useState("");
   const [checklistTarget, setChecklistTarget] = useState<string | null>(null);
   const [checklistFile, setChecklistFile] = useState<File | null>(null);
+  const [addTeam, setAddTeam] = useState<TeamEntry[]>([]);
 
   const { data: schedules = plan.schedules, isLoading } = useAuditSchedules(plan.id);
   const createMutation = useCreateSchedule(plan.id);
@@ -429,201 +425,87 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
   );
 }
 
-function FindingsTab({ plan, canCreate, canVerify }: { plan: AuditPlanDetail; canCreate: boolean; canVerify: boolean }) {
-  const [showCreate, setShowCreate] = useState(false);
-  const [editFinding, setEditFinding] = useState<AuditFindingRow | null>(null);
-  const [respondTarget, setRespondTarget] = useState<AuditFindingRow | null>(null);
-  const [verifyTarget, setVerifyTarget] = useState<AuditFindingRow | null>(null);
-  const [closeTarget, setCloseTarget] = useState<AuditFindingRow | null>(null);
-  const [statusFilter, setStatusFilter] = useState<FindingStatus | "">("");
-
-  const { data: findings = plan.findings, isLoading } = useAuditFindings(plan.id, statusFilter || undefined);
-  const respondMutation = useRespondToFinding(plan.id);
-  const verifyMutation = useVerifyFinding(plan.id);
-  const closeMutation = useCloseFinding(plan.id);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const respondForm = useForm<AuditCorrectiveActionInput>({ resolver: zodResolver(auditCorrectiveActionSchema) as any });
-  const verifyForm = useForm<AuditVerifyInput>({ resolver: zodResolver(auditVerifySchema), defaultValues: { result: "PASS" } });
-
-  const STATUS_OPTIONS: { value: FindingStatus | ""; label: string }[] = [
-    { value: "", label: "ทุกสถานะ" },
-    { value: "OPEN", label: FINDING_STATUS_LABELS["OPEN"] },
-    { value: "RESPONDED", label: FINDING_STATUS_LABELS["RESPONDED"] },
-    { value: "VERIFIED", label: FINDING_STATUS_LABELS["VERIFIED"] },
-    { value: "CLOSED", label: FINDING_STATUS_LABELS["CLOSED"] },
-    { value: "REOPENED", label: FINDING_STATUS_LABELS["REOPENED"] },
-    { value: "REJECTED", label: FINDING_STATUS_LABELS["REJECTED"] },
-  ];
+function FindingsTab({ plan, canUpload }: { plan: AuditPlanDetail; canUpload: boolean }) {
+  const { data: attachments = [], isLoading } = useAuditAttachments("FINDING", plan.id);
+  const uploadMutation = useUploadAuditAttachment(plan.id);
+  const deleteMutation = useDeleteAuditAttachment("FINDING", plan.id);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (isLoading) return <Skeleton className="h-24 w-full rounded-xl" />;
 
+  function handleUpload() {
+    if (!selectedFile) return;
+    uploadMutation.mutate(selectedFile, {
+      onSuccess: () => {
+        toast.success("อัปโหลดไฟล์สำเร็จ");
+        setSelectedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      },
+      onError: (err) => toast.error(err.message),
+    });
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as FindingStatus | "")}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-          {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-        {canCreate && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
-            <Plus className="h-4 w-4 mr-1.5" />สร้างข้อค้นพบ
-          </Button>
-        )}
-      </div>
-      {findings.length === 0 ? (
-        <p className="text-sm text-slate-400 py-6 text-center">ไม่พบข้อค้นพบ</p>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>เลขที่</TableHead>
-                <TableHead>ประเภท</TableHead>
-                <TableHead>ความรุนแรง</TableHead>
-                <TableHead>หัวข้อ</TableHead>
-                <TableHead className="text-center">สถานะ</TableHead>
-                <TableHead className="text-center">วันครบกำหนด</TableHead>
-                <TableHead className="text-center">การดำเนินการ</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {findings.map((f) => (
-                <TableRow key={f.id} className="hover:bg-slate-50">
-                  <TableCell className="font-mono text-xs text-blue-600">{f.findingNo}</TableCell>
-                  <TableCell className="text-xs">{FINDING_CATEGORY_LABELS[f.category]}</TableCell>
-                  <TableCell>
-                    <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border", FINDING_SEVERITY_COLORS[f.severity])}>
-                      {FINDING_SEVERITY_LABELS[f.severity]}
-                    </span>
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate text-slate-800 text-sm">{f.title}</TableCell>
-                  <TableCell className="text-center"><AuditFindingStatusBadge status={f.status} /></TableCell>
-                  <TableCell className="text-center text-xs font-mono text-slate-500">{fmtDate(f.dueAt)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-1">
-                      {canCreate && (f.status === "OPEN" || f.status === "REOPENED") && (
-                        <button type="button" onClick={() => setEditFinding(f)}
-                          className="h-7 rounded-lg border border-amber-200 bg-white px-2 text-xs text-amber-600 hover:bg-amber-50">แก้ไข</button>
-                      )}
-                      {canCreate && (f.status === "OPEN" || f.status === "REOPENED") && (
-                        <button type="button" onClick={() => { setRespondTarget(f); respondForm.reset(); }}
-                          className="h-7 rounded-lg border border-blue-200 bg-white px-2 text-xs text-blue-600 hover:bg-blue-50">ตอบกลับ</button>
-                      )}
-                      {canVerify && f.status === "RESPONDED" && (
-                        <button type="button" onClick={() => { setVerifyTarget(f); verifyForm.reset({ result: "PASS" }); }}
-                          className="h-7 rounded-lg border border-teal-200 bg-white px-2 text-xs text-teal-600 hover:bg-teal-50">ยืนยัน</button>
-                      )}
-                      {canVerify && f.status === "VERIFIED" && (
-                        <button type="button" onClick={() => setCloseTarget(f)}
-                          className="h-7 rounded-lg border border-emerald-200 bg-white px-2 text-xs text-emerald-600 hover:bg-emerald-50">ปิด</button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      {canUpload && (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <p className="text-sm font-semibold text-slate-700">อัปโหลดไฟล์ข้อค้นพบ</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.docx,.doc,.xlsx,.xls,.png,.jpg,.jpeg"
+            onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+            className="w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1 file:text-xs file:font-medium file:text-primary hover:file:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          {selectedFile && <p className="text-xs text-slate-500">{selectedFile.name}</p>}
+          <p className="text-xs text-slate-400">รองรับ .pdf, .docx, .xlsx, .png, .jpg — ขนาดสูงสุด 20 MB</p>
+          <div className="flex justify-end">
+            <Button size="sm" disabled={!selectedFile || uploadMutation.isPending} onClick={handleUpload}>
+              {uploadMutation.isPending ? "กำลังอัปโหลด..." : "อัปโหลด"}
+            </Button>
+          </div>
         </div>
       )}
-      <AuditFindingFormModal
-        open={showCreate || !!editFinding}
-        onClose={() => { setShowCreate(false); setEditFinding(null); }}
-        planId={plan.id}
-        editFinding={editFinding ?? undefined}
-        onSuccess={() => { setShowCreate(false); setEditFinding(null); }}
-      />
-      <Dialog open={!!respondTarget} onOpenChange={(v) => !v && setRespondTarget(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>ตอบกลับข้อค้นพบ: {respondTarget?.findingNo}</DialogTitle></DialogHeader>
-          <form id="respond-form" onSubmit={respondForm.handleSubmit((data: AuditCorrectiveActionInput) => {
-            if (!respondTarget) return;
-            respondMutation.mutate({ id: respondTarget.id, input: data }, {
-              onSuccess: () => { toast.success("ตอบกลับข้อค้นพบสำเร็จ"); setRespondTarget(null); },
-              onError: (err) => toast.error(err.message),
-            });
-          })} className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">สาเหตุที่แท้จริง *</label>
-              <textarea {...respondForm.register("rootCause")} rows={3} className={cn(INPUT_CLASS, "resize-none")} />
-              {respondForm.formState.errors.rootCause && <p className="mt-1 text-xs text-rose-500">{respondForm.formState.errors.rootCause.message}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">การแก้ไข</label>
-              <textarea {...respondForm.register("correction")} rows={2} className={cn(INPUT_CLASS, "resize-none")} />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">แผนการแก้ไข *</label>
-              <textarea {...respondForm.register("correctiveActionPlan")} rows={3} className={cn(INPUT_CLASS, "resize-none")} />
-              {respondForm.formState.errors.correctiveActionPlan && <p className="mt-1 text-xs text-rose-500">{respondForm.formState.errors.correctiveActionPlan.message}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">วันที่เป้าหมาย *</label>
-              <input {...respondForm.register("targetDate")} type="date" className={INPUT_CLASS} />
-              {respondForm.formState.errors.targetDate && <p className="mt-1 text-xs text-rose-500">{String(respondForm.formState.errors.targetDate.message)}</p>}
-            </div>
-          </form>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRespondTarget(null)}>ยกเลิก</Button>
-            <Button type="submit" form="respond-form" disabled={respondMutation.isPending}>
-              {respondMutation.isPending ? "กำลังส่ง..." : "ส่งการตอบกลับ"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={!!verifyTarget} onOpenChange={(v) => !v && setVerifyTarget(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>ยืนยันข้อค้นพบ: {verifyTarget?.findingNo}</DialogTitle></DialogHeader>
-          <form id="verify-form" onSubmit={verifyForm.handleSubmit((data: AuditVerifyInput) => {
-            if (!verifyTarget) return;
-            verifyMutation.mutate({ id: verifyTarget.id, input: data }, {
-              onSuccess: () => { toast.success("ยืนยันข้อค้นพบสำเร็จ"); setVerifyTarget(null); },
-              onError: (err) => toast.error(err.message),
-            });
-          })} className="space-y-4">
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">ผลการตรวจสอบ</p>
-              <div className="flex gap-3">
-                <label className="flex cursor-pointer items-center gap-2">
-                  <input type="radio" {...verifyForm.register("result")} value="PASS" className="h-4 w-4" />
-                  <span className="flex items-center gap-1 text-sm text-emerald-600"><CheckCircle2 className="h-4 w-4" /> ผ่าน</span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-2">
-                  <input type="radio" {...verifyForm.register("result")} value="FAIL" className="h-4 w-4" />
-                  <span className="flex items-center gap-1 text-sm text-rose-600"><XCircle className="h-4 w-4" /> ไม่ผ่าน</span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-2">
-                  <input type="radio" {...verifyForm.register("result")} value="REOPEN" className="h-4 w-4" />
-                  <span className="flex items-center gap-1 text-sm text-orange-600"><RotateCcw className="h-4 w-4" /> เปิดใหม่</span>
-                </label>
+      {attachments.length === 0 ? (
+        <p className="text-sm text-slate-400 py-6 text-center">ยังไม่มีไฟล์ข้อค้นพบ</p>
+      ) : (
+        <div className="space-y-2">
+          {attachments.map((a) => (
+            <div key={a.id} className="rounded-xl border border-slate-100 bg-white p-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-800 truncate">{a.fileName}</p>
+                {(a.spDownloadUrl ?? a.fileUrl) && (
+                  <a href={a.spDownloadUrl ?? a.fileUrl ?? undefined} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">{a.fileName}</a>
+                )}
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {a.sizeBytes ? formatBytes(a.sizeBytes) + " · " : ""}{formatDateTime(a.createdAt)}
+                </p>
               </div>
+              {canUpload && (
+                <button type="button" aria-label="ลบ" onClick={() => setDeleteTarget(a.id)}
+                  className="shrink-0 h-7 w-7 rounded-lg border border-rose-200 bg-white text-rose-500 hover:bg-rose-50 flex items-center justify-center">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">ความเห็น</label>
-              <textarea {...verifyForm.register("comment")} rows={3} className={cn(INPUT_CLASS, "resize-none")} />
-            </div>
-          </form>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setVerifyTarget(null)}>ยกเลิก</Button>
-            <Button type="submit" form="verify-form" disabled={verifyMutation.isPending}>
-              {verifyMutation.isPending ? "กำลังยืนยัน..." : "ยืนยัน"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={!!closeTarget} onOpenChange={(v) => !v && setCloseTarget(null)}>
+          ))}
+        </div>
+      )}
+      <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>ปิดข้อค้นพบ: {closeTarget?.findingNo}</DialogTitle></DialogHeader>
-          <p className="text-sm text-slate-600">ยืนยันการปิดข้อค้นพบนี้?</p>
+          <DialogHeader><DialogTitle>ยืนยันการลบไฟล์</DialogTitle></DialogHeader>
+          <p className="text-sm text-slate-600">คุณต้องการลบไฟล์นี้ใช่หรือไม่?</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCloseTarget(null)}>ยกเลิก</Button>
-            <Button disabled={closeMutation.isPending} onClick={() => {
-              if (closeTarget) closeMutation.mutate(closeTarget.id, {
-                onSuccess: () => { toast.success("ปิดข้อค้นพบสำเร็จ"); setCloseTarget(null); },
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>ยกเลิก</Button>
+            <Button variant="destructive" disabled={deleteMutation.isPending} onClick={() => {
+              if (deleteTarget) deleteMutation.mutate(deleteTarget, {
+                onSuccess: () => { toast.success("ลบไฟล์สำเร็จ"); setDeleteTarget(null); },
                 onError: (err) => toast.error(err.message),
               });
             }}>
-              {closeMutation.isPending ? "กำลังปิด..." : "ยืนยันปิด"}
+              {deleteMutation.isPending ? "กำลังลบ..." : "ลบ"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -729,6 +611,7 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [showEdit, setShowEdit] = useState(false);
   const [showClosePlanConfirm, setShowClosePlanConfirm] = useState(false);
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [showSignInAppConfirm, setShowSignInAppConfirm] = useState(false);
   const [showSignRequestDialog, setShowSignRequestDialog] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
@@ -741,15 +624,15 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
   const signMutation = useSignPlanInApp(plan.id);
   const generateMutation = useGenerateReport(plan.id);
   const closePlanMutation = useClosePlan(plan.id);
+  const completeMutation = useCompleteAudit(plan.id);
   const issueSignRequestMutation = useIssueSignRequest(plan.id);
   const announceMutation = useAnnouncePlan(plan.id);
 
   const canSubmit = isPrivileged && plan.status === "DRAFT";
   const canEdit = isPrivileged && (plan.status === "DRAFT" || plan.status === "PLANNED");
   const canManageSchedule = isPrivileged || plan.auditors.some((a) => a.assigneeAuthUserId === userId && a.role === "LEAD");
-  const canCreateFinding = isPrivileged || plan.auditors.some((a) => a.assigneeAuthUserId === userId);
-  const canVerifyFinding = isPrivileged || plan.auditors.some((a) => a.assigneeAuthUserId === userId && a.role === "LEAD");
   const canAnnounce = isPrivileged && (plan.status === "PLANNED" || plan.status === "ANNOUNCED");
+  const canComplete = isPrivileged && (plan.status === "PLANNED" || plan.status === "ANNOUNCED" || plan.status === "IN_PROGRESS" || plan.status === "WAITING_CORRECTIVE");
   const canGenerateReport = isPrivileged && (
     plan.status === "IN_PROGRESS" || plan.status === "WAITING_CORRECTIVE" || plan.status === "READY_TO_CLOSE"
   );
@@ -790,8 +673,13 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
           {canEdit && (
             <Button variant="outline" size="sm" onClick={() => setShowEdit(true)}>แก้ไข</Button>
           )}
+          {canComplete && (
+            <Button size="sm" variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={() => setShowCompleteConfirm(true)}>
+              <CheckCircle2 className="h-4 w-4 mr-1.5" />Audit เสร็จสิ้น
+            </Button>
+          )}
           {canSubmit && (
-            <Button size="sm" className="bg-[#0F1059] hover:bg-[#161875] text-white" onClick={() => setShowAssignDialog(true)}>
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-white" onClick={() => setShowAssignDialog(true)}>
               มอบหมายและส่งอนุมัติ
             </Button>
           )}
@@ -835,15 +723,9 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
               </div>
               <div>
                 <p className="text-xs text-slate-500">มาตรฐาน</p>
-                <p className="text-sm font-medium text-slate-900">{plan.standard ?? "-"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">วันที่เริ่มต้น</p>
-                <p className="text-sm font-medium">{fmtDate(plan.startDate)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">วันที่สิ้นสุด</p>
-                <p className="text-sm font-medium">{fmtDate(plan.endDate)}</p>
+                <p className="text-sm font-medium text-slate-900">
+                  {plan.standards?.length ? plan.standards.join(", ") : (plan.standard ?? "-")}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">เจ้าของแผน</p>
@@ -880,73 +762,65 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
               )}
             </div>
 
-            {/* Announcements section */}
-            <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5 space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                  <Megaphone className="h-4 w-4 text-indigo-500" />
-                  การประกาศ
-                </h3>
-                {canAnnounce && (
-                  <Button size="sm" variant="outline" onClick={() => {
-                    announceForm.reset({ title: "", message: "", deliveryMode: "LINK", recipientEmails: [] });
-                    setShowAnnounceDialog(true);
-                  }}>
-                    <Megaphone className="h-4 w-4 mr-1.5" />
-                    ประกาศแผน
-                  </Button>
-                )}
-              </div>
-              {plan.announcements.length === 0 ? (
-                <p className="text-sm text-slate-400 py-2 text-center">ยังไม่มีการประกาศ</p>
-              ) : (
-                <div className="space-y-2">
-                  {plan.announcements.map((a) => (
-                    <div key={a.id} className="rounded-xl border border-indigo-100 bg-indigo-50 p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-semibold text-indigo-800">{a.title}</p>
-                        <span className="shrink-0 text-xs text-indigo-400 font-mono">{formatDateTime(a.publishedAt)}</span>
-                      </div>
-                      {a.message && <p className="text-xs text-indigo-700 mt-1 whitespace-pre-wrap">{a.message}</p>}
-                      {a.deliveryMode && (
-                        <span className="mt-1.5 inline-block text-xs font-medium text-indigo-500">
-                          {a.deliveryMode === "LINK" ? "ส่งลิงก์" : a.deliveryMode === "ATTACHMENT" ? "ส่งไฟล์แนบ" : "ลิงก์ + ไฟล์แนบ"}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         )}
 
-        {/* Team */}
-        {activeTab === "team" && (
-          <div className="space-y-3">
-            {plan.auditors.length === 0 ? (
-              <p className="text-sm text-slate-400 py-6 text-center">ยังไม่มีผู้ตรวจสอบ</p>
-            ) : (
-              plan.auditors.map((a) => (
-                <div key={a.id} className="rounded-xl border border-slate-100 bg-white p-4 flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold shrink-0">
-                    {(a.assigneeNameSnapshot ?? "?").charAt(0).toUpperCase()}
+        {/* Team — grouped by role, showing which dept each person covers */}
+        {activeTab === "team" && (() => {
+          type PersonDepts = { name: string | null; email: string | null; depts: string[] };
+          const byRole = new Map<AuditTeamRole, Map<string, PersonDepts>>();
+          for (const s of plan.schedules) {
+            const deptLabel = s.departmentName ?? s.sessionTitle;
+            for (const m of s.team ?? []) {
+              const role = m.role as AuditTeamRole;
+              if (!byRole.has(role)) byRole.set(role, new Map());
+              const roleMap = byRole.get(role)!;
+              if (!roleMap.has(m.authUserId)) roleMap.set(m.authUserId, { name: m.nameSnapshot, email: m.emailSnapshot, depts: [] });
+              roleMap.get(m.authUserId)!.depts.push(deptLabel);
+            }
+          }
+          const hasAny = [...byRole.values()].some((m) => m.size > 0);
+          const ROLE_ORDER: AuditTeamRole[] = ["LEAD_AUDITOR", "AUDITOR", "OBSERVER", "AUDITEE"];
+          const ROLE_COLORS: Record<AuditTeamRole, string> = {
+            LEAD_AUDITOR: "bg-indigo-50 border-indigo-200 text-indigo-700",
+            AUDITOR: "bg-blue-50 border-blue-200 text-blue-700",
+            OBSERVER: "bg-slate-50 border-slate-200 text-slate-600",
+            AUDITEE: "bg-teal-50 border-teal-200 text-teal-700",
+          };
+          return (
+            <div className="space-y-4">
+              {!hasAny ? (
+                <p className="text-sm text-slate-400 py-6 text-center">ยังไม่มีผู้ตรวจสอบ</p>
+              ) : (
+                ROLE_ORDER.filter((role) => byRole.has(role) && byRole.get(role)!.size > 0).map((role) => (
+                  <div key={role}>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">{AUDIT_TEAM_ROLE_LABELS[role]}</p>
+                    <div className="space-y-2">
+                      {Array.from(byRole.get(role)!.entries()).map(([uid, p]) => (
+                        <div key={uid} className="rounded-xl border border-slate-100 bg-white p-3 flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold shrink-0">
+                            {(p.name ?? "?").charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-slate-800">{p.name ?? "-"}</p>
+                            {p.email && <p className="text-xs text-slate-400">{p.email}</p>}
+                          </div>
+                          <div className="flex flex-wrap gap-1 justify-end">
+                            {p.depts.map((d, di) => (
+                              <span key={di} className={`text-[11px] font-medium border rounded-md px-2 py-0.5 ${ROLE_COLORS[role]}`}>
+                                <Building2 className="h-2.5 w-2.5 inline mr-1" />{d}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-800">{a.assigneeNameSnapshot ?? "-"}</p>
-                    <p className="text-xs text-slate-400">{a.assigneeEmailSnapshot ?? ""}</p>
-                  </div>
-                  <span className="ml-auto shrink-0 text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200 rounded-full px-2 py-0.5">
-                    {AUDITOR_ROLE_LABELS[a.role]}
-                  </span>
-                </div>
-              ))
-            )}
-            {isPrivileged && (
-              <p className="text-xs text-slate-400">การกำหนดผู้ตรวจสอบผ่าน API: POST /api/audit/plans/{plan.id}/assign-auditors</p>
-            )}
-          </div>
-        )}
+                ))
+              )}
+            </div>
+          );
+        })()}
 
         {activeTab === "schedule" && <ScheduleTab plan={plan} canManage={canManageSchedule} />}
 
@@ -972,7 +846,7 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
           </div>
         )}
 
-        {activeTab === "findings" && <FindingsTab plan={plan} canCreate={canCreateFinding} canVerify={canVerifyFinding} />}
+        {activeTab === "findings" && <FindingsTab plan={plan} canUpload={isPrivileged} />}
         {activeTab === "attachments" && <AttachmentsTab plan={plan} canUpload={isPrivileged} />}
 
         {/* Report & Sign */}
@@ -1232,6 +1106,29 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
             <Button type="submit" form="sign-request-form" disabled={issueSignRequestMutation.isPending}>
               <Send className="h-4 w-4 mr-1.5" />
               {issueSignRequestMutation.isPending ? "กำลังส่ง..." : "ส่งลิงก์"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Complete Audit confirm */}
+      <Dialog open={showCompleteConfirm} onOpenChange={(v) => !v && setShowCompleteConfirm(false)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>ยืนยัน Audit เสร็จสิ้น</DialogTitle></DialogHeader>
+          <p className="text-sm text-slate-600">
+            ยืนยันว่าการตรวจสอบ{" "}
+            <span className="font-mono font-semibold text-slate-800">{plan.auditNo}</span>{" "}
+            เสร็จสิ้นแล้ว? สถานะจะเปลี่ยนเป็น "พร้อมปิด"
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCompleteConfirm(false)}>ยกเลิก</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={completeMutation.isPending} onClick={() => {
+              completeMutation.mutate(undefined, {
+                onSuccess: () => { toast.success("บันทึก Audit เสร็จสิ้นแล้ว"); setShowCompleteConfirm(false); },
+                onError: (err) => toast.error(err.message),
+              });
+            }}>
+              {completeMutation.isPending ? "กำลังบันทึก..." : "ยืนยัน"}
             </Button>
           </DialogFooter>
         </DialogContent>

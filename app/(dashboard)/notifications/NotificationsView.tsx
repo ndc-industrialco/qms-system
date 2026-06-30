@@ -24,7 +24,13 @@ interface NotificationItem {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getActionPath(item: NotificationItem): string | null {
-  if (item.module === "CAR")   return `/car/${item.resourceId}`;
+  if (item.module === "CAR") {
+    if (item.title.includes("MR Review Required") || item.title.includes("รออนุมัติแผนแก้ไข"))
+      return `/approve/car/${item.resourceId}/mr-response`;
+    if (item.title.includes("Verification Passed") || item.title.includes("ผ่านการตรวจติดตาม"))
+      return `/approve/car/${item.resourceId}/mr`;
+    return `/car/${item.resourceId}`;
+  }
   if (item.module === "DAR") {
     if (item.resourceType === "DAR_REVIEWER") return `/approve/dar/${item.resourceId}/reviewer`;
     if (item.resourceType === "DAR_APPROVER") return `/approve/dar/${item.resourceId}/approver`;

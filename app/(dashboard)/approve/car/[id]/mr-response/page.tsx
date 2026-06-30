@@ -5,6 +5,7 @@ import { CarService } from "@/services/carService";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 import CarMrResponseReviewPanel from "@/components/car/CarMrResponseReviewPanel";
 import CarStatusBadge from "@/components/car/CarStatusBadge";
+import ApproveSuccessCard from "@/components/shared/ApproveSuccessCard";
 
 export const metadata: Metadata = { title: "CAR Plan Review" };
 
@@ -38,22 +39,14 @@ export default async function CarMrResponseReviewPage({
   if (car.status !== "RESPONDED") {
     const isAlreadyReviewed = !!car.mrResponseReview;
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="max-w-md rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
-          <div className="mb-3 text-4xl">{isAlreadyReviewed ? "✓" : "⏳"}</div>
-          <h2 className="text-lg font-bold text-slate-800">
-            {isAlreadyReviewed ? "ตรวจสอบเรียบร้อยแล้ว" : "CAR ยังไม่พร้อมสำหรับการตรวจสอบ"}
-          </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            {isAlreadyReviewed
-              ? `CAR ${car.carNo} ได้รับการตรวจสอบแล้ว`
-              : `สถานะปัจจุบัน: ${car.status}`}
-          </p>
-          <div className="mt-3 flex justify-center">
-            <CarStatusBadge status={car.status} />
-          </div>
-        </div>
-      </div>
+      <ApproveSuccessCard
+        action={isAlreadyReviewed ? "approved" : "done"}
+        title={isAlreadyReviewed ? "ตรวจสอบเรียบร้อยแล้ว" : "CAR ยังไม่พร้อมสำหรับการตรวจสอบ"}
+        description={isAlreadyReviewed ? `CAR ${car.carNo} ได้รับการตรวจสอบแล้ว` : `สถานะปัจจุบัน: ${car.status}`}
+        badge={<CarStatusBadge status={car.status} />}
+        backHref="/notifications"
+        backLabel="กลับหน้าหลัก"
+      />
     );
   }
 

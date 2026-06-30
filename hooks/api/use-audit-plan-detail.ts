@@ -89,6 +89,18 @@ async function generateReport(
   }
 }
 
+async function completeAudit(planId: string): Promise<void> {
+  const res = await fetch(`/api/audit/plans/${planId}/complete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error((json as { message?: string }).message ?? "Failed to complete audit");
+  }
+}
+
 async function closePlan(planId: string): Promise<void> {
   const res = await fetch(`/api/audit/plans/${planId}/close`, {
     method: "POST",
@@ -183,6 +195,17 @@ export function useGenerateReport(planId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: { summary?: string; conclusion?: string }) => generateReport(planId, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["audit-plan", planId] });
+      qc.invalidateQueries({ queryKey: ["audit-plans"] });
+    },
+  });
+}
+
+export function useCompleteAudit(planId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => completeAudit(planId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["audit-plan", planId] });
       qc.invalidateQueries({ queryKey: ["audit-plans"] });

@@ -247,6 +247,7 @@ export type AuditFindingDetail = AuditFindingRow & {
 };
 
 export type AuditPlanDetail = AuditPlanSummary & {
+  standards: string[];
   objective: string | null;
   sourceOrganization: string | null;
   summary: string | null;

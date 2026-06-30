@@ -8,6 +8,7 @@ import { NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import type { AuditAppointmentCreateInput, AuditAppointmentUpdateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
 import { sendAppointmentSignRequestEmail, sendAppointmentPublishedEmail, sendAppointmentRejectedEmail, buildAppointmentPublishedHtml, layout, esc } from "./auditEmailService";
+import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
 import { NotificationService } from "@/services/notificationService";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 
@@ -55,8 +56,6 @@ function buildSignRequestHtml(opts: {
       { label: "Your Role", value: roleLabel },
     ],
     body: standardsBadges + urgentBanner,
-    actionLabel: opts.signedRole === "APPROVER" ? "Review & Approve" : "Review & Sign",
-    actionUrl: url,
   });
 }
 
@@ -176,12 +175,12 @@ const isPrivileged = (role: string) => PRIVILEGED.has(role);
 async function nextAppointmentNo(
   tx: Parameters<Parameters<typeof db.$transaction>[0]>[0]
 ) {
+  const format = await getDocNoFormat("AUDIT_APPT");
   const year = new Date().getFullYear();
-  const yy = String(year).slice(-2);
-  const prefix = `APPT-${yy}-`;
+  const { likePrefix, pad } = buildLikePrefix(format, { year });
 
-  const likePattern = `${prefix}%`;
-  const startPos = prefix.length + 1;
+  const likePattern = `${likePrefix}%`;
+  const startPos = likePrefix.length + 1;
   const existing = await tx.$queryRaw<{ seq: number }[]>`
     SELECT CAST(SUBSTRING(appointment_no FROM ${startPos}) AS INTEGER) AS seq
     FROM audit_appointments
@@ -192,7 +191,7 @@ async function nextAppointmentNo(
   let next = 1;
   while (used.has(next)) next++;
 
-  return `${prefix}${String(next).padStart(3, "0")}`;
+  return renderDocNo(format, { year, seq: next });
 }
 
 export class AuditAppointmentService {
@@ -203,53 +202,64 @@ export class AuditAppointmentService {
 
     const actorId = actor.authUserId ?? actor.userId;
 
-    return db.$transaction(async (tx) => {
-      const no = await nextAppointmentNo(tx);
-      const appt = await tx.auditAppointment.create({
-        data: {
-          appointmentNo: no,
-          year: input.year,
-          title: input.title,
-          standards: input.standards,
-          ownerAuthUserId: actorId,
-          ownerEmail: actor.email ?? null,
-          ownerNameSnapshot: actor.nameSnapshot ?? null,
-          reviewerAuthUserId: input.reviewerAuthUserId,
-          reviewerEmail: input.reviewerEmail,
-          reviewerNameSnapshot: input.reviewerNameSnapshot ?? null,
-          approverAuthUserId: input.approverAuthUserId,
-          approverEmail: input.approverEmail,
-          approverNameSnapshot: input.approverNameSnapshot ?? null,
-          emailGroupMails: input.emailGroupMails,
-          emailGroupMailsCc: input.emailGroupMailsCc,
-          members: {
-            create: input.members.map((m, i) => ({
-              authUserId: m.authUserId,
-              name: m.name,
-              department: m.department ?? null,
-              role: m.role,
-              standards: m.standards,
-              orderIndex: m.orderIndex ?? i,
-            })),
-          },
-        },
-        include: { members: true, signoffs: true },
-      });
+    // ponytail: retry loop guards against concurrent create race on appointment_no unique constraint
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await db.$transaction(async (tx) => {
+          const no = await nextAppointmentNo(tx);
+          const appt = await tx.auditAppointment.create({
+            data: {
+              appointmentNo: no,
+              year: input.year,
+              title: input.title,
+              standards: input.standards,
+              ownerAuthUserId: actorId,
+              ownerEmail: actor.email ?? null,
+              ownerNameSnapshot: actor.nameSnapshot ?? null,
+              reviewerAuthUserId: input.reviewerAuthUserId,
+              reviewerEmail: input.reviewerEmail,
+              reviewerNameSnapshot: input.reviewerNameSnapshot ?? null,
+              approverAuthUserId: input.approverAuthUserId,
+              approverEmail: input.approverEmail,
+              approverNameSnapshot: input.approverNameSnapshot ?? null,
+              emailGroupMails: input.emailGroupMails,
+              emailGroupMailsCc: input.emailGroupMailsCc,
+              members: {
+                create: input.members.map((m, i) => ({
+                  authUserId: m.authUserId,
+                  name: m.name,
+                  department: m.department ?? null,
+                  role: m.role,
+                  standards: m.standards,
+                  orderIndex: m.orderIndex ?? i,
+                })),
+              },
+            },
+            include: { members: true, signoffs: true },
+          });
 
-      await AuditService.record(
-        {
-          actorUserId: actor.userId,
-          actorAuthUserId: actorId,
-          actorRole: actor.role,
-          action: "CREATE",
-          resourceType: "AUDIT_APPOINTMENT",
-          resourceId: appt.id,
-        },
-        tx
-      );
+          await AuditService.record(
+            {
+              actorUserId: actor.userId,
+              actorAuthUserId: actorId,
+              actorRole: actor.role,
+              action: "CREATE",
+              resourceType: "AUDIT_APPOINTMENT",
+              resourceId: appt.id,
+            },
+            tx
+          );
 
-      return appt;
-    });
+          return appt;
+        });
+      } catch (err: unknown) {
+        const isUniqueViolation =
+          typeof err === "object" && err !== null && "code" in err && (err as { code: string }).code === "P2002";
+        if (!isUniqueViolation || attempt === 4) throw err;
+        logger.warn("[auditAppointment] appointment_no collision, retrying", { attempt });
+      }
+    }
+    throw new Error("Failed to generate unique appointment number after retries");
   }
 
   async findAll() {

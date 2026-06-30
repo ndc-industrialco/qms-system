@@ -84,7 +84,7 @@ export class NotificationService {
   static async notifyDeptMembers(
     deptCode: string,
     accessToken: string | null | undefined,
-    data: { title: string; body: string; module: string; resourceId: string; resourceType: string },
+    data: { title: string; body: string; htmlBody?: string | null; module: string; resourceId: string; resourceType: string },
   ): Promise<void> {
     if (!deptCode || !accessToken) return;
     try {

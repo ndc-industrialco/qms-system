@@ -108,6 +108,7 @@ export const carReviewResponseSchema = z.object({
   signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(204800).optional(),
   signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
   saveToProfile: z.boolean().optional(),
+  qmsAuthUserId: z.string().optional(),
 });
 
 export const carListQuerySchema = z.object({

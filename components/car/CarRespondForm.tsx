@@ -323,8 +323,7 @@ export default function CarRespondForm({ carId, defaultPosition = "", onSuccess 
             <input
               {...register("responderPosition")}
               type="text"
-              disabled={!!defaultPosition}
-              className={cn(INPUT_CLASS, defaultPosition && "bg-slate-50 text-slate-500 cursor-not-allowed")}
+              className={INPUT_CLASS}
             />
             {errors.responderPosition && <p className="mt-1 text-xs text-rose-500">{errors.responderPosition.message}</p>}
           </div>

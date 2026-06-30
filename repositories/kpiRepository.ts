@@ -176,6 +176,18 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     });
   }
 
+  async findMonthlySummary(year: number, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: { yearly: year },
+      select: {
+        id: true, department: true, yearly: true,
+        objectives: { select: { id: true } },
+        monthlyReports: { where: { year }, select: { id: true, month: true, status: true } },
+      },
+      orderBy: { department: 'asc' },
+    });
+  }
+
   async clearSubmission(id: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).update({
       where: { id },

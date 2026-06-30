@@ -141,7 +141,7 @@ describe("CAR flow — happy path (DRAFT → ISSUED → RESPONDED → VERIFY_1 P
 
     expect(car.status).toBe("ISSUED");
     expect(carRepo.issue).toHaveBeenCalledWith(CAR_ID, expect.any(Date), expect.any(Date), null, expect.anything());
-    expect(CarReminderService.schedule).toHaveBeenCalledWith(CAR_ID, expect.toSatisfy((v) => v === undefined || typeof v === "string"));
+    expect(CarReminderService.schedule).toHaveBeenCalledWith(CAR_ID, expect.objectContaining({ issuerEmail: expect.any(String) }));
   });
 
   it("step 2 — respondToCar transitions ISSUED → RESPONDED and cancels reminder", async () => {
@@ -176,14 +176,14 @@ describe("CAR flow — happy path (DRAFT → ISSUED → RESPONDED → VERIFY_1 P
       k === "CURRENT_MR_EMAIL" ? "mr@example.com" : null
     );
 
-    const result = await svc.verifyCar(CAR_ID, "verifier-1", { round: 1, result: "PASSED", findings: "All good", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" }, "auth-verifier-1");
+    const result = await svc.verifyCar(CAR_ID, "verifier-1", { round: 1, result: "PASSED", findings: "All good", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test", targetMrAuthUserId: "mr-auth-1" }, "auth-verifier-1");
 
     expect(result.status).toBe("CLOSED");
     expect(carRepo.createVerificationAndSetStatus).toHaveBeenCalledWith(
       CAR_ID, expect.objectContaining({ result: "PASSED" }), "verifier-1", expect.any(Object), "CLOSED", expect.anything()
     );
     expect(sendCarVerifyPassEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ mrEmail: "mr@example.com", token: "tok-mr" })
+      expect.objectContaining({ mrEmail: "actor@example.com", token: "tok-mr" })
     );
   });
 });

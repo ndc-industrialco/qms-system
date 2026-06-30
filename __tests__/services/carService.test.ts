@@ -228,7 +228,7 @@ describe("CarService", () => {
         return null;
       });
 
-      await service.verifyCar("car-1", "verifier-1", { round: 1, result: "PASSED", findings: "OK", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" }, "auth-verifier-1");
+      await service.verifyCar("car-1", "verifier-1", { round: 1, result: "PASSED", findings: "OK", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test", targetMrAuthUserId: "mr-auth-1" }, "auth-verifier-1");
 
       expect(carRepo.createVerificationAndSetStatus).toHaveBeenCalledWith(
         "car-1",
@@ -243,9 +243,9 @@ describe("CarService", () => {
       expect(ActionTokenService.issue).toHaveBeenCalledWith(
         expect.objectContaining({ module: "CAR", role: "APPROVER_MR" })
       );
-      // MR verify-pass email queued
+      // MR verify-pass email queued (mrEmail comes from getUserSnapshot)
       expect(sendCarVerifyPassEmail).toHaveBeenCalledWith(
-        expect.objectContaining({ carId: "car-1", carNo: "C26-001", mrEmail: "mr@example.com" })
+        expect.objectContaining({ carId: "car-1", carNo: "C26-001", mrEmail: "bob@example.com" })
       );
     });
 

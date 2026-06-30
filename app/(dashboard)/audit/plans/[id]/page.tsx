@@ -107,7 +107,7 @@ export default async function AuditPlanDetailPage({
     signoffs: plan.signoffs.map((s) => ({
       id: s.id,
       signerAuthUserId: s.signedByAuthUserId,
-      signerNameSnapshot: null,
+      signerNameSnapshot: (s as { signerNameSnapshot?: string | null }).signerNameSnapshot ?? null,
       signedRole: s.signedRole,
       signedAt: s.signedAt instanceof Date ? s.signedAt.toISOString() : s.signedAt,
     })),

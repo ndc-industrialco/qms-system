@@ -10,8 +10,11 @@ export type CarNotifEvent =
   | "MR_REVIEW"
   | "PLAN_APPROVED"
   | "PLAN_REJECTED"
+  | "QMS_NOTIFY"
   | "VERIFY_1_PASS"
   | "VERIFY_2_SCHEDULED"
+  | "VERIFY_FAILED_DEPT"
+  | "RE_CAR_DEPT"
   | "CLOSED"
   | "RE_CAR"
   | "REMINDER";
@@ -28,8 +31,11 @@ const TITLES: Record<CarNotifEvent, string> = {
   MR_REVIEW:          "รออนุมัติแผนแก้ไข (MR) / MR Review Required",
   PLAN_APPROVED:      "อนุมัติแผนแก้ไขแล้ว / Corrective Action Plan Approved",
   PLAN_REJECTED:      "ปฏิเสธแผนแก้ไข — แก้ไขใหม่ / Plan Rejected — Revise & Resubmit",
+  QMS_NOTIFY:         "แผนแก้ไขได้รับการอนุมัติ — เตรียมตรวจติดตาม / Plan Approved — Prepare for Verification",
   VERIFY_1_PASS:      "ผ่านการตรวจติดตาม — รอ MR เซ็นปิด / Verification Passed — Sign to Close",
   VERIFY_2_SCHEDULED: "กำหนดการตรวจติดตามครั้งที่ 2 / Verification 2 Scheduled",
+  VERIFY_FAILED_DEPT: "ผลการตรวจสอบ: ไม่ผ่าน — กรุณาแก้ไขให้เรียบร้อย / Verification Failed — Please Complete Corrective Actions",
+  RE_CAR_DEPT:        "ไม่ผ่านการตรวจสอบรอบที่ 2 — ออก Re-CAR ใหม่ / Failed Round 2 — Re-CAR Issued",
   CLOSED:             "ปิด CAR แล้ว / CAR Closed",
   RE_CAR:             "ออก Re-CAR ใหม่ / Re-CAR Issued",
   REMINDER:           "เตือน: CAR ยังไม่ได้ตอบกลับ / Reminder: Response Pending",
@@ -42,8 +48,11 @@ const INTRO: Record<CarNotifEvent, { th: string; en: string }> = {
   MR_REVIEW:          { th: "CAR ได้รับแผนการดำเนินการแก้ไขแล้ว กรุณาตรวจสอบและให้ความเห็นชอบ", en: "A corrective action plan has been submitted. Please review and approve or reject." },
   PLAN_APPROVED:      { th: "ผู้แทนฝ่ายบริหาร (MR) อนุมัติแผนการดำเนินการแก้ไขแล้ว กรุณาดำเนินการตามแผน", en: "The Management Representative has approved the corrective action plan. Please proceed accordingly." },
   PLAN_REJECTED:      { th: "ผู้แทนฝ่ายบริหาร (MR) ปฏิเสธแผนการดำเนินการแก้ไข กรุณาแก้ไขและส่งใหม่ภายใน 7 วัน", en: "The Management Representative has rejected the corrective action plan. Please revise and resubmit within 7 days." },
+  QMS_NOTIFY:         { th: "ผู้แทนฝ่ายบริหาร (MR) อนุมัติแผนแก้ไขแล้ว กรุณาเตรียมการตรวจติดตาม (Verification) ตามวันที่แผนกำหนด", en: "The MR has approved the corrective action plan. Please prepare for verification follow-up on the scheduled date." },
   VERIFY_1_PASS:      { th: "CAR ผ่านการตรวจติดตามแล้ว กรุณาลงนามเพื่อปิด CAR ในระบบ", en: "The CAR has passed verification. Please sign to officially close this CAR." },
   VERIFY_2_SCHEDULED: { th: "CAR ไม่ผ่านการตรวจติดตามครั้งที่ 1 กำหนดการตรวจติดตามครั้งที่ 2 แล้ว", en: "The CAR did not pass Verification 1. Verification 2 has been scheduled." },
+  VERIFY_FAILED_DEPT: { th: "ผลการตรวจสอบพบว่าการดำเนินการแก้ไขยังไม่ครบถ้วน กรุณาดำเนินการแก้ไขให้เรียบร้อยและเตรียมรับการตรวจสอบรอบที่ 2", en: "Verification found that corrective actions are incomplete. Please complete all actions and prepare for the Round 2 verification." },
+  RE_CAR_DEPT:        { th: "CAR ไม่ผ่านการตรวจสอบรอบที่ 2 QMS จะออก Re-CAR ใหม่ กรุณาเตรียมดำเนินการแก้ไขอีกครั้ง", en: "This CAR failed Round 2 verification. A Re-CAR will be issued. Please prepare to resubmit corrective actions." },
   CLOSED:             { th: "CAR ปิดเรียบร้อยแล้ว การดำเนินการแก้ไขได้รับการยืนยันครบถ้วน", en: "The CAR has been officially closed. All corrective actions have been confirmed complete." },
   RE_CAR:             { th: "มีการออก Re-CAR ใหม่อ้างอิงจาก CAR เดิม กรุณาดำเนินการแก้ไขใหม่ภายใน 7 วัน", en: "A new Re-CAR has been issued referencing the original CAR. Please submit a new response within 7 days." },
   REMINDER:           { th: "CAR ยังคงรอการตอบกลับจากหน่วยงานของท่าน กรุณาดำเนินการโดยเร็วที่สุด", en: "The CAR is still awaiting a response from your department. Please take action as soon as possible." },
@@ -56,8 +65,11 @@ const STATUS: Record<CarNotifEvent, { th: string; en: string }> = {
   MR_REVIEW:          { th: "รออนุมัติแผนแก้ไข (MR)",                   en: "MR Review Required" },
   PLAN_APPROVED:      { th: "อนุมัติแผนแก้ไขแล้ว",                     en: "Corrective Action Plan Approved" },
   PLAN_REJECTED:      { th: "ปฏิเสธแผนแก้ไข",                          en: "Plan Rejected — Revise & Resubmit" },
+  QMS_NOTIFY:         { th: "เตรียมตรวจติดตาม",                         en: "Prepare for Verification" },
   VERIFY_1_PASS:      { th: "ผ่านการตรวจติดตาม — รอ MR เซ็นปิด",       en: "Verification Passed — Sign to Close" },
   VERIFY_2_SCHEDULED: { th: "กำหนดตรวจติดตามครั้งที่ 2",                en: "Verification 2 Scheduled" },
+  VERIFY_FAILED_DEPT: { th: "ไม่ผ่าน — แก้ไขให้เรียบร้อย",              en: "Failed — Complete Corrective Actions" },
+  RE_CAR_DEPT:        { th: "ไม่ผ่านรอบ 2 — รอ Re-CAR",                 en: "Failed Round 2 — Re-CAR Pending" },
   CLOSED:             { th: "ปิด CAR แล้ว",                             en: "CAR Closed" },
   RE_CAR:             { th: "ออก Re-CAR แล้ว",                          en: "Re-CAR Issued" },
 };

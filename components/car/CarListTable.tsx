@@ -312,19 +312,19 @@ export default function CarListTable({
                       <Link href={`${basePath}/${car.id}`} />
                     </ActionPillButton>
                     {canEditDelete && car.status === "DRAFT" && (
-                      <>
-                        <ActionPillButton
-                          tone="edit"
-                          label="แก้ไข"
-                          onClick={() => handleEdit(car)}
-                          loading={editLoadingId === car.id}
-                        />
-                        <ActionPillButton
-                          tone="delete"
-                          label="ลบ"
-                          onClick={() => setHardDeleteTarget(car)}
-                        />
-                      </>
+                      <ActionPillButton
+                        tone="edit"
+                        label="แก้ไข"
+                        onClick={() => handleEdit(car)}
+                        loading={editLoadingId === car.id}
+                      />
+                    )}
+                    {canEditDelete && (
+                      <ActionPillButton
+                        tone="delete"
+                        label="ลบถาวร"
+                        onClick={() => setHardDeleteTarget(car)}
+                      />
                     )}
                     {canEditDelete && !["CANCELLED", "CLOSED", "DRAFT"].includes(car.status) && (
                       <ActionPillButton
@@ -396,19 +396,19 @@ export default function CarListTable({
                               <Link href={`${basePath}/${car.id}`} />
                             </ActionIconButton>
                             {canEditDelete && car.status === "DRAFT" && (
-                              <>
-                                <ActionIconButton
-                                  tone="edit"
-                                  label="แก้ไข"
-                                  onClick={() => handleEdit(car)}
-                                  loading={editLoadingId === car.id}
-                                />
-                                <ActionIconButton
-                                  tone="delete"
-                                  label="ลบ"
-                                  onClick={() => setHardDeleteTarget(car)}
-                                />
-                              </>
+                              <ActionIconButton
+                                tone="edit"
+                                label="แก้ไข"
+                                onClick={() => handleEdit(car)}
+                                loading={editLoadingId === car.id}
+                              />
+                            )}
+                            {canEditDelete && (
+                              <ActionIconButton
+                                tone="delete"
+                                label="ลบถาวร"
+                                onClick={() => setHardDeleteTarget(car)}
+                              />
                             )}
                             {canEditDelete && !["CANCELLED", "CLOSED", "DRAFT"].includes(car.status) && (
                               <ActionIconButton
