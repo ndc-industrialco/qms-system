@@ -1099,7 +1099,7 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
           <p className="text-sm text-slate-600">
             ยืนยันว่าการตรวจสอบ{" "}
             <span className="font-mono font-semibold text-slate-800">{plan.auditNo}</span>{" "}
-            เสร็จสิ้นแล้ว? สถานะจะเปลี่ยนเป็น "พร้อมปิด"
+            เสร็จสิ้นแล้ว? สถานะจะเปลี่ยนเป็น &quot;พร้อมปิด&quot;
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCompleteConfirm(false)}>ยกเลิก</Button>
