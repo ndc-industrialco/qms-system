@@ -2,7 +2,6 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
-// eslint-disable-next-line ndc/no-db-in-api
 import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
 
