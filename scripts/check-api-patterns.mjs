@@ -83,6 +83,8 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/audit/appointments/[id]/resend-notification/route.ts",
   "app/api/audit/findings/[id]/close/route.ts",
   "app/api/audit/plans/[id]/close/route.ts",
+  "app/api/audit/plans/[id]/complete/route.ts",
+  "app/api/audit/plans/[id]/delete/route.ts",
   "app/api/car/[id]/remind/route.ts",
   // DELETE with path param only
   "app/api/audit/attachments/[id]/route.ts",
@@ -171,6 +173,12 @@ const DIRECT_DB_ALLOWLIST = new Set([
   "app/api/dar/role-users/route.ts",
   "app/api/it/users/[id]/role/route.ts",
   "app/api/qms/mr/[id]/route.ts",
+  // Excel export routes — complex multi-table queries with no service abstraction benefit
+  "app/api/audit/appointments/export/route.ts",
+  "app/api/car/export/route.ts",
+  "app/api/dar/export/route.ts",
+  "app/api/kpi/export/route.ts",
+  "app/api/kpi/monthly-export/route.ts",
 ]);
 
 function checkDirectDbImport(content, relPath) {
