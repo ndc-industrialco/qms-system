@@ -12,7 +12,6 @@ import {
   FileText,
   FolderOpen,
   House,
-  LayoutDashboard,
   Megaphone,
   Search,
   Settings,
@@ -92,13 +91,6 @@ function getSections(
       labelEn: "CAR (My Dept)",
       href: "/car",
       icon: <ClipboardCheck className="h-[18px] w-[18px] shrink-0" />,
-    },
-    {
-      labelTh: "ภาพรวมตรวจสอบ",
-      labelEn: "Audit Dashboard",
-      href: "/audit",
-      icon: <LayoutDashboard className="h-[18px] w-[18px] shrink-0" />,
-      exact: true,
     },
     {
       labelTh: "แผนการตรวจสอบ",

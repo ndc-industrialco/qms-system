@@ -1,20 +1,26 @@
 import { db } from "../lib/db";
 
 async function main() {
-  const schedules = await db.auditSchedule.findMany({
-    where: { plan: { auditNo: { in: ["AUD-26-001", "AUD-26-002"] } } },
-    include: { team: true },
-    orderBy: { startAt: "asc" },
+  // Check appointments and their members
+  const appts = await db.auditAppointment.findMany({
+    include: { members: true },
+    orderBy: { createdAt: "desc" },
+    take: 5,
   });
-
-  console.log("=== Schedule team members ===");
-  for (const s of schedules) {
-    console.log(`Schedule: ${s.departmentName ?? s.sessionTitle} | team count: ${s.team.length}`);
-    for (const m of s.team) {
-      console.log(`  - ${m.nameSnapshot} (${m.role})`);
-    }
+  console.log("=== Recent Appointments ===");
+  for (const a of appts) {
+    console.log(`  ${a.appointmentNo} | members: ${a.members.length}`);
+    for (const m of a.members) console.log(`    - ${m.name} (${m.role})`);
   }
-  if (schedules.length === 0) console.log("No schedules found");
+
+  // Check plans
+  const plans = await db.auditPlan.findMany({
+    where: { auditNo: { in: ["AUD-26-001", "AUD-26-002"] } },
+    select: { auditNo: true, appointmentId: true },
+  });
+  console.log("\n=== Plans ===");
+  for (const p of plans) console.log(`  ${p.auditNo} | appointmentId: ${p.appointmentId}`);
+
   await db.$disconnect();
 }
 

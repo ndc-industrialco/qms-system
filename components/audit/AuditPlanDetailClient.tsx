@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { Users, Calendar, Building2, FileText, Paperclip, ClipboardCheck, Plus, Trash2, CheckCircle2, XCircle, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail } from "lucide-react";
+import { Calendar, Building2, FileText, Paperclip, ClipboardCheck, Plus, Trash2, CheckCircle2, XCircle, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -20,7 +20,6 @@ import { useAuditAttachments, useDeleteAuditAttachment, useUploadAuditAttachment
 import {
   AUDIT_TYPE_LABELS,
   AUDIT_MODE_LABELS,
-  AUDITOR_ROLE_LABELS,
   AUDIT_TEAM_ROLE_LABELS,
   type AuditPlanDetail,
   type AuditTeamRole,
@@ -43,11 +42,10 @@ interface Props {
   isPrivileged: boolean;
 }
 
-type TabKey = "overview" | "team" | "schedule" | "departments" | "findings" | "attachments" | "report-sign";
+type TabKey = "overview" | "schedule" | "departments" | "findings" | "attachments" | "report-sign";
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: "overview", label: "ภาพรวม", icon: <ClipboardCheck className="h-4 w-4" /> },
-  { key: "team", label: "ทีมตรวจสอบ", icon: <Users className="h-4 w-4" /> },
   { key: "schedule", label: "ตารางเวลา", icon: <Calendar className="h-4 w-4" /> },
   { key: "departments", label: "แผนก", icon: <Building2 className="h-4 w-4" /> },
   { key: "findings", label: "ข้อค้นพบ", icon: <FileText className="h-4 w-4" /> },
@@ -804,63 +802,6 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
 
           </div>
         )}
-
-        {/* Team — grouped by role, showing which dept each person covers */}
-        {activeTab === "team" && (() => {
-          type PersonDepts = { name: string | null; email: string | null; depts: string[] };
-          const byRole = new Map<AuditTeamRole, Map<string, PersonDepts>>();
-          for (const s of plan.schedules) {
-            const deptLabel = s.departmentName ?? s.sessionTitle;
-            for (const m of s.team ?? []) {
-              const role = m.role as AuditTeamRole;
-              if (!byRole.has(role)) byRole.set(role, new Map());
-              const roleMap = byRole.get(role)!;
-              if (!roleMap.has(m.authUserId)) roleMap.set(m.authUserId, { name: m.nameSnapshot, email: m.emailSnapshot, depts: [] });
-              roleMap.get(m.authUserId)!.depts.push(deptLabel);
-            }
-          }
-          const hasAny = [...byRole.values()].some((m) => m.size > 0);
-          const ROLE_ORDER: AuditTeamRole[] = ["LEAD_AUDITOR", "AUDITOR", "OBSERVER", "AUDITEE"];
-          const ROLE_COLORS: Record<AuditTeamRole, string> = {
-            LEAD_AUDITOR: "bg-indigo-50 border-indigo-200 text-indigo-700",
-            AUDITOR: "bg-blue-50 border-blue-200 text-blue-700",
-            OBSERVER: "bg-slate-50 border-slate-200 text-slate-600",
-            AUDITEE: "bg-teal-50 border-teal-200 text-teal-700",
-          };
-          return (
-            <div className="space-y-4">
-              {!hasAny ? (
-                <p className="text-sm text-slate-400 py-6 text-center">ยังไม่มีผู้ตรวจสอบ</p>
-              ) : (
-                ROLE_ORDER.filter((role) => byRole.has(role) && byRole.get(role)!.size > 0).map((role) => (
-                  <div key={role}>
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">{AUDIT_TEAM_ROLE_LABELS[role]}</p>
-                    <div className="space-y-2">
-                      {Array.from(byRole.get(role)!.entries()).map(([uid, p]) => (
-                        <div key={uid} className="rounded-xl border border-slate-100 bg-white p-3 flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold shrink-0">
-                            {(p.name ?? "?").charAt(0).toUpperCase()}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-slate-800">{p.name ?? "-"}</p>
-                            {p.email && <p className="text-xs text-slate-400">{p.email}</p>}
-                          </div>
-                          <div className="flex flex-wrap gap-1 justify-end">
-                            {p.depts.map((d, di) => (
-                              <span key={di} className={`text-[11px] font-medium border rounded-md px-2 py-0.5 ${ROLE_COLORS[role]}`}>
-                                <Building2 className="h-2.5 w-2.5 inline mr-1" />{d}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          );
-        })()}
 
         {activeTab === "schedule" && <ScheduleTab plan={plan} canManage={canManageSchedule} />}
 
