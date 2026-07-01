@@ -4,6 +4,20 @@
 
 BEGIN;
 
+-- Create table if not exists (for shadow database / clean setup support)
+CREATE TABLE IF NOT EXISTS "doc_control_depts" (
+  "id"             TEXT NOT NULL,
+  "name"           TEXT NOT NULL,
+  "auth_dept_code" TEXT,
+  "email_group"    TEXT,
+  "is_active"      BOOLEAN NOT NULL DEFAULT true,
+  "sort_order"     INTEGER NOT NULL DEFAULT 0,
+  "created_at"     TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at"     TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "doc_control_depts_pkey" PRIMARY KEY ("id")
+);
+
 -- 1. Ensure unique index exists (idempotent)
 CREATE UNIQUE INDEX IF NOT EXISTS "doc_control_depts_auth_dept_code_key" ON "doc_control_depts"("auth_dept_code");
 

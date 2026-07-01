@@ -34,7 +34,7 @@ model DepartmentCode {
   id             String   @id @default(uuid())
   authDeptId     String   @unique @map("auth_dept_id")
   departmentName String   @map("department_name")
-  code           String   @unique
+  code           String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
