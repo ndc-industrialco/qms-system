@@ -162,6 +162,16 @@ export function DocumentControlDetailModal({
               <>
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2">
+                  {document.spWebUrl && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(document.spWebUrl!, '_blank')}
+                      className="rounded-xl h-9"
+                    >
+                      {t('documentControl.button.preview')}
+                    </Button>
+                  )}
                   {document.spDownloadUrl && (
                     <Button
                       variant="outline"
@@ -258,25 +268,37 @@ export function DocumentControlDetailModal({
                     <p className="text-slate-400 text-xs uppercase tracking-wide font-medium mb-3">
                       {t('documentControl.section.fileInfo')}
                     </p>
-                    <div className="flex items-center justify-between bg-slate-50 px-4 py-3 rounded-xl">
-                      <div>
-                        <p className="font-medium text-slate-800 text-sm">{document.fileName}</p>
+                    <div className="flex items-center justify-between gap-3 bg-slate-50 px-4 py-3 rounded-xl">
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-800 text-sm truncate">{document.fileName}</p>
                         <p className="text-xs text-slate-500 mt-0.5 font-mono">
                           {document.fileSize && formatBytes(document.fileSize)}
                           {document.fileSize && document.mimeType && ' · '}
                           {document.mimeType}
                         </p>
                       </div>
-                      {document.spDownloadUrl && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(document.spDownloadUrl!, '_blank')}
-                          className="rounded-xl"
-                        >
-                          {t('documentControl.button.download')}
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {document.spWebUrl && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(document.spWebUrl!, '_blank')}
+                            className="rounded-xl"
+                          >
+                            {t('documentControl.button.preview')}
+                          </Button>
+                        )}
+                        {document.spDownloadUrl && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(document.spDownloadUrl!, '_blank')}
+                            className="rounded-xl"
+                          >
+                            {t('documentControl.button.download')}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -331,16 +353,28 @@ export function DocumentControlDetailModal({
                                 {rev.createdBy?.name || '—'}
                               </td>
                               <td className="py-2.5 px-3 text-right">
-                                {rev.spDownloadUrl && rev.status === 'ACTIVE' && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => window.open(rev.spDownloadUrl!, '_blank')}
-                                    className="h-8 text-[#0F1059] hover:bg-slate-100 text-xs"
-                                  >
-                                    {t('documentControl.button.download')}
-                                  </Button>
-                                )}
+                                <div className="flex items-center justify-end gap-1">
+                                  {rev.spWebUrl && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => window.open(rev.spWebUrl!, '_blank')}
+                                      className="h-8 text-slate-600 hover:bg-slate-100 text-xs"
+                                    >
+                                      {t('documentControl.button.preview')}
+                                    </Button>
+                                  )}
+                                  {rev.spDownloadUrl && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => window.open(rev.spDownloadUrl!, '_blank')}
+                                      className="h-8 text-[#0F1059] hover:bg-slate-100 text-xs"
+                                    >
+                                      {t('documentControl.button.download')}
+                                    </Button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           ))}

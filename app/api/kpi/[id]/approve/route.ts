@@ -5,7 +5,7 @@ import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth } from '@/lib/auth';
 import { KpiService } from '@/services/kpiService';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
-import { sendKpiResultEmail } from '@/services/email';
+import { sendKpiResultEmail, makeBilingualMail } from '@/services/email';
 
 const service = new KpiService();
 
@@ -21,6 +21,13 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       departmentId: session.user.authDepartmentId ?? session.user.departmentId,
       accessToken: session.user.accessToken,
     }, body);
+
+    const kpiApproveFacts = [
+      { labelTh: "หน่วยงาน", labelEn: "Department", value: updated.department },
+      { labelTh: "ปี", labelEn: "Year", value: String(updated.yearly) },
+      { labelTh: "อนุมัติโดย", labelEn: "Approved By", value: session.user.name ?? '' },
+      { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(updated.objectives.length) },
+    ];
 
     const notifyAuthIds = [updated.reviewerUserId, updated.approverUserId].filter(Boolean) as string[];
     for (const authId of notifyAuthIds) {
@@ -43,6 +50,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
         {
           title: "KPI ได้รับการอนุมัติ",
           body: `KPI ${updated.department} ${updated.yearly}`,
+          htmlBody: makeBilingualMail({ titleTh: `KPI ${updated.department} ปี ${updated.yearly} ได้รับการอนุมัติ`, titleEn: `KPI ${updated.department} ${updated.yearly} Approved`, facts: kpiApproveFacts }),
           module: "KPI",
           resourceId: id,
           resourceType: "KPI",

@@ -30,9 +30,10 @@ type Props = {
   hideSubmit?: boolean;
   savedSignatureUrl?: string | null;
   savedSignatureType?: SignatureType | null;
+  onClose?: () => void;
 };
 
-export default function DarForm({ mode, initialData, departments, requesterInfo, tempId, hideSubmit = false, savedSignatureUrl, savedSignatureType }: Props) {
+export default function DarForm({ mode, initialData, departments, requesterInfo, tempId, hideSubmit = false, savedSignatureUrl, savedSignatureType, onClose }: Props) {
   const t = useT();
 
   const {
@@ -83,8 +84,13 @@ export default function DarForm({ mode, initialData, departments, requesterInfo,
 
   async function handleSend(reviewer: ReviewerUser) {
     if (!pendingSignature) return;
-    await submitWithReviewer(pendingSignature.dataUrl, pendingSignature.type, pendingSignature.saveToProfile, reviewer);
+    const ok = await submitWithReviewer(pendingSignature.dataUrl, pendingSignature.type, pendingSignature.saveToProfile, reviewer);
     setShowReviewerModal(false);
+    if (ok) {
+      onClose?.();
+    } else {
+      setPendingSignature(null);
+    }
   }
 
   return (

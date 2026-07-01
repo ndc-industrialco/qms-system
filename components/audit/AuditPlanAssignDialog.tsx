@@ -36,11 +36,17 @@ export default function AuditPlanAssignDialog({
 
     async function prefill() {
       try {
-        const res = await fetch("/api/ms-graph/users/search?q=");
-        const json: { data: GraphUserResult[] } = await res.json();
-        const users = json.data ?? [];
-        if (initialReviewerAuthUserId) setReviewer(users.find((u) => u.id === initialReviewerAuthUserId) ?? null);
-        if (initialApproverAuthUserId) setApprover(users.find((u) => u.id === initialApproverAuthUserId) ?? null);
+        const fetchUser = async (id: string): Promise<GraphUserResult | null> => {
+          const res = await fetch(`/api/ms-graph/users/search?q=${encodeURIComponent(id)}`);
+          const json: { data: GraphUserResult[] } = await res.json();
+          return json.data?.find((u) => u.id === id) ?? null;
+        };
+        const [r, a] = await Promise.all([
+          initialReviewerAuthUserId ? fetchUser(initialReviewerAuthUserId) : Promise.resolve(null),
+          initialApproverAuthUserId ? fetchUser(initialApproverAuthUserId) : Promise.resolve(null),
+        ]);
+        if (r) setReviewer(r);
+        if (a) setApprover(a);
       } catch {
         // ignore prefill failures
       }

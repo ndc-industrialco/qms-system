@@ -17,6 +17,65 @@ model SystemConfig {
   @@map("SystemConfig")
 }
 
+model LocalRoleGrant {
+  id          String   @id @default(uuid())
+  authUserId  String   @map("auth_user_id")
+  role        String   // QMS_MR, QMS_QMS, QMS_IT, QMS_USER
+  displayName String?  @map("display_name")
+  email       String?
+  grantedAt   DateTime @default(now()) @map("granted_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([authUserId, role])
+  @@map("LocalRoleGrant")
+}
+
+model DepartmentCode {
+  id             String   @id @default(uuid())
+  authDeptId     String   @unique @map("auth_dept_id")
+  departmentName String   @map("department_name")
+  code           String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("DepartmentCode")
+}
+
+// Local department registry for KPI module.
+// Seeded from Auth Center (authDeptCode links back); QMS/IT/MR can rename, deactivate, or add local-only rows.
+// Sync from Auth Center only upserts — never deletes existing rows.
+// KPI.department stores the name string (not FK) so renaming here does NOT auto-update existing KPIs.
+model KpiDept {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  authDeptCode String?  @unique @map("auth_dept_code")
+  emailGroup   String?  @map("email_group")
+  isActive     Boolean  @default(true) @map("is_active")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("kpi_depts")
+}
+
+// Local department registry for Document Control.
+// Seeded from Auth Center (authDeptCode links back); QMS/IT/MR can rename, deactivate, or add local-only rows.
+// Sync from Auth Center only upserts — never deletes existing rows.
+model DocControlDept {
+  id           String   @id @default(uuid())
+  name         String
+  authDeptCode String?  @unique @map("auth_dept_code") // null = local-only (no Auth Center counterpart)
+  emailGroup   String?  @map("email_group")
+  isActive     Boolean  @default(true) @map("is_active")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  categories   DocumentCategory[]
+
+  @@map("doc_control_depts")
+}
+
 model UserPreference {
   authUserId        String        @id @map("auth_user_id")
   savedSignatureUrl String?       @map("saved_signature_url")
@@ -410,6 +469,7 @@ enum SignatureType {
 enum KpiObjectiveStatus {
   DRAFT
   PENDING_REVIEW
+  PENDING_APPROVAL
   APPROVED
   REJECTED
 }
@@ -478,6 +538,7 @@ model DocumentCategory {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  department DocControlDept  @relation(fields: [departmentId], references: [id])
   documents  DocumentControl[]
 
   @@unique([departmentId, name])

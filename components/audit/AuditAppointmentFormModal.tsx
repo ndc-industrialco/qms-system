@@ -177,9 +177,18 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onCreated, onUpd
         return;
       }
     } else if (step === 1) {
+      const existingMembers = form.getValues("members") ?? [];
       const members = Array.from(selectedIds).map((id, i) => {
         const u = allUsers.find((x) => x.id === id)!;
-        return { authUserId: id, name: u.name, department: u.department ?? "", role: "AUDITOR", standards: [], orderIndex: i };
+        const existing = existingMembers.find((m) => m.authUserId === id);
+        return {
+          authUserId: id,
+          name: u.name,
+          department: u.department ?? "",
+          role: existing?.role ?? "AUDITOR",
+          standards: existing?.standards ?? [],
+          orderIndex: i,
+        };
       });
       replaceMembers(members);
       valid = true;
@@ -192,13 +201,6 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onCreated, onUpd
         toast.error("กรุณาเลือกผู้ตรวจสอบและผู้อนุมัติ");
         return;
       }
-      form.setValue("reviewerAuthUserId", reviewer.id);
-      form.setValue("reviewerEmail", reviewer.email);
-      form.setValue("reviewerNameSnapshot", reviewer.name);
-      form.setValue("approverAuthUserId", approver.id);
-      form.setValue("approverEmail", approver.email);
-      form.setValue("approverNameSnapshot", approver.name);
-      valid = await form.trigger(["reviewerAuthUserId", "reviewerEmail", "approverAuthUserId", "approverEmail"]);
     }
     if (!valid) return;
     if (step < STEPS.length - 1) {

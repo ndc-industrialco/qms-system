@@ -33,7 +33,7 @@ function FindingRow({ finding }: { finding: MyTaskFinding }) {
   return (
     <Link
       href={`/audit/plans/${finding.planId}`}
-      className="flex flex-col gap-1.5 px-5 py-4 hover:bg-base-50 transition-colors border-b border-base-200 last:border-0"
+      className="flex flex-col gap-1.5 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -80,7 +80,7 @@ function PlanRow({ plan }: { plan: MyTaskPlan | MyTaskSignoffPlan }) {
   return (
     <Link
       href={`/audit/plans/${plan.id}`}
-      className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-base-50 transition-colors border-b border-base-200 last:border-0"
+      className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0"
     >
       <div className="flex-1 min-w-0">
         <p className="text-[11px] text-slate-400">{plan.auditNo}</p>
@@ -132,9 +132,9 @@ export default function AuditMyTasksClient() {
     : { respond: 0, verify: 0, leading: 0, signoff: 0 };
 
   return (
-    <div className="bg-white border border-base-300 rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
       {/* Tab Bar */}
-      <div className="border-b border-base-200 overflow-x-auto">
+      <div className="border-b border-slate-100 overflow-x-auto">
         <div className="flex min-w-max">
           {TABS.map((tab) => {
             const Icon = tab.icon;

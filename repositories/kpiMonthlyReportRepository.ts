@@ -43,6 +43,22 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
     });
   }
 
+  async findForExport(where: Prisma.KPIMonthlyReportWhereInput = {}, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where,
+      include: {
+        kpi: { select: { department: true, yearly: true } },
+        details: {
+          include: {
+            kpiObjective: { select: { objective: true, target: true, unit: true } },
+            correctiveActions: true,
+          },
+        },
+      },
+      orderBy: [{ year: "desc" }, { month: "asc" }],
+    });
+  }
+
   async paginateReports(query: ListMonthlyQuery, tx?: Prisma.TransactionClient): Promise<PaginatedResult<KPIMonthlyReport>> {
     const page = query.page || 1;
     const limit = query.limit || 20;

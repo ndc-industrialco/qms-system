@@ -1,7 +1,6 @@
 import { logger } from '@/lib/logger';
 import { AuditService } from '@/services/auditService';
 import { DocumentControlRepository } from '@/repositories/documentControlRepository';
-import { DepartmentRepository } from '@/repositories/departmentRepository';
 import { DocumentCategoryRepository } from '@/repositories/documentCategoryRepository';
 import { NotFoundError, ValidationError } from '@/lib/errors';
 import { db } from '@/lib/db';
@@ -22,9 +21,12 @@ import { getUserSnapshot } from '@/lib/userSnapshotCache';
 
 export class DocumentControlService {
   private repo = new DocumentControlRepository();
-  private deptRepo = new DepartmentRepository();
   private categoryRepo = new DocumentCategoryRepository();
   private userRepo = new UserRepository();
+
+  private async findDept(id: string) {
+    return db.docControlDept.findUnique({ where: { id } });
+  }
 
   private async getIdentitySnapshot(authUserId: string) {
     // Try cache first (populated at login, no DB hit needed)
@@ -77,7 +79,7 @@ export class DocumentControlService {
     }
 
     const [dept, category] = await Promise.all([
-      this.deptRepo.findNameById(data.departmentId),
+      this.findDept(data.departmentId),
       this.categoryRepo.findForDocControl(data.categoryId),
     ]);
     const creator = await this.getIdentitySnapshot(userId);
@@ -92,7 +94,7 @@ export class DocumentControlService {
       description: data.description ?? null,
       status: (data.status || 'DRAFT') as DocControlStatus,
       departmentId: data.departmentId,
-      authDepartmentId: dept.authDepartmentId ?? dept.name,
+      authDepartmentId: dept.authDeptCode ?? dept.name,
       departmentName: dept.name,
       categoryId: data.categoryId,
       createdById: userId,
@@ -131,7 +133,7 @@ export class DocumentControlService {
     if (!nextDepartmentId || !nextCategoryId) throw new ValidationError('Department and category are required');
 
     const [nextDept, nextCategory] = await Promise.all([
-      this.deptRepo.findNameById(nextDepartmentId),
+      this.findDept(nextDepartmentId),
       this.categoryRepo.findForDocControl(nextCategoryId),
     ]);
     if (!nextDept || !nextCategory) throw new ValidationError('Department or category not found');
@@ -196,7 +198,7 @@ export class DocumentControlService {
     if (data.status !== undefined) updates.status = data.status;
     if (data.departmentId !== undefined) {
       updates.departmentId = data.departmentId;
-      updates.authDepartmentId = nextDept.authDepartmentId ?? nextDept.name;
+      updates.authDepartmentId = nextDept.authDeptCode ?? nextDept.name;
       updates.departmentName = nextDept.name;
     }
     if (data.categoryId !== undefined) updates.categoryId = data.categoryId;

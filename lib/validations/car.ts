@@ -70,6 +70,9 @@ export const carRespondSchema = z.object({
   preventiveAction: z.string().min(1, "กรุณากรอกการดำเนินการป้องกัน"),
   plannedCompletionDate: z.string().min(1, "กรุณาเลือกวันที่กำหนดเสร็จ"),
   responderSignaturePath: z.string().min(1, "กรุณาเซ็นลายเซ็น"),
+  responderSignatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
+  saveToProfile: z.boolean().optional(),
+  targetMrAuthUserId: z.string().min(1, "กรุณาเลือกผู้อนุมัติ MR"),
 });
 
 export const carVerifySchema = z.object({
@@ -79,24 +82,33 @@ export const carVerifySchema = z.object({
   nextDueDate: z.string().optional(),
   verifierPosition: z.string().min(1, "กรุณากรอกตำแหน่ง"),
   verifierSignaturePath: z.string().min(1, "กรุณาเซ็นลายเซ็น"),
+  verifierSignatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
+  saveToProfile: z.boolean().optional(),
+  targetMrAuthUserId: z.string().optional().nullable(),
 }).refine(
   (data) => !(data.result === "FAILED" && data.round === 1 && !data.nextDueDate),
   { message: "กรุณาระบุวันติดตามครั้งที่ 2", path: ["nextDueDate"] },
+).refine(
+  (data) => !(data.result === "PASSED" && !data.targetMrAuthUserId),
+  { message: "กรุณาเลือกผู้อนุมัติ MR", path: ["targetMrAuthUserId"] },
 );
 
 export const carCloseSchema = z.object({
   token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format").optional(),
   comment: z.string().optional(),
-  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(524288).optional(),
+  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(204800).optional(),
   signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
+  saveToProfile: z.boolean().optional(),
 });
 
 export const carReviewResponseSchema = z.object({
   token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format").optional(),
   action: z.enum(["APPROVED", "REJECTED"]),
   comment: z.string().optional(),
-  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(524288).optional(),
+  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(204800).optional(),
   signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
+  saveToProfile: z.boolean().optional(),
+  qmsAuthUserId: z.string().optional(),
 });
 
 export const carListQuerySchema = z.object({

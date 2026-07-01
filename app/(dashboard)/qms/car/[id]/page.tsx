@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
+import { requireRole } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { CarService } from "@/services/carService";
 import CarDetailClient from "@/components/car/CarDetailClient";
 import type { Metadata } from "next";
@@ -13,8 +13,7 @@ export default async function QmsCarDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  const session = await requireRole("QMS", "IT", "MR");
 
   const { id } = await params;
   let car;

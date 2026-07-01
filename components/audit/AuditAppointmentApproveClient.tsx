@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
+import ApproveSuccessScreen from "@/components/shared/ApproveSuccessScreen";
 import type { AuditAppointmentRow } from "@/types/audit";
 
 const MEMBER_ROLE_LABELS: Record<string, string> = {
@@ -96,6 +97,17 @@ export function AuditAppointmentApproveClient({ appt, mode }: Props) {
     } finally {
       setRejecting(false);
     }
+  }
+
+  if (successOpen) {
+    return (
+      <ApproveSuccessScreen
+        title="ดำเนินการเรียบร้อย"
+        subtitle={isReviewer ? `ตรวจสอบประกาศ ${appt.appointmentNo} เรียบร้อยแล้ว` : `อนุมัติและเผยแพร่ประกาศ ${appt.appointmentNo} เรียบร้อยแล้ว`}
+        backHref="/notifications"
+        backLabel="กลับหน้าหลัก"
+      />
+    );
   }
 
   const expectedStatus = isReviewer ? "PENDING_REVIEW" : "PENDING_APPROVAL";
@@ -370,31 +382,6 @@ export function AuditAppointmentApproveClient({ appt, mode }: Props) {
           await handleSign(payload);
         }}
       />
-
-      {/* Success Dialog */}
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-sm rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              ดำเนินการเรียบร้อย
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-slate-600">
-            {isReviewer
-              ? `ตรวจสอบประกาศ ${appt.appointmentNo} เรียบร้อยแล้ว`
-              : `อนุมัติและเผยแพร่ประกาศ ${appt.appointmentNo} เรียบร้อยแล้ว`}
-          </p>
-          <DialogFooter>
-            <Button
-              className="rounded-xl bg-primary hover:bg-[#161875]"
-              onClick={() => { setSuccessOpen(false); router.push("/approve"); router.refresh(); }}
-            >
-              กลับหน้า Approve
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Reject Dialog */}
       <Dialog open={rejectOpen} onOpenChange={(o) => { setRejectOpen(o); if (!o) setRejectReason(""); }}>

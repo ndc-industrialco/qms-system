@@ -23,6 +23,7 @@ export async function POST(
       role: session.user.role,
       nameSnapshot: session.user.name ?? null,
       accessToken: session.user.accessToken ?? null,
+      departmentId: session.user.authDepartmentId ?? session.user.departmentId ?? null,
     });
 
     return sendSuccess(schedule, "Schedule confirmation updated");

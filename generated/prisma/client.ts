@@ -47,6 +47,26 @@ export { Prisma }
  */
 export type SystemConfig = Prisma.SystemConfigModel
 /**
+ * Model LocalRoleGrant
+ * 
+ */
+export type LocalRoleGrant = Prisma.LocalRoleGrantModel
+/**
+ * Model DepartmentCode
+ * 
+ */
+export type DepartmentCode = Prisma.DepartmentCodeModel
+/**
+ * Model KpiDept
+ * 
+ */
+export type KpiDept = Prisma.KpiDeptModel
+/**
+ * Model DocControlDept
+ * 
+ */
+export type DocControlDept = Prisma.DocControlDeptModel
+/**
  * Model UserPreference
  * 
  */

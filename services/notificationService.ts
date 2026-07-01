@@ -84,24 +84,19 @@ export class NotificationService {
   static async notifyDeptMembers(
     deptCode: string,
     accessToken: string | null | undefined,
-    data: { title: string; body: string; module: string; resourceId: string; resourceType: string },
+    data: { title: string; body: string; htmlBody?: string | null; module: string; resourceId: string; resourceType: string },
   ): Promise<void> {
     if (!deptCode || !accessToken) return;
     try {
       const { getAuthCenterDepartmentMembers } = await import("@/lib/auth-center-admin-client");
       const result = await getAuthCenterDepartmentMembers(deptCode, { accessToken });
       const members = result?.members ?? [];
-      await Promise.all(
-        members
-          .filter((m) => m.id)
-          .map((m) =>
-            notificationRepo.create({
-              recipientId: m.id,
-              recipientAuthUserId: m.id,
-              ...data,
-            }).catch(() => {}),
-          ),
-      );
+      const rows = members.filter((m) => m.id).map((m) => ({
+        recipientId: m.id,
+        recipientAuthUserId: m.id,
+        ...data,
+      }));
+      await notificationRepo.createMany(rows);
       logger.info("[notification] notifyDeptMembers sent", { deptCode, count: members.length });
     } catch (err) {
       logger.warn("[notification] notifyDeptMembers failed", { deptCode, error: String(err) });
@@ -136,6 +131,7 @@ export class NotificationService {
       resourceId: string;
       resourceType: string;
     },
+    options?: { forceEmail?: boolean },
   ): Promise<void> {
     const existing = await notifRepo.findByIdempotencyKey(idempotencyKey);
 
@@ -157,10 +153,11 @@ export class NotificationService {
         },
       );
 
-      const channel = await NotificationService.resolveChannel(recipientUserId);
-
-      if (channel === "in_app") {
-        return;
+      if (!options?.forceEmail) {
+        const channel = await NotificationService.resolveChannel(recipientUserId);
+        if (channel === "in_app") {
+          return;
+        }
       }
     }
 
@@ -178,12 +175,13 @@ export class NotificationService {
     }));
 
     try {
+      logger.info("[notification] Calling email sendFn", { idempotencyKey, recipient });
       await sendFn();
       await notifRepo.markSent(log.id);
       logger.info("[notification] Email sent", { idempotencyKey, recipient });
     } catch (error) {
       await notifRepo.markFailed(log.id, error instanceof Error ? error.message : String(error));
-      logger.error("[notification] Email failed", { idempotencyKey, recipient, error });
+      logger.error("[notification] Email failed", { idempotencyKey, recipient, errorMessage: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }

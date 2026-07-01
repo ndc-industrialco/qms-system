@@ -21,7 +21,8 @@ declare global {
 
 function createClient(): Redis {
   const client = new Redis(REDIS_URL, {
-    maxRetriesPerRequest: 3,
+    maxRetriesPerRequest: 1,
+    connectTimeout: 500,
     enableReadyCheck: true,
     lazyConnect: true,
   });

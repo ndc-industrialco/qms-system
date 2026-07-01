@@ -7,10 +7,12 @@ import { toast } from "sonner";
 import { CheckCircle2, ClipboardCheck, Calendar, FileText, Users, ChevronRight, Paperclip, Building2, Crown, User, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import ApproveSuccessScreen from "@/components/shared/ApproveSuccessScreen";
 import { Textarea } from "@/components/ui/textarea";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
 import { FilePreviewModal, type FilePreviewTarget } from "@/components/common/FilePreviewModal";
 import type { SignatureType } from "@/types/dar";
+import { fmtDate } from "@/lib/format";
 
 type Signoff = {
   signedRole: string;
@@ -69,11 +71,6 @@ const ROLE_LABELS: Record<string, { th: string; en: string }> = {
   REVIEWER: { th: "ผู้ตรวจสอบ", en: "Reviewer" },
   APPROVER: { th: "ผู้อนุมัติ", en: "Approver" },
 };
-
-function fmtDate(iso: string | null) {
-  if (!iso) return "-";
-  return new Date(iso).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" });
-}
 
 export default function AuditPlanApproveClient({ plan, mode }: Props) {
   const router = useRouter();
@@ -144,6 +141,17 @@ export default function AuditPlanApproveClient({ plan, mode }: Props) {
     } finally {
       setRejecting(false);
     }
+  }
+
+  if (successOpen) {
+    return (
+      <ApproveSuccessScreen
+        title="ดำเนินการเรียบร้อย"
+        subtitle={isReviewer ? `ตรวจสอบแผน ${plan.auditNo} เรียบร้อยแล้ว` : `อนุมัติแผน ${plan.auditNo} เรียบร้อยแล้ว`}
+        backHref="/notifications"
+        backLabel="กลับหน้าหลัก"
+      />
+    );
   }
 
   // ── Action Panel ─────────────────────────────────────────────────────────────
@@ -493,31 +501,6 @@ export default function AuditPlanApproveClient({ plan, mode }: Props) {
         onOpenChange={setSigOpen}
         onConfirm={handleConfirm}
       />
-
-      {/* Success Dialog */}
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-sm rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-              ดำเนินการเรียบร้อย
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-slate-600">
-            {isReviewer
-              ? `ตรวจสอบแผน ${plan.auditNo} เรียบร้อยแล้ว`
-              : `อนุมัติแผน ${plan.auditNo} เรียบร้อยแล้ว`}
-          </p>
-          <DialogFooter>
-            <Button
-              className="rounded-xl bg-primary hover:bg-[#161875]"
-              onClick={() => { setSuccessOpen(false); router.push("/approve"); router.refresh(); }}
-            >
-              กลับหน้า Approve
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Reject Dialog */}
       <Dialog open={rejectOpen} onOpenChange={(o) => { setRejectOpen(o); if (!o) setRejectReason(""); }}>

@@ -155,11 +155,11 @@ export default function DashboardNavbar({ role, name, email, image, locale, onLo
           </button>
 
           {/* Dropdown panel */}
-          <div tabIndex={0} className="dropdown-content z-50 mt-1.5 w-64 bg-base-100 rounded-xl border border-base-300 shadow-lg overflow-hidden">
+          <div tabIndex={0} className="dropdown-content z-50 mt-1.5 w-64 bg-white rounded-xl border border-slate-100 shadow-lg overflow-hidden">
             {/* User block */}
-            <div className="px-4 py-3.5 flex items-center gap-3 border-b border-base-300">
+            <div className="px-4 py-3.5 flex items-center gap-3 border-b border-slate-100">
               {image ? (
-                <Image src={image} alt={name} width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-base-300" />
+                <Image src={image} alt={name} width={40} height={40} className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-slate-100" />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center text-[14px] font-bold shrink-0">
                   {name.charAt(0).toUpperCase()}
@@ -215,10 +215,10 @@ export default function DashboardNavbar({ role, name, email, image, locale, onLo
               </div>
             )}
           </button>
-          <div tabIndex={0} className="dropdown-content z-50 mt-1.5 w-56 bg-base-100 rounded-xl border border-base-300 shadow-lg overflow-hidden">
-            <div className="px-4 py-3 flex items-center gap-3 border-b border-base-300">
+          <div tabIndex={0} className="dropdown-content z-50 mt-1.5 w-56 bg-white rounded-xl border border-slate-100 shadow-lg overflow-hidden">
+            <div className="px-4 py-3 flex items-center gap-3 border-b border-slate-100">
               {image ? (
-                <Image src={image} alt={name} width={36} height={36} className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-base-300" />
+                <Image src={image} alt={name} width={36} height={36} className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-slate-100" />
               ) : (
                 <div className="w-9 h-9 rounded-full bg-primary text-primary-content flex items-center justify-center text-[13px] font-bold shrink-0">
                   {name.charAt(0).toUpperCase()}

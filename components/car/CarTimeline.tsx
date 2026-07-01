@@ -1,10 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import type { CarDetail } from "@/types/car";
+
+function Comment({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = text.length > 80;
+  return (
+    <p className="mt-1 text-xs text-slate-600 italic">
+      &quot;{isLong && !expanded ? text.slice(0, 80) + "…" : text}&quot;
+      {isLong && (
+        <button onClick={() => setExpanded(!expanded)} className="ml-1 text-blue-500 hover:underline not-italic">
+          {expanded ? "ย่อ" : "ดูเพิ่ม"}
+        </button>
+      )}
+    </p>
+  );
+}
 
 interface Props {
   car: CarDetail;
@@ -84,7 +100,7 @@ export default function CarTimeline({ car }: Props) {
               <span className={car.mrResponseReview.action === "APPROVED" ? "text-emerald-600 font-semibold" : "text-rose-600 font-semibold"}>
                 {car.mrResponseReview.action === "APPROVED" ? "อนุมัติ" : "ปฏิเสธ"}
               </span>
-              {car.mrResponseReview.comment ? <> · &quot;{car.mrResponseReview.comment}&quot;</> : null}
+              {car.mrResponseReview.comment ? <Comment text={car.mrResponseReview.comment} /> : null}
             </>
           ) : undefined
         }
@@ -150,7 +166,7 @@ export default function CarTimeline({ car }: Props) {
             car.mrSignature ? (
               <>
                 {fmt(car.mrSignature.signedAt)} · {car.mrSignature.mrUser.name}
-                {car.mrSignature.comment ? <> · &quot;{car.mrSignature.comment}&quot;</> : null}
+                {car.mrSignature.comment ? <Comment text={car.mrSignature.comment} /> : null}
               </>
             ) : undefined
           }

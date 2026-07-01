@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 import type { DarDetail, DarApprovalRow, SignatureType, ReviewerCandidate } from "@/types/dar";
 import DarApprovalTimeline from "./DarApprovalTimeline";
+import ApproveSignatureSection, { type SigMode } from "@/components/shared/ApproveSignatureSection";
 
 interface Props {
   dar: DarDetail;
@@ -32,248 +32,6 @@ function getErrorMessage(error: unknown, fallback: string): string {
     }
   }
   return fallback;
-}
-
-// ── Signature input ───────────────────────────────────────────────────────────
-
-const CANVAS_W = 600;
-const CANVAS_H = 160;
-
-function DrawPad({ onChange, clearLabel }: { onChange: (url: string | null) => void; clearLabel: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawing = useRef(false);
-  const hasContent = useRef(false);
-
-  function getPos(e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) {
-    const rect = canvas.getBoundingClientRect();
-    const sx = canvas.width / rect.width;
-    const sy = canvas.height / rect.height;
-    if ("touches" in e) {
-      const touch = e.touches[0];
-      return { x: (touch.clientX - rect.left) * sx, y: (touch.clientY - rect.top) * sy };
-    }
-    return { x: (e.clientX - rect.left) * sx, y: (e.clientY - rect.top) * sy };
-  }
-
-  function startDraw(e: React.MouseEvent | React.TouchEvent) {
-    const canvas = canvasRef.current; if (!canvas) return;
-    drawing.current = true;
-    const ctx = canvas.getContext("2d")!;
-    const { x, y } = getPos(e, canvas);
-    ctx.beginPath(); ctx.moveTo(x, y);
-    e.preventDefault();
-  }
-
-  function draw(e: React.MouseEvent | React.TouchEvent) {
-    if (!drawing.current) return;
-    const canvas = canvasRef.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#0f1059";
-    const { x, y } = getPos(e, canvas);
-    ctx.lineTo(x, y); ctx.stroke();
-    hasContent.current = true;
-    e.preventDefault();
-  }
-
-  function stopDraw() {
-    if (!drawing.current) return;
-    drawing.current = false;
-    const canvas = canvasRef.current; if (!canvas) return;
-    onChange(hasContent.current ? canvas.toDataURL("image/png") : null);
-  }
-
-  function clear() {
-    const canvas = canvasRef.current; if (!canvas) return;
-    canvas.getContext("2d")!.clearRect(0, 0, canvas.width, canvas.height);
-    hasContent.current = false;
-    onChange(null);
-  }
-
-  return (
-    <div className="flex flex-col gap-2">
-      <canvas
-        ref={canvasRef} width={CANVAS_W} height={CANVAS_H}
-        className="w-full border-2 border-dashed border-slate-200 rounded-xl bg-white cursor-crosshair touch-none"
-        style={{ maxHeight: 160 }}
-        onMouseDown={startDraw} onMouseMove={draw} onMouseUp={stopDraw} onMouseLeave={stopDraw}
-        onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={stopDraw}
-      />
-      <button type="button" onClick={clear} className="self-end text-xs text-slate-400 hover:text-slate-600 transition-colors">
-        {clearLabel}
-      </button>
-    </div>
-  );
-}
-
-function TypePad({ onChange, placeholder, sampleLabel, fonts }: {
-  onChange: (url: string | null) => void;
-  placeholder: string;
-  sampleLabel: string;
-  fonts: { label: string; value: string }[];
-}) {
-  const [text, setText] = useState("");
-  const [font, setFont] = useState(fonts[0].value);
-
-  const renderToCanvas = useCallback((t: string, f: string): string | null => {
-    if (!t.trim()) return null;
-    const canvas = document.createElement("canvas");
-    canvas.width = CANVAS_W; canvas.height = CANVAS_H;
-    const ctx = canvas.getContext("2d")!;
-    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.fillStyle = "#0f1059"; ctx.font = `52px ${f}`;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(t, CANVAS_W / 2, CANVAS_H / 2);
-    return canvas.toDataURL("image/png");
-  }, []);
-
-  useEffect(() => { onChange(renderToCanvas(text, font)); }, [text, font, onChange, renderToCanvas]);
-
-  return (
-    <div className="flex flex-col gap-3">
-      <input type="text"
-        className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-colors"
-        placeholder={placeholder} value={text}
-        onChange={(e) => setText(e.target.value)} maxLength={40}
-      />
-      <div className="flex gap-2 flex-wrap">
-        {fonts.map((f) => (
-          <button key={f.value} type="button" onClick={() => setFont(f.value)}
-            className={`h-8 px-3 text-sm rounded-lg font-medium transition-colors ${font === f.value ? "bg-primary text-white" : "border border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
-            <span style={{ fontFamily: f.value }}>{text || sampleLabel}</span>
-          </button>
-        ))}
-      </div>
-      {text.trim() && (
-        <div className="w-full border-2 border-dashed border-slate-200 rounded-xl bg-white flex items-center justify-center" style={{ height: 100 }}>
-          <span style={{ fontFamily: font, fontSize: 42 }} className="text-primary">{text}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ImagePad({ onChange, uploadLabel, uploadHint, sizeError, sigAlt }: {
-  onChange: (url: string | null) => void;
-  uploadLabel: string; uploadHint: string; sizeError: string; sigAlt: string;
-}) {
-  const [preview, setPreview] = useState<string | null>(null);
-
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]; if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { toast.error(sizeError, { duration: Infinity }); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => { const url = ev.target?.result as string; setPreview(url); onChange(url); };
-    reader.readAsDataURL(file);
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      <label className="flex flex-col items-center justify-center w-full border-2 border-dashed border-slate-200 rounded-xl p-6 cursor-pointer hover:border-primary/60 transition-colors bg-white">
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-        </svg>
-        <span className="text-sm text-slate-500">{uploadLabel}</span>
-        <span className="text-xs text-slate-400 mt-1">{uploadHint}</span>
-        <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
-      </label>
-      {preview && (
-        <div className="border-2 border-dashed border-slate-200 rounded-xl bg-white p-3 flex items-center justify-center" style={{ height: 100 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt={sigAlt} className="max-h-full max-w-full object-contain" />
-        </div>
-      )}
-    </div>
-  );
-}
-
-type SigMode = "DRAW" | "TYPE" | "IMAGE";
-
-interface SignatureSectionProps {
-  savedSignatureUrl?: string | null;
-  savedSignatureType?: SignatureType | null;
-  onSignatureChange: (dataUrl: string | null, type: SigMode) => void;
-  onSaveChange: (save: boolean) => void;
-}
-
-function SignatureSection({ savedSignatureUrl, savedSignatureType, onSignatureChange, onSaveChange }: SignatureSectionProps) {
-  const t = useT();
-  const [mode, setMode] = useState<SigMode>("DRAW");
-
-  const handleChange = useCallback((url: string | null) => {
-    onSignatureChange(url, mode);
-  }, [mode, onSignatureChange]);
-
-  const typeFonts = [
-    { label: t("dar.approval.sigFontScript"),  value: "Dancing Script, cursive" },
-    { label: t("dar.approval.sigFontStyle"),   value: "Pacifico, cursive" },
-    { label: t("dar.approval.sigFontCursive"), value: "Great Vibes, cursive" },
-  ];
-
-  const tabs: { key: SigMode; label: string; icon: React.ReactNode }[] = [
-    {
-      key: "DRAW", label: t("dar.approval.sigModeDrawLabel"),
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>,
-    },
-    {
-      key: "TYPE", label: t("dar.approval.sigModeTypeLabel"),
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" /></svg>,
-    },
-    {
-      key: "IMAGE", label: t("dar.approval.sigModeImageLabel"),
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>,
-    },
-  ];
-
-  return (
-    <div className="flex flex-col gap-4">
-      {savedSignatureUrl && savedSignatureType && (
-        <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-          <div className="bg-white border border-emerald-200 rounded-lg p-1.5 shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={savedSignatureUrl} alt={t("dar.approval.sigSavedAlt")} className="h-8 object-contain" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-emerald-800">{t("dar.approval.savedSigLabel")}</p>
-          </div>
-          <button type="button"
-            onClick={() => onSignatureChange(savedSignatureUrl, savedSignatureType)}
-            className="shrink-0 h-8 px-3 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
-            {t("dar.approval.btnUseSavedSig")}
-          </button>
-        </div>
-      )}
-
-      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
-        {tabs.map((tab) => (
-          <button key={tab.key} type="button"
-            onClick={() => { setMode(tab.key); onSignatureChange(null, tab.key); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 h-8 text-xs font-medium rounded-lg transition-all ${mode === tab.key ? "bg-white shadow-sm text-primary" : "text-slate-500 hover:text-slate-700"}`}>
-            {tab.icon}
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      <div>
-        {mode === "DRAW" && <DrawPad onChange={handleChange} clearLabel={t("dar.approval.sigClear")} />}
-        {mode === "TYPE" && (
-          <TypePad onChange={handleChange} placeholder={t("dar.approval.sigTypePlaceholder")}
-            sampleLabel={t("dar.approval.sigTypeSample")} fonts={typeFonts} />
-        )}
-        {mode === "IMAGE" && (
-          <ImagePad onChange={handleChange} uploadLabel={t("dar.approval.sigImageUploadLabel")}
-            uploadHint={t("dar.approval.sigImageUploadHint")} sizeError={t("dar.approval.sigImageSizeError")}
-            sigAlt={t("dar.approval.sigAlt")} />
-        )}
-      </div>
-
-      <label className="flex items-center gap-2 cursor-pointer select-none">
-        <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-primary"
-          onChange={(e) => onSaveChange(e.target.checked)} />
-        <span className="text-xs text-slate-500">{t("dar.approval.saveSigCheckbox")}</span>
-      </label>
-    </div>
-  );
 }
 
 // ── Modal shell ───────────────────────────────────────────────────────────────
@@ -311,6 +69,21 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
 
 // ── Approve modal ─────────────────────────────────────────────────────────────
 
+interface RoleUser { authUserId: string; name: string; email: string | null }
+
+function useRoleUsers(role: "MR" | "QMS" | null) {
+  return useQuery<RoleUser[]>({
+    queryKey: ["dar-role-users", role],
+    queryFn: async () => {
+      const res = await fetch(`/api/dar/role-users?role=${role}`);
+      const json = await res.json();
+      return (json.data ?? []) as RoleUser[];
+    },
+    enabled: role !== null,
+    staleTime: 60_000,
+  });
+}
+
 interface ApproveModalProps {
   darId: string;
   stepLabel: string;
@@ -324,6 +97,15 @@ interface ApproveModalProps {
 function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSignatureType, onClose, onDone }: ApproveModalProps) {
   const t = useT();
   const isQmsStep = stepRole === "QMS_PROCESSOR";
+  const isReviewerStep = stepRole === "REVIEWER";
+  const isMrStep = stepRole === "APPROVER_MR";
+  const needsUserPick = isReviewerStep || isMrStep;
+  const pickRole = isReviewerStep ? "MR" : isMrStep ? "QMS" : null;
+  const pickLabel = isReviewerStep ? "เลือกผู้อนุมัติ MR" : "เลือกผู้ประมวลผล QMS";
+
+  const { data: roleUsers = [], isLoading: roleUsersLoading } = useRoleUsers(pickRole);
+  const [targetAuthUserId, setTargetAuthUserId] = useState("");
+
   const [sigDataUrl, setSigDataUrl] = useState<string | null>(null);
   const [sigType, setSigType] = useState<SigMode>("DRAW");
   const [saveSignature, setSaveSignature] = useState(false);
@@ -349,6 +131,7 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
           signatureType: sigType,
           saveSignature,
           comment: comment.trim() || null,
+          targetAuthUserId: targetAuthUserId || null,
           qmsProcessing: isQmsStep ? { ...qmsChecklist, comments: qmsComment.trim() || null } : null,
         }),
       });
@@ -363,7 +146,7 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
   const submitting = submitMutation.isPending;
 
   const qmsCheckedCount = Object.values(qmsChecklist).filter(Boolean).length;
-  const canSubmit = !!sigDataUrl && !submitting;
+  const canSubmit = !!sigDataUrl && !submitting && (!needsUserPick || !!targetAuthUserId);
 
   const handleSignatureChange = useCallback((url: string | null, type: SigMode) => {
     setSigDataUrl(url); setSigType(type);
@@ -400,6 +183,34 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
 
       {/* Body */}
       <div className="px-6 py-5 flex flex-col gap-5 max-h-[70vh] overflow-y-auto">
+        {/* Role user picker */}
+        {needsUserPick && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-slate-600">
+              {pickLabel} <span className="text-rose-500">*</span>
+            </label>
+            {roleUsersLoading ? (
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <span className="w-3 h-3 border-2 border-slate-300 border-t-primary rounded-full animate-spin" />
+                กำลังโหลด...
+              </div>
+            ) : (
+              <select
+                className="w-full h-9 px-3 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+                value={targetAuthUserId}
+                onChange={(e) => setTargetAuthUserId(e.target.value)}
+              >
+                <option value="">-- เลือก --</option>
+                {roleUsers.map((u) => (
+                  <option key={u.authUserId} value={u.authUserId}>
+                    {u.name}{u.email ? ` (${u.email})` : ""}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
         {/* Comment */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-slate-600">
@@ -455,7 +266,7 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
           <label className="text-xs font-medium text-slate-600">
             {t("dar.approval.signatureLabel")} <span className="text-rose-500">*</span>
           </label>
-          <SignatureSection
+          <ApproveSignatureSection
             savedSignatureUrl={savedSignatureUrl}
             savedSignatureType={savedSignatureType}
             onSignatureChange={handleSignatureChange}
@@ -665,7 +476,7 @@ function PreparerSignModal({ darId, savedSignatureUrl, savedSignatureType, onClo
       </div>
 
       <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">
-        <SignatureSection
+        <ApproveSignatureSection
           savedSignatureUrl={savedSignatureUrl}
           savedSignatureType={savedSignatureType}
           onSignatureChange={handleSignatureChange}

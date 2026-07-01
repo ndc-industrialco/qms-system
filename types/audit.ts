@@ -247,6 +247,7 @@ export type AuditFindingDetail = AuditFindingRow & {
 };
 
 export type AuditPlanDetail = AuditPlanSummary & {
+  standards: string[];
   objective: string | null;
   sourceOrganization: string | null;
   summary: string | null;
@@ -272,6 +273,7 @@ export type AuditAttachmentRow = {
   resourceId: string;
   fileName: string;
   fileUrl: string | null;
+  spDownloadUrl: string | null;
   sharePointItemId: string | null;
   mimeType: string | null;
   sizeBytes: number | null;

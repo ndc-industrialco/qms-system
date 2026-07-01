@@ -46,7 +46,7 @@ export async function PATCH(
     const { id } = await params;
     const body = await req.json();
     const input = carUpdateSchema.parse(body);
-    const car = await carService.updateCar(id, session.user.id, input);
+    const car = await carService.updateCar(id, session.user.id, input, session.user.authUserId, session.user.role);
     return sendSuccess(car, "CAR updated successfully");
   } catch (err) {
     return handleApiError(err);

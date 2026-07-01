@@ -26,7 +26,7 @@ export default function AnnouncementTicker({ locale }: Props) {
       {/* Scrolling area — full remaining width */}
       <div className="flex-1 overflow-hidden relative">
         <div className="pointer-events-none absolute inset-y-0 right-0 w-8 z-10"
-          style={{ background: "linear-gradient(to left, var(--color-base-200), transparent)" }} />
+          style={{ background: "linear-gradient(to left, rgb(248 250 252), transparent)" }} />
         <div className="flex whitespace-nowrap animate-ticker">
           <span className="text-[12px] font-medium text-primary/80 px-4">{tickerText}</span>
           <span className="text-[12px] font-medium text-primary/80 px-4">{tickerText}</span>

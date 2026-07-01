@@ -260,12 +260,16 @@ export function useApproveKpiObjectives() {
 export function useRejectKpiObjectives() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (kpiId: string) => {
-      const res = await fetch(`/api/kpi/${kpiId}/reject`, { method: "POST" });
+    mutationFn: async ({ kpiId, reason }: { kpiId: string; reason?: string }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
       if (!res.ok) throw new Error(await extractError(res));
       return res.json();
     },
-    onSuccess: (_, kpiId) => {
+    onSuccess: (_, { kpiId }) => {
       qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
       qc.invalidateQueries({ queryKey: ["kpi-list"] });
     },

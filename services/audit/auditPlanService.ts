@@ -14,6 +14,7 @@ import type {
 } from "@/lib/validations/audit";
 import { sendScheduleInviteEmail, sendScheduleStatusEmail } from "./auditEmailService";
 import { NotificationService } from "@/services/notificationService";
+import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
 import { logger } from "@/lib/logger";
 import type { AuditPlanListQuery } from "@/repositories/audit/auditPlanRepository";
 
@@ -43,45 +44,56 @@ export class AuditPlanService {
       throw new ValidationError("sourceOrganization is required for EXTERNAL audit plans.");
     }
 
-    return db.$transaction(async (tx) => {
-      const auditNo = await this.nextAuditNo(tx);
+    // ponytail: retry loop guards against concurrent create race on audit_no unique constraint
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        return await db.$transaction(async (tx) => {
+          const auditNo = await this.nextAuditNo(tx);
 
-      const plan = await tx.auditPlan.create({
-        data: {
-          auditNo,
-          title: input.title,
-          auditType: input.auditType,
-          mode: input.mode ?? "SYSTEM",
-          standard: input.standard,
-          standards: input.standards ?? [],
-          scope: input.scope,
-          objective: input.objective,
-          sourceOrganization: input.sourceOrganization,
-          startDate: input.startDate,
-          endDate: input.endDate,
-          summary: input.summary,
-          appointmentId: (input as { appointmentId?: string }).appointmentId ?? null,
-          ownerAuthUserId: actor.authUserId ?? actor.userId,
-          ownerEmail: actor.email ?? null,
-          ownerNameSnapshot: actor.nameSnapshot ?? null,
-        },
-      });
+          const plan = await tx.auditPlan.create({
+            data: {
+              auditNo,
+              title: input.title,
+              auditType: input.auditType,
+              mode: input.mode ?? "SYSTEM",
+              standard: input.standard,
+              standards: input.standards ?? [],
+              scope: input.scope,
+              objective: input.objective,
+              sourceOrganization: input.sourceOrganization,
+              startDate: input.startDate,
+              endDate: input.endDate,
+              summary: input.summary,
+              appointmentId: (input as { appointmentId?: string }).appointmentId ?? null,
+              ownerAuthUserId: actor.authUserId ?? actor.userId,
+              ownerEmail: actor.email ?? null,
+              ownerNameSnapshot: actor.nameSnapshot ?? null,
+            },
+          });
 
-      await AuditService.record(
-        {
-          actorUserId: actor.userId,
-          actorAuthUserId: actor.authUserId,
-          actorRole: actor.role,
-          action: "CREATE",
-          resourceType: "AUDIT_PLAN",
-          resourceId: plan.id,
-          after: { auditNo, title: input.title, auditType: input.auditType, status: "DRAFT" },
-        },
-        tx
-      );
+          await AuditService.record(
+            {
+              actorUserId: actor.userId,
+              actorAuthUserId: actor.authUserId,
+              actorRole: actor.role,
+              action: "CREATE",
+              resourceType: "AUDIT_PLAN",
+              resourceId: plan.id,
+              after: { auditNo, title: input.title, auditType: input.auditType, status: "DRAFT" },
+            },
+            tx
+          );
 
-      return plan;
-    });
+          return plan;
+        });
+      } catch (err: unknown) {
+        const isUniqueViolation =
+          typeof err === "object" && err !== null && "code" in err && (err as { code: string }).code === "P2002";
+        if (!isUniqueViolation || attempt === 4) throw err;
+        logger.warn("[auditPlan] audit_no collision, retrying", { attempt });
+      }
+    }
+    throw new ValidationError("Failed to generate unique audit number after retries");
   }
 
   async updatePlan(
@@ -126,6 +138,39 @@ export class AuditPlanService {
       );
 
       return updated;
+    });
+  }
+
+  async deletePlan(
+    id: string,
+    actor: { userId: string; authUserId?: string | null; role: string }
+  ) {
+    const plan = await this.repo.findById(id);
+    if (!plan) throw new NotFoundError("Audit plan not found");
+    if (plan.status !== "DRAFT" && plan.status !== "CANCELLED") {
+      throw new ValidationError("Only DRAFT or CANCELLED plans can be deleted");
+    }
+    this.assertOwnerOrPrivileged(plan.ownerAuthUserId, actor);
+
+    await db.$transaction(async (tx) => {
+      await tx.auditPlanDepartment.deleteMany({ where: { planId: id } });
+      await tx.auditAuditorAssignment.deleteMany({ where: { planId: id } });
+      await tx.auditPlan.delete({ where: { id } });
+
+      await AuditService.record(
+        {
+          actorUserId: actor.userId,
+          actorAuthUserId: actor.authUserId,
+          actorRole: actor.role,
+          action: "DELETE",
+          resourceType: "AUDIT_PLAN",
+          resourceId: id,
+          before: { status: plan.status, auditNo: plan.auditNo },
+          after: null,
+          metadata: { action: "DELETE" },
+        },
+        tx
+      );
     });
   }
 
@@ -465,10 +510,18 @@ export class AuditPlanService {
   async confirmSchedule(
     scheduleId: string,
     input: AuditScheduleConfirmInput,
-    actor: { userId: string; authUserId?: string | null; role: string; nameSnapshot?: string | null; accessToken?: string | null }
+    actor: { userId: string; authUserId?: string | null; role: string; nameSnapshot?: string | null; accessToken?: string | null; departmentId?: string | null }
   ) {
     const schedule = await this.scheduleRepo.findById(scheduleId);
     if (!schedule) throw new NotFoundError("Schedule not found");
+
+    const PRIVILEGED = new Set(["QMS", "MR", "IT"]);
+    if (!PRIVILEGED.has(actor.role)) {
+      const scheduleDept = schedule.departmentId;
+      if (!scheduleDept || !actor.departmentId || actor.departmentId !== scheduleDept) {
+        throw new ForbiddenError("You are not authorized to confirm this schedule");
+      }
+    }
 
     const plan = await this.repo.findById(schedule.planId);
     if (!plan) throw new NotFoundError("Audit plan not found");
@@ -593,11 +646,11 @@ export class AuditPlanService {
 
     return {
       counts: {
-        total,
-        inProgress,
-        waitingCorrective,
+        totalPlans: total,
+        inProgressPlans: inProgress,
+        waitingCorrectivePlans: waitingCorrective,
         openFindings,
-        overdueFindings,
+        overdueCorrectiveActions: overdueFindings,
         pendingSignoffs,
       },
       upcomingSchedules: upcomingSchedules.map((s) => ({
@@ -741,21 +794,24 @@ export class AuditPlanService {
   }
 
   private async nextAuditNo(tx: Parameters<Parameters<typeof db.$transaction>[0]>[0]): Promise<string> {
+    const format = await getDocNoFormat("AUDIT_PLAN");
     const year = new Date().getFullYear();
-    const yy = String(year).slice(-2);
-    const prefix = `AUD-${yy}-`;
-    const likePattern = `${prefix}%`;
-    const startPos = prefix.length + 1;
-
-    const existing = await tx.$queryRaw<{ seq: number }[]>`
-      SELECT CAST(SUBSTRING(audit_no FROM ${startPos}) AS INTEGER) AS seq
-      FROM audit_plans
-      WHERE audit_no LIKE ${likePattern}
-      ORDER BY seq
+    const { likePrefix } = buildLikePrefix(format, { year });
+    const startPos = likePrefix.length + 1;
+    const rawNos = await tx.$queryRaw<{ audit_no: string }[]>`
+      SELECT audit_no FROM audit_plans WHERE audit_no LIKE ${`${likePrefix}%`}
     `;
-    const used = new Set(existing.map((r) => r.seq));
+    const existing = rawNos.map((r) => {
+      const suffix = r.audit_no.substring(likePrefix.length);
+      const seq = /^\d+$/.test(suffix) ? parseInt(suffix, 10) : null;
+      return { audit_no: r.audit_no, suffix, seq };
+    });
+    const used = new Set(existing.filter((r) => r.seq !== null).map((r) => r.seq!));
     let next = 1;
     while (used.has(next)) next++;
-    return `${prefix}${String(next).padStart(3, "0")}`;
+    logger.info("[auditPlan] nextAuditNo", { format, likePrefix, startPos, existing, used: [...used], next });
+    const result = renderDocNo(format, { year, seq: next });
+    logger.info("[auditPlan] generated auditNo", { result });
+    return result;
   }
 }

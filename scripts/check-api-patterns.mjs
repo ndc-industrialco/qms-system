@@ -57,6 +57,7 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/kpi/[id]/review/route.ts",
   // No user-controlled query params
   "app/api/car/next-number/route.ts",
+  "app/api/car/pending-count/route.ts",
   "app/api/qms/mr/route.ts",
   "app/api/users/assignees/route.ts",
   // FormData with inline file validation (no Zod needed)
@@ -82,6 +83,8 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/audit/appointments/[id]/resend-notification/route.ts",
   "app/api/audit/findings/[id]/close/route.ts",
   "app/api/audit/plans/[id]/close/route.ts",
+  "app/api/audit/plans/[id]/complete/route.ts",
+  "app/api/audit/plans/[id]/delete/route.ts",
   "app/api/car/[id]/remind/route.ts",
   // DELETE with path param only
   "app/api/audit/attachments/[id]/route.ts",
@@ -91,6 +94,13 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/car/response/[responseId]/attachments/route.ts",
   // Cron endpoint — no user-controlled input
   "app/api/cron/car-reminder/route.ts",
+  // Cron endpoint — no user-controlled input (force=1 is internal-only)
+  "app/api/cron/kpi-monthly-reminder/route.ts",
+  // POST with no body — auth-protected sync triggers
+  "app/api/doc-control/departments/sync/route.ts",
+  "app/api/kpi-dept/sync/route.ts",
+  // GET with enum-validated query param (inline check, no body)
+  "app/api/dar/role-users/route.ts",
 ]);
 
 const NO_ERROR_HANDLER_ALLOWLIST = new Set([
@@ -111,6 +121,7 @@ const NO_ERROR_HANDLER_ALLOWLIST = new Set([
   "app/api/auth/center/health/route.ts",
   // Cron endpoint — uses raw NextResponse with custom error format
   "app/api/cron/car-reminder/route.ts",
+  "app/api/cron/kpi-monthly-reminder/route.ts",
 ]);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -154,9 +165,24 @@ function checkSchemaValidation(content, relPath) {
   return null;
 }
 
+const DIRECT_DB_ALLOWLIST = new Set([
+  "app/api/health/route.ts",
+  "app/api/health/ready/route.ts",
+  // Routes that use db.$transaction() as a coordinator — pending LocalRoleGrantRepository extraction
+  "app/api/audit/session-plans/[planId]/route.ts",
+  "app/api/dar/role-users/route.ts",
+  "app/api/it/users/[id]/role/route.ts",
+  "app/api/qms/mr/[id]/route.ts",
+  // Excel export routes — complex multi-table queries with no service abstraction benefit
+  "app/api/audit/appointments/export/route.ts",
+  "app/api/car/export/route.ts",
+  "app/api/dar/export/route.ts",
+  "app/api/kpi/export/route.ts",
+  "app/api/kpi/monthly-export/route.ts",
+]);
+
 function checkDirectDbImport(content, relPath) {
-  if (relPath === "app/api/health/route.ts") return null; // infra probe allowlist
-  if (relPath === "app/api/health/ready/route.ts") return null; // infra probe allowlist
+  if (DIRECT_DB_ALLOWLIST.has(relPath)) return null;
   if (content.includes('from "@/lib/db"') || content.includes("from '@/lib/db'")) {
     return "direct @/lib/db import — use a service + repository instead";
   }

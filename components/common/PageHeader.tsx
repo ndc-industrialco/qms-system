@@ -45,7 +45,7 @@ export default function PageHeader({
   return (
     <div
       className={cn(
-        "card-premium border border-base-300 rounded-xl shadow-sm px-5 py-4 mb-6",
+        "card-premium border border-slate-100 rounded-xl shadow-sm px-5 py-4 mb-6",
         "flex items-center justify-between gap-4",
         className,
       )}

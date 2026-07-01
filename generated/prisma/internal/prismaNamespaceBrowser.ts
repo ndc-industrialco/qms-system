@@ -52,6 +52,10 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   SystemConfig: 'SystemConfig',
+  LocalRoleGrant: 'LocalRoleGrant',
+  DepartmentCode: 'DepartmentCode',
+  KpiDept: 'KpiDept',
+  DocControlDept: 'DocControlDept',
   UserPreference: 'UserPreference',
   Announcement: 'Announcement',
   DarMaster: 'DarMaster',
@@ -127,6 +131,59 @@ export const SystemConfigScalarFieldEnum = {
 } as const
 
 export type SystemConfigScalarFieldEnum = (typeof SystemConfigScalarFieldEnum)[keyof typeof SystemConfigScalarFieldEnum]
+
+
+export const LocalRoleGrantScalarFieldEnum = {
+  id: 'id',
+  authUserId: 'authUserId',
+  role: 'role',
+  displayName: 'displayName',
+  email: 'email',
+  grantedAt: 'grantedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LocalRoleGrantScalarFieldEnum = (typeof LocalRoleGrantScalarFieldEnum)[keyof typeof LocalRoleGrantScalarFieldEnum]
+
+
+export const DepartmentCodeScalarFieldEnum = {
+  id: 'id',
+  authDeptId: 'authDeptId',
+  departmentName: 'departmentName',
+  code: 'code',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DepartmentCodeScalarFieldEnum = (typeof DepartmentCodeScalarFieldEnum)[keyof typeof DepartmentCodeScalarFieldEnum]
+
+
+export const KpiDeptScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  authDeptCode: 'authDeptCode',
+  emailGroup: 'emailGroup',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KpiDeptScalarFieldEnum = (typeof KpiDeptScalarFieldEnum)[keyof typeof KpiDeptScalarFieldEnum]
+
+
+export const DocControlDeptScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  authDeptCode: 'authDeptCode',
+  emailGroup: 'emailGroup',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocControlDeptScalarFieldEnum = (typeof DocControlDeptScalarFieldEnum)[keyof typeof DocControlDeptScalarFieldEnum]
 
 
 export const UserPreferenceScalarFieldEnum = {

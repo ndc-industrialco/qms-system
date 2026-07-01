@@ -4,9 +4,11 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { RefreshCw } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import PageHeader from '@/components/common/PageHeader';
 import FilterBar from '@/components/common/FilterBar';
+import { Button } from '@/components/ui/button';
 import { DepartmentFolderGrid } from './DepartmentFolderGrid';
 import { DepartmentModal } from './DepartmentModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
@@ -66,7 +68,7 @@ export function DocumentControlsLevelOneClient({ departments, canManage }: Props
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/it/departments/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/doc-control/departments/${id}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error?.message || 'Failed to delete department');
@@ -81,6 +83,22 @@ export function DocumentControlsLevelOneClient({ departments, canManage }: Props
       toast.error(err.message);
       setDeleteTarget(null);
     },
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/doc-control/departments/sync', { method: 'POST' });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || 'Sync failed');
+      }
+      return res.json() as Promise<{ data: { created: number; skipped: number } }>;
+    },
+    onSuccess: (res) => {
+      toast.success(`Synced: ${res.data.created} new department(s) added`);
+      router.refresh();
+    },
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const handleAdd = () => {
@@ -100,10 +118,24 @@ export function DocumentControlsLevelOneClient({ departments, canManage }: Props
   return (
     <>
       <div className="space-y-6">
-        <PageHeader
-          title={t('documentControl.title')}
-          subtitle={t('documentControl.list')}
-        />
+        <div className="flex items-start justify-between gap-4">
+          <PageHeader
+            title={t('documentControl.title')}
+            subtitle={t('documentControl.list')}
+          />
+          {canManage && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => syncMutation.mutate()}
+              disabled={syncMutation.isPending}
+              className="shrink-0 gap-1.5"
+            >
+              <RefreshCw className={`w-4 h-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+              Sync from Auth Center
+            </Button>
+          )}
+        </div>
 
         <FilterBar
           searchValue={search}

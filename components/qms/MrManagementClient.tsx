@@ -57,12 +57,6 @@ export default function MrManagementClient({ initialUsers }: Props) {
         showToast("error", json.error ?? t("common.error"));
         return;
       }
-      // Sync approval config: set CURRENT_MR when granting MR, clear when revoking
-      await fetch("/api/qms/approval-config", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mrUserId: newRole === "MR" ? userId : null, qmsUserId: undefined }),
-      }).catch(() => null); // non-fatal
       showToast("success", t("common.success"));
       router.refresh();
     } catch {

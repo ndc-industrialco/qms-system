@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PenLine } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import { AuditAppointmentListClient } from "@/components/audit/AuditAppointmentListClient";
 import { AuditAppointmentFormModal } from "@/components/audit/AuditAppointmentFormModal";
 import { useSubmitAuditAppointment } from "@/hooks/api/use-audit-appointments";

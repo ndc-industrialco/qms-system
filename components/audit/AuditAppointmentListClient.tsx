@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogD
 import { useAuditAppointments, useDeleteAuditAppointment, useResendAuditNotification } from "@/hooks/api/use-audit-appointments";
 import { AuditAppointmentStatusBadge } from "./AuditAppointmentStatusBadge";
 import type { AuditAppointmentRow } from "@/types/audit";
+import { fmtDate } from "@/lib/format";
 
 const MEMBER_ROLE_LABELS: Record<string, string> = {
   LEAD_AUDITOR: "Lead Auditor",
@@ -20,10 +21,6 @@ const MEMBER_ROLE_LABELS: Record<string, string> = {
   SECRETARY: "Secretary",
   ADVISOR: "Advisor",
 };
-
-function fmtDate(iso: string) {
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(iso));
-}
 
 type CardProps = {
   appt: AuditAppointmentRow;

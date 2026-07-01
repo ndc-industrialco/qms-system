@@ -385,6 +385,10 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   SystemConfig: 'SystemConfig',
+  LocalRoleGrant: 'LocalRoleGrant',
+  DepartmentCode: 'DepartmentCode',
+  KpiDept: 'KpiDept',
+  DocControlDept: 'DocControlDept',
   UserPreference: 'UserPreference',
   Announcement: 'Announcement',
   DarMaster: 'DarMaster',
@@ -449,7 +453,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "systemConfig" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog" | "auditAppointment" | "auditAppointmentMember" | "auditAppointmentSignoff" | "auditSessionPlan" | "auditSessionRow" | "auditSessionTeamMember" | "auditGanttRow" | "auditPlan" | "auditStandard" | "auditPlanDepartment" | "auditAuditorAssignment" | "auditSchedule" | "auditScheduleTeamMember" | "auditAttachment" | "auditAnnouncement" | "auditFinding" | "auditCorrectiveAction" | "auditVerification" | "auditSignoff" | "auditReport"
+    modelProps: "systemConfig" | "localRoleGrant" | "departmentCode" | "kpiDept" | "docControlDept" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog" | "auditAppointment" | "auditAppointmentMember" | "auditAppointmentSignoff" | "auditSessionPlan" | "auditSessionRow" | "auditSessionTeamMember" | "auditGanttRow" | "auditPlan" | "auditStandard" | "auditPlanDepartment" | "auditAuditorAssignment" | "auditSchedule" | "auditScheduleTeamMember" | "auditAttachment" | "auditAnnouncement" | "auditFinding" | "auditCorrectiveAction" | "auditVerification" | "auditSignoff" | "auditReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -524,6 +528,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SystemConfigCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SystemConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    LocalRoleGrant: {
+      payload: Prisma.$LocalRoleGrantPayload<ExtArgs>
+      fields: Prisma.LocalRoleGrantFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LocalRoleGrantFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LocalRoleGrantFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>
+        }
+        findFirst: {
+          args: Prisma.LocalRoleGrantFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LocalRoleGrantFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>
+        }
+        findMany: {
+          args: Prisma.LocalRoleGrantFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>[]
+        }
+        create: {
+          args: Prisma.LocalRoleGrantCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>
+        }
+        createMany: {
+          args: Prisma.LocalRoleGrantCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LocalRoleGrantCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>[]
+        }
+        delete: {
+          args: Prisma.LocalRoleGrantDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>
+        }
+        update: {
+          args: Prisma.LocalRoleGrantUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>
+        }
+        deleteMany: {
+          args: Prisma.LocalRoleGrantDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LocalRoleGrantUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LocalRoleGrantUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>[]
+        }
+        upsert: {
+          args: Prisma.LocalRoleGrantUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LocalRoleGrantPayload>
+        }
+        aggregate: {
+          args: Prisma.LocalRoleGrantAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLocalRoleGrant>
+        }
+        groupBy: {
+          args: Prisma.LocalRoleGrantGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LocalRoleGrantGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LocalRoleGrantCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LocalRoleGrantCountAggregateOutputType> | number
+        }
+      }
+    }
+    DepartmentCode: {
+      payload: Prisma.$DepartmentCodePayload<ExtArgs>
+      fields: Prisma.DepartmentCodeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DepartmentCodeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DepartmentCodeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>
+        }
+        findFirst: {
+          args: Prisma.DepartmentCodeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DepartmentCodeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>
+        }
+        findMany: {
+          args: Prisma.DepartmentCodeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>[]
+        }
+        create: {
+          args: Prisma.DepartmentCodeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>
+        }
+        createMany: {
+          args: Prisma.DepartmentCodeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DepartmentCodeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>[]
+        }
+        delete: {
+          args: Prisma.DepartmentCodeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>
+        }
+        update: {
+          args: Prisma.DepartmentCodeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>
+        }
+        deleteMany: {
+          args: Prisma.DepartmentCodeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DepartmentCodeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DepartmentCodeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>[]
+        }
+        upsert: {
+          args: Prisma.DepartmentCodeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DepartmentCodePayload>
+        }
+        aggregate: {
+          args: Prisma.DepartmentCodeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDepartmentCode>
+        }
+        groupBy: {
+          args: Prisma.DepartmentCodeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DepartmentCodeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DepartmentCodeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DepartmentCodeCountAggregateOutputType> | number
+        }
+      }
+    }
+    KpiDept: {
+      payload: Prisma.$KpiDeptPayload<ExtArgs>
+      fields: Prisma.KpiDeptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KpiDeptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KpiDeptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>
+        }
+        findFirst: {
+          args: Prisma.KpiDeptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KpiDeptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>
+        }
+        findMany: {
+          args: Prisma.KpiDeptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>[]
+        }
+        create: {
+          args: Prisma.KpiDeptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>
+        }
+        createMany: {
+          args: Prisma.KpiDeptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KpiDeptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>[]
+        }
+        delete: {
+          args: Prisma.KpiDeptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>
+        }
+        update: {
+          args: Prisma.KpiDeptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>
+        }
+        deleteMany: {
+          args: Prisma.KpiDeptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KpiDeptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KpiDeptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>[]
+        }
+        upsert: {
+          args: Prisma.KpiDeptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KpiDeptPayload>
+        }
+        aggregate: {
+          args: Prisma.KpiDeptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKpiDept>
+        }
+        groupBy: {
+          args: Prisma.KpiDeptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KpiDeptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KpiDeptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KpiDeptCountAggregateOutputType> | number
+        }
+      }
+    }
+    DocControlDept: {
+      payload: Prisma.$DocControlDeptPayload<ExtArgs>
+      fields: Prisma.DocControlDeptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocControlDeptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocControlDeptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>
+        }
+        findFirst: {
+          args: Prisma.DocControlDeptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocControlDeptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>
+        }
+        findMany: {
+          args: Prisma.DocControlDeptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>[]
+        }
+        create: {
+          args: Prisma.DocControlDeptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>
+        }
+        createMany: {
+          args: Prisma.DocControlDeptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocControlDeptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>[]
+        }
+        delete: {
+          args: Prisma.DocControlDeptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>
+        }
+        update: {
+          args: Prisma.DocControlDeptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocControlDeptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocControlDeptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocControlDeptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocControlDeptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocControlDeptPayload>
+        }
+        aggregate: {
+          args: Prisma.DocControlDeptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocControlDept>
+        }
+        groupBy: {
+          args: Prisma.DocControlDeptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocControlDeptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocControlDeptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocControlDeptCountAggregateOutputType> | number
         }
       }
     }
@@ -4202,6 +4502,59 @@ export const SystemConfigScalarFieldEnum = {
 export type SystemConfigScalarFieldEnum = (typeof SystemConfigScalarFieldEnum)[keyof typeof SystemConfigScalarFieldEnum]
 
 
+export const LocalRoleGrantScalarFieldEnum = {
+  id: 'id',
+  authUserId: 'authUserId',
+  role: 'role',
+  displayName: 'displayName',
+  email: 'email',
+  grantedAt: 'grantedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LocalRoleGrantScalarFieldEnum = (typeof LocalRoleGrantScalarFieldEnum)[keyof typeof LocalRoleGrantScalarFieldEnum]
+
+
+export const DepartmentCodeScalarFieldEnum = {
+  id: 'id',
+  authDeptId: 'authDeptId',
+  departmentName: 'departmentName',
+  code: 'code',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DepartmentCodeScalarFieldEnum = (typeof DepartmentCodeScalarFieldEnum)[keyof typeof DepartmentCodeScalarFieldEnum]
+
+
+export const KpiDeptScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  authDeptCode: 'authDeptCode',
+  emailGroup: 'emailGroup',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KpiDeptScalarFieldEnum = (typeof KpiDeptScalarFieldEnum)[keyof typeof KpiDeptScalarFieldEnum]
+
+
+export const DocControlDeptScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  authDeptCode: 'authDeptCode',
+  emailGroup: 'emailGroup',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocControlDeptScalarFieldEnum = (typeof DocControlDeptScalarFieldEnum)[keyof typeof DocControlDeptScalarFieldEnum]
+
+
 export const UserPreferenceScalarFieldEnum = {
   authUserId: 'authUserId',
   savedSignatureUrl: 'savedSignatureUrl',
@@ -5170,6 +5523,27 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
  * Reference to a field of type 'SignatureType'
  */
 export type EnumSignatureTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SignatureType'>
@@ -5198,13 +5572,6 @@ export type ListEnumDisplayTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-/**
  * Reference to a field of type 'DarStatus'
  */
 export type EnumDarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DarStatus'>
@@ -5215,20 +5582,6 @@ export type EnumDarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'DarStatus[]'
  */
 export type ListEnumDarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DarStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -5706,6 +6059,10 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   systemConfig?: Prisma.SystemConfigOmit
+  localRoleGrant?: Prisma.LocalRoleGrantOmit
+  departmentCode?: Prisma.DepartmentCodeOmit
+  kpiDept?: Prisma.KpiDeptOmit
+  docControlDept?: Prisma.DocControlDeptOmit
   userPreference?: Prisma.UserPreferenceOmit
   announcement?: Prisma.AnnouncementOmit
   darMaster?: Prisma.DarMasterOmit

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireRole } from '@/lib/auth';
 import { autoCreateKpiSchema, kpiQuerySchema } from '@/schemas/kpiSchema';
 import { KpiService } from '@/services/kpiService';
 
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAuth();
+    await requireRole('QMS', 'MR', 'IT');
     const body = autoCreateKpiSchema.parse(await request.json());
     const created = await service.createKpi(body);
     return sendSuccess(created, 'KPI created successfully', 201);

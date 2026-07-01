@@ -757,6 +757,7 @@
       "create": "สร้างเอกสาร",
       "edit": "แก้ไข",
       "delete": "ลบ",
+      "preview": "ดูตัวอย่าง",
       "download": "ดาวน์โหลด",
       "upload": "อัปโหลดไฟล์",
       "replace": "แทนที่ไฟล์",
@@ -917,7 +918,8 @@
       "viewAll": "ดูทั้งหมด",
       "allDepartments": "ทุกแผนก",
       "searchPlaceholder": "ค้นหาแผนก...",
-      "documentsUnit": "เอกสาร"
+      "documentsUnit": "เอกสาร",
+      "emptySearch": "ไม่พบแผนกที่ค้นหา"
     },
     "announcements": {
       "title": "ข่าวสารและประกาศ",
@@ -939,9 +941,27 @@
       "stripFailed": "ไม่ผ่าน",
       "stripPending": "รอดำเนินการ",
       "stripInReview": "รอผล",
+      "widgetTitle": "ผลการดำเนินงาน KPI",
       "widgetNoData": "ไม่มีข้อมูล",
       "widgetTotal": "ทั้งหมด",
-      "widgetPending": "รอ"
+      "widgetPending": "รอ",
+      "viewAll": "ดูทั้งหมด",
+      "monthlyTitle": "สถานะ KPI รายเดือน ปี",
+      "noKpiWarning": "แผนกต่อไปนี้ยังไม่กำหนด KPI ปี",
+      "notSubmittedThisMonth": "ยังไม่ส่ง KPI เดือน",
+      "ngThisMonth": "KPI ไม่ผ่านเกณฑ์ (NG) เดือน",
+      "colDepartment": "แผนก",
+      "noApprovedKpi": "ไม่มีแผนกที่อนุมัติ KPI แล้วในปี",
+      "statusDraft": "ยังไม่ส่ง",
+      "statusPendingReview": "รออนุมัติ",
+      "statusPendingApproval": "รออนุมัติขั้นสุดท้าย",
+      "statusApproved": "อนุมัติแล้ว",
+      "statusRejected": "ถูกปฏิเสธ",
+      "statusNoData": "ไม่มีข้อมูล",
+      "deptUnit": "แผนก",
+      "viewKpi": "ดู KPI",
+      "monthlyWidgetTitle": "ผลการดำเนินงานประจำเดือน",
+      "widgetAllOk": "ทุกแผนกผ่านเกณฑ์"
     },
     "carWidget": {
       "production": "แผนกผลิต",
@@ -968,7 +988,9 @@
       "users": "จัดการผู้ใช้",
       "userAccounts": "บัญชีผู้ใช้งาน",
       "departments": "จัดการแผนก",
-      "organization": "โครงสร้างองค์กร"
+      "organization": "โครงสร้างองค์กร",
+      "myCar": "ดู CAR",
+      "correctiveAction": "คำขอการแก้ไข"
     },
     "heroBanner": {
       "viewDetails": "ดูรายละเอียด",

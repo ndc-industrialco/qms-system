@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -76,13 +76,113 @@ type CorrectiveDraft = {
   times: string;
   rootCause: string;
   guidelines: string;
-  responsiblePerson: string;
+  responsiblePersonId: string;
+  responsiblePersonName: string;
   dueDate: string;
 };
 
 const EMPTY_DRAFT: CorrectiveDraft = {
-  times: "1", rootCause: "", guidelines: "", responsiblePerson: "", dueDate: "",
+  times: "1", rootCause: "", guidelines: "", responsiblePersonId: "", responsiblePersonName: "", dueDate: "",
 };
+
+const UNIT_DISPLAY: Record<string, string> = {
+  percent: "%", "%": "%",
+  times: "ครั้ง", ครั้ง: "ครั้ง",
+  baht: "บาท", บาท: "บาท",
+  piece: "ชิ้น", ชิ้น: "ชิ้น",
+  day: "วัน", วัน: "วัน",
+  hour: "ชั่วโมง", ชั่วโมง: "ชั่วโมง",
+};
+function fmtUnit(unit: string | null | undefined) {
+  if (!unit) return "";
+  return UNIT_DISPLAY[unit.toLowerCase()] ?? unit;
+}
+
+/** Derive pass/fail from input vs target — mirrors server logic */
+function computeAchieved(inputVal: string, target: number): AchievedStatus {
+  if (inputVal === "" || inputVal === undefined) return "PENDING";
+  const n = Number(inputVal);
+  if (isNaN(n)) return "PENDING";
+  return n >= target ? "OK" : "NOT_OK";
+}
+
+/** Minimal inline user picker reused here without importing the dialog */
+interface UserCandidate { id: string; name: string; email: string | null; employeeId: string | null; jobTitle: string | null; }
+
+function InlineUserPicker({ value, onChange, disabled }: { value: UserCandidate | null; onChange: (u: UserCandidate | null) => void; disabled?: boolean }) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [results, setResults] = useState<UserCandidate[]>([]);
+  const [loading, setLoading] = useState(false);
+  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const dropRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (!open) return;
+    timerRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/ms-graph/users/search?q=${encodeURIComponent(query)}`);
+        const json = await res.json();
+        setResults(json.data ?? []);
+      } catch { setResults([]); }
+      finally { setLoading(false); }
+    }, 300);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [query, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent) {
+      if (!inputRef.current?.contains(e.target as Node) && !dropRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  if (value) return (
+    <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+      <span className="flex-1 font-medium text-slate-800 truncate">{value.name}</span>
+      {!disabled && <button type="button" onClick={() => onChange(null)} className="text-slate-400 hover:text-slate-600"><X className="h-3.5 w-3.5" /></button>}
+    </div>
+  );
+
+  return (
+    <div className="relative">
+      <input
+        ref={inputRef}
+        type="text"
+        value={query}
+        disabled={disabled}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        placeholder="ค้นหาชื่อ หรือ รหัสพนักงาน..."
+        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm focus:border-primary focus:bg-white focus:outline-none disabled:opacity-50"
+      />
+      {open && (
+        <div ref={dropRef} className="absolute top-full z-9999 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+          {results.length === 0 ? (
+            <p className="px-4 py-3 text-center text-sm text-slate-400">{loading ? "กำลังค้นหา..." : "ไม่พบผู้ใช้"}</p>
+          ) : (
+            <ul className="max-h-40 divide-y divide-slate-50 overflow-y-auto">
+              {results.map((u) => (
+                <li key={u.id} className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-slate-50"
+                  onMouseDown={(e) => { e.preventDefault(); onChange(u); setQuery(""); setOpen(false); }}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-800">{u.name}</p>
+                    <p className="truncate text-xs text-slate-400">{u.employeeId ? `${u.employeeId} · ` : ""}{u.jobTitle ?? u.email ?? ""}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function FieldLabel({ children, required = false }: { children: React.ReactNode; required?: boolean }) {
   return (
@@ -129,7 +229,6 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatureMode, setSignatureMode] = useState<"submit" | "approve">("submit");
   const [assignOpen, setAssignOpen] = useState(false);
-  const [pendingSignaturePayload, setPendingSignaturePayload] = useState<{ signatureDataUrl: string; signatureType: SignatureType; saveSignature: boolean } | null>(null);
 
   const updateDetailMutation    = useUpdateMonthlyDetail();
   const updateReportMutation    = useUpdateMonthlyReport();
@@ -153,7 +252,10 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
     ? reportStatus !== "APPROVED"
     : (reportStatus === "DRAFT" || reportStatus === "REJECTED") && isPreparer;
   const details = (report?.details ?? []) as DetailRow[];
-  const notOkDetails = details.filter((d) => d.achievedStatus === "NOT_OK");
+  // Live-compute achieved status from current inputs for realtime UX
+  const liveAchieved = (detail: DetailRow): AchievedStatus =>
+    isEditable ? computeAchieved(actualInputs[detail.id] ?? "", detail.kpiObjective.target) : detail.achievedStatus;
+  const notOkDetails = details.filter((d) => liveAchieved(d) === "NOT_OK");
 
   useEffect(() => {
     setRemark(report?.remark ?? "");
@@ -218,7 +320,7 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
   async function handleAddCorrective(detailId: string) {
     if (!kpiId || !reportId) return;
     const draft = correctiveDrafts[detailId] ?? EMPTY_DRAFT;
-    if (!draft.rootCause.trim() || !draft.guidelines.trim() || !draft.responsiblePerson.trim() || !draft.dueDate) return;
+    if (!draft.rootCause.trim() || !draft.guidelines.trim() || !draft.responsiblePersonName.trim() || !draft.dueDate) return;
     try {
       await addCorrectiveMutation.mutateAsync({
         kpiId, reportId, detailId,
@@ -226,7 +328,7 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
           times: Number(draft.times) || 1,
           rootCause: draft.rootCause,
           guidelines: draft.guidelines,
-          responsiblePerson: draft.responsiblePerson,
+          responsiblePerson: draft.responsiblePersonName,
           dueDate: draft.dueDate,
         },
       });
@@ -248,6 +350,9 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
     }
   }
 
+  const [pendingSignaturePayload, setPendingSignaturePayload] = useState<{ signatureDataUrl: string; signatureType: SignatureType; saveSignature: boolean } | null>(null);
+
+  // Step 1: user signs → store payload, open reviewer picker
   async function handleSignatureConfirm(payload: { signatureDataUrl: string; signatureType: SignatureType; saveSignature: boolean }) {
     if (!kpiId || !reportId) return;
     if (signatureMode === "submit") {
@@ -265,16 +370,14 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
     }
   }
 
+  // Step 2: user picks reviewer → submit with both
   async function handleAssignConfirm(reviewer: ReviewerCandidate) {
     if (!kpiId || !reportId || !pendingSignaturePayload) return;
     try {
-      await submitMutation.mutateAsync({ 
-        kpiId, 
-        reportId, 
-        data: { 
-          ...pendingSignaturePayload, 
-          reviewerUserId: reviewer.id,
-        } 
+      await submitMutation.mutateAsync({
+        kpiId,
+        reportId,
+        data: { ...pendingSignaturePayload, reviewerUserId: reviewer.id },
       });
       toast.success(t("kpi.monthly.messages.submitSuccess"));
       setAssignOpen(false);
@@ -309,7 +412,7 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open && !signatureOpen && !assignOpen} onOpenChange={(v) => { if (!signatureOpen && !assignOpen) onOpenChange(v); }}>
       <DialogContent className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl max-h-[90vh]">
 
         {/* Header */}
@@ -360,14 +463,22 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
 
                   <div className="space-y-3">
                     {details.map((detail, index) => {
-                      const ach = ACHIEVED_CONFIG[detail.achievedStatus];
+                      const live = liveAchieved(detail);
+                      const ach = ACHIEVED_CONFIG[live];
+                      const unit = fmtUnit(detail.kpiObjective.unit);
+                      const target = detail.kpiObjective.target;
+                      const actualVal = isEditable ? (actualInputs[detail.id] ?? "") : (detail.actualResult !== null ? String(detail.actualResult) : "");
+                      const actualNum = actualVal !== "" ? Number(actualVal) : null;
+                      const pct = actualNum !== null && target > 0 ? Math.round((actualNum / target) * 100) : null;
                       return (
                         <div
                           key={detail.id}
                           className={cn(
                             "rounded-2xl border p-4 transition-colors",
-                            detail.achievedStatus === "NOT_OK"
+                            live === "NOT_OK"
                               ? "border-rose-100 bg-rose-50/30"
+                              : live === "OK"
+                              ? "border-emerald-100 bg-emerald-50/20"
                               : "border-slate-100 bg-white"
                           )}
                         >
@@ -382,11 +493,12 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                               </p>
                             </div>
                             <span className={cn(
-                              "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
+                              "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition-colors",
                               ach.style
                             )}>
                               <span className={cn("h-1.5 w-1.5 rounded-full", ach.dot)} />
-                              {t(`kpi.monthly.achieved.${detail.achievedStatus}` as Parameters<typeof t>[0])}
+                              {t(`kpi.monthly.achieved.${live}` as Parameters<typeof t>[0])}
+                              {pct !== null && <span className="ml-0.5 opacity-70">({pct}%)</span>}
                             </span>
                           </div>
 
@@ -394,21 +506,28 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <FieldLabel>{t("kpi.monthly.field.target")}</FieldLabel>
-                              <ReadField value={`${detail.kpiObjective.target}${detail.kpiObjective.unit ? ` ${detail.kpiObjective.unit}` : ""}`} />
+                              <ReadField value={`${target}${unit ? ` ${unit}` : ""}`} />
                             </div>
                             <div>
                               <FieldLabel required={isEditable}>{t("kpi.monthly.field.actualResult")}</FieldLabel>
                               {isEditable ? (
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={actualInputs[detail.id] ?? ""}
-                                  onChange={(e) => setActualInputs((prev) => ({ ...prev, [detail.id]: e.target.value }))}
-                                  className="rounded-xl text-sm"
-                                  disabled={anyLoading}
-                                />
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={actualInputs[detail.id] ?? ""}
+                                    onChange={(e) => setActualInputs((prev) => ({ ...prev, [detail.id]: e.target.value }))}
+                                    className={cn("rounded-xl text-sm", unit ? "pr-10" : "")}
+                                    disabled={anyLoading}
+                                  />
+                                  {unit && (
+                                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400">
+                                      {unit}
+                                    </span>
+                                  )}
+                                </div>
                               ) : (
-                                <ReadField value={detail.actualResult !== null ? String(detail.actualResult) : "—"} />
+                                <ReadField value={actualVal !== "" ? `${actualVal}${unit ? ` ${unit}` : ""}` : "—"} />
                               )}
                             </div>
                           </div>
@@ -529,6 +648,14 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                               <p className="text-sm font-semibold text-slate-800">{detail.kpiObjective.objective}</p>
                             </div>
 
+                            {/* Prompt to fill corrective action when none exist */}
+                            {isEditable && existing.length === 0 && (
+                              <div className="mb-3 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2">
+                                <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-rose-500" />
+                                <p className="text-xs font-medium text-rose-600">กรุณากรอกการดำเนินการแก้ไข / ปรับปรุง</p>
+                              </div>
+                            )}
+
                             {/* Existing corrective actions */}
                             {existing.length > 0 && (
                               <div className="mb-4 space-y-2">
@@ -633,10 +760,13 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                                   </div>
                                   <div>
                                     <FieldLabel required>{t("kpi.monthly.correctiveAction.responsible")}</FieldLabel>
-                                    <Input
-                                      value={draft.responsiblePerson}
-                                      className="rounded-xl text-sm"
-                                      onChange={(e) => updateDraft(detail.id, "responsiblePerson", e.target.value)}
+                                    <InlineUserPicker
+                                      value={draft.responsiblePersonId ? { id: draft.responsiblePersonId, name: draft.responsiblePersonName, email: null, employeeId: null, jobTitle: null } : null}
+                                      onChange={(u) => setCorrectiveDrafts((prev) => ({
+                                        ...prev,
+                                        [detail.id]: { ...(prev[detail.id] ?? EMPTY_DRAFT), responsiblePersonId: u?.id ?? "", responsiblePersonName: u?.name ?? "" },
+                                      }))}
+                                      disabled={anyLoading}
                                     />
                                   </div>
                                   <div>
@@ -653,7 +783,7 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                                       size="sm"
                                       className="rounded-xl bg-primary hover:bg-primary/90"
                                       onClick={() => handleAddCorrective(detail.id)}
-                                      disabled={anyLoading || !draft.rootCause.trim() || !draft.guidelines.trim() || !draft.responsiblePerson.trim() || !draft.dueDate}
+                                      disabled={anyLoading || !draft.rootCause.trim() || !draft.guidelines.trim() || !draft.responsiblePersonName.trim() || !draft.dueDate}
                                     >
                                       {t("common.save")}
                                     </Button>

@@ -6,7 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { KpiService } from '@/services/kpiService';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRepository';
-import { sendKpiResultEmail, sendKpiRejectedPreparerEmail } from '@/services/email';
+import { sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail } from '@/services/email';
 
 const service = new KpiService();
 const approvalSigRepo = new ApprovalSignatureRepository();
@@ -15,6 +15,8 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
   try {
     const session = await requireAuth();
     const { id } = await params;
+    const body = await _request.json().catch(() => ({}));
+    const reason: string | undefined = body.reason || undefined;
 
     const signatures = await approvalSigRepo.findByDocument('KPI', id);
     const preparerSig = signatures.find(s => s.step === 'PREPARER');
@@ -25,7 +27,15 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       role: session.user.role,
       departmentId: session.user.authDepartmentId ?? session.user.departmentId,
       accessToken: session.user.accessToken,
-    });
+    }, reason);
+
+    const kpiRejectFacts = [
+      { labelTh: "หน่วยงาน", labelEn: "Department", value: updated.department },
+      { labelTh: "ปี", labelEn: "Year", value: String(updated.yearly) },
+      { labelTh: "ปฏิเสธโดย", labelEn: "Rejected By", value: session.user.name ?? '' },
+      { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(updated.objectives.length) },
+      ...(reason ? [{ labelTh: "เหตุผล", labelEn: "Reason", value: reason }] : []),
+    ];
 
     for (const authId of [updated.reviewerUserId, updated.approverUserId].filter(Boolean) as string[]) {
       const u = await getUserSnapshot(authId);
@@ -48,6 +58,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
         {
           title: "KPI ถูกปฏิเสธ",
           body: `KPI ${updated.department} ${updated.yearly}`,
+          htmlBody: makeBilingualMail({ titleTh: `KPI ${updated.department} ปี ${updated.yearly} ถูกปฏิเสธ`, titleEn: `KPI ${updated.department} ${updated.yearly} Rejected`, facts: kpiRejectFacts }),
           module: "KPI",
           resourceId: id,
           resourceType: "KPI",
@@ -76,6 +87,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           {
             title: "KPI ถูกปฏิเสธ",
             body: `KPI ${updated.department} ${updated.yearly}`,
+            htmlBody: makeBilingualMail({ titleTh: `KPI ${updated.department} ปี ${updated.yearly} ถูกปฏิเสธ`, titleEn: `KPI ${updated.department} ${updated.yearly} Rejected`, facts: kpiRejectFacts }),
             module: "KPI",
             resourceId: id,
             resourceType: "KPI",

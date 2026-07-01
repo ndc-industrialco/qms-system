@@ -5,6 +5,7 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { carReviewResponseSchema } from "@/lib/validations/car";
 import { ForbiddenError } from "@/errors/customErrors";
 import { CarService } from "@/services/carService";
+import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 
 const carService = new CarService();
 
@@ -17,27 +18,34 @@ export async function POST(
     const body = await req.json();
     const input = carReviewResponseSchema.parse(body);
 
-    const car = input.token
-      ? await carService.reviewResponseByMR(id, {
-          token: input.token,
-          action: input.action,
-          comment: input.comment,
-          signaturePath: input.signaturePath,
-        })
-      : await (async () => {
-          const session = await requireAuth();
-          if (session.user.role !== "MR") {
-            throw new ForbiddenError("Only MR can review this CAR response.");
-          }
-
-          return carService.reviewResponseByMRAuthenticated(
-            id,
-            session.user.id,
-            { action: input.action, comment: input.comment, signaturePath: input.signaturePath },
-            session.user.authUserId,
-            session.user.accessToken,
-          );
-        })();
+    let car;
+    if (input.token) {
+      car = await carService.reviewResponseByMR(id, {
+        token: input.token,
+        action: input.action,
+        comment: input.comment,
+        signaturePath: input.signaturePath,
+      });
+    } else {
+      const session = await requireAuth();
+      if (session.user.role !== "MR") {
+        throw new ForbiddenError("Only MR can review this CAR response.");
+      }
+      car = await carService.reviewResponseByMRAuthenticated(
+        id,
+        session.user.id,
+        { action: input.action, comment: input.comment, signaturePath: input.signaturePath, qmsAuthUserId: input.qmsAuthUserId },
+        session.user.authUserId,
+        session.user.accessToken,
+      );
+      if (input.saveToProfile && input.signaturePath && input.signatureType && session.user.authUserId) {
+        const prefRepo = new UserPreferenceRepository();
+        await prefRepo.upsertSignature(session.user.authUserId, {
+          savedSignatureUrl: input.signaturePath,
+          signatureType: input.signatureType,
+        }).catch(() => {});
+      }
+    }
 
     return sendSuccess(
       car,

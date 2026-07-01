@@ -25,11 +25,23 @@ interface NotificationsResponse {
 
 function getResourcePath(n: NotificationItem): string | null {
   if (n.module === "CAR")   return `/car/${n.resourceId}`;
-  if (n.module === "DAR")   return `/dar/${n.resourceId}`;
+  if (n.module === "DAR") {
+    if (n.resourceType === "DAR_REVIEWER")  return `/approve/dar/${n.resourceId}/reviewer`;
+    if (n.resourceType === "DAR_APPROVER")  return `/approve/dar/${n.resourceId}/approver`;
+    return `/dar/${n.resourceId}`;
+  }
   if (n.module === "KPI")   return `/qms/kpi/${n.resourceId}`;
   if (n.module === "AUDIT") {
-    if (n.resourceType === "AUDIT_APPOINTMENT") return `/audit/appointments/${n.resourceId}`;
-    if (n.resourceType === "AUDIT_PLAN")        return `/audit/plans/${n.resourceId}`;
+    if (n.resourceType === "AUDIT_APPOINTMENT") {
+      if (n.title.startsWith("Signature Required"))  return `/approve/audit/appointments/${n.resourceId}/reviewer`;
+      if (n.title.startsWith("Approval Required"))   return `/approve/audit/appointments/${n.resourceId}/approver`;
+      return `/audit/appointments/${n.resourceId}`;
+    }
+    if (n.resourceType === "AUDIT_PLAN") {
+      if (n.title.includes("Signature Required")) return `/approve/audit/${n.resourceId}/reviewer`;
+      if (n.title.includes("Approval Required"))  return `/approve/audit/${n.resourceId}/approver`;
+      return `/audit/plans/${n.resourceId}`;
+    }
   }
   return null;
 }
@@ -83,12 +95,18 @@ export function NotificationBell() {
   const unreadCount   = data?.data?.unreadCount   ?? 0;
 
   const markRead = useMutation({
-    mutationFn: async (id: string) => { await fetch(`/api/notifications/${id}/read`, { method: "PATCH" }); },
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/notifications/${id}/read`, { method: "PATCH" });
+      if (!res.ok) throw new Error("Failed to mark as read");
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });
 
   const markAllRead = useMutation({
-    mutationFn: async () => { await fetch("/api/notifications/read-all", { method: "PATCH" }); },
+    mutationFn: async () => {
+      const res = await fetch("/api/notifications/read-all", { method: "PATCH" });
+      if (!res.ok) throw new Error("Failed to mark all as read");
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });
 

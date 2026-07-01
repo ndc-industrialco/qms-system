@@ -128,6 +128,7 @@ export type SignatureType = (typeof SignatureType)[keyof typeof SignatureType]
 export const KpiObjectiveStatus = {
   DRAFT: 'DRAFT',
   PENDING_REVIEW: 'PENDING_REVIEW',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED'
 } as const

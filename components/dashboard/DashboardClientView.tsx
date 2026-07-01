@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
 import type {
@@ -15,8 +16,8 @@ import HeroBanner from "@/components/dashboard/HeroBanner";
 import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import DashboardAnnouncementsFeed from "@/components/dashboard/DashboardAnnouncementsFeed";
 import DashboardDocsFeed from "@/components/dashboard/DashboardDocsFeed";
-import DashboardKpiWidget from "@/components/dashboard/DashboardKpiWidget";
 import DashboardKpiMonthlySection, { type KpiMatrixRow } from "@/components/dashboard/DashboardKpiMonthlySection";
+import DashboardKpiMonthlyWidget from "@/components/dashboard/DashboardKpiMonthlyWidget";
 import {
   DashboardCarWidget,
   DashboardAttachmentsWidget,
@@ -45,11 +46,7 @@ interface Props {
   recentPublicDocs: PublicDocument[];
   departments: { id: string; name: string; documentCount: number }[];
   recentAttachments: RecentAttachment[];
-  kpiOk: number;
-  kpiNg: number;
-  kpiPending: number;
-  kpiTotal: number;
-  kpiMonthlyMatrix: { year: number; noKpiDepartments: string[]; matrix: KpiMatrixRow[] };
+  kpiMonthlyMatrix: { year: number; noKpiDepartments: string[]; matrix: KpiMatrixRow[]; currentMonth: string; notSubmittedThisMonth: { department: string; kpiId: string }[]; ngThisMonth: { department: string; kpiId: string }[]; okThisMonth: { department: string; kpiId: string }[] };
 }
 
 function getDeptIcon(name: string) {
@@ -91,13 +88,10 @@ export default function DashboardClientView({
   recentPublicDocs,
   departments,
   recentAttachments,
-  kpiOk,
-  kpiNg,
-  kpiPending,
-  kpiTotal,
   kpiMonthlyMatrix,
 }: Props) {
   const t = useT();
+  const router = useRouter();
   const [deptFilter, setDeptFilter] = useState("");
   const [deptSelected, setDeptSelected] = useState("all");
   const [viewItem, setViewItem] = useState<AnnouncementRow | null>(null);
@@ -157,7 +151,9 @@ export default function DashboardClientView({
           </div>
 
           <div className="flex gap-3 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory scrollbar-thin">
-          {previewDepartments.map((dept) => (
+          {previewDepartments.length === 0 ? (
+            <p className="text-sm text-slate-400 py-6 px-2">{t("dashboard.departments.emptySearch")}</p>
+          ) : previewDepartments.map((dept) => (
             <Link
               key={dept.id}
               href={`/qms/document-controls/dept/${dept.id}`}
@@ -227,28 +223,19 @@ export default function DashboardClientView({
             year={kpiMonthlyMatrix.year}
             noKpiDepartments={kpiMonthlyMatrix.noKpiDepartments}
             matrix={kpiMonthlyMatrix.matrix}
+            currentMonth={kpiMonthlyMatrix.currentMonth}
+            notSubmittedThisMonth={kpiMonthlyMatrix.notSubmittedThisMonth}
+            ngThisMonth={kpiMonthlyMatrix.ngThisMonth}
           />
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-[rgb(15,16,89)]">
-                {t("dashboard.kpi.title")}
-              </h2>
-              <span className="text-xs text-slate-400">
-                {kpiTotal} {t("dashboard.kpi.indicatorsUnit")}
-              </span>
-            </div>
-            <div className="p-6">
-              <DashboardKpiWidget
-                kpiOk={kpiOk}
-                kpiNg={kpiNg}
-                kpiPending={kpiPending}
-                kpiTotal={kpiTotal}
-              />
-            </div>
-          </div>
+          <DashboardKpiMonthlyWidget
+            currentMonth={kpiMonthlyMatrix.currentMonth}
+            ok={kpiMonthlyMatrix.okThisMonth}
+            ng={kpiMonthlyMatrix.ngThisMonth}
+            notSubmitted={kpiMonthlyMatrix.notSubmittedThisMonth}
+          />
 
           <DashboardCarWidget />
           <DashboardAttachmentsWidget recentAttachments={recentAttachments} />
@@ -259,7 +246,7 @@ export default function DashboardClientView({
         item={viewItem}
         open={!!viewItem}
         onClose={() => setViewItem(null)}
-        {...(canManage ? { onEdit: () => { setViewItem(null); window.location.href = "/qms/announcements"; } } : {})}
+        {...(canManage ? { onEdit: () => { setViewItem(null); router.push("/qms/announcements"); } } : {})}
       />
     </div>
   );

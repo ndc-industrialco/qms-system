@@ -104,10 +104,10 @@ const AUDITOR_ELIGIBLE = new Set(["LEAD_AUDITOR", "AUDITOR", "COMMITTEE", "SECRE
 
 function buildWeekColumns(year: number) {
   const yearEn = year - 543;
-  const monthNames = ["Apr", "May", "Jun", "Jul"];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return monthNames.flatMap((month, mi) =>
     [1, 2, 3, 4].map((w) => ({
-      key: `${yearEn}-${mi + 4}-W${w}`,
+      key: `${yearEn}-${mi + 1}-W${w}`,
       label: `W${w}`,
       month,
     }))
@@ -420,9 +420,13 @@ export function AuditSessionPlanClient({
   // ── Save ─────────────────────────────────────────────────────────────────
 
   async function handleSave() {
+    if (!appointment.sessionPlan) {
+      toast.error("ยังไม่มีแผนการตรวจ กรุณาสร้างแผนก่อน");
+      return;
+    }
     setSaving(true);
     try {
-      const res = await fetch(`/api/audit/session-plans/${appointment.sessionPlan!.id}`, {
+      const res = await fetch(`/api/audit/session-plans/${appointment.sessionPlan.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

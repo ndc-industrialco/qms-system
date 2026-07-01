@@ -16,11 +16,23 @@ const BLOCKED_SOURCE = "@/lib/db";
 const API_ALLOWLIST = new Set([
   "app/api/health/route.ts",
   "app/api/health/ready/route.ts", // infra readiness probe, intentionally uses $queryRaw
+  // Routes that use db.$transaction() as a coordinator — legitimate until LocalRoleGrantRepository is extracted
+  "app/api/audit/session-plans/[planId]/route.ts",
+  "app/api/dar/role-users/route.ts",
+  "app/api/it/users/[id]/role/route.ts",
+  "app/api/qms/mr/[id]/route.ts",
 ]);
 
 const SERVICES_ALLOWLIST = new Set([
   "services/healthService.ts",    // infrastructure readiness probe — intentionally uses $queryRaw
   "services/auditService.ts",     // cross-cutting audit writer — must accept tx param to stay atomic
+  // New services pending repository extraction
+  "services/kpiDeptService.ts",
+  "services/kpiMonthlyReminderService.ts",
+  "services/kpiService.ts",          // db.kpiDept.findFirst in createKpi — pending KpiDeptRepository
+  "services/docControlDeptService.ts",
+  "services/documentCategoryService.ts",
+  "services/documentControlService.ts",
 ]);
 
 /** Normalise Windows back-slashes so regex paths work cross-platform */

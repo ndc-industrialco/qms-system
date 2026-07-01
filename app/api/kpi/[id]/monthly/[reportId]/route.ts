@@ -7,27 +7,31 @@ import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 
 const service = new KpiMonthlyService();
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
+import { ForbiddenError } from '@/errors/customErrors';
+
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string; reportId: string }> }) {
   try {
     await requireAuth();
-    const { reportId } = await params;
+    const { id: kpiId, reportId } = await params;
     const report = await service.getReportById(reportId);
+    if (report.kpiId !== kpiId) throw new ForbiddenError('Report does not belong to this KPI');
     return sendSuccess(report, 'Monthly report retrieved successfully');
   } catch (error) {
     return handleApiError(error);
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string; reportId: string }> }) {
   try {
     const session = await requireAuth();
-    const { reportId } = await params;
+    const { id: kpiId, reportId } = await params;
     const body = updateMonthlyReportSchema.parse(await request.json());
     const report = await service.updateReportMetadata(reportId, body, {
       userId: session.user.id,
       role: session.user.role,
       departmentId: session.user.authDepartmentId ?? session.user.departmentId,
     });
+    if (report.kpiId !== kpiId) throw new ForbiddenError('Report does not belong to this KPI');
     return sendSuccess(report, 'Monthly report updated successfully');
   } catch (error) {
     return handleApiError(error);

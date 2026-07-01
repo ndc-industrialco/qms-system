@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { AuditPlanCreatePage } from "@/components/audit/AuditPlanCreatePage";
 import type { Metadata } from "next";
@@ -7,11 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "สร้างแผนการตรวจสอบ - QMS" };
 
 export default async function NewAuditPlanPage() {
-  const session = await auth();
-  if (!session) redirect("/auth/login");
-
-  const role = session.user.role;
-  if (role !== "QMS" && role !== "IT" && role !== "MR") redirect("/audit/plans");
+  await requireRole("QMS", "IT", "MR");
 
   const [appointments, standards] = await Promise.all([
     db.auditAppointment.findMany({

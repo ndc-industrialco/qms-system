@@ -3,16 +3,26 @@
 import { useRef, useState } from "react";
 import { useForm, FormProvider, useFieldArray, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { carRespondSchema, type CarRespondInput } from "@/lib/validations/car";
+import { INPUT_CLASS } from "@/lib/styles";
 import CarRootCauseCheckbox from "./CarRootCauseCheckbox";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { CarDetail } from "@/types/car";
 import type { SignatureType } from "@/types/dar";
+
+interface RoleUser { authUserId: string; name: string; email: string | null }
+
+async function fetchMrUsers(): Promise<RoleUser[]> {
+  const res = await fetch("/api/dar/role-users?role=MR");
+  const json = await res.json();
+  return (json.data ?? []) as RoleUser[];
+}
 
 interface Props {
   carId: string;
@@ -44,8 +54,6 @@ async function uploadFile(responseId: string, file: File): Promise<void> {
   }
 }
 
-const INPUT_CLASS = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-colors";
-
 const DEFAULT_FIVE_WHYS = [
   { question: "Why 1", answer: "" },
   { question: "Why 2", answer: "" },
@@ -59,8 +67,14 @@ export default function CarRespondForm({ carId, defaultPosition = "", onSuccess 
   const qc = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [showSignPad, setShowSignPad] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const [showSignDialog, setShowSignDialog] = useState(false);
+
+  const { data: mrUsers = [], isLoading: mrUsersLoading } = useQuery({
+    queryKey: ["car-mr-users"],
+    queryFn: fetchMrUsers,
+    staleTime: 60_000,
+  });
 
   const methods = useForm<CarRespondInput>({
     resolver: zodResolver(carRespondSchema) as Resolver<CarRespondInput>,
@@ -74,6 +88,7 @@ export default function CarRespondForm({ carId, defaultPosition = "", onSuccess 
       rootCauseMethod: false,
       rootCauseOther: false,
       responderSignaturePath: "",
+      targetMrAuthUserId: "",
     },
   });
 
@@ -119,10 +134,12 @@ export default function CarRespondForm({ carId, defaultPosition = "", onSuccess 
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function handleSignConfirm(dataUrl: string, _type: SignatureType, _save: boolean) {
+  function handleSignConfirm(dataUrl: string, type: SignatureType, save: boolean) {
     setValue("responderSignaturePath", dataUrl, { shouldValidate: true });
+    setValue("responderSignatureType", type);
+    setValue("saveToProfile", save);
     setSignaturePreview(dataUrl);
-    setShowSignPad(false);
+    setShowSignDialog(false);
   }
 
   return (
@@ -306,8 +323,7 @@ export default function CarRespondForm({ carId, defaultPosition = "", onSuccess 
             <input
               {...register("responderPosition")}
               type="text"
-              disabled={!!defaultPosition}
-              className={cn(INPUT_CLASS, defaultPosition && "bg-slate-50 text-slate-500 cursor-not-allowed")}
+              className={INPUT_CLASS}
             />
             {errors.responderPosition && <p className="mt-1 text-xs text-rose-500">{errors.responderPosition.message}</p>}
           </div>
@@ -319,27 +335,10 @@ export default function CarRespondForm({ carId, defaultPosition = "", onSuccess 
               <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={signaturePreview} alt="ลายเซ็น" className="h-10 object-contain" />
-                <button
-                  type="button"
-                  onClick={() => { setSignaturePreview(null); setValue("responderSignaturePath", "", { shouldValidate: true }); setShowSignPad(true); }}
-                  className="text-xs text-slate-400 hover:text-slate-600"
-                >
-                  เปลี่ยน
-                </button>
-              </div>
-            ) : showSignPad ? (
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <SignaturePad
-                  onConfirm={handleSignConfirm}
-                  onCancel={() => setShowSignPad(false)}
-                />
+                <button type="button" onClick={() => setShowSignDialog(true)} className="text-xs text-slate-400 hover:text-slate-600">เปลี่ยน</button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => setShowSignPad(true)}
-                className="rounded-xl border border-dashed border-slate-300 w-full py-4 text-sm text-slate-500 hover:bg-slate-50 transition-colors"
-              >
+              <button type="button" onClick={() => setShowSignDialog(true)} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-4 text-sm text-slate-500 hover:border-primary/40 hover:text-primary transition-colors">
                 คลิกเพื่อเซ็นลายเซ็น
               </button>
             )}
@@ -347,6 +346,38 @@ export default function CarRespondForm({ carId, defaultPosition = "", onSuccess 
               <p className="mt-1 text-xs text-rose-500">{errors.responderSignaturePath.message}</p>
             )}
           </div>
+          <Dialog open={showSignDialog} onOpenChange={setShowSignDialog}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader><DialogTitle>ลายเซ็นผู้ตอบกลับ</DialogTitle></DialogHeader>
+              <SignaturePad onConfirm={handleSignConfirm} onCancel={() => setShowSignDialog(false)} />
+            </DialogContent>
+          </Dialog>
+        </section>
+
+        {/* MR Approver picker */}
+        <section className="space-y-2">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ผู้อนุมัติ MR</h3>
+          {mrUsersLoading ? (
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span className="w-3 h-3 border-2 border-slate-300 border-t-primary rounded-full animate-spin" />
+              กำลังโหลด...
+            </div>
+          ) : (
+            <select
+              {...register("targetMrAuthUserId")}
+              className={cn(INPUT_CLASS, errors.targetMrAuthUserId && "border-rose-300 focus:ring-rose-300/50 focus:border-rose-300")}
+            >
+              <option value="">-- เลือกผู้อนุมัติ MR --</option>
+              {mrUsers.map((u) => (
+                <option key={u.authUserId} value={u.authUserId}>
+                  {u.name}{u.email ? ` (${u.email})` : ""}
+                </option>
+              ))}
+            </select>
+          )}
+          {errors.targetMrAuthUserId && (
+            <p className="text-xs text-rose-500">{errors.targetMrAuthUserId.message}</p>
+          )}
         </section>
 
         <div className="flex justify-end">

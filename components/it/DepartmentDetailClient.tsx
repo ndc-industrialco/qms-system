@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 
 const ROLE_BADGE = {
-  USER: "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral",
+  USER: "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-slate-100 text-slate-500",
   QMS:  "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-info/15 text-info",
   MR:   "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-warning/15 text-warning",
   IT:   "inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-success/15 text-success",
@@ -107,7 +107,7 @@ export default function DepartmentDetailClient({ dept }: Props) {
           <div className="hidden md:block card-premium overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-base-200">
+                <TableRow className="border-b border-slate-100">
                   <TableHead className="th-pro">{t("dar.table.colNo")}</TableHead>
                   <TableHead className="th-pro">{t("it.departments.colName")}</TableHead>
                   <TableHead className="th-pro">{t("it.departments.colEmail")}</TableHead>
@@ -118,7 +118,7 @@ export default function DepartmentDetailClient({ dept }: Props) {
               </TableHeader>
               <TableBody>
                 {dept.members.map((member, idx) => (
-                  <TableRow key={member.id} className="border-b border-base-200 hover:bg-base-200 transition-colors duration-100">
+                  <TableRow key={member.id} className="border-b border-slate-100 hover:bg-slate-100 transition-colors duration-100">
                     <TableCell className="text-[11px] md:text-xs text-neutral">{idx + 1}</TableCell>
                     <TableCell className="text-xs md:text-sm font-semibold text-neutral">{member.name ?? "—"}</TableCell>
                     <TableCell className="text-[11px] md:text-xs text-neutral">{member.email}</TableCell>
@@ -139,7 +139,7 @@ export default function DepartmentDetailClient({ dept }: Props) {
                           {t("it.departments.connected")}
                         </span>
                       ) : (
-                        <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral">—</span>
+                        <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-slate-100 text-slate-500">—</span>
                       )}
                     </TableCell>
                   </TableRow>

@@ -24,15 +24,15 @@ const ACTION_BADGE: Record<string, string> = {
   RECALL:      "bg-warning/15 text-warning",
   SUBMIT:      "bg-info/15 text-info",
   REVIEW:      "bg-info/15 text-info",
-  SYNC:        "bg-base-200 text-neutral",
-  EXPORT:      "bg-base-200 text-neutral",
+  SYNC:        "bg-slate-100 text-slate-500",
+  EXPORT:      "bg-slate-100 text-slate-500",
   ROLE_CHANGE: "bg-warning/15 text-warning",
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function ActionBadge({ action }: { action: string }) {
-  const cls = ACTION_BADGE[action] ?? "bg-base-200 text-neutral";
+  const cls = ACTION_BADGE[action] ?? "bg-slate-100 text-slate-500";
   return (
     <span className={`inline-block px-2 py-0.5 text-[11px] rounded-full font-bold ${cls}`}>
       {action}
@@ -289,7 +289,7 @@ export default function AuditLogTable() {
                       <div className="text-[11px] text-gray-400">{row.actorEmail}</div>
                     </TableCell>
                     <TableCell className="py-3">
-                      <span className="inline-block px-2 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral">
+                      <span className="inline-block px-2 py-0.5 text-[11px] rounded-full font-bold bg-slate-100 text-slate-500">
                         {row.actorRole}
                       </span>
                     </TableCell>

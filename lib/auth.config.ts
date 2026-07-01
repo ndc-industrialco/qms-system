@@ -54,6 +54,7 @@ export const authConfig: NextAuthConfig = {
         session.user.accessToken = token.accessToken as string | undefined;
         session.user.jobTitle = token.jobTitle as string | undefined;
         session.user.jti = token.jti as string | undefined;
+        session.user.name = (token.name as string | null | undefined) ?? session.user.name;
       }
       return session;
     },

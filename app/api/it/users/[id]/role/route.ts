@@ -8,6 +8,7 @@ import { AuditService } from "@/services/auditService";
 import { ValidationError } from "@/lib/errors";
 import { ALL_QMS_ROLES, normalizeQmsRole, toRenamedQmsRole } from "@/lib/qms-roles";
 import { grantAuthCenterRole, updateAuthCenterUserProfileM2M } from "@/lib/auth-center-admin-client";
+import { db } from "@/lib/db";
 
 const bodySchema = z.object({
   role: z.enum(ALL_QMS_ROLES).optional(),
@@ -48,14 +49,42 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const renamedRole = toRenamedQmsRole(normalizedRole);
       await grantAuthCenterRole(resolvedAuthUserId, renamedRole, { accessToken: session.user.accessToken });
 
-      await AuditService.record({
-        actorUserId: session.user.id,
-        actorAuthUserId: session.user.authUserId,
-        actorRole: session.user.role,
-        action: "ROLE_CHANGE",
-        resourceType: "USER",
-        resourceId: resolvedAuthUserId,
-        after: { role: normalizedRole, renamedRole, source: "auth_center", targetAuthUserId: resolvedAuthUserId },
+      // Sync LocalRoleGrant atomically so role-users API can query without IT token
+      await db.$transaction(async (tx) => {
+        if (normalizedRole === "QMS") {
+          await tx.localRoleGrant.upsert({
+            where: { authUserId_role: { authUserId: resolvedAuthUserId, role: "QMS_QMS" } },
+            update: { grantedAt: new Date() },
+            create: { authUserId: resolvedAuthUserId, role: "QMS_QMS" },
+          });
+          await tx.localRoleGrant.deleteMany({ where: { authUserId: resolvedAuthUserId, role: { in: ["QMS_MR", "QMS_IT"] } } });
+        } else if (normalizedRole === "MR") {
+          await tx.localRoleGrant.upsert({
+            where: { authUserId_role: { authUserId: resolvedAuthUserId, role: "QMS_MR" } },
+            update: { grantedAt: new Date() },
+            create: { authUserId: resolvedAuthUserId, role: "QMS_MR" },
+          });
+          await tx.localRoleGrant.deleteMany({ where: { authUserId: resolvedAuthUserId, role: { in: ["QMS_QMS", "QMS_IT"] } } });
+        } else if (normalizedRole === "IT") {
+          await tx.localRoleGrant.upsert({
+            where: { authUserId_role: { authUserId: resolvedAuthUserId, role: "QMS_IT" } },
+            update: { grantedAt: new Date() },
+            create: { authUserId: resolvedAuthUserId, role: "QMS_IT" },
+          });
+          await tx.localRoleGrant.deleteMany({ where: { authUserId: resolvedAuthUserId, role: { in: ["QMS_MR", "QMS_QMS"] } } });
+        } else if (normalizedRole === "USER") {
+          await tx.localRoleGrant.deleteMany({ where: { authUserId: resolvedAuthUserId } });
+        }
+
+        await AuditService.record({
+          actorUserId: session.user.id,
+          actorAuthUserId: session.user.authUserId,
+          actorRole: session.user.role,
+          action: "ROLE_CHANGE",
+          resourceType: "USER",
+          resourceId: resolvedAuthUserId,
+          after: { role: normalizedRole, renamedRole, source: "auth_center", targetAuthUserId: resolvedAuthUserId },
+        }, tx);
       });
     }
 

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { fmtDate } from "@/lib/formatters";
+import { fmtDate } from "@/lib/format";
 import {
   Table,
   TableBody,

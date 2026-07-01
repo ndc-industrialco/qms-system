@@ -1,9 +1,9 @@
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { getAuthCenterMe, getAuthCenterUserProfile } from "@/lib/auth-center-admin-client";
 // ponytail: getAuthCenterMe still used when token is fresh; session.user.jobTitle is the stable fallback
-import { redirect } from "next/navigation";
 import { CarService } from "@/services/carService";
 import CarListTable from "@/components/car/CarListTable";
+import AllDeptCarSection from "@/components/car/AllDeptCarSection";
 import CarFormModalTrigger from "@/components/car/CarFormModalTrigger";
 import PageHeader from "@/components/common/PageHeader";
 import { carListQuerySchema } from "@/lib/validations/car";
@@ -18,8 +18,7 @@ export default async function UserCarListPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  const session = await requireAuth();
 
   const authDepartmentId = session.user.authDepartmentId ?? null;
   const hasScope = Boolean(authDepartmentId);
@@ -35,7 +34,7 @@ export default async function UserCarListPage({
   });
   const scope = query.scope === "all" ? "my-department" : (query.scope ?? "my-department");
 
-  const [cars, authProfile] = await Promise.all([
+  const [cars, carsAll, authProfile] = await Promise.all([
     hasScope
       ? carService.listCars(query, {
           scope,
@@ -43,6 +42,7 @@ export default async function UserCarListPage({
           authDepartmentId,
         })
       : Promise.resolve(undefined),
+    carService.listCars({ page: 1, limit: 20 }, { scope: "all" }),
     authUserId
       ? (session.user.accessToken
           ? getAuthCenterMe(session.user.accessToken)
@@ -72,6 +72,14 @@ export default async function UserCarListPage({
           myAuthDeptId={authDepartmentId}
         />
       )}
+
+      <div className="mt-10">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-slate-800">CAR ทั้งหมด</h2>
+          <p className="text-sm text-slate-500">Corrective Action Requests จากทุกแผนก</p>
+        </div>
+        <AllDeptCarSection initialData={carsAll} />
+      </div>
     </div>
   );
 }

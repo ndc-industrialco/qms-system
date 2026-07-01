@@ -727,10 +727,6 @@ export type EnumDisplayTypeFieldUpdateOperationsInput = {
   set?: $Enums.DisplayType
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }

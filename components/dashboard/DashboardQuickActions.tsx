@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+  AlertTriangle,
   Building2,
   FileText,
   FolderOpen,
@@ -29,6 +30,7 @@ type Props = { role: UserRole };
 const ALL_ACTIONS: ActionDef[] = [
   { roles: ["USER", "QMS", "MR", "IT"], href: "/dar?newRequest=1", labelKey: "dashboard.quickActions.newDar", subKey: "dashboard.quickActions.docRequest", color: "#0F1059", light: "rgba(15,16,89,0.08)", icon: <Plus className="w-5 h-5" /> },
   { roles: ["USER", "QMS", "MR", "IT"], href: "/dar", labelKey: "dashboard.quickActions.trackDar", subKey: "dashboard.quickActions.myRequests", color: "#1D6A8A", light: "rgba(29,106,138,0.08)", icon: <FileText className="w-5 h-5" /> },
+  { roles: ["USER", "QMS", "MR", "IT"], href: "/car", labelKey: "dashboard.quickActions.myCar", subKey: "dashboard.quickActions.correctiveAction", color: "#B45309", light: "rgba(180,83,9,0.08)", icon: <AlertTriangle className="w-5 h-5" /> },
   { roles: ["QMS", "MR", "IT"], href: "/qms/dar", labelKey: "dashboard.quickActions.manageDar", subKey: "dashboard.quickActions.reviewApprove", color: "#7C3AED", light: "rgba(124,58,237,0.08)", icon: <ShieldCheck className="w-5 h-5" /> },
   { roles: ["QMS", "MR", "IT"], href: "/qms/sharepoint", labelKey: "dashboard.quickActions.documents", subKey: "dashboard.quickActions.sharepointFiles", color: "#059669", light: "rgba(5,150,105,0.08)", icon: <FolderOpen className="w-5 h-5" /> },
   { roles: ["QMS", "MR", "IT"], href: "/qms/announcements", labelKey: "dashboard.quickActions.announcements", subKey: "dashboard.quickActions.manageNews", color: "#D97706", light: "rgba(217,119,6,0.08)", icon: <Megaphone className="w-5 h-5" /> },

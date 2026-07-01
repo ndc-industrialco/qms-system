@@ -154,8 +154,8 @@ export default function AnnouncementCreateModal({ open, onClose, onCreated }: Pr
           <div>
             <GraphGroupPicker
               label={t("announcement.fieldEmailGroups")}
-              value={form.emailGroupMails.map((mail) => ({ id: mail, displayName: mail, mail, description: null }))}
-              onChange={(groups: GraphGroupResult[]) => setForm((f) => ({ ...f, emailGroupMails: groups.map((g) => g.mail ?? g.id) }))}
+              value={form.emailGroups}
+              onChange={(groups: GraphGroupResult[]) => setForm((f) => ({ ...f, emailGroups: groups }))}
               placeholder={t("announcement.emailGroupsPlaceholder")}
             />
             <p className="text-slate-400 text-xs mt-1">{t("announcement.emailGroupsHint")}</p>

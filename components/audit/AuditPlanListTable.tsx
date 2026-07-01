@@ -21,7 +21,8 @@ import {
   type AuditPlanStatus,
   type AuditType,
 } from "@/types/audit";
-import { useAuditPlans, useCancelAuditPlan, type AuditPlanListParams } from "@/hooks/api/use-audit-plans";
+import { useAuditPlans, useCancelAuditPlan, useDeleteAuditPlan, type AuditPlanListParams } from "@/hooks/api/use-audit-plans";
+import { fmtDate } from "@/lib/format";
 
 interface Props {
   initialData?: AuditPlanListResponse;
@@ -70,15 +71,12 @@ function TableSkeleton() {
   );
 }
 
-function formatDate(value: string | null | undefined) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(value));
-}
-
 export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivileged = false, canEdit = false }: Props) {
   const [cancelTarget, setCancelTarget] = useState<AuditPlanSummary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AuditPlanSummary | null>(null);
 
   const cancelMutation = useCancelAuditPlan();
+  const deleteMutation = useDeleteAuditPlan();
 
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
     keys: ["search", "auditType", "status", "page"] as const,
@@ -186,7 +184,7 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                     </p>
                   )}
                   <p className="text-slate-500">
-                    วันที่: <span className="text-slate-700 font-mono">{formatDate(plan.startDate)} — {formatDate(plan.endDate)}</span>
+                    วันที่: <span className="text-slate-700 font-mono">{fmtDate(plan.startDate)} — {fmtDate(plan.endDate)}</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-1 border-t border-slate-100 pt-3">
@@ -203,6 +201,15 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                       className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-orange-200 bg-white px-3 text-xs font-medium text-orange-500 hover:bg-orange-50"
                     >
                       ยกเลิก
+                    </button>
+                  )}
+                  {canEdit && (plan.status === "DRAFT" || plan.status === "CANCELLED") && (
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(plan)}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-red-200 bg-white px-3 text-xs font-medium text-red-500 hover:bg-red-50"
+                    >
+                      ลบ
                     </button>
                   )}
                 </div>
@@ -244,10 +251,10 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                         <AuditPlanStatusBadge status={plan.status} />
                       </TableCell>
                       <TableCell className="text-slate-500 text-xs text-center font-mono">
-                        {formatDate(plan.startDate)}
+                        {fmtDate(plan.startDate)}
                       </TableCell>
                       <TableCell className="text-slate-500 text-xs text-center font-mono">
-                        {formatDate(plan.endDate)}
+                        {fmtDate(plan.endDate)}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-1.5">
@@ -259,6 +266,13 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                               tone="cancel"
                               label="ยกเลิก"
                               onClick={() => setCancelTarget(plan)}
+                            />
+                          )}
+                          {canEdit && (plan.status === "DRAFT" || plan.status === "CANCELLED") && (
+                            <ActionIconButton
+                              tone="delete"
+                              label="ลบ"
+                              onClick={() => setDeleteTarget(plan)}
                             />
                           )}
                         </div>
@@ -284,6 +298,45 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
         <p className="text-xs text-slate-400 text-right">กำลังโหลด...</p>
       )}
 
+
+      {/* Delete confirm dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ยืนยันการลบแผน</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-600">
+            คุณต้องการลบ{" "}
+            <span className="font-mono font-semibold text-slate-800">{deleteTarget?.auditNo}</span>{" "}
+            ออกจากระบบถาวร ใช่หรือไม่?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              ยกเลิก
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (deleteTarget) {
+                  deleteMutation.mutate(
+                    { id: deleteTarget.id },
+                    {
+                      onSuccess: () => {
+                        toast.success("ลบแผนสำเร็จ");
+                        setDeleteTarget(null);
+                      },
+                      onError: (err) => toast.error(err.message),
+                    }
+                  );
+                }
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "กำลังลบ..." : "ยืนยันลบ"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Cancel confirm dialog */}
       <Dialog open={!!cancelTarget} onOpenChange={(v) => !v && setCancelTarget(null)}>

@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ValidationError, ForbiddenError, NotFoundError } from "@/lib/errors";
+import { AppError } from "@/errors/customErrors";
 import { uploadFileToAudit } from "@/services/sharepoint";
 import { AuditAttachmentRepository } from "@/repositories/audit/auditAttachmentRepository";
 import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
@@ -73,6 +74,11 @@ export async function POST(req: NextRequest) {
       mimeType: storedMimeType,
       planId,
     });
+
+    // Guard: SharePoint must return all required fields
+    if (!result?.spWebUrl || !result?.spItemId) {
+      throw new AppError("File upload to storage failed — incomplete response", 502, "UPLOAD_INCOMPLETE");
+    }
 
     const attachment = await repo.create({
       resourceType,

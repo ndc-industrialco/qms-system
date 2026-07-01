@@ -16,6 +16,9 @@ vi.mock("@/lib/db", () => ({
       create: vi.fn().mockResolvedValue({}),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
+    kpiDept: {
+      findFirst: vi.fn().mockResolvedValue({ id: "dept-1", name: "IT", isActive: true }),
+    },
   },
 }));
 
@@ -170,7 +173,7 @@ describe("KpiService", () => {
 
     it("throws ForbiddenError when actor is not the assigned approver", async () => {
       vi.mocked(kpiRepo.findByIdWithRelations).mockResolvedValue(
-        makeKpi({ status: "PENDING_REVIEW" }) as never
+        makeKpi({ status: "PENDING_APPROVAL" }) as never
       );
       vi.mocked(approvalSigRepo.findByDocument).mockResolvedValue([
         { step: "REVIEWER", action: "APPROVED", signerUserId: "reviewer-1" } as never,
@@ -181,7 +184,7 @@ describe("KpiService", () => {
 
     it("throws ConflictError when reviewer has not approved yet", async () => {
       vi.mocked(kpiRepo.findByIdWithRelations).mockResolvedValue(
-        makeKpi({ status: "PENDING_REVIEW" }) as never
+        makeKpi({ status: "PENDING_APPROVAL" }) as never
       );
       vi.mocked(approvalSigRepo.findByDocument).mockResolvedValue([]); // no reviewer sig
 
@@ -189,7 +192,7 @@ describe("KpiService", () => {
     });
 
     it("sets status to APPROVED when all conditions are met", async () => {
-      const kpi = makeKpi({ status: "PENDING_REVIEW" });
+      const kpi = makeKpi({ status: "PENDING_APPROVAL" });
       vi.mocked(kpiRepo.findByIdWithRelations).mockResolvedValue(kpi as never);
       vi.mocked(approvalSigRepo.findByDocument).mockResolvedValue([
         { step: "REVIEWER", action: "APPROVED", signerUserId: "reviewer-1" } as never,
@@ -384,7 +387,7 @@ describe("KpiService", () => {
 
       await service.deleteKpi("kpi-1");
 
-      expect(kpiRepo.delete).toHaveBeenCalledWith("kpi-1");
+      expect(kpiRepo.delete).toHaveBeenCalledWith("kpi-1", expect.anything());
     });
   });
 });

@@ -50,6 +50,10 @@ export async function POST(
       planId: schedule.planId,
     });
 
+    if (!result?.spWebUrl || !result?.spItemId) {
+      throw new ValidationError("File upload to storage failed — incomplete response");
+    }
+
     const attachment = await repo.create({
       resourceType: "SCHEDULE_CHECKLIST",
       resourceId: scheduleId,

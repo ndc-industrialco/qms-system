@@ -1,5 +1,5 @@
 import { NotificationService } from "@/services/notificationService";
-import { sendAuditAnnouncementEmail, sendAuditSignRequestEmail, sendAuditRejectionEmail, sendAuditApprovedEmail } from "./auditEmailService";
+import { sendAuditAnnouncementEmail, sendAuditSignRequestEmail, sendAuditRejectionEmail, sendAuditApprovedEmail, buildAuditSignRequestHtml } from "./auditEmailService";
 import { AuditAttachmentRepository } from "@/repositories/audit/auditAttachmentRepository";
 import { logger } from "@/lib/logger";
 
@@ -261,6 +261,11 @@ export async function sendSignRequestOnce(opts: {
     {
       title: `ขอลายเซ็น — ${opts.auditNo}`,
       body: `กรุณาลงนามในรายงานการตรวจสอบ ${opts.planTitle}`,
+      htmlBody: buildAuditSignRequestHtml({
+        planTitle: opts.planTitle,
+        auditNo: opts.auditNo,
+        signedRole: opts.signedRole,
+      }),
       module: "AUDIT",
       resourceId: opts.planId,
       resourceType: "AUDIT_PLAN",

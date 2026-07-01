@@ -3,6 +3,7 @@ import { CarService } from "@/services/carService";
 import { carRespondSchema } from "@/lib/validations/car";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
+import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 import { type NextRequest } from "next/server";
 
 const carService = new CarService();
@@ -26,6 +27,13 @@ export async function POST(
       session.user.authDepartmentId,
       session.user.accessToken,
     );
+    if (input.saveToProfile && input.responderSignaturePath && input.responderSignatureType && session.user.authUserId) {
+      const prefRepo = new UserPreferenceRepository();
+      await prefRepo.upsertSignature(session.user.authUserId, {
+        savedSignatureUrl: input.responderSignaturePath,
+        signatureType: input.responderSignatureType,
+      }).catch(() => {});
+    }
     return sendSuccess(car, "CAR response submitted successfully");
   } catch (err) {
     return handleApiError(err);

@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
 
 import { db } from "@/lib/db";
 import PageHeader from "@/components/common/PageHeader";
@@ -9,8 +8,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "แผนการตรวจติดตาม - QMS" };
 
 export default async function AuditSessionPlansPage() {
-  const session = await auth();
-  if (!session) redirect("/auth/login");
+  const session = await requireAuth();
 
   const role = session.user.role;
   const canCreate = role === "QMS" || role === "IT" || role === "MR";

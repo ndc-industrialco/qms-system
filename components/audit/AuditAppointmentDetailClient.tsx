@@ -21,9 +21,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogD
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AuditAppointmentStatusBadge } from "./AuditAppointmentStatusBadge";
 import { AuditAppointmentFormModal } from "./AuditAppointmentFormModal";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import { useAuditAppointment, useSubmitAuditAppointment, useDeleteAuditAppointment } from "@/hooks/api/use-audit-appointments";
 import type { AuditAppointmentRow } from "@/types/audit";
+import { fmtDate } from "@/lib/format";
 
 const MEMBER_ROLE_LABELS: Record<string, string> = {
   LEAD_AUDITOR: "หัวหน้าทีมผู้ตรวจ",
@@ -71,11 +72,6 @@ function SessionPlanButton({ appointmentId }: { appointmentId: string }) {
       {loading ? "กำลังโหลด..." : "ดู / สร้างแผนการตรวจ"}
     </button>
   );
-}
-
-function fmtDate(iso: string | null) {
-  if (!iso) return "-";
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(iso));
 }
 
 type Props = {

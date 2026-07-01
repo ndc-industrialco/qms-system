@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getErrorMessage } from "@/lib/error-message";
+import type { GraphGroupResult } from "@/components/shared/GraphGroupPicker";
 
 export type CreateFormData = {
   title: string;
@@ -13,7 +14,7 @@ export type CreateFormData = {
   pushToCompanyCenter: boolean;
   bgColor: string;
   textColor: string;
-  emailGroupMails: string[];
+  emailGroups: GraphGroupResult[];
 };
 
 const EMPTY_FORM: CreateFormData = {
@@ -26,7 +27,7 @@ const EMPTY_FORM: CreateFormData = {
   pushToCompanyCenter: true,
   bgColor: "#0F1059",
   textColor: "#FFFFFF",
-  emailGroupMails: [],
+  emailGroups: [],
 };
 
 export function useCreateAnnouncement(
@@ -65,8 +66,10 @@ export function useCreateAnnouncement(
       if (form.endDate) formData.append("endDate", new Date(form.endDate).toISOString());
       formData.append("bgColor", form.bgColor);
       formData.append("textColor", form.textColor);
-      if (form.emailGroupMails.length) {
-        formData.append("emailGroupMails", JSON.stringify(form.emailGroupMails));
+      const mails = form.emailGroups.map((g) => g.mail ?? g.id).filter((v) => v.includes("@"));
+      console.log("[announcement] emailGroups:", form.emailGroups, "mails:", mails);
+      if (mails.length) {
+        formData.append("emailGroupMails", JSON.stringify(mails));
       }
 
       // Upload attachment

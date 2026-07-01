@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import type { Metadata } from "next";
 import KpiDepartmentDetailClient from "@/components/kpi/KpiDepartmentDetailClient";
 import { DepartmentService } from "@/services/departmentService";
@@ -9,16 +9,15 @@ interface Props {
   params: Promise<{ departmentId: string }>;
 }
 
-const deptService = new DepartmentService();
-
 export default async function KpiDepartmentPage({ params }: Props) {
   const { departmentId } = await params;
-  const session = await auth();
-  const role = (session?.user?.role ?? "USER") as "USER" | "IT" | "QMS" | "MR";
+  const session = await requireAuth();
+  const role = session.user.role as "USER" | "IT" | "QMS" | "MR";
 
   // Resolve user's department name for USER-level access gating
   let userDepartmentName: string | null = null;
-  if (session?.user?.authDepartmentId || session?.user?.departmentId) {
+  if (session.user.authDepartmentId || session.user.departmentId) {
+    const deptService = new DepartmentService();
     const depts = await deptService.getActiveDepartments(session.user.accessToken);
     userDepartmentName =
       depts.find((d) => d.id === (session.user.authDepartmentId ?? session.user.departmentId ?? ""))?.name

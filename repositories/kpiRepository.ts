@@ -52,6 +52,16 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     return this.delegate(tx).findFirst({ where: { department, yearly } });
   }
 
+  async findForExport(where: Prisma.KPIWhereInput = {}, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where,
+      include: {
+        objectives: true,
+      },
+      orderBy: [{ yearly: "desc" }, { department: "asc" }],
+    });
+  }
+
   async submitObjectives(
     id: string,
     payload: {
@@ -141,7 +151,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
 
     return this.delegate(tx).findMany({
       where: {
-        status: "PENDING_REVIEW",
+        status: "PENDING_APPROVAL",
         approverUserId: userId,
         id: { in: reviewedIdSet },
       },
@@ -162,17 +172,29 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
 
     return this.delegate(tx).count({
       where: {
-        status: "PENDING_REVIEW",
+        status: "PENDING_APPROVAL",
         approverUserId: userId,
         id: { in: reviewedIdSet },
       },
     });
   }
 
-  async setStatus(id: string, status: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED', tx?: Prisma.TransactionClient) {
+  async setStatus(id: string, status: 'DRAFT' | 'PENDING_REVIEW' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED', tx?: Prisma.TransactionClient) {
     return this.delegate(tx).update({
       where: { id },
       data: { status },
+    });
+  }
+
+  async findMonthlySummary(year: number, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where: { yearly: year },
+      select: {
+        id: true, department: true, yearly: true,
+        objectives: { select: { id: true } },
+        monthlyReports: { where: { year }, select: { id: true, month: true, status: true } },
+      },
+      orderBy: { department: 'asc' },
     });
   }
 

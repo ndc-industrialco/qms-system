@@ -12,7 +12,6 @@ import {
   FileText,
   FolderOpen,
   House,
-  LayoutDashboard,
   Megaphone,
   Search,
   Settings,
@@ -94,13 +93,6 @@ function getSections(
       icon: <ClipboardCheck className="h-[18px] w-[18px] shrink-0" />,
     },
     {
-      labelTh: "ภาพรวมตรวจสอบ",
-      labelEn: "Audit Dashboard",
-      href: "/audit",
-      icon: <LayoutDashboard className="h-[18px] w-[18px] shrink-0" />,
-      exact: true,
-    },
-    {
       labelTh: "แผนการตรวจสอบ",
       labelEn: "Audit Plans",
       href: "/audit/plans",
@@ -170,7 +162,7 @@ function getSections(
       labelTh: "จัดการแผนก",
       labelEn: "Manage Departments",
       href: "/it/departments",
-      icon: <Building2 className="h-[18px] w-[18px] shrink-0" />,
+      icon: <Building2 className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "Audit Log",
@@ -190,22 +182,29 @@ function getSections(
     href: "/qms/mr",
     icon: <UserCog className="h-[18px] w-[18px] shrink-0" />,
   };
-  const approvalConfigItem: NavItem = {
-    labelTh: "ตั้งค่าผู้อนุมัติ",
-    labelEn: "Approver Config",
-    href: "/qms/approval-config",
-    icon: <Settings className="h-[18px] w-[18px] shrink-0" />,
+  const deptCodeItem: NavItem = {
+    labelTh: "ตัวย่อแผนก",
+    labelEn: "Department Codes",
+    href: "/qms/department-codes",
+    icon: <Building2 className="h-4.5 w-4.5 shrink-0" />,
+  };
+  const docNoConfigItem: NavItem = {
+    labelTh: "รูปแบบเลขที่เอกสาร",
+    labelEn: "Document No. Format",
+    href: "/qms/doc-no-config",
+    icon: <Settings className="h-4.5 w-4.5 shrink-0" />,
   };
 
+  const qmsConfigItems = [deptCodeItem, docNoConfigItem];
   if (role === "QMS" || role === "MR") {
     sections.push({
       label: "QMS",
-      items: [...qmsItems, setMrItem, approvalConfigItem],
+      items: [...qmsItems, setMrItem, ...qmsConfigItems],
     });
   } else if (role === "IT") {
     sections.push({
       label: "QMS",
-      items: [...qmsItems, setMrItem, approvalConfigItem],
+      items: [...qmsItems, setMrItem, ...qmsConfigItems],
     });
     sections.push({
       label: t("nav.itAdmin", locale),
@@ -240,6 +239,18 @@ export default function DashboardSidebar({
     },
   });
   const pendingCount = pendingSummary?.totalPending ?? 0;
+
+  const { data: carPendingData } = useAppQuery<{ count: number }>({
+    queryKey: ["car", "pending-count"],
+    realtimeClass: "A",
+    queryFn: async () => {
+      const res = await fetch("/api/car/pending-count");
+      if (!res.ok) return { count: 0 };
+      const json = await res.json();
+      return json.data ?? { count: 0 };
+    },
+  });
+  const carPendingCount = carPendingData?.count ?? 0;
 
   return (
     <>
@@ -296,6 +307,7 @@ export default function DashboardSidebar({
                 const label = locale === "en" ? item.labelEn : item.labelTh;
 
                 const showBadge = item.href === "/approve" && pendingCount > 0;
+                const showCarBadge = item.href === "/car" && carPendingCount > 0;
 
                 return (
                   <div key={item.href} className="relative group">
@@ -330,6 +342,11 @@ export default function DashboardSidebar({
                         {showBadge && (
                           <span className="flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-red-500 px-1 text-[10px] font-bold text-white leading-none">
                             {pendingCount > 99 ? "99+" : pendingCount}
+                          </span>
+                        )}
+                        {showCarBadge && (
+                          <span className="flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-red-500 px-1 text-[10px] font-bold text-white leading-none">
+                            {carPendingCount > 99 ? "99+" : carPendingCount}
                           </span>
                         )}
                         {isActive && (

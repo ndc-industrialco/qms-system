@@ -1,5 +1,6 @@
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
+import { requireAuth } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { CarService } from "@/services/carService";
 import CarDetailClient from "@/components/car/CarDetailClient";
 import { ForbiddenError } from "@/errors/customErrors";
@@ -14,8 +15,7 @@ export default async function UserCarDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  const session = await requireAuth();
 
   const { id } = await params;
   let car;
@@ -27,15 +27,16 @@ export default async function UserCarDetailPage({
   }
 
   // USER can only view their own department's CARs
+  const userDeptId = session.user.authDepartmentId ?? session.user.departmentId ?? null;
   if (
     session.user.role === "USER" &&
-    car.targetDepartment.id !== (session.user.authDepartmentId ?? session.user.departmentId)
+    (!userDeptId || !car.targetDepartment?.id || car.targetDepartment.id !== userDeptId)
   ) {
     redirect("/car");
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <CarDetailClient
         car={car}
         userRole={session.user.role}

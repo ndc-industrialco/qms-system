@@ -20,7 +20,7 @@ function UnauthorizedContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
       <div className="card-premium w-full max-w-100 overflow-hidden">
         {/* Top accent bar */}
         <div className="h-1 w-full bg-error" />
@@ -90,7 +90,7 @@ function UnauthorizedContent() {
 
 export default function UnauthorizedPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-base-200 flex items-center justify-center text-sm">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-100 flex items-center justify-center text-sm">Loading...</div>}>
       <UnauthorizedContent />
     </Suspense>
   );

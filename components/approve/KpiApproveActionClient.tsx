@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppQuery } from "@/hooks/use-app-query";
 import { toast } from "sonner";
@@ -11,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
 import KpiApprovalTimeline, { KPI_MONTHLY_STEPS, type KpiApprovalSignature } from "@/components/kpi/KpiApprovalTimeline";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ApproveSuccessScreen from "@/components/shared/ApproveSuccessScreen";
+import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 type Mode = "reviewer" | "approver";
@@ -69,13 +70,13 @@ const ACHIEVED_STYLES: Record<string, string> = {
 
 export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props) {
   const t = useT();
-  const router = useRouter();
   const qc = useQueryClient();
   const [sigOpen, setSigOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"approve" | "reject" | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
 
   const query = useAppQuery({
     queryKey: ["approve-action", type, id, kpiId],
@@ -97,7 +98,8 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
 
   async function submitAction(
     action: "approve" | "reject",
-    sigPayload?: { signatureDataUrl: string; signatureType: string; saveSignature: boolean }
+    sigPayload?: { signatureDataUrl: string; signatureType: string; saveSignature: boolean },
+    reason?: string,
   ) {
     try {
       setSubmitting(true);
@@ -117,7 +119,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
       }
 
       const bodyPayload = {
-        ...(action === "reject" ? { reason: "Rejected from approve action page" } : {}),
+        ...(action === "reject" && reason ? { reason } : {}),
         ...(sigPayload ?? {}),
       };
 
@@ -142,8 +144,18 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
       toast.error(error instanceof Error ? error.message : t("common.error"), { duration: Infinity });
     } finally {
       setSubmitting(false);
-      setPendingAction(null);
     }
+  }
+
+  if (successOpen) {
+    return (
+      <ApproveSuccessScreen
+        title="ดำเนินการเรียบร้อย"
+        subtitle={mode === "reviewer" ? "ตรวจสอบ KPI เรียบร้อยแล้ว" : "อนุมัติ KPI เรียบร้อยแล้ว"}
+        backHref="/notifications"
+        backLabel="กลับหน้าหลัก"
+      />
+    );
   }
 
   if (query.isLoading) {
@@ -197,6 +209,8 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
           <KpiApprovalTimeline
             signatures={approvalSignatures}
             preparerName={preparerName}
+            reviewerName={reviewerName}
+            approverName={approverName}
             steps={type === "kpi-monthly" ? KPI_MONTHLY_STEPS : undefined}
           />
         </div>
@@ -210,7 +224,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
         <Button
           className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
           disabled={submitting}
-          onClick={() => { setPendingAction("approve"); setSigOpen(true); }}
+          onClick={() => { setSigOpen(true); }}
         >
           {mode === "reviewer" ? t("kpi.monthly.actions.review") : t("kpi.monthly.actions.approve")}
         </Button>
@@ -218,7 +232,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
           variant="outline"
           className="w-full rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 h-11 font-semibold"
           disabled={submitting}
-          onClick={() => { setPendingAction("reject"); setSigOpen(true); }}
+          onClick={() => { setRejectReason(""); setRejectOpen(true); }}
         >
           {t("kpi.monthly.actions.reject")}
         </Button>
@@ -352,7 +366,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
                 <Button
                   className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
                   disabled={submitting}
-                  onClick={() => { setPendingAction("approve"); setSigOpen(true); }}
+                  onClick={() => { setSigOpen(true); }}
                 >
                   {mode === "reviewer" ? t("kpi.monthly.actions.review") : t("kpi.monthly.actions.approve")}
                 </Button>
@@ -360,7 +374,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
                   variant="outline"
                   className="w-full rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 h-11 font-semibold"
                   disabled={submitting}
-                  onClick={() => { setPendingAction("reject"); setSigOpen(true); }}
+                  onClick={() => { setRejectReason(""); setRejectOpen(true); }}
                 >
                   {t("kpi.monthly.actions.reject")}
                 </Button>
@@ -389,35 +403,51 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
       <KpiSignatureDialog
         open={sigOpen}
         title={
-          pendingAction === "reject"
-            ? t("kpi.monthly.actions.reject")
-            : mode === "reviewer"
+          mode === "reviewer"
             ? t("kpi.monthly.actions.review")
             : t("kpi.monthly.actions.approve")
         }
         onOpenChange={setSigOpen}
         onConfirm={async (payload) => {
-          if (!pendingAction) return;
-          await submitAction(pendingAction, payload);
+          await submitAction("approve", payload);
         }}
       />
 
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+      {/* Reject reason dialog */}
+      <Dialog open={rejectOpen} onOpenChange={(o) => { if (!submitting) { setRejectOpen(o); } }}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <DialogTitle>{t("approve.successTitle")}</DialogTitle>
+            <DialogTitle className="text-rose-600">{t("kpi.monthly.actions.reject")}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-slate-600">{t("approve.successDesc")}</p>
-          <DialogFooter>
+          <div className="space-y-2">
+            <p className="text-sm text-slate-500">กรุณาระบุเหตุผลการปฏิเสธ / Please provide a reason for rejection</p>
+            <Textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="ระบุเหตุผล..."
+              className="rounded-xl min-h-25"
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" className="rounded-xl" disabled={submitting} onClick={() => setRejectOpen(false)}>
+              {t("common.cancel")}
+            </Button>
             <Button
-              className="rounded-xl bg-primary hover:bg-[#161875]"
-              onClick={() => { setSuccessOpen(false); router.push("/approve"); router.refresh(); }}
+              variant="destructive"
+              className="rounded-xl"
+              disabled={submitting || !rejectReason.trim()}
+              onClick={async () => {
+                await submitAction("reject", undefined, rejectReason.trim());
+                setRejectOpen(false);
+              }}
             >
-              {t("approve.backToQueue")}
+              {submitting ? "..." : t("kpi.monthly.actions.reject")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

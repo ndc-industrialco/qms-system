@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
 import { DocumentControlModal } from './DocumentControlModal';
 import { DocumentControlDetailModal } from './DocumentControlDetailModal';
-import { UploadRevisionDialog } from './UploadRevisionDialog';
 import { formatDate } from '@/lib/formatters';
 import PageHeader from '@/components/common/PageHeader';
 import FilterBar from '@/components/common/FilterBar';
@@ -18,31 +17,12 @@ import EmptyState from '@/components/common/EmptyState';
 import Pagination from '@/components/common/Pagination';
 import { ActionIconButton } from '@/components/common/ActionButtons';
 import { useUrlFilters } from '@/hooks/use-url-filters';
-import {
-  Plus, ChevronRight, Hash, Download, Upload, Home,
-} from 'lucide-react';
+import { Plus, ChevronRight, Hash, Download, Home } from 'lucide-react';
 
 interface DocumentControlListClientProps {
   department: { id: string; name: string };
   category: { id: string; name: string };
   canCreate: boolean;
-}
-
-function IconSort({ active, dir }: { active: boolean; dir: 'asc' | 'desc' }) {
-  if (!active) return (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 opacity-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M8 9l4-4 4 4M16 15l-4 4-4-4" />
-    </svg>
-  );
-  return dir === 'asc' ? (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <path d="M12 19V5M5 12l7-7 7 7" />
-    </svg>
-  ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <path d="M12 5v14M19 12l-7 7-7-7" />
-    </svg>
-  );
 }
 
 const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'OBSOLETE'];
@@ -53,10 +33,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [uploadDocId, setUploadDocId] = useState<string | null>(null);
-  const [uploadOpen, setUploadOpen] = useState(false);
 
-  // ── URL-bound filters ────────────────────────────────────────────────────────
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
     keys: ['search', 'status', 'page', 'sortBy', 'sortOrder'] as const,
     searchKey: 'search',
@@ -65,7 +42,6 @@ export function DocumentControlListClient({ department, category, canCreate }: D
 
   const page = Math.max(1, parseInt(params.page || '1', 10));
 
-  // ── Data fetch ───────────────────────────────────────────────────────────────
   const { data, isLoading, error } = useQuery({
     queryKey: ['documents', category.id, params.search, params.status, page, params.sortBy, params.sortOrder],
     queryFn: async () => {
@@ -94,45 +70,6 @@ export function DocumentControlListClient({ department, category, canCreate }: D
     setSelectedDocId(id);
     setDetailModalOpen(true);
   };
-
-  const openUpload = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    setUploadDocId(id);
-    setUploadOpen(true);
-  };
-
-  function toggleSort(key: string) {
-    const currentKey = params.sortBy;
-    const currentOrder = params.sortOrder;
-
-    if (currentKey === key) {
-      if (currentOrder === 'asc') {
-        setParam('sortOrder', 'desc');
-      } else {
-        setParam('sortOrder', 'asc');
-      }
-    } else {
-      setParam('sortBy', key);
-      setParam('sortOrder', 'asc');
-    }
-    setParam('page', '1');
-  }
-
-  function thSort(label: string, colKey: string, widthClass?: string, center = false) {
-    const active = params.sortBy === colKey;
-    const dir = (params.sortOrder || 'desc') as 'asc' | 'desc';
-    return (
-      <th
-        className={`text-[11px] font-semibold uppercase tracking-wide text-neutral px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors select-none ${widthClass || ''} ${center ? 'text-center' : 'text-left'}`}
-        onClick={() => toggleSort(colKey)}
-      >
-        <span className={`flex items-center gap-1 ${center ? 'justify-center' : 'justify-start'}`}>
-          {label}
-          <IconSort active={active} dir={dir} />
-        </span>
-      </th>
-    );
-  }
 
   const sortOptions = [
     { value: 'createdAt-desc', label: t('documentControl.sort.latestCreated') },
@@ -264,25 +201,17 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                     </div>
                     <DocumentStatusBadge status={doc.status} />
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {canCreate && (
-                      <button
-                        onClick={(e) => openUpload(e, doc.id)}
-                        className="flex items-center gap-1 text-xs text-neutral hover:text-[#0F1059] bg-slate-50 px-3 py-1.5 rounded-lg border border-base-300"
-                      >
-                        <Upload className="w-3 h-3" /> Upload REV
-                      </button>
-                    )}
-                    {doc.spDownloadUrl && (
+                  {doc.spDownloadUrl && (
+                    <div className="flex items-center gap-2">
                       <a
                         href={`/api/document-controls/${doc.id}/download-latest`}
                         onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 text-xs text-neutral hover:text-[#0F1059] bg-slate-50 px-3 py-1.5 rounded-lg border border-base-300"
+                        className="flex items-center gap-1 text-xs text-neutral hover:text-[#0F1059] bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"
                       >
                         <Download className="w-3 h-3" /> Download
                       </a>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -291,13 +220,13 @@ export function DocumentControlListClient({ department, category, canCreate }: D
             <div className="hidden lg:block card-premium overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-base-300">
-                    {thSort(t('documentControl.table.colNumber'), 'docNumber', 'w-36')}
-                    {thSort(t('documentControl.table.colName'), 'docName')}
-                    {thSort(t('documentControl.field.revision'), 'revision', 'w-24', true)}
-                    {thSort(t('documentControl.table.colStatus'), 'status', 'w-28', true)}
-                    {thSort(t('documentControl.field.effectiveDate'), 'effectiveDate', 'w-32', true)}
-                    <th className="text-[11px] font-semibold uppercase tracking-wide text-neutral px-4 py-3 text-right w-28 select-none">
+                  <tr className="border-b border-slate-100">
+                    <th className="text-[11px] font-semibold uppercase tracking-wide text-neutral px-4 py-3 text-left w-36">{t('documentControl.table.colNumber')}</th>
+                    <th className="text-[11px] font-semibold uppercase tracking-wide text-neutral px-4 py-3 text-left">{t('documentControl.table.colName')}</th>
+                    <th className="text-[11px] font-semibold uppercase tracking-wide text-neutral px-4 py-3 text-center w-24">{t('documentControl.field.revision')}</th>
+                    <th className="text-[11px] font-semibold uppercase tracking-wide text-neutral px-4 py-3 text-center w-28">{t('documentControl.table.colStatus')}</th>
+                    <th className="text-[11px] font-semibold uppercase tracking-wide text-neutral px-4 py-3 text-center w-32">{t('documentControl.field.effectiveDate')}</th>
+                    <th className="text-[11px] font-semibold uppercase tracking-wide text-neutral px-4 py-3 text-right w-20 select-none">
                       {t('documentControl.table.colActions')}
                     </th>
                   </tr>
@@ -307,7 +236,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                     <tr
                       key={doc.id}
                       onClick={() => openDetail(doc.id)}
-                      className="border-b border-base-300 hover:bg-[#0F1059]/[0.02] transition-colors cursor-pointer last:border-b-0"
+                      className="border-b border-slate-100 hover:bg-[#0F1059]/[0.02] transition-colors cursor-pointer last:border-b-0"
                     >
                       <td className="text-neutral text-sm font-mono px-4 py-3">{doc.docNumber}</td>
                       <td className="text-slate-800 text-sm font-medium px-4 py-3 max-w-[280px]">
@@ -335,15 +264,6 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                             label="View"
                             onClick={(e) => { e.stopPropagation(); openDetail(doc.id); }}
                           />
-                          {canCreate && (
-                            <button
-                              onClick={(e) => openUpload(e, doc.id)}
-                              title="Upload Revision"
-                              className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#0F1059]/[0.06] text-neutral transition-colors"
-                            >
-                              <Upload className="w-3.5 h-3.5" />
-                            </button>
-                          )}
                           {doc.spDownloadUrl && (
                             <a
                               href={`/api/document-controls/${doc.id}/download-latest`}
@@ -386,21 +306,13 @@ export function DocumentControlListClient({ department, category, canCreate }: D
         }}
       />
 
-      {/* Detail Modal */}
+      {/* Detail Modal — upload revision is inside here */}
       <DocumentControlDetailModal
         documentId={selectedDocId}
         open={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         canEdit={canCreate}
         canDelete={canCreate}
-        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['documents', category.id] })}
-      />
-
-      {/* Upload Revision */}
-      <UploadRevisionDialog
-        open={uploadOpen}
-        onClose={() => { setUploadOpen(false); setUploadDocId(null); }}
-        documentId={uploadDocId ?? ''}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['documents', category.id] })}
       />
     </>

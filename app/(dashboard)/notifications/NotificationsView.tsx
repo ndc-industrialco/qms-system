@@ -6,6 +6,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Bell, CheckCheck, ExternalLink, Filter, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import PageHeader from "@/components/common/PageHeader";
+import { getModuleMeta } from "@/lib/module-colors";
 
 interface NotificationItem {
   id: string;
@@ -19,24 +21,29 @@ interface NotificationItem {
   createdAt: string;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const MODULE_META: Record<string, { bg: string; text: string; dot: string; brand: string; label: string }> = {
-  CAR:         { bg: "bg-orange-100",  text: "text-orange-700",  dot: "bg-orange-400",  brand: "#ea580c", label: "CAR"        },
-  DAR:         { bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-500",    brand: "#2563eb", label: "DAR"        },
-  KPI:         { bg: "bg-green-100",   text: "text-green-700",   dot: "bg-green-500",   brand: "#16a34a", label: "KPI"        },
-  KPI_MONTHLY: { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500", brand: "#059669", label: "KPI Monthly"},
-  AUDIT:       { bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-500",  brand: "#7c3aed", label: "Audit"      },
-};
-
-const FALLBACK_META = { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400", brand: "#64748b", label: "—" };
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getActionPath(item: NotificationItem): string | null {
-  if (item.module === "CAR")   return `/car/${item.resourceId}`;
-  if (item.module === "DAR")   return `/dar/${item.resourceId}`;
-  if (item.module === "KPI")   return `/qms/kpi/${item.resourceId}`;
+  if (item.module === "CAR") {
+    if (item.title.includes("MR Review Required") || item.title.includes("รออนุมัติแผนแก้ไข"))
+      return `/approve/car/${item.resourceId}/mr-response`;
+    if (item.title.includes("Verification Passed") || item.title.includes("ผ่านการตรวจติดตาม"))
+      return `/approve/car/${item.resourceId}/mr`;
+    return `/car/${item.resourceId}`;
+  }
+  if (item.module === "DAR") {
+    if (item.resourceType === "DAR_REVIEWER") return `/approve/dar/${item.resourceId}/reviewer`;
+    if (item.resourceType === "DAR_APPROVER") return `/approve/dar/${item.resourceId}/approver`;
+    return `/dar/${item.resourceId}`;
+  }
+  if (item.module === "KPI") {
+    if (item.resourceType === "KPI_REVIEWER") return `/approve/kpi/${item.resourceId}/reviewer`;
+    if (item.resourceType === "KPI_APPROVER") return `/approve/kpi/${item.resourceId}/approver`;
+    if (item.resourceType === "KPI_MONTHLY_REVIEWER") return `/approve/kpi/${item.resourceId}/reviewer?type=kpi-monthly`;
+    if (item.resourceType === "KPI_MONTHLY_APPROVER") return `/approve/kpi/${item.resourceId}/approver?type=kpi-monthly`;
+    if (item.resourceType === "KPI_MONTHLY") return `/qms/kpi/monthly`;
+    return `/qms/kpi/${item.resourceId}`;
+  }
   if (item.module === "AUDIT") {
     if (item.resourceType === "AUDIT_APPOINTMENT") {
       if (item.title.startsWith("Signature Required"))  return `/approve/audit/appointments/${item.resourceId}/reviewer`;
@@ -122,16 +129,8 @@ function HtmlFrame({ html, itemId }: { html: string; itemId: string }) {
   );
 }
 
-function NotificationDetail({
-  item,
-  onDelete,
-  deleting,
-}: {
-  item: NotificationItem;
-  onDelete: () => void;
-  deleting: boolean;
-}) {
-  const mod = MODULE_META[item.module] ?? FALLBACK_META;
+function NotificationDetail({ item }: { item: NotificationItem }) {
+  const mod = getModuleMeta(item.module);
   const actionPath = getActionPath(item);
   const { thLine, enLine, rows } = parseBody(item.body);
 
@@ -142,26 +141,16 @@ function NotificationDetail({
       {/* Action bar */}
       <div className={cn("flex items-center justify-between gap-2 mb-3", hasHtml && "px-4 pt-4 sm:px-6 sm:pt-5")}>
         <p className="text-xs text-slate-400">{fullDate(item.createdAt)}</p>
-        <div className="flex items-center gap-2">
-          {actionPath && (
-            <Link
-              href={actionPath}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: mod.brand }}
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              เปิดรายการ
-            </Link>
-          )}
-          <button
-            onClick={onDelete}
-            disabled={deleting}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+        {actionPath && (
+          <Link
+            href={actionPath}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ background: mod.brand }}
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            ลบ
-          </button>
-        </div>
+            <ExternalLink className="h-3.5 w-3.5" />
+            เปิดรายการ
+          </Link>
+        )}
       </div>
 
       {/* HTML email template — fills full width, no extra border/wrapper */}
@@ -218,7 +207,7 @@ function NotifRow({
   onCheck: (e: React.MouseEvent) => void;
   onDelete: () => void;
 }) {
-  const mod = MODULE_META[n.module] ?? FALLBACK_META;
+  const mod = getModuleMeta(n.module);
   const { thLine } = parseBody(n.body);
 
   return (
@@ -304,15 +293,21 @@ export default function NotificationsView() {
   const unreadCount = raw?.data?.unreadCount   ?? 0;
 
   const markRead = useMutation({
-    mutationFn: async (id: string) => { await fetch(`/api/notifications/${id}/read`, { method: "PATCH" }); },
+    mutationFn: async (id: string) => {
+      await fetch(`/api/notifications/${id}/read`, { method: "PATCH" });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
   const markAllRead = useMutation({
-    mutationFn: async () => { await fetch("/api/notifications/read-all", { method: "PATCH" }); },
+    mutationFn: async () => {
+      await fetch("/api/notifications/read-all", { method: "PATCH" });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
   const deleteOne = useMutation({
-    mutationFn: async (id: string) => { await fetch(`/api/notifications/${id}`, { method: "DELETE" }); },
+    mutationFn: async (id: string) => {
+      await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+    },
     onSuccess: (_d, id) => {
       if (selected?.id === id) { setSelected(null); setShowDetail(false); }
       setCheckedIds((prev) => { const s = new Set(prev); s.delete(id); return s; });
@@ -374,6 +369,8 @@ export default function NotificationsView() {
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
 
+      <PageHeader title="การแจ้งเตือน" subtitle="Notifications" className="shrink-0 mb-3 mx-4 mt-4" />
+
       {/* ── Top bar ── */}
       <div className="shrink-0 border-b border-slate-100 bg-white">
         <div className="flex items-center justify-between gap-2 px-4 py-3">
@@ -388,7 +385,6 @@ export default function NotificationsView() {
               </button>
             )}
             <Bell className="h-4 w-4 text-[#0f1059]" />
-            <h1 className="text-sm font-bold text-slate-900 sm:text-base">การแจ้งเตือน</h1>
             {unreadCount > 0 && (
               <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
                 {unreadCount}
@@ -418,7 +414,7 @@ export default function NotificationsView() {
               >
                 <option value="ALL">ทุกระบบ</option>
                 {modules.map((m) => (
-                  <option key={m} value={m}>{MODULE_META[m]?.label ?? m}</option>
+                  <option key={m} value={m}>{getModuleMeta(m).label}</option>
                 ))}
               </select>
             </div>
@@ -517,11 +513,7 @@ export default function NotificationsView() {
             </div>
           ) : (
             <div className={cn(selected.htmlBody ? "p-0" : "mx-auto max-w-2xl p-4 sm:p-6")}>
-              <NotificationDetail
-                item={selected}
-                onDelete={() => deleteOne.mutate(selected.id)}
-                deleting={deleteOne.isPending}
-              />
+              <NotificationDetail item={selected} />
             </div>
           )}
         </div>

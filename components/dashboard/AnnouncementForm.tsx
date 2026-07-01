@@ -69,8 +69,8 @@ export default function AnnouncementForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-3xl">
-      <div className="card-premium border border-base-300 rounded-xl shadow-sm">
-        <div className="px-5 py-4 border-b border-base-200">
+      <div className="card-premium border border-slate-100 rounded-xl shadow-sm">
+        <div className="px-5 py-4 border-b border-slate-100">
           <h2 className="text-sm md:text-base font-bold text-primary">{t("announcement.details")}</h2>
         </div>
 

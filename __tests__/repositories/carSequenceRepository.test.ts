@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const { mockQueryRaw } = vi.hoisted(() => ({ mockQueryRaw: vi.fn() }));
 
 vi.mock("@/lib/db", () => ({
-  db: { $queryRaw: mockQueryRaw },
+  db: {
+    $queryRaw: mockQueryRaw,
+    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn({ $executeRaw: vi.fn(), $queryRaw: mockQueryRaw })),
+  },
 }));
 
 import { CarSequenceRepository } from "@/repositories/carSequenceRepository";
@@ -38,7 +41,8 @@ describe("CarSequenceRepository", () => {
 
   it("uses tx client when provided", async () => {
     const txQueryRaw = vi.fn().mockResolvedValue([]);
-    const tx = { $queryRaw: txQueryRaw } as never;
+    const txExecuteRaw = vi.fn().mockResolvedValue(undefined);
+    const tx = { $queryRaw: txQueryRaw, $executeRaw: txExecuteRaw } as never;
     await repo.nextSequence(2026, tx);
     expect(txQueryRaw).toHaveBeenCalledTimes(1);
     expect(mockQueryRaw).not.toHaveBeenCalled();

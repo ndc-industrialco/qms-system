@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import CarStatusBadge from "./CarStatusBadge";
 import CarFormModal from "./CarFormModal";
 import { CAR_SCOPE_LABELS, CAR_SOURCE_LABELS, CAR_STATUS_LABELS, type CarDetail, type CarListResponse, type CarListScope, type CarSourceType, type CarStatus, type CarSummary } from "@/types/car";
+import { fmtDate } from "@/lib/format";
 
 interface Props {
   initialData?: CarListResponse;
@@ -56,11 +57,6 @@ async function fetchCars(query: CarListQuery): Promise<CarListResponse> {
     data: json.data ?? [],
     meta: json.meta ?? { page: query.page, limit: query.limit, total: 0 },
   };
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(value));
 }
 
 function TableSkeleton() {
@@ -305,35 +301,37 @@ export default function CarListTable({
                       {t("car.detail.labelIssuer")}: <span className="text-slate-700">{car.issuer.name ?? "-"}</span>
                     </p>
                     <p className="text-slate-500">
-                      {t("car.list.colIssuedAt")}: <span className="text-slate-700 font-mono">{formatDate(car.issuedAt)}</span>
+                      {t("car.list.colIssuedAt")}: <span className="text-slate-700 font-mono">{fmtDate(car.issuedAt)}</span>
                     </p>
                     <p className={`font-mono ${isOverdue ? "text-rose-600 font-semibold" : "text-slate-500"}`}>
-                      {t("car.list.colDueAt")}: <span>{formatDate(car.responseDueAt)}</span>
+                      {t("car.list.colDueAt")}: <span>{fmtDate(car.responseDueAt)}</span>
                     </p>
                   </div>
                   <div className="flex items-center gap-1 border-t border-slate-100 pt-3">
                     <ActionPillButton tone="view" label="ดูรายละเอียด" asChild>
                       <Link href={`${basePath}/${car.id}`} />
                     </ActionPillButton>
+                    {canEditDelete && car.status === "DRAFT" && (
+                      <ActionPillButton
+                        tone="edit"
+                        label="แก้ไข"
+                        onClick={() => handleEdit(car)}
+                        loading={editLoadingId === car.id}
+                      />
+                    )}
                     {canEditDelete && (
-                      <>
-                        <ActionPillButton
-                          tone="edit"
-                          label="แก้ไข"
-                          onClick={() => handleEdit(car)}
-                          loading={editLoadingId === car.id}
-                        />
-                        <ActionPillButton
-                          tone="cancel"
-                          label="ยกเลิก"
-                          onClick={() => setDeleteTarget(car)}
-                        />
-                        <ActionPillButton
-                          tone="delete"
-                          label="ลบ"
-                          onClick={() => setHardDeleteTarget(car)}
-                        />
-                      </>
+                      <ActionPillButton
+                        tone="delete"
+                        label="ลบถาวร"
+                        onClick={() => setHardDeleteTarget(car)}
+                      />
+                    )}
+                    {canEditDelete && !["CANCELLED", "CLOSED", "DRAFT"].includes(car.status) && (
+                      <ActionPillButton
+                        tone="cancel"
+                        label="ยกเลิก"
+                        onClick={() => setDeleteTarget(car)}
+                      />
                     )}
                   </div>
                 </div>
@@ -387,35 +385,37 @@ export default function CarListTable({
                           <CarStatusBadge status={car.status} />
                         </TableCell>
                         <TableCell className="text-slate-500 text-xs text-center font-mono">
-                          {formatDate(car.issuedAt)}
+                          {fmtDate(car.issuedAt)}
                         </TableCell>
                         <TableCell className={`text-xs text-center font-mono ${isOverdue ? "text-rose-600 font-semibold" : "text-slate-500"}`}>
-                          {formatDate(car.responseDueAt)}
+                          {fmtDate(car.responseDueAt)}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1.5">
                             <ActionIconButton tone="view" label="ดูรายละเอียด" asChild>
                               <Link href={`${basePath}/${car.id}`} />
                             </ActionIconButton>
+                            {canEditDelete && car.status === "DRAFT" && (
+                              <ActionIconButton
+                                tone="edit"
+                                label="แก้ไข"
+                                onClick={() => handleEdit(car)}
+                                loading={editLoadingId === car.id}
+                              />
+                            )}
                             {canEditDelete && (
-                              <>
-                                <ActionIconButton
-                                  tone="edit"
-                                  label="แก้ไข"
-                                  onClick={() => handleEdit(car)}
-                                  loading={editLoadingId === car.id}
-                                />
-                                <ActionIconButton
-                                  tone="cancel"
-                                  label="ยกเลิก"
-                                  onClick={() => setDeleteTarget(car)}
-                                />
-                                <ActionIconButton
-                                  tone="delete"
-                                  label="ลบ"
-                                  onClick={() => setHardDeleteTarget(car)}
-                                />
-                              </>
+                              <ActionIconButton
+                                tone="delete"
+                                label="ลบถาวร"
+                                onClick={() => setHardDeleteTarget(car)}
+                              />
+                            )}
+                            {canEditDelete && !["CANCELLED", "CLOSED", "DRAFT"].includes(car.status) && (
+                              <ActionIconButton
+                                tone="cancel"
+                                label="ยกเลิก"
+                                onClick={() => setDeleteTarget(car)}
+                              />
                             )}
                           </div>
                         </TableCell>

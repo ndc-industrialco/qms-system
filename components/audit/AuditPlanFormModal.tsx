@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import SignaturePad from "@/components/dar/SignaturePad";
+import SignaturePad from "@/components/shared/SignaturePad";
 import { useDepartments } from "@/hooks/api/use-departments";
 import { useReviewerCandidates, type ReviewerCandidate } from "@/hooks/api/use-reviewer-candidates";
 import { useEmailGroups } from "@/hooks/api/use-email-groups";
@@ -15,6 +15,7 @@ import { useAuditAppointments } from "@/hooks/api/use-audit-appointments";
 import { useAuditStandards } from "@/hooks/api/use-audit-standards";
 import { useQueryClient } from "@tanstack/react-query";
 import { auditPlanKeys } from "@/hooks/api/use-audit-plans";
+import { INPUT_CLASS } from "@/lib/styles";
 import type { AuditPlanSummary } from "@/types/audit";
 
 interface Props {
@@ -86,10 +87,6 @@ const EMPTY_FORM: FormData = {
   approverName: "",
   signaturePath: "",
 };
-
-const INPUT_CLASS =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30";
-
 
 const ROLE_LABELS: Record<TeamMemberEntry["role"], string> = {
   LEAD_AUDITOR: "หัวผู้ตรวจสอบ",

@@ -64,7 +64,7 @@ export function DepartmentModal({ open, onClose, department, onSuccess }: Depart
         emailGroup: data.emailGroup || null,
         isActive: data.isActive,
       };
-      const res = await fetch('/api/it/departments', {
+      const res = await fetch('/api/doc-control/departments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -91,7 +91,7 @@ export function DepartmentModal({ open, onClose, department, onSuccess }: Depart
         emailGroup: data.emailGroup || null,
         isActive: data.isActive,
       };
-      const res = await fetch(`/api/it/departments/${department?.id}`, {
+      const res = await fetch(`/api/doc-control/departments/${department?.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

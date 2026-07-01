@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useT } from "@/lib/i18n";
-import { useDepartments } from "@/hooks/api/use-departments";
+import { useKpiDepts } from "@/hooks/api/use-kpi-depts";
 import PageHeader from "@/components/common/PageHeader";
 import { ActionIconButton } from "@/components/common/ActionButtons";
 import { useKpiList, useCreateKpi } from "@/hooks/api/use-kpi";
@@ -62,7 +62,7 @@ function DepartmentModal({ mode, dept, onClose, onSuccess }: DeptModalProps) {
       const body = mode === "edit"
         ? { name: name.trim(), isActive }
         : { name: name.trim(), isActive: true };
-      const url = mode === "create" ? "/api/it/departments" : `/api/it/departments/${dept!.id}`;
+      const url = mode === "create" ? "/api/kpi-dept" : `/api/kpi-dept/${dept!.id}`;
       const res = await fetch(url, {
         method: mode === "create" ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -190,7 +190,7 @@ function DepartmentPanel({ depts, year, onRefresh, onNavigateKpi }: DeptPanelPro
     setConfirmDel(null);
     setDeletingId(target.id);
     try {
-      const res = await fetch(`/api/it/departments/${target.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/kpi-dept/${target.id}`, { method: "DELETE" });
       const json = await res.json();
       if (!res.ok || json.error) {
         toast.error(json.error ?? t("common.error"), { duration: Infinity });
@@ -238,7 +238,26 @@ function DepartmentPanel({ depts, year, onRefresh, onNavigateKpi }: DeptPanelPro
       {open && (
         <div className="border-t border-slate-100">
           {/* Actions bar */}
-          <div className="px-5 py-3 flex justify-end border-b border-slate-50">
+          <div className="px-5 py-3 flex justify-end gap-2 border-b border-slate-50">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs rounded-lg gap-1.5"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/kpi-dept/sync", { method: "POST" });
+                  const json = await res.json() as { data: { created: number; skipped: number } };
+                  if (!res.ok) throw new Error();
+                  toast.success(`Synced: ${json.data.created} new department(s) added`, { duration: 3000 });
+                  onRefresh();
+                } catch {
+                  toast.error(t("common.error"), { duration: Infinity });
+                }
+              }}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              Sync from Auth Center
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -453,18 +472,21 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
   const privileged = isPrivileged(role);
 
   // Per-row: privileged can create for any dept; USER only for their own dept
-  function canCreateKpiForDept(deptId: string): boolean {
+  // userDepartmentId is an Auth Center code; KpiDeptItem has authDeptCode field
+  function canCreateKpiForDept(dept: Department): boolean {
     if (privileged) return true;
-    return !!userDepartmentId && deptId === userDepartmentId;
+    if (!userDepartmentId) return false;
+    const item = dept as { authDeptCode?: string };
+    return item.authDeptCode === userDepartmentId || dept.id === userDepartmentId;
   }
 
-  const { data: deptData, isLoading: deptLoading } = useDepartments();
+  const { data: deptData, isLoading: deptLoading } = useKpiDepts();
 
-  // Full department list (with _count) for management panel — privileged only
+  // Full dept list for management panel (same source, privileged only)
   const { data: allDeptsResp } = useQuery<{ data: Department[] }>({
-    queryKey: ["departments-all"],
+    queryKey: ["kpi-depts-all"],
     queryFn: async () => {
-      const res = await fetch("/api/it/departments");
+      const res = await fetch("/api/kpi-dept");
       if (!res.ok) throw new Error("Failed to load departments");
       return res.json();
     },
@@ -472,19 +494,22 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
   });
 
   const refreshDepts = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["departments"] });
-    queryClient.invalidateQueries({ queryKey: ["departments-all"] });
+    queryClient.invalidateQueries({ queryKey: ["kpi-depts"] });
+    queryClient.invalidateQueries({ queryKey: ["kpi-depts-all"] });
   }, [queryClient]);
 
   const { data: kpiResp, isLoading: kpiLoading } = useKpiList({ yearly: year, limit: 100 });
 
-  const allDepts: Department[] = deptData ?? [];
+  const allDepts: Department[] = (deptData ?? []) as Department[];
   const allKpis = (kpiResp?.data ?? []) as KpiWithObjectives[];
 
   const createMutation = useCreateKpi();
 
   const visibleDepts = !privileged && userDepartmentId
-    ? allDepts.filter(d => d.id === userDepartmentId || d.name === userDepartmentId)
+    ? allDepts.filter(d => {
+        const item = d as { authDeptCode?: string };
+        return item.authDeptCode === userDepartmentId || d.id === userDepartmentId;
+      })
     : allDepts;
 
   const kpiByDept = new Map<string, KpiWithObjectives>();
@@ -514,7 +539,7 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
     const kpi = kpiByDept.get(dept.name.toLowerCase());
     if (kpi) {
       router.push(`/qms/kpi/${kpi.id}`);
-    } else if (canCreateKpiForDept(dept.id)) {
+    } else if (canCreateKpiForDept(dept)) {
       handleCreateKpi(dept.name);
     }
   }
@@ -591,7 +616,7 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
                   const status = kpi?.status as keyof typeof STATUS_CONFIG | undefined;
                   const cfg = status ? STATUS_CONFIG[status] : null;
                   const objCount = kpi?.objectives?.length ?? 0;
-                  const canCreate = canCreateKpiForDept(dept.id);
+                  const canCreate = canCreateKpiForDept(dept);
                   const isClickable = !!(kpi || canCreate);
 
                   return (
@@ -669,7 +694,7 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
               const kpi = kpiByDept.get(dept.name.toLowerCase());
               const status = kpi?.status as keyof typeof STATUS_CONFIG | undefined;
               const cfg = status ? STATUS_CONFIG[status] : null;
-              const canCreate = canCreateKpiForDept(dept.id);
+              const canCreate = canCreateKpiForDept(dept);
               const isClickable = !!(kpi || canCreate);
 
               return (

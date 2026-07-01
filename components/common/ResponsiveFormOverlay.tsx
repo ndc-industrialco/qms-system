@@ -46,12 +46,13 @@ export default function ResponsiveFormOverlay({
   bodyClassName,
   footerClassName,
 }: Props) {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
+  );
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
     const sync = () => setIsMobile(media.matches);
-    sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);

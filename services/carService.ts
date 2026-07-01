@@ -8,6 +8,7 @@ import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { getDepartmentByCode, getDepartmentByName } from "@/lib/departmentCache";
 import { ActionTokenService } from "@/services/actionTokenService";
 import { NotFoundError, ValidationError, ForbiddenError } from "@/errors/customErrors";
+import { getDocNoFormat, renderDocNo } from "@/lib/docNoConfig";
 import type { CarCreateInput, CarUpdateInput, CarRespondInput, CarVerifyInput, CarReviewResponseInput, CarListQuery } from "@/lib/validations/car";
 import type { CarStatus, CarSourceType, VerificationResult } from "@/generated/prisma/client";
 import type { CarListScope } from "@/types/car";
@@ -334,9 +335,9 @@ export class CarService {
     };
   }
 
-  private buildCarNo(year: number, seq: number): string {
-    const yy = String(year).slice(-2);
-    return `C${yy}-${String(seq).padStart(3, "0")}`;
+  private async buildCarNo(year: number, seq: number): Promise<string> {
+    const format = await getDocNoFormat("CAR");
+    return renderDocNo(format, { year, seq });
   }
 
   async getAllCars(): Promise<CarSummary[]> {
@@ -347,6 +348,10 @@ export class CarService {
   async getCarsByDepartment(departmentId: string): Promise<CarSummary[]> {
     const raws = await this.carRepo.findManyByDepartment(departmentId);
     return this.mapSummaries(raws);
+  }
+
+  async countPendingForDept(authDepartmentId: string): Promise<number> {
+    return this.carRepo.countIssuedForDept(authDepartmentId);
   }
 
   async listCars(
@@ -412,7 +417,7 @@ export class CarService {
       }
 
       const seq = await this.seqRepo.nextSequence(year, tx);
-      const carNo = this.buildCarNo(year, seq);
+      const carNo = await this.buildCarNo(year, seq);
 
       const car = await this.carRepo.createDraft({
         ...normalizedInput,
@@ -445,7 +450,7 @@ export class CarService {
     return this.mapDetail(detail);
   }
 
-  async updateCar(id: string, _issuerId: string, input: CarUpdateInput): Promise<CarDetail> {
+  async updateCar(id: string, actorId: string, input: CarUpdateInput, actorAuthUserId?: string | null, actorRole?: string): Promise<CarDetail> {
     const normalizedInput = this.normalizeReCarInput(input);
     const existing = await this.carRepo.findById(id);
     if (!existing) throw new NotFoundError("CAR");
@@ -465,7 +470,18 @@ export class CarService {
       : null;
     const targetAuthDepartmentId = targetDept?.code ?? normalizedInput.targetDepartmentId ?? null;
 
-    await this.carRepo.updateDraft(id, normalizedInput, targetAuthDepartmentId, targetDept?.displayName ?? null);
+    await db.$transaction(async (tx) => {
+      await this.carRepo.updateDraft(id, normalizedInput, targetAuthDepartmentId, targetDept?.displayName ?? null, tx);
+      await AuditService.record({
+        actorUserId: actorId,
+        actorAuthUserId: actorAuthUserId,
+        actorRole: actorRole ?? "QMS",
+        action: "UPDATE",
+        resourceType: "CAR",
+        resourceId: id,
+        before: { status: existing.status, carNo: existing.carNo },
+      }, tx);
+    });
 
     const detail = await this.carRepo.findDetailById(id);
     if (!detail) throw new NotFoundError("CAR");
@@ -475,6 +491,7 @@ export class CarService {
   async cancelCar(id: string, actorId: string, actorAuthUserId?: string | null): Promise<void> {
     const existing = await this.carRepo.findById(id);
     if (!existing) throw new NotFoundError("CAR");
+    if (existing.status === "CANCELLED") throw new ValidationError("CAR is already cancelled.");
     if (existing.status === "CLOSED") throw new ValidationError("Cannot cancel a closed CAR.");
 
     await db.$transaction(async (tx) => {
@@ -547,25 +564,35 @@ export class CarService {
       }, tx);
     });
 
-    // Schedule 3-day reminder (best-effort, non-blocking)
-    CarReminderService.schedule(id, accessToken).catch((err) =>
+    // Resolve dept email group and issuer email for reminder metadata
+    const targetDeptCode = car.targetAuthDepartmentId ?? car.targetDepartmentId;
+    const [deptInfo, issuerSnapshot] = await Promise.all([
+      targetDeptCode ? getDepartmentByCode(targetDeptCode, accessToken) : Promise.resolve(null),
+      car.issuerAuthUserId ? this.getIdentitySnapshot(car.issuerAuthUserId) : Promise.resolve(null),
+    ]);
+    const deptEmailGroup = deptInfo?.emailGroup ?? null;
+    const issuerEmail = issuerSnapshot?.email ?? null;
+
+    // Schedule 3-day reminder with metadata (best-effort, non-blocking)
+    CarReminderService.schedule(id, { deptEmailGroup, issuerEmail }).catch((err) =>
       logger.warn("[CarService.issueCar] Failed to schedule reminder", { carId: id, error: String(err) })
     );
 
     let emailQueued = false;
     let emailSkipReason: string | undefined;
 
-    // Email always follows selected To/CC groups.
-    // If issuer has a delegated M365 token, send from their account; otherwise use MAIL_SENDER.
-    if (emailTargets.length === 0) {
-      emailSkipReason = "No target email group (To) selected";
+    // Dept email group is always a To recipient; selected groups go as CC
+    const allToTargets = [...new Set([...emailTargets, ...(deptEmailGroup ? [deptEmailGroup] : [])])];
+
+    if (allToTargets.length === 0) {
+      emailSkipReason = "No target email group or department email";
       logger.info("[CarService.issueCar] Email skipped - no email targets", { carId: id });
     } else if (!accessToken) {
       emailSkipReason = "Sender not linked to Microsoft 365";
       logger.warn("[CarService.issueCar] Email skipped - no sender access token", { carId: id });
     } else {
       emailQueued = true;
-      for (const email of emailTargets) {
+      for (const email of allToTargets) {
         sendCarIssuedEmail({
           carId: id,
           carNo: car.carNo,
@@ -586,31 +613,16 @@ export class CarService {
       }
     }
 
-    /*
-    if (emailTargets.length === 0) {
-      emailSkipReason = "ผู้ออก CAR ไม่ได้เชื่อมต่อ Microsoft 365";
-      logger.info("[CarService.issueCar] Email skipped — issuer not m365Linked", { carId: id, actorId });
-    } else {
-      emailSkipReason = "ไม่ได้เลือกกลุ่มอีเมล (To)";
-      logger.info("[CarService.issueCar] Email skipped — no email targets", { carId: id });
-    } else {
-      emailQueued = true;
-      for (const email of emailTargets) {
-        sendCarIssuedEmail({ carId: id, carNo: car.carNo, targetEmail: email, cc: emailCc }).catch((err) =>
-          logger.error("[CarService.issueCar] Email failed", { email, error: err instanceof Error ? err.message : String(err) })
-        );
-      }
-    }
-
-    */
-
-    const targetDeptCode = car.targetAuthDepartmentId ?? car.targetDepartmentId;
     if (targetDeptCode && accessToken) {
       getAuthCenterDepartmentMembers(targetDeptCode, { accessToken })
         .then(async (deptResult) => {
-          const recipients = [...new Set((deptResult?.members ?? []).map((member) => member.id).filter(Boolean))];
+          const members = deptResult?.members ?? [];
+          const recipientAuthIds = [...new Set(members.map((m) => m.id).filter(Boolean))];
+          const memberEmails = [...new Set(members.map((m) => m.email).filter(Boolean) as string[])];
+
+          // In-app notifications
           await Promise.all(
-            recipients.map((recipientAuthUserId) =>
+            recipientAuthIds.map((recipientAuthUserId) =>
               notifyCarUser({
                 recipientAuthUserId,
                 event: "ISSUED",
@@ -622,6 +634,29 @@ export class CarService {
               })
             )
           );
+
+          // Email notifications to each dept member
+          if (accessToken) {
+            for (const email of memberEmails) {
+              sendCarIssuedEmail({
+                carId: id,
+                carNo: car.carNo,
+                targetEmail: email,
+                cc: emailCc,
+                senderAccessToken: accessToken,
+                targetDepartmentName: car.targetDepartmentName ?? undefined,
+                sourceType: car.sourceType,
+                isoStandards: car.isoStandards ?? [],
+                defectDetail: car.defectDetail,
+                nonConformanceRef: car.nonConformanceRef,
+                issuerName: car.issuerName ?? undefined,
+                issuerPosition: car.issuerPosition ?? undefined,
+                responseDueAt: car.responseDueAt?.toISOString() ?? undefined,
+              }).catch((err) =>
+                logger.error("[CarService.issueCar] Dept member email failed", { email, error: String(err) })
+              );
+            }
+          }
         })
         .catch((err) => {
           logger.error("[CarService.issueCar] Department notification failed", {
@@ -675,15 +710,17 @@ export class CarService {
       : responderDepartmentId === car.targetDepartmentId;
     if (!inTargetDept) throw new ForbiddenError("You do not have permission to respond to this CAR.");
 
-    const [mrEmailConfig, mrUser, qmsEmail] = await Promise.all([
-      this.configRepo.findValueByKey("CURRENT_MR_EMAIL"),
-      this.resolveMrUser(accessToken),
+    const [responderSnapshot, qmsEmail] = await Promise.all([
+      this.getIdentitySnapshot(responderId),
       this.configRepo.findValueByKey("CURRENT_QMS_EMAIL"),
     ]);
-    const responderSnapshot = await this.getIdentitySnapshot(responderId);
     if (!responderSnapshot) throw new ValidationError("Responder not found");
-    const mrSnapshot = mrUser ? await this.getIdentitySnapshot(mrUser.authUserId) : null;
-    const mrEmail = mrEmailConfig ?? mrUser?.email ?? mrSnapshot?.email ?? null;
+
+    const mrAuthUserId = input.targetMrAuthUserId;
+    if (!mrAuthUserId) throw new ValidationError("กรุณาเลือกผู้อนุมัติ MR");
+    const mrUser = { authUserId: mrAuthUserId };
+    const mrSnapshot = await this.getIdentitySnapshot(mrAuthUserId);
+    const mrEmail = mrSnapshot?.email ?? null;
     const infoRecipients = [qmsEmail].filter(Boolean) as string[];
     const plannedDate = input.plannedCompletionDate;
 
@@ -878,6 +915,12 @@ export class CarService {
       notifyCarUser({ recipientAuthUserId: uid, event, carNo: car.carNo, carId: id, targetDepartmentName: car.targetDepartmentName ?? undefined, defectDetail: (car as Record<string, unknown>).defectDetail as string | undefined, isoStandards: (car as Record<string, unknown>).isoStandards as string[] | undefined, comment: input.comment });
     }
 
+    if (input.action === "REJECTED") {
+      CarReminderService.schedule(id).catch((err) =>
+        logger.error("[CarService.reviewResponseByMR] Failed to reschedule reminder after rejection", err)
+      );
+    }
+
     const detail = await this.carRepo.findDetailById(id);
     if (!detail) throw new NotFoundError("CAR");
     return this.mapDetail(detail);
@@ -958,6 +1001,17 @@ export class CarService {
       notifyCarUser({ recipientAuthUserId: uid, event, carNo: car.carNo, carId: id, targetDepartmentName: car.targetDepartmentName ?? undefined, defectDetail: (car as Record<string, unknown>).defectDetail as string | undefined, isoStandards: (car as Record<string, unknown>).isoStandards as string[] | undefined, comment: input.comment });
     }
 
+    // Notify selected QMS user to prepare for verification
+    if (input.action === "APPROVED" && input.qmsAuthUserId) {
+      notifyCarUser({ recipientAuthUserId: input.qmsAuthUserId, event: "QMS_NOTIFY", carNo: car.carNo, carId: id, targetDepartmentName: car.targetDepartmentName ?? undefined, defectDetail: (car as Record<string, unknown>).defectDetail as string | undefined, isoStandards: (car as Record<string, unknown>).isoStandards as string[] | undefined });
+    }
+
+    if (input.action === "REJECTED") {
+      CarReminderService.schedule(id).catch((err) =>
+        logger.error("[CarService.reviewResponseByMRAuthenticated] Failed to reschedule reminder after rejection", err)
+      );
+    }
+
     const detail = await this.carRepo.findDetailById(id);
     if (!detail) throw new NotFoundError("CAR");
     return this.mapDetail(detail);
@@ -988,11 +1042,11 @@ export class CarService {
     }
 
     let actionTokenValue: string | null = null;
-    const [mrEmailConfig, mrUserForVerify] = await Promise.all([
-      input.result === "PASSED" ? this.configRepo.findValueByKey("CURRENT_MR_EMAIL") : Promise.resolve(null),
-      input.result === "PASSED" ? this.resolveMrUser(accessToken) : Promise.resolve(null),
-    ]);
-    const mrVerifyEmailResolved = mrEmailConfig ?? mrUserForVerify?.email ?? null;
+    const mrVerifyAuthUserId = input.result === "PASSED" ? (input.targetMrAuthUserId ?? null) : null;
+    if (input.result === "PASSED" && !mrVerifyAuthUserId) throw new ValidationError("กรุณาเลือกผู้อนุมัติ MR");
+    const mrUserForVerify = mrVerifyAuthUserId ? { authUserId: mrVerifyAuthUserId } : null;
+    const mrVerifySnapshot = mrUserForVerify ? await this.getIdentitySnapshot(mrUserForVerify.authUserId) : null;
+    const mrVerifyEmailResolved = mrVerifySnapshot?.email ?? null;
     const deptEmails = (input.result === "FAILED" && input.round === 1)
       ? (car.targetEmailGroups ?? [])
       : [];
@@ -1045,7 +1099,6 @@ export class CarService {
     });
 
     // Send emails after transaction committed (non-blocking)
-    const mrVerifySnapshot = mrUserForVerify ? await this.getIdentitySnapshot(mrUserForVerify.authUserId) : null;
     const mrEmail = mrVerifyEmailResolved ?? mrVerifySnapshot?.email ?? null;
     if (input.result === "PASSED" && actionTokenValue && mrEmail && canReceiveEmail(mrVerifySnapshot?.m365Linked)) {
       sendCarVerifyPassEmail({ carId: id, carNo: car.carNo, mrEmail, token: actionTokenValue, senderAccessToken: accessToken }).catch((err) =>
@@ -1064,8 +1117,24 @@ export class CarService {
     const verifyIso    = (car as Record<string, unknown>).isoStandards as string[] | undefined;
     if (input.result === "PASSED" && mrUserForVerify) {
       notifyCarUser({ recipientAuthUserId: mrUserForVerify.authUserId, event: "VERIFY_1_PASS", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, mrReviewToken: actionTokenValue });
-    } else if (input.result === "FAILED" && input.round === 1 && car.issuerAuthUserId) {
-      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "VERIFY_2_SCHEDULED", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, nextDueDate: input.nextDueDate });
+    } else if (input.result === "FAILED" && input.round === 1) {
+      // Notify issuer that round 2 is scheduled
+      if (car.issuerAuthUserId) {
+        notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "VERIFY_2_SCHEDULED", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, nextDueDate: input.nextDueDate });
+      }
+      // Notify responder (dept) that they need to complete corrective actions before round 2
+      if (car.response?.responderAuthUserId) {
+        notifyCarUser({ recipientAuthUserId: car.response.responderAuthUserId, event: "VERIFY_FAILED_DEPT", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso, nextDueDate: input.nextDueDate });
+      }
+    } else if (input.result === "FAILED" && input.round === 2) {
+      // Notify issuer that re-CAR is required
+      if (car.issuerAuthUserId) {
+        notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "RE_CAR", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso });
+      }
+      // Notify responder (dept) about re-CAR
+      if (car.response?.responderAuthUserId) {
+        notifyCarUser({ recipientAuthUserId: car.response.responderAuthUserId, event: "RE_CAR_DEPT", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso });
+      }
     }
 
     const detail = await this.carRepo.findDetailById(id);
@@ -1186,7 +1255,7 @@ export class CarService {
 
     const { newId, newCarNo } = await db.$transaction(async (tx) => {
       const seq = await this.seqRepo.nextSequence(year, tx);
-      const carNo = this.buildCarNo(year, seq);
+      const carNo = await this.buildCarNo(year, seq);
       const issuedAt = new Date();
       const responseDueAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       const newCar = await this.carRepo.createReCarFromOriginal(
@@ -1244,17 +1313,21 @@ export class CarService {
       );
     }
 
-    // In-app notify dept members (same pattern as issueCar)
+    // In-app notify: always reach known users from DB (no token needed)
+    const reCarNotifOpts = { event: "RE_CAR" as const, carNo: newCarNo, carId: newId, targetDepartmentName: original.targetDepartmentName ?? undefined, defectDetail: original.defectDetail ?? undefined, isoStandards: original.isoStandards ?? [] };
+    const knownRecipients = [...new Set([
+      original.issuerAuthUserId,
+      original.response?.responderAuthUserId,
+    ].filter(Boolean) as string[])];
+    await Promise.all(knownRecipients.map((uid) => notifyCarUser({ recipientAuthUserId: uid, ...reCarNotifOpts }).catch(() => {})));
+
+    // Best-effort: also notify all current dept members if token is available
     const targetDeptCode = (original as Record<string, unknown>).targetAuthDepartmentId as string | null | undefined ?? original.targetDepartmentId;
     if (targetDeptCode && accessToken) {
       getAuthCenterDepartmentMembers(targetDeptCode, { accessToken })
         .then(async (deptResult) => {
-          const recipients = [...new Set((deptResult?.members ?? []).map((m) => m.id).filter(Boolean))];
-          await Promise.all(
-            recipients.map((recipientAuthUserId) =>
-              notifyCarUser({ recipientAuthUserId, event: "RE_CAR", carNo: newCarNo, carId: newId, targetDepartmentName: original.targetDepartmentName ?? undefined, defectDetail: original.defectDetail ?? undefined, isoStandards: original.isoStandards ?? [] })
-            )
-          );
+          const deptRecipients = (deptResult?.members ?? []).map((m) => m.id).filter((id): id is string => !!id && !knownRecipients.includes(id));
+          await Promise.all([...new Set(deptRecipients)].map((uid) => notifyCarUser({ recipientAuthUserId: uid, ...reCarNotifOpts })));
         })
         .catch((err) => logger.error("[CarService.createReCar] Department notification failed", { carId: newId, error: String(err) }));
     }
@@ -1265,7 +1338,7 @@ export class CarService {
   async previewNextCarNo(): Promise<string> {
     const year = new Date().getFullYear();
     const seq = await this.seqRepo.previewNext(year);
-    return this.buildCarNo(year, seq);
+    return await this.buildCarNo(year, seq);
   }
 
   async sendReminder(carId: string, accessToken?: string | null): Promise<void> {

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuditDashboard } from "@/hooks/api/use-audit-dashboard";
 import AuditFindingStatusBadge from "./AuditFindingStatusBadge";
+import { Button } from "@/components/ui/button";
 import {
   FINDING_CATEGORY_LABELS,
   FINDING_SEVERITY_COLORS,
@@ -31,7 +32,7 @@ type MetricCardProps = {
 
 function MetricCard({ label, value, icon, colorClass, bgClass }: MetricCardProps) {
   return (
-    <div className="bg-white border border-base-300 rounded-xl shadow-sm p-5 flex items-center gap-4">
+    <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 flex items-center gap-4">
       <div className={cn("w-11 h-11 rounded-lg flex items-center justify-center shrink-0", bgClass)}>
         <span className={colorClass}>{icon}</span>
       </div>
@@ -70,8 +71,12 @@ export default function AuditDashboardClient() {
 
   if (error || !data) {
     return (
-      <div className="text-center py-12 text-rose-600 text-sm">
-        ไม่สามารถโหลดข้อมูลได้ กรุณาลองอีกครั้ง
+      <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-6">
+        <p className="text-slate-800 font-semibold text-base mb-1">เกิดข้อผิดพลาด</p>
+        <p className="text-slate-400 text-sm mb-4">ไม่สามารถโหลดข้อมูลได้</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          ลองใหม่
+        </Button>
       </div>
     );
   }
@@ -135,14 +140,14 @@ export default function AuditDashboardClient() {
       {/* Two-column section */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Upcoming Schedules */}
-        <div className="bg-white border border-base-300 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-base-200 flex items-center gap-2">
+        <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
             <ListChecks className="h-4 w-4 text-blue-500" />
             <h2 className="text-sm font-bold text-primary">
               กำหนดการ 7 วันข้างหน้า
             </h2>
           </div>
-          <div className="divide-y divide-base-200">
+          <div className="divide-y divide-slate-100">
             {upcomingSchedules.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-8">
                 ไม่มีกำหนดการที่จะถึง
@@ -152,11 +157,16 @@ export default function AuditDashboardClient() {
                 <Link
                   key={s.id}
                   href={`/audit/plans/${s.planId}`}
-                  className="flex flex-col gap-1 px-5 py-3 hover:bg-base-50 transition-colors"
+                  className="flex flex-col gap-1 px-5 py-3 hover:bg-slate-50 transition-colors"
                 >
-                  <p className="text-xs font-semibold text-primary leading-snug line-clamp-1">
-                    {s.planTitle}
-                  </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-semibold text-primary leading-snug line-clamp-1 flex-1">
+                      {s.planTitle}
+                    </p>
+                    <span className="text-xs text-muted-foreground font-mono shrink-0">
+                      {s.planAuditNo}
+                    </span>
+                  </div>
                   <p className="text-[11px] text-slate-500 leading-snug">{s.sessionTitle}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Clock className="h-3 w-3 text-slate-400 shrink-0" />
@@ -182,14 +192,14 @@ export default function AuditDashboardClient() {
         </div>
 
         {/* Recent Open Findings */}
-        <div className="bg-white border border-base-300 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-base-200 flex items-center gap-2">
+        <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-orange-500" />
             <h2 className="text-sm font-bold text-primary">
               ข้อบกพร่องที่เปิดอยู่ล่าสุด
             </h2>
           </div>
-          <div className="divide-y divide-base-200">
+          <div className="divide-y divide-slate-100">
             {recentFindings.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-8">
                 ไม่มีข้อบกพร่องที่เปิดอยู่
@@ -199,7 +209,7 @@ export default function AuditDashboardClient() {
                 <Link
                   key={f.id}
                   href={`/audit/plans/${f.planId}`}
-                  className="flex flex-col gap-1 px-5 py-3 hover:bg-base-50 transition-colors"
+                  className="flex flex-col gap-1 px-5 py-3 hover:bg-slate-50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-xs font-semibold text-primary leading-snug line-clamp-1 flex-1">

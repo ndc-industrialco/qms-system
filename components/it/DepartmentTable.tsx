@@ -140,10 +140,10 @@ export default function DepartmentTable({ departments }: Props) {
       />
 
       {/* Desktop table */}
-      <div className="hidden md:block card-premium overflow-hidden border border-base-300 rounded-xl shadow-sm">
+      <div className="hidden md:block card-premium overflow-hidden border border-slate-100 rounded-xl shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-base-200">
+            <TableRow className="bg-slate-100">
               <TableHead>{t.colName}</TableHead>
               <TableHead>{t.colEmail}</TableHead>
               <TableHead>{t.colUsers}</TableHead>
@@ -153,7 +153,7 @@ export default function DepartmentTable({ departments }: Props) {
           </TableHeader>
           <TableBody>
             {paginated.map((dept) => (
-              <TableRow key={dept.id} className="text-sm hover:bg-base-200 transition-colors duration-100">
+              <TableRow key={dept.id} className="text-sm hover:bg-slate-100 transition-colors duration-100">
                 <TableCell>
                   <button
                     type="button"
@@ -167,7 +167,7 @@ export default function DepartmentTable({ departments }: Props) {
                   {dept.emailGroup ? (
                     <span className="truncate max-w-45 block">{dept.emailGroup}</span>
                   ) : (
-                    <span className="text-base-300">—</span>
+                    <span className="text-slate-200">—</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -210,7 +210,7 @@ export default function DepartmentTable({ departments }: Props) {
       {/* Mobile cards */}
       <div className="md:hidden flex flex-col gap-3">
         {paginated.map((dept) => (
-          <div key={dept.id} className="card-premium p-4 border border-base-300 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+          <div key={dept.id} className="card-premium p-4 border border-slate-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div>
                 <button
@@ -229,7 +229,7 @@ export default function DepartmentTable({ departments }: Props) {
               {dept.isActive ? (
                 <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-success/15 text-success shrink-0">{t.active}</span>
               ) : (
-                <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-base-200 text-neutral shrink-0">{t.inactive}</span>
+                <span className="inline-block px-2.5 py-0.5 text-[11px] rounded-full font-bold bg-slate-100 text-slate-500 shrink-0">{t.inactive}</span>
               )}
             </div>
             <button

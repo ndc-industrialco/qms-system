@@ -14,6 +14,11 @@ export class NotificationRepository {
     return db.notification.create({ data });
   }
 
+  async createMany(rows: { recipientId: string; recipientAuthUserId?: string | null; title: string; body: string; module: string; resourceId: string; resourceType: string }[]) {
+    if (!rows.length) return { count: 0 };
+    return db.notification.createMany({ data: rows });
+  }
+
   async findByRecipient(recipientId: string, limit = 20) {
     return db.notification.findMany({
       where: { recipientId },

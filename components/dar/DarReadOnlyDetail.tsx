@@ -12,9 +12,10 @@ import DarAttachmentUpload from "./DarAttachmentUpload";
 import DarDraftActions from "./DarDraftActions";
 import QmsDarActions from "./QmsDarActions";
 import Link from "next/link";
-import { 
+import { fmtDate } from "@/lib/format";
+import {
   User, Hash, Building2, Calendar, Target, FileText, FileSignature,
-  MessageSquare, FileStack, Users, Paperclip, Printer
+  MessageSquare, FileStack, Users, Paperclip, Printer, XCircle
 } from "lucide-react";
 
 interface Props {
@@ -38,11 +39,7 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
   const locale = useLocale();
   const isDraft = dar.status === "DRAFT";
 
-  function fmtDate(iso: string) {
-    return new Date(iso).toLocaleDateString(locale === "en" ? "en-GB" : "th-TH", {
-      day: "2-digit", month: "long", year: "numeric",
-    });
-  }
+  const darLocale = locale === "en" ? "en-GB" : "th-TH";
 
   return (
     <div className="space-y-4">
@@ -56,7 +53,7 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
             ) : (
               <p className="text-lg font-semibold text-slate-400">{t("fieldDarNoDraft")}</p>
             )}
-            <p className="text-xs text-slate-400 mt-1 font-mono">{fmtDate(dar.requestDate)}</p>
+            <p className="text-xs text-slate-400 mt-1 font-mono">{fmtDate(dar.requestDate, darLocale)}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <DarStatusBadge status={dar.status} />
@@ -106,7 +103,7 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
           </div>
           <div className="flex flex-col justify-center border-l border-slate-100 pl-6">
             <p className={sectionLabel}><Calendar className="w-3.5 h-3.5" /> {t("fieldDate")}</p>
-            <p className={`${sectionValue}`}>{fmtDate(dar.requestDate)}</p>
+            <p className={`${sectionValue}`}>{fmtDate(dar.requestDate, darLocale)}</p>
           </div>
         </div>
       </div>
@@ -242,6 +239,45 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
           />
         </div>
       </div>
+
+      {/* Rejection reason banner */}
+      {(() => {
+        const rejected = dar.approvals.find((a) => a.action === "REJECTED");
+        if (!rejected) return null;
+        const stepLabel = rejected.stepRole === "REVIEWER" ? "Reviewer"
+          : rejected.stepRole === "APPROVER_MR" ? "MR"
+          : rejected.stepRole;
+        return (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-3 bg-rose-100 border-b border-rose-200">
+              <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span className="text-sm font-bold text-rose-700 uppercase tracking-wide">
+                ถูกปฏิเสธ / Rejected
+              </span>
+            </div>
+            <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-rose-500 uppercase tracking-wide mb-1">ปฏิเสธโดย / Rejected By</p>
+                <p className="text-sm font-medium text-rose-900">{rejected.assignedUser.name ?? "—"} <span className="text-rose-400 font-normal">({stepLabel})</span></p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-rose-500 uppercase tracking-wide mb-1">ขั้นตอน / Step</p>
+                <p className="text-sm font-medium text-rose-900">{stepLabel}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-rose-500 uppercase tracking-wide mb-1">วันที่ / Date</p>
+                <p className="text-sm font-medium text-rose-900">{rejected.actionDate ? fmtDate(rejected.actionDate, darLocale) : "—"}</p>
+              </div>
+              {rejected.comment && (
+                <div className="sm:col-span-3">
+                  <p className="text-xs font-semibold text-rose-500 uppercase tracking-wide mb-1">เหตุผล / Reason</p>
+                  <p className="text-sm text-rose-900 whitespace-pre-wrap bg-white/70 rounded-lg px-4 py-3 border border-rose-100">{rejected.comment}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Approval panel */}
       {!hideApprovalPanel && currentUserId && dar.status !== "DRAFT" && (
