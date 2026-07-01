@@ -120,6 +120,15 @@ jobs:
             export IMAGE_TAG=${IMAGE_TAG}
 
             docker compose pull qms-system
+
+            # Run DB migrations before starting the app
+            echo "⏳ Running database migrations..."
+            docker compose run --rm --no-deps \
+              -e DATABASE_URL \
+              -e DIRECT_DATABASE_URL \
+              qms-system \
+              sh -c 'npx prisma migrate deploy' || true
+
             docker compose up -d --remove-orphans qms-system
 
             docker image prune -f
@@ -127,10 +136,32 @@ jobs:
             echo "✅ Deploy complete — $IMAGE_TAG"
       - name: Health check
         run: |
-          for i in $(seq 1 12); do
-            status=$(curl -sf -o /dev/null -w "%{http_code}" "${{ secrets.APP_URL }}/api/health/ready" || echo "000")
-            [ "$status" = "200" ] && echo "Healthy" && exit 0
-            echo "Attempt $i: $status — waiting 10s..."
-            sleep 10
+          # Wait up to 30s for docker container to be in running state first
+          echo "⏳ Waiting for container to start..."
+          for i in $(seq 1 6); do
+            state=$(docker inspect --format='{{.State.Status}}' qms-system 2>/dev/null || echo "missing")
+            [ "$state" = "running" ] && echo "Container is running" && break
+            echo "  Container state: $state — waiting 5s..."
+            sleep 5
           done
-          echo "Health check failed after 2 minutes" && exit 1
+
+          # Now poll the health endpoint (20 attempts × 15s = 5 minutes)
+          echo "⏳ Polling health endpoint..."
+          for i in $(seq 1 20); do
+            status=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 \
+              "${{ secrets.APP_URL }}/api/health/ready" 2>/dev/null || echo "000")
+            if [ "$status" = "200" ]; then
+              echo "✅ Health check passed on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i: $status — waiting 15s..."
+            sleep 15
+          done
+
+          # Print diagnostic info before failing
+          echo "❌ Health check failed after 5 minutes"
+          echo "--- Container status ---"
+          docker inspect --format='Status: {{.State.Status}} | Health: {{.State.Health.Status}}' qms-system 2>/dev/null || true
+          echo "--- Last 50 lines of container logs ---"
+          docker logs --tail 50 qms-system 2>&1 || true
+          exit 1
