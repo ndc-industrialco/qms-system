@@ -2,8 +2,8 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
-import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
+import { CarExportService } from "@/services/carExportService";
 
 const filterSchema = z.object({
   status:     z.string().optional(),
@@ -33,21 +33,11 @@ export async function GET(req: NextRequest) {
       to:         sp.get("to")         ?? undefined,
     });
 
-    const rows = await db.carMaster.findMany({
-      where: {
-        ...(filter.status     && { status: filter.status as never }),
-        ...(filter.sourceType && { sourceType: filter.sourceType as never }),
-        ...(filter.department && { targetDepartmentName: { contains: filter.department } }),
-        ...(filter.from || filter.to
-          ? { createdAt: { gte: filter.from, lte: filter.to } }
-          : {}),
-      },
-      include: {
-        response:     { select: { rootCauseSummary: true, immediateAction: true, preventiveAction: true, plannedCompletionDate: true, respondedAt: true } },
-        verifications: { orderBy: { round: "asc" }, select: { round: true, result: true, verifiedAt: true, findings: true } },
-        mrSignature:   { select: { mrUserName: true, signedAt: true } },
-      },
-      orderBy: [{ carYear: "desc" }, { sequenceNo: "desc" }],
+    const rows = await exportService.listCars({
+      ...(filter.status && { status: filter.status as never }),
+      ...(filter.sourceType && { sourceType: filter.sourceType as never }),
+      ...(filter.department && { targetDepartmentName: { contains: filter.department } }),
+      ...(filter.from || filter.to ? { createdAt: { gte: filter.from, lte: filter.to } } : {}),
     });
 
     const wb = new ExcelJS.Workbook();
@@ -146,3 +136,5 @@ export async function GET(req: NextRequest) {
     return handleApiError(err);
   }
 }
+
+const exportService = new CarExportService();

@@ -2,8 +2,8 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
-import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
+import { KpiExportService } from "@/services/kpiExportService";
 
 const filterSchema = z.object({
   department: z.string().optional(),
@@ -24,25 +24,11 @@ export async function GET(req: NextRequest) {
       status:     sp.get("status")     ?? undefined,
     });
 
-    const reports = await db.kPIMonthlyReport.findMany({
-      where: {
-        ...(filter.year   && { year: filter.year }),
-        ...(filter.month  && { month: filter.month }),
-        ...(filter.status && { status: filter.status as never }),
-        kpi: filter.department
-          ? { department: { contains: filter.department } }
-          : undefined,
-      },
-      include: {
-        kpi: { select: { department: true, yearly: true } },
-        details: {
-          include: {
-            kpiObjective: { select: { objective: true, target: true, unit: true } },
-            correctiveActions: true,
-          },
-        },
-      },
-      orderBy: [{ year: "desc" }, { month: "asc" }],
+    const reports = await exportService.listMonthlyReports({
+      ...(filter.year && { year: filter.year }),
+      ...(filter.month && { month: filter.month }),
+      ...(filter.status && { status: filter.status as never }),
+      ...(filter.department ? { kpi: { department: { contains: filter.department } } } : {}),
     });
 
     const wb = new ExcelJS.Workbook();
@@ -154,3 +140,5 @@ export async function GET(req: NextRequest) {
     return handleApiError(err);
   }
 }
+
+const exportService = new KpiExportService();

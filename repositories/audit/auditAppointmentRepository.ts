@@ -37,6 +37,25 @@ export class AuditAppointmentRepository extends BaseRepository<AuditAppointment>
     });
   }
 
+  async findForExport(
+    filter: {
+      year?: number;
+      status?: Prisma.AuditAppointmentWhereInput["status"];
+    },
+    tx?: Prisma.TransactionClient,
+  ) {
+    return this.delegate(tx).findMany({
+      where: {
+        ...(filter.year ? { year: filter.year } : {}),
+        ...(filter.status ? { status: filter.status } : {}),
+      },
+      include: {
+        members: { orderBy: { orderIndex: "asc" } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   async countPendingReviewByUser(authUserId: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).count({
       where: { status: "PENDING_REVIEW", reviewerAuthUserId: authUserId },

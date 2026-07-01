@@ -449,7 +449,7 @@ export class DarService {
   private async generateDarNo(deptCode: string, tx: Prisma.TransactionClient): Promise<string> {
     const format = await getDocNoFormat("DAR");
     const year = new Date().getFullYear();
-    const { likePrefix, pad } = buildLikePrefix(format, { dept: deptCode, year });
+    const { likePrefix } = buildLikePrefix(format, { dept: deptCode, year });
     // ponytail: two-arg advisory lock avoids hashtext 32-bit collision; serializes concurrent submits per prefix
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(1984512301, hashtext(${`dar_no_gen_${likePrefix}`}))`;
     const escPrefix = likePrefix.replace(/[$()*+.[\\\]^{|}?]/g, "\\$&");
@@ -542,7 +542,6 @@ export class DarService {
   }
 
   async assignReviewer(darId: string, requester: ActorIdentity, reviewerUserId: string): Promise<DarDetail> {
-    const requesterId = requester.userId;
     const dar = await this.darRepo.findById(darId);
 
     if (!dar) throw new NotFoundError("DAR");

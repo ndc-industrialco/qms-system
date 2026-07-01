@@ -2,8 +2,8 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
-import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
+import { KpiExportService } from "@/services/kpiExportService";
 
 const filterSchema = z.object({
   department: z.string().optional(),
@@ -22,16 +22,10 @@ export async function GET(req: NextRequest) {
       status:     sp.get("status")     ?? undefined,
     });
 
-    const rows = await db.kPI.findMany({
-      where: {
-        ...(filter.department && { department: { contains: filter.department } }),
-        ...(filter.yearly     && { yearly: filter.yearly }),
-        ...(filter.status     && { status: filter.status as never }),
-      },
-      include: {
-        objectives: true,
-      },
-      orderBy: [{ yearly: "desc" }, { department: "asc" }],
+    const rows = await exportService.listKpis({
+      ...(filter.department && { department: { contains: filter.department } }),
+      ...(filter.yearly && { yearly: filter.yearly }),
+      ...(filter.status && { status: filter.status as never }),
     });
 
     const wb = new ExcelJS.Workbook();
@@ -102,3 +96,5 @@ export async function GET(req: NextRequest) {
     return handleApiError(err);
   }
 }
+
+const exportService = new KpiExportService();

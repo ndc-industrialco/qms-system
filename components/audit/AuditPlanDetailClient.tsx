@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { fmtDate } from "@/lib/format";
 import { formatBytes } from "@/lib/formatters";
 import { INPUT_CLASS } from "@/lib/styles";
 import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
@@ -669,7 +668,6 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
   const canSubmit = isPrivileged && plan.status === "DRAFT";
   const canEdit = isPrivileged && (plan.status === "DRAFT" || plan.status === "PLANNED");
   const canManageSchedule = isPrivileged || plan.auditors.some((a) => a.assigneeAuthUserId === userId && a.role === "LEAD");
-  const canAnnounce = isPrivileged && (plan.status === "PLANNED" || plan.status === "ANNOUNCED");
   const canComplete = isPrivileged && (plan.status === "PLANNED" || plan.status === "ANNOUNCED" || plan.status === "IN_PROGRESS" || plan.status === "WAITING_CORRECTIVE");
   const canGenerateReport = isPrivileged && (
     plan.status === "IN_PROGRESS" || plan.status === "WAITING_CORRECTIVE" || plan.status === "READY_TO_CLOSE"

@@ -52,6 +52,16 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     return this.delegate(tx).findFirst({ where: { department, yearly } });
   }
 
+  async findForExport(where: Prisma.KPIWhereInput = {}, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where,
+      include: {
+        objectives: true,
+      },
+      orderBy: [{ yearly: "desc" }, { department: "asc" }],
+    });
+  }
+
   async submitObjectives(
     id: string,
     payload: {

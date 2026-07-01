@@ -206,11 +206,12 @@ export class AuditSignReportService {
           actorUserId: actor.userId,
           actorAuthUserId: actor.authUserId,
           actorRole: actor.role,
-          action: "COMPLETE",
+          action: "UPDATE",
           resourceType: "AUDIT_PLAN",
           resourceId: planId,
           before: { status: plan.status },
           after: { status: "READY_TO_CLOSE" },
+          metadata: { action: "COMPLETE" },
         },
         tx
       );

@@ -8,7 +8,7 @@ import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { getDepartmentByCode, getDepartmentByName } from "@/lib/departmentCache";
 import { ActionTokenService } from "@/services/actionTokenService";
 import { NotFoundError, ValidationError, ForbiddenError } from "@/errors/customErrors";
-import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
+import { getDocNoFormat, renderDocNo } from "@/lib/docNoConfig";
 import type { CarCreateInput, CarUpdateInput, CarRespondInput, CarVerifyInput, CarReviewResponseInput, CarListQuery } from "@/lib/validations/car";
 import type { CarStatus, CarSourceType, VerificationResult } from "@/generated/prisma/client";
 import type { CarListScope } from "@/types/car";

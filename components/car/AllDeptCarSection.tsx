@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import CarStatusBadge from "./CarStatusBadge";
-import { CAR_SOURCE_LABELS, type CarListResponse, type CarSummary } from "@/types/car";
+import { CAR_SOURCE_LABELS, type CarListResponse } from "@/types/car";
 import { fmtDate } from "@/lib/format";
 import Pagination from "@/components/common/Pagination";
 

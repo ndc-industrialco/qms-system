@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "งานตรวจสอบของฉัน - QMS" };
 
 export default async function AuditMyTasksPage() {
-  const session = await requireAuth();
+  await requireAuth();
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">

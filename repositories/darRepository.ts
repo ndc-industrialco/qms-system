@@ -87,6 +87,18 @@ export class DarRepository extends BaseRepository<DarMaster> {
     });
   }
 
+  async findForExport(where: Prisma.DarMasterWhereInput = {}, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where,
+      include: {
+        items: true,
+        approvals: { orderBy: { stepRole: "asc" } },
+        qmsProcessing: true,
+      },
+      orderBy: { requestDate: "desc" },
+    });
+  }
+
   async findManyByRequester(
     requesterId: string,
     skip: number,

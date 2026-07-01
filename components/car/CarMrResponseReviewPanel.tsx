@@ -6,7 +6,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { CheckCircle2, ClipboardList, XCircle, ShieldCheck } from "lucide-react";
 import type { CarDetail } from "@/types/car";
 import type { SignatureType } from "@/types/dar";
-import { toast } from "sonner";
 import ApproveSignatureSection, { type SigMode } from "@/components/shared/ApproveSignatureSection";
 
 import { Button } from "@/components/ui/button";
@@ -259,7 +258,7 @@ interface ActionModalProps {
   onDone: (action: "APPROVED" | "REJECTED") => void;
 }
 
-function ActionModal({ carId, car, token, action, savedSignatureUrl, savedSignatureType, onClose, onDone }: ActionModalProps) {
+function ActionModal({ carId, token, action, savedSignatureUrl, savedSignatureType, onClose, onDone }: ActionModalProps) {
   const isApprove = action === "APPROVED";
   const [comment, setComment] = useState("");
   const [sigDataUrl, setSigDataUrl] = useState<string | null>(null);

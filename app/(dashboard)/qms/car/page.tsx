@@ -1,6 +1,5 @@
 import { requireRole } from "@/lib/auth";
 import { getAuthCenterMe, getAuthCenterUserProfile } from "@/lib/auth-center-admin-client";
-import { redirect } from "next/navigation";
 import { CarService } from "@/services/carService";
 import CarListTable from "@/components/car/CarListTable";
 import CarFormModalTrigger from "@/components/car/CarFormModalTrigger";

@@ -12,7 +12,6 @@ interface Props {
 }
 
 export default function ApproveSuccessCard({ action = "done", title, description, backHref, backLabel = "กลับหน้าหลัก", badge }: Props) {
-  const isApproved = action === "approved";
   const isRejected = action === "rejected";
 
   return (

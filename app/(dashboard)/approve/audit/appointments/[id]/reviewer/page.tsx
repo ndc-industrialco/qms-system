@@ -13,7 +13,7 @@ export default async function AppointmentReviewerPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await requireAuth();
+  await requireAuth();
 
   const { id } = await params;
   const raw = await svc.findById(id);

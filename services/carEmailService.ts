@@ -137,7 +137,14 @@ export function carMailHtml(opts: {
       </div>
     </div>` : "";
 
-  const actionBtn = extraButtons ?? "";
+  const actionBtn = extraButtons
+    ?? (actionLabel && actionUrl
+      ? `<div style="margin-top:20px">
+          <a href="${esc(actionUrl)}" style="display:inline-block;background:#0f1059;color:#ffffff;text-decoration:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700">
+            ${esc(actionLabel)}
+          </a>
+        </div>`
+      : "");
 
   return `
 <div style="width:100%;margin:0;padding:20px 0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif">
@@ -387,7 +394,7 @@ export async function sendCarMrReviewRequestEmail(opts: {
   plannedCompletionDate: string;
   senderAccessToken?: string | null;
 }): Promise<void> {
-  const viewUrl = getAppUrl(`/qms/car/${opts.carId}`);
+  const url = getAppUrl(`/qms/car/${opts.carId}`);
   const dueTh   = fmtDate(opts.plannedCompletionDate);
 
   const html = carMailHtml({
@@ -407,6 +414,8 @@ export async function sendCarMrReviewRequestEmail(opts: {
     },
     closingTh: "กรุณาเข้าสู่ระบบเพื่อตรวจสอบและอนุมัติหรือปฏิเสธแผนการดำเนินการแก้ไข",
     closingEn: "Please log in to the system to review and approve or reject the corrective action plan.",
+    actionLabel: "à¸”à¸¹à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸” / View Details",
+    actionUrl: url,
   });
 
   await sendMail({

@@ -2,8 +2,8 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
-import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
+import { AuditAppointmentExportService } from "@/services/audit/auditAppointmentExportService";
 
 const filterSchema = z.object({
   year:   z.coerce.number().optional(),
@@ -20,15 +20,9 @@ export async function GET(req: NextRequest) {
       status: sp.get("status") ?? undefined,
     });
 
-    const rows = await db.auditAppointment.findMany({
-      where: {
-        ...(filter.year   && { year: filter.year }),
-        ...(filter.status && { status: filter.status as never }),
-      },
-      include: {
-        members: { orderBy: { orderIndex: "asc" } },
-      },
-      orderBy: { createdAt: "desc" },
+    const rows = await exportService.listAppointments({
+      year: filter.year,
+      status: filter.status as never,
     });
 
     const wb = new ExcelJS.Workbook();
@@ -143,3 +137,5 @@ export async function GET(req: NextRequest) {
     return handleApiError(err);
   }
 }
+
+const exportService = new AuditAppointmentExportService();

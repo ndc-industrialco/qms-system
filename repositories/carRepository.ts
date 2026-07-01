@@ -160,6 +160,31 @@ export class CarRepository extends BaseRepository<CarMaster> {
     return this.findManySummary({ targetDepartmentId: departmentId }, tx);
   }
 
+  async findForExport(where: Prisma.CarMasterWhereInput = {}, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where,
+      include: {
+        response: {
+          select: {
+            rootCauseSummary: true,
+            immediateAction: true,
+            preventiveAction: true,
+            plannedCompletionDate: true,
+            respondedAt: true,
+          },
+        },
+        verifications: {
+          orderBy: { round: "asc" },
+          select: { round: true, result: true, verifiedAt: true, findings: true },
+        },
+        mrSignature: {
+          select: { mrUserName: true, signedAt: true },
+        },
+      },
+      orderBy: [{ carYear: "desc" }, { sequenceNo: "desc" }],
+    });
+  }
+
   async paginateSummaries(
     query: CarListQuery,
     scope: { scope: CarListScope; issuerAuthUserId?: string; authDepartmentId?: string | null },

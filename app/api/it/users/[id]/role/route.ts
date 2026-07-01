@@ -8,10 +8,7 @@ import { AuditService } from "@/services/auditService";
 import { ValidationError } from "@/lib/errors";
 import { ALL_QMS_ROLES, normalizeQmsRole, toRenamedQmsRole } from "@/lib/qms-roles";
 import { grantAuthCenterRole, updateAuthCenterUserProfileM2M } from "@/lib/auth-center-admin-client";
-import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { db } from "@/lib/db";
-
-const configRepo = new SystemConfigRepository();
 
 const bodySchema = z.object({
   role: z.enum(ALL_QMS_ROLES).optional(),

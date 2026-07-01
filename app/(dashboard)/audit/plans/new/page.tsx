@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "สร้างแผนการตรวจสอบ - QMS" };
 
 export default async function NewAuditPlanPage() {
-  const session = await requireRole("QMS", "IT", "MR");
+  await requireRole("QMS", "IT", "MR");
 
   const [appointments, standards] = await Promise.all([
     db.auditAppointment.findMany({

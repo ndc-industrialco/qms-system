@@ -221,7 +221,6 @@ function DeptDashboard({
 export default function KpiMonthlyClient({ userRole, userId }: Props) {
   const t = useT();
   const currentYear = new Date().getFullYear();
-  const privileged = isPrivileged(userRole);
 
   const { params, setParam, setParams } = useUrlFilters({
     keys: ["mKpi", "mYear", "mMonth", "mStatus", "mPage", "mReport"],

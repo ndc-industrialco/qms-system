@@ -2,8 +2,8 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
-import { db } from "@/lib/db";
 import ExcelJS from "exceljs";
+import { DarExportService } from "@/services/darExportService";
 
 const filterSchema = z.object({
   status:     z.string().optional(),
@@ -24,20 +24,10 @@ export async function GET(req: NextRequest) {
       to:         sp.get("to")         ?? undefined,
     });
 
-    const rows = await db.darMaster.findMany({
-      where: {
-        ...(filter.status     && { status: filter.status as never }),
-        ...(filter.department && { requesterDepartmentName: { contains: filter.department } }),
-        ...(filter.from || filter.to
-          ? { requestDate: { gte: filter.from, lte: filter.to } }
-          : {}),
-      },
-      include: {
-        items: true,
-        approvals: { orderBy: { stepRole: "asc" } },
-        qmsProcessing: true,
-      },
-      orderBy: { requestDate: "desc" },
+    const rows = await exportService.listDars({
+      ...(filter.status && { status: filter.status as never }),
+      ...(filter.department && { requesterDepartmentName: { contains: filter.department } }),
+      ...(filter.from || filter.to ? { requestDate: { gte: filter.from, lte: filter.to } } : {}),
     });
 
     const wb = new ExcelJS.Workbook();
@@ -112,3 +102,5 @@ export async function GET(req: NextRequest) {
     return handleApiError(err);
   }
 }
+
+const exportService = new DarExportService();

@@ -29,9 +29,7 @@ function buildSignRequestHtml(opts: {
   signedRole: "REVIEWER" | "APPROVER";
 }): string {
   const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : "Reviewer";
-  const rolePath = opts.signedRole === "APPROVER" ? "approver" : "reviewer";
   const yearEn = opts.year - 543;
-  const url = getAppUrl(`/approve/audit/appointments/${opts.appointmentId}/${rolePath}`);
 
   const standardsBadges = opts.standards.length
     ? `<div style="margin-top:16px">
@@ -177,7 +175,7 @@ async function nextAppointmentNo(
 ) {
   const format = await getDocNoFormat("AUDIT_APPT");
   const year = new Date().getFullYear();
-  const { likePrefix, pad } = buildLikePrefix(format, { year });
+  const { likePrefix } = buildLikePrefix(format, { year });
 
   const likePattern = `${likePrefix}%`;
   const startPos = likePrefix.length + 1;

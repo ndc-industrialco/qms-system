@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppQuery } from "@/hooks/use-app-query";
 import { toast } from "sonner";
@@ -71,10 +70,8 @@ const ACHIEVED_STYLES: Record<string, string> = {
 
 export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props) {
   const t = useT();
-  const router = useRouter();
   const qc = useQueryClient();
   const [sigOpen, setSigOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"approve" | "reject" | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -147,7 +144,6 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
       toast.error(error instanceof Error ? error.message : t("common.error"), { duration: Infinity });
     } finally {
       setSubmitting(false);
-      setPendingAction(null);
     }
   }
 
@@ -228,7 +224,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
         <Button
           className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
           disabled={submitting}
-          onClick={() => { setPendingAction("approve"); setSigOpen(true); }}
+          onClick={() => { setSigOpen(true); }}
         >
           {mode === "reviewer" ? t("kpi.monthly.actions.review") : t("kpi.monthly.actions.approve")}
         </Button>
@@ -370,7 +366,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
                 <Button
                   className="w-full rounded-xl bg-primary hover:bg-[#161875] h-11 font-semibold"
                   disabled={submitting}
-                  onClick={() => { setPendingAction("approve"); setSigOpen(true); }}
+                  onClick={() => { setSigOpen(true); }}
                 >
                   {mode === "reviewer" ? t("kpi.monthly.actions.review") : t("kpi.monthly.actions.approve")}
                 </Button>

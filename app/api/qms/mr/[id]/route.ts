@@ -7,10 +7,7 @@ import { ValidationError } from "@/lib/errors";
 import { grantAuthCenterRole } from "@/lib/auth-center-admin-client";
 import { AuditService } from "@/services/auditService";
 import { toRenamedQmsRole, normalizeQmsRole } from "@/lib/qms-roles";
-import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { db } from "@/lib/db";
-
-const configRepo = new SystemConfigRepository();
 
 const bodySchema = z.object({
   role: z.enum(["MR", "USER"]),

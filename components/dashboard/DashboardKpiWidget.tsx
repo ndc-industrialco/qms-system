@@ -8,6 +8,7 @@ const RING_COLORS = { ok: "#10B981", ng: "#EF4444", pending: "#F59E0B" };
 
 export default function DashboardKpiWidget({ kpiOk, kpiNg, kpiPending, kpiTotal }: Props) {
   const t = useT();
+  void kpiTotal;
 
   const legend = [
     { label: "OK",                                  value: kpiOk,      dotClass: "bg-emerald-500", barClass: "bg-emerald-500", textClass: "text-emerald-600" },
