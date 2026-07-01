@@ -8,6 +8,8 @@
     "start": "next start",
     "start:standalone": "node --enable-source-maps .next/standalone/server.js",
     "lint": "eslint",
+    "import:legacy": "tsx scripts/import-legacy-qms.ts",
+    "import:legacy:template": "tsx scripts/generate-legacy-import-template.ts",
     "check:api": "node scripts/check-api-patterns.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

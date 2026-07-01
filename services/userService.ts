@@ -30,11 +30,26 @@ export class UserService {
           createdAt: new Date().toISOString(),
         }));
     } catch {
-      // QMS/MR callers: merge app-members (identity) with role-grants (roles)
-      const [members, grants] = await Promise.all([
-        listAuthCenterAppMembers({ accessToken }),
-        listAuthCenterRoleGrants({ accessToken }),
-      ]);
+      // QMS/MR callers: merge app-members (identity) with role-grants (roles).
+      // role-grants may require higher privilege (IT/admin) — handle gracefully.
+      let members: Awaited<ReturnType<typeof listAuthCenterAppMembers>> = [];
+      let grants: Awaited<ReturnType<typeof listAuthCenterRoleGrants>> = [];
+
+      try {
+        [members, grants] = await Promise.all([
+          listAuthCenterAppMembers({ accessToken }),
+          listAuthCenterRoleGrants({ accessToken }),
+        ]);
+      } catch {
+        // If role-grants is forbidden (403), try fetching members-only without roles
+        try {
+          members = await listAuthCenterAppMembers({ accessToken });
+        } catch {
+          // Both endpoints failed — return empty list instead of crashing the page
+          return [];
+        }
+      }
+
       const rolesByUser = new Map<string, string[]>();
       for (const g of grants) {
         const list = rolesByUser.get(g.userId) ?? [];
