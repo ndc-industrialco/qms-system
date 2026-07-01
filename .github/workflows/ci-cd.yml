@@ -136,29 +136,33 @@ jobs:
             echo "✅ Deploy complete — $IMAGE_TAG"
       - name: Health check
         run: |
-          # Wait up to 30s for docker container to be in running state first
+          # The self-hosted runner runs on the same host as the Docker container.
+          # Using APP_URL (external hostname) fails due to NAT hairpinning — the server
+          # cannot reach its own external URL from localhost.
+          # Instead, use `docker exec` to call the health endpoint from inside the container,
+          # which bypasses all network routing entirely.
+
           echo "⏳ Waiting for container to start..."
-          for i in $(seq 1 6); do
+          for i in $(seq 1 12); do
             state=$(docker inspect --format='{{.State.Status}}' qms-system 2>/dev/null || echo "missing")
-            [ "$state" = "running" ] && echo "Container is running" && break
+            [ "$state" = "running" ] && echo "✅ Container is running" && break
             echo "  Container state: $state — waiting 5s..."
             sleep 5
           done
 
-          # Now poll the health endpoint (20 attempts × 15s = 5 minutes)
-          echo "⏳ Polling health endpoint..."
+          echo "⏳ Polling health endpoint via docker exec..."
           for i in $(seq 1 20); do
-            status=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 \
-              "${{ secrets.APP_URL }}/api/health/ready" 2>/dev/null || echo "000")
+            status=$(docker exec qms-system \
+              wget -qO- --server-response http://localhost:3000/api/health/ready 2>&1 \
+              | awk '/HTTP\//{print $2}' | tail -1 || echo "000")
             if [ "$status" = "200" ]; then
-              echo "✅ Health check passed on attempt $i"
+              echo "✅ Health check passed on attempt $i (status=$status)"
               exit 0
             fi
-            echo "Attempt $i: $status — waiting 15s..."
+            echo "Attempt $i: status=$status — waiting 15s..."
             sleep 15
           done
 
-          # Print diagnostic info before failing
           echo "❌ Health check failed after 5 minutes"
           echo "--- Container status ---"
           docker inspect --format='Status: {{.State.Status}} | Health: {{.State.Health.Status}}' qms-system 2>/dev/null || true
