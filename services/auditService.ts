@@ -19,12 +19,12 @@ export type AuditAction =
   | 'VERIFY_2'
   | 'CLOSE'
   | 'RE_CAR'
-  // Audit module actions
   | 'ASSIGN_AUDITOR'
   | 'ANNOUNCE'
   | 'GENERATE_REPORT'
   | 'SIGN'
-  | 'REOPEN';
+  | 'REOPEN'
+  | 'DOWNLOAD';
 
 export type AuditResourceType =
   | 'KPI'

@@ -89,6 +89,7 @@ export function UploadRevisionDialog({
     onSuccess: () => {
       toast.success(t('documentControl.messages.uploadSuccess'));
       reset();
+      setDarSearch('');
       if (fileInputRef.current) fileInputRef.current.value = '';
       onClose();
       onSuccess?.();
@@ -128,7 +129,7 @@ export function UploadRevisionDialog({
   return (
     <ResponsiveFormOverlay
       open={open}
-      onOpenChange={(value) => { if (!value) onClose(); }}
+      onOpenChange={(value) => { if (!value) { onClose(); setDarSearch(''); } }}
       title={t('documentControl.button.uploadRevision')}
       description={t('documentControl.uploadRevisionDesc')}
       desktopContentClassName="w-[min(96vw,48rem)] max-w-xl rounded-2xl"

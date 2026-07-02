@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { DocumentControlService } from '@/services/documentControlService';
@@ -6,28 +5,31 @@ import { handleApiError } from '@/lib/apiErrorHandler';
 import { NotFoundError, ValidationError } from '@/lib/errors';
 import { getFileInfo } from '@/lib/sharepoint';
 import { AuditService } from '@/services/auditService';
+import { z } from 'zod';
 
 const docService = new DocumentControlService();
 
-type Params = { params: Promise<{ id: string }> };
+type Params = { params: Promise<{ id: string; revisionId: string }> };
+
+const paramsSchema = z.object({
+  id: z.string().min(1, 'id is required'),
+  revisionId: z.string().min(1, 'revisionId is required'),
+});
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const session = await requireAuth();
-    const { id } = await params;
+    const rawParams = await params;
+    const { id, revisionId } = paramsSchema.parse(rawParams);
 
     const doc = await docService.getDocument(id);
-
     if (doc.status !== 'ACTIVE') {
       throw new ValidationError('เอกสารนี้ถูกยกเลิกหรือยังไม่เปิดใช้งาน ไม่สามารถดาวน์โหลดได้');
     }
 
-    // Find latest ACTIVE revision; fall back to the most-recent revision
-    const latestRevision = (doc.revisions ?? []).find((r: any) => r.status === 'ACTIVE')
-      ?? doc.revisions?.[0];
-
-    if (!latestRevision) {
-      throw new NotFoundError('No downloadable revision found');
+    const revision = (doc.revisions ?? []).find((r) => r.id === revisionId);
+    if (!revision) {
+      throw new NotFoundError('Revision not found');
     }
 
     // Log the download action in AuditLog
@@ -38,12 +40,9 @@ export async function GET(req: NextRequest, { params }: Params) {
       action: 'DOWNLOAD',
       resourceType: 'DOCUMENT',
       resourceId: id,
-      after: { docNumber: doc.docNumber, docName: doc.docName, revision: latestRevision.revision },
+      after: { docNumber: doc.docNumber, docName: doc.docName, revision: revision.revision },
     });
 
-    // Prefer a fresh @microsoft.graph.downloadUrl fetched on-demand so that
-    // the link never expires (Graph pre-signed URLs are only valid for ~1 hour).
-    const revision = latestRevision as typeof latestRevision & { spItemId?: string | null };
     if (revision.spItemId) {
       const info = await getFileInfo(revision.spItemId);
       if (info.downloadUrl) {
@@ -51,9 +50,8 @@ export async function GET(req: NextRequest, { params }: Params) {
       }
     }
 
-    // Fallback: use the stored URL (may be stale for old records without spItemId)
-    if (latestRevision.spDownloadUrl) {
-      return NextResponse.redirect(latestRevision.spDownloadUrl);
+    if (revision.spDownloadUrl) {
+      return NextResponse.redirect(revision.spDownloadUrl);
     }
 
     throw new NotFoundError('No downloadable revision found');
