@@ -36,6 +36,7 @@ export interface DocumentControlRevisionDetail {
   revision: string;
   effectiveDate: string | null;
   status: DocControlStatus;
+  spItemId: string | null;
   spWebUrl: string | null;
   spDownloadUrl: string | null;
   spFolderPath: string | null;
@@ -47,6 +48,7 @@ export interface DocumentControlRevisionDetail {
 }
 
 export interface DocumentControlDetail extends DocumentControlSummary {
+  spItemId: string | null;
   spWebUrl: string | null;
   spDownloadUrl: string | null;
   spFolderPath: string | null;

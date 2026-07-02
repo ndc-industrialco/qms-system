@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { DocumentControlService } from '@/services/documentControlService';
 import { handleApiError } from '@/lib/apiErrorHandler';
 import { NotFoundError } from '@/lib/errors';
+import { getFileInfo } from '@/lib/sharepoint';
 
 const docService = new DocumentControlService();
 
@@ -16,15 +17,30 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     const doc = await docService.getDocument(id);
 
-    // Find latest ACTIVE revision
+    // Find latest ACTIVE revision; fall back to the most-recent revision
     const latestRevision = (doc.revisions ?? []).find((r: any) => r.status === 'ACTIVE')
       ?? doc.revisions?.[0];
 
-    if (!latestRevision?.spDownloadUrl) {
+    if (!latestRevision) {
       throw new NotFoundError('No downloadable revision found');
     }
 
-    return NextResponse.redirect(latestRevision.spDownloadUrl);
+    // Prefer a fresh @microsoft.graph.downloadUrl fetched on-demand so that
+    // the link never expires (Graph pre-signed URLs are only valid for ~1 hour).
+    const revision = latestRevision as typeof latestRevision & { spItemId?: string | null };
+    if (revision.spItemId) {
+      const info = await getFileInfo(revision.spItemId);
+      if (info.downloadUrl) {
+        return NextResponse.redirect(info.downloadUrl);
+      }
+    }
+
+    // Fallback: use the stored URL (may be stale for old records without spItemId)
+    if (latestRevision.spDownloadUrl) {
+      return NextResponse.redirect(latestRevision.spDownloadUrl);
+    }
+
+    throw new NotFoundError('No downloadable revision found');
   } catch (err) {
     return handleApiError(err);
   }

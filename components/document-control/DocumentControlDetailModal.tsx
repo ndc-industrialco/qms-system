@@ -78,6 +78,28 @@ export function DocumentControlDetailModal({
     queryClient.invalidateQueries({ queryKey: ['documents'] });
   };
 
+  // Opens a fresh (non-expired) download URL for the latest revision via the server route.
+  const handleDocDownload = () => {
+    window.open(`/api/document-controls/${documentId}/download-latest`, '_blank');
+  };
+
+  // Fetches a fresh Graph API pre-signed URL for a specific revision by spItemId.
+  const handleRevisionDownload = async (spItemId: string | null, fallbackUrl: string | null) => {
+    if (spItemId) {
+      try {
+        const res = await fetch(`/api/sharepoint/get-file?itemId=${encodeURIComponent(spItemId)}`);
+        const json = await res.json();
+        if (json?.data?.downloadUrl) {
+          window.open(json.data.downloadUrl, '_blank');
+          return;
+        }
+      } catch {
+        // fall through to fallback
+      }
+    }
+    if (fallbackUrl) window.open(fallbackUrl, '_blank');
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -176,7 +198,7 @@ export function DocumentControlDetailModal({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(document.spDownloadUrl!, '_blank')}
+                      onClick={handleDocDownload}
                       className="rounded-xl h-9"
                     >
                       {t('documentControl.button.download')}
@@ -292,7 +314,7 @@ export function DocumentControlDetailModal({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => window.open(document.spDownloadUrl!, '_blank')}
+                            onClick={handleDocDownload}
                             className="rounded-xl"
                           >
                             {t('documentControl.button.download')}
@@ -368,7 +390,7 @@ export function DocumentControlDetailModal({
                                     <Button
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => window.open(rev.spDownloadUrl!, '_blank')}
+                                      onClick={() => handleRevisionDownload(rev.spItemId, rev.spDownloadUrl)}
                                       className="h-8 text-[#0F1059] hover:bg-slate-100 text-xs"
                                     >
                                       {t('documentControl.button.download')}

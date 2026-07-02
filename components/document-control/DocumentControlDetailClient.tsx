@@ -54,6 +54,29 @@ export function DocumentControlDetailClient({
     },
   });
 
+  // Opens a fresh (non-expired) download URL for the latest revision.
+  const handleDocDownload = () => {
+    window.open(`/api/document-controls/${document.id}/download-latest`, '_blank');
+  };
+
+  // Fetches a fresh Graph API pre-signed URL for a specific revision by spItemId.
+  const handleRevisionDownload = async (spItemId: string | null, fallbackUrl: string | null) => {
+    if (spItemId) {
+      try {
+        const res = await fetch(`/api/sharepoint/get-file?itemId=${encodeURIComponent(spItemId)}`);
+        const json = await res.json();
+        if (json?.data?.downloadUrl) {
+          window.open(json.data.downloadUrl, '_blank');
+          return;
+        }
+      } catch {
+        // fall through to fallback
+      }
+    }
+    if (fallbackUrl) window.open(fallbackUrl, '_blank');
+  };
+
+
   return (
     <>
       <div className="space-y-6">
@@ -75,7 +98,7 @@ export function DocumentControlDetailClient({
           <div className="flex gap-2 flex-wrap">
             {document.spDownloadUrl && (
               <Button
-                onClick={() => window.open(document.spDownloadUrl!, '_blank')}
+                onClick={handleDocDownload}
                 variant="outline"
                 className="h-11 rounded-xl"
               >
@@ -175,7 +198,7 @@ export function DocumentControlDetailClient({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => window.open(document.spDownloadUrl!, '_blank')}
+                  onClick={handleDocDownload}
                 >
                   {t('documentControl.button.download')}
                 </Button>
@@ -229,7 +252,7 @@ export function DocumentControlDetailClient({
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => window.open(rev.spDownloadUrl!, '_blank')}
+                            onClick={() => handleRevisionDownload(rev.spItemId, rev.spDownloadUrl)}
                             className="text-primary hover:bg-slate-100 h-9"
                           >
                             {t('documentControl.button.download')}
