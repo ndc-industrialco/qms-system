@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { requireRole } from '@/lib/auth';
+import { requireRoleEdge } from '@/lib/auth';
 import { DocumentControlService } from '@/services/documentControlService';
 import { uploadRevisionSchema } from '@/schemas/documentControlSchema';
 import { sendSuccess } from '@/lib/apiResponse';
@@ -13,8 +13,8 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const formData = await req.clone().formData();
-    const session = await requireRole('QMS', 'IT', 'MR');
+    const session = await requireRoleEdge(req, 'QMS', 'IT', 'MR');
+    const formData = await req.formData();
     const { id } = await params;
     const file = formData.get('file') as File | null;
     const metadata = formData.get('metadata') as string | null;

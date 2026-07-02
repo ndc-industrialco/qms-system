@@ -1,14 +1,14 @@
 
 import { NextResponse, type NextRequest } from "next/server";
-import { requireRole } from "@/lib/auth";
+import { requireRoleEdge } from "@/lib/auth";
 import { uploadFile } from "@/lib/sharepoint";
 import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.clone().formData();
-    await requireRole("QMS", "MR", "IT");
+    await requireRoleEdge(req, "QMS", "MR", "IT");
+    const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const folderPath = (formData.get("folderPath") as string | null) ?? (formData.get("path") as string | null) ?? "root";
 

@@ -1,7 +1,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { requireAuth } from "@/lib/auth";
+import { requireAuthEdge } from "@/lib/auth";
 import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { uploadFileToTemp } from "@/services/sharepoint";
@@ -35,8 +35,8 @@ const querySchema = z.object({ tempId: z.string().uuid() });
 
 export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<TempAttachmentResponse>>> {
   try {
-    const formData = await req.clone().formData();
-    await requireAuth();
+    await requireAuthEdge(req);
+    const formData = await req.formData();
 
     const { searchParams } = req.nextUrl;
     const parsed = querySchema.safeParse({ tempId: searchParams.get("tempId") });

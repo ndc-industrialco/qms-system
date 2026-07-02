@@ -1,4 +1,4 @@
-import { requireAuth } from "@/lib/auth";
+import { requireAuthEdge } from "@/lib/auth";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ValidationError, ForbiddenError, NotFoundError } from "@/lib/errors";
@@ -33,8 +33,8 @@ function detectMimeFromBuffer(buf: Buffer): string | null {
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.clone().formData();
-    const session = await requireAuth();
+    const session = await requireAuthEdge(req);
+    const formData = await req.formData();
     const file = formData.get("file");
     const planId = formData.get("planId");
     const resourceType = (formData.get("resourceType") as string | null) ?? "PLAN";

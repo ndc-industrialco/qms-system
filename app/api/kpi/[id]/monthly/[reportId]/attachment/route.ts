@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { requireAuth } from '@/lib/auth';
+import { requireAuthEdge } from '@/lib/auth';
 import { ValidationError } from '@/errors/customErrors';
 import { monthlyAttachmentUploadSchema } from '@/schemas/kpiSchema';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
@@ -10,8 +10,8 @@ const service = new KpiMonthlyService();
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   try {
-    const formData = await request.clone().formData();
-    const session = await requireAuth();
+    const session = await requireAuthEdge(request);
+    const formData = await request.formData();
     const { reportId } = await params;
     const file = formData.get('file') as File | null;
 

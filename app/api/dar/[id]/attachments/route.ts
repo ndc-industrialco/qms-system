@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAuthEdge } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ValidationError } from "@/lib/errors";
 import { DarService } from "@/services/darService";
@@ -14,8 +14,8 @@ const darService = new DarService();
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const formData = await req.clone().formData();
-    const session = await requireAuth();
+    const session = await requireAuthEdge(req);
+    const formData = await req.formData();
     const { id: darId } = paramSchema.parse(await params);
     const file = formData.get("file");
     if (!(file instanceof File)) throw new ValidationError("ไม่พบไฟล์ในคำขอ");

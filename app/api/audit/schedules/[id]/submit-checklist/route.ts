@@ -1,4 +1,4 @@
-import { requireAuth } from "@/lib/auth";
+import { requireAuthEdge } from "@/lib/auth";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
@@ -21,8 +21,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const formData = await req.clone().formData();
-    const session = await requireAuth();
+    const session = await requireAuthEdge(req);
+    const formData = await req.formData();
     const { id: scheduleId } = await params;
 
     const schedule = await scheduleRepo.findWithPlan(scheduleId);

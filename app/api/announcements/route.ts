@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth";
+import { requireRole, requireRoleEdge } from "@/lib/auth";
 import { AnnouncementService } from "@/services/announcementService";
 import { createAnnouncementSchema } from "@/schemas/announcementSchema";
 import { sendSuccess } from "@/lib/apiResponse";
@@ -22,8 +22,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.clone().formData();
-    const session = await requireRole("QMS", "IT", "MR");
+    const session = await requireRoleEdge(req, "QMS", "IT", "MR");
+    const formData = await req.formData();
 
     const emailGroupMailsRaw = formData.get("emailGroupMails");
     const emailGroupMails: string[] = emailGroupMailsRaw

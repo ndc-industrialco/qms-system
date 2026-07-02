@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAuthEdge } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ValidationError, NotFoundError, ForbiddenError } from "@/errors/customErrors";
 import { CarAttachmentRepository } from "@/repositories/carAttachmentRepository";
@@ -27,8 +27,8 @@ export async function POST(
   { params }: { params: Promise<{ responseId: string }> },
 ) {
   try {
-    const formData = await req.clone().formData();
-    const session = await requireAuth();
+    const session = await requireAuthEdge(req);
+    const formData = await req.formData();
     const { responseId } = await params;
 
     const response = await repo.findResponseWithCar(responseId);
