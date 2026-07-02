@@ -1,5 +1,19 @@
 [
   {
+    "id": "9",
+    "titleTh": "จำกัดสิทธิ์การเลือกผู้อนุมัติ MR ให้เฉพาะกลุ่มบทบาท QMS_MR เท่านั้น",
+    "titleEn": "Restricted MR Approver candidates strictly to QMS_MR role",
+    "date": "2026-07-02",
+    "type": "improvement",
+    "commit": "fix/restrict-mr-candidates-role",
+    "detailsTh": [
+      "แก้ไขหน้าตั้งค่าผู้อนุมัติอัตโนมัติให้กรองเฉพาะผู้ใช้ที่มีบทบาท MR (QMS_MR) สำหรับตัวเลือกผู้แทนฝ่ายบริหาร"
+    ],
+    "detailsEn": [
+      "Updated approval configuration dropdowns to filter candidate users strictly by the MR role."
+    ]
+  },
+  {
     "id": "8",
     "titleTh": "ยกเลิกการใช้ req.clone().formData() เป็น req.formData() มาตรฐาน",
     "titleEn": "Replaced req.clone().formData() with standard req.formData()",

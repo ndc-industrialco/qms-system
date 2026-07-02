@@ -137,7 +137,7 @@ export default function ApprovalConfigClient() {
   }
 
   // Filter users with specific roles to make selection clean
-  const mrCandidates = data.users.filter((u) => u.role === "MR" || u.role === "QMS");
+  const mrCandidates = data.users.filter((u) => u.role === "MR");
   const qmsCandidates = data.users.filter((u) => u.role === "QMS");
 
   // Fallback to all users if the role lists are empty
