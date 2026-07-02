@@ -1,4 +1,4 @@
-﻿import NextAuth from "next-auth";
+import NextAuth from "next-auth";
 import { authConfig } from "@/lib/auth.config";
 import { NextResponse, type NextRequest } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
@@ -91,7 +91,9 @@ export default auth(async (req) => {
     }
 
     logRequest(req.method, path, 200, ip, requestId, session?.user?.id);
-    const res = NextResponse.next({ request: { headers: requestHeaders } });
+    const res = ["GET", "HEAD"].includes(req.method)
+      ? NextResponse.next({ request: { headers: requestHeaders } })
+      : NextResponse.next();
     res.headers.set("X-RateLimit-Limit", String(result.limit));
     res.headers.set("X-RateLimit-Remaining", String(result.remaining));
     return withRequestId(res, requestId);
@@ -101,7 +103,10 @@ export default auth(async (req) => {
     if (session?.user && path === "/auth/login") {
       return withRequestId(NextResponse.redirect(new URL("/", req.url)), requestId);
     }
-    return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId);
+    const res = ["GET", "HEAD"].includes(req.method)
+      ? NextResponse.next({ request: { headers: requestHeaders } })
+      : NextResponse.next();
+    return withRequestId(res, requestId);
   }
 
   if (!session?.user) {
@@ -140,7 +145,10 @@ export default auth(async (req) => {
   }
 
   logRequest(req.method, path, 200, ip, requestId, session?.user?.id);
-  return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId);
+  const res = ["GET", "HEAD"].includes(req.method)
+    ? NextResponse.next({ request: { headers: requestHeaders } })
+    : NextResponse.next();
+  return withRequestId(res, requestId);
 });
 
 export const config = {
