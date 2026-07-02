@@ -56,8 +56,18 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<T
       return NextResponse.json({ data: null, error: "ประเภทไฟล์ไม่รองรับ" }, { status: 400 });
     }
 
+    const rawFilename = (formData.get("filename") as string | null) || file.name;
+    let fileName = rawFilename;
+    try {
+      if (rawFilename.includes("%")) {
+        fileName = decodeURIComponent(rawFilename);
+      }
+    } catch {
+      // ignore
+    }
+
     const buffer = new Uint8Array(await file.arrayBuffer());
-    const sp = await uploadFileToTemp({ fileBuffer: buffer, fileName: file.name, mimeType: file.type, tempId });
+    const sp = await uploadFileToTemp({ fileBuffer: buffer, fileName, mimeType: file.type, tempId });
 
     return NextResponse.json({
       data: {
@@ -65,7 +75,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<T
         spWebUrl: sp.spWebUrl,
         spDownloadUrl: sp.spDownloadUrl,
         folderPath: sp.folderPath,
-        fileName: file.name,
+        fileName,
         fileSize: file.size,
         mimeType: file.type,
         tempId,

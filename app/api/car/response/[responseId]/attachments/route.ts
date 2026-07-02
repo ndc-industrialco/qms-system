@@ -51,11 +51,23 @@ export async function POST(
     if (file.size > MAX_SIZE) throw new ValidationError("ไฟล์ต้องมีขนาดไม่เกิน 20 MB");
     if (!ALLOWED_MIME.has(file.type)) throw new ValidationError("ประเภทไฟล์ไม่รองรับ");
 
-    const buffer = new Uint8Array(await file.arrayBuffer());
+    const rawFilename = (formData.get("filename") as string | null) || file.name;
+    let fileName = rawFilename;
+    try {
+      if (rawFilename.includes("%")) {
+        fileName = decodeURIComponent(rawFilename);
+      }
+    } catch {
+      // ignore
+    }
+
+    const safeFile = new File([file], fileName, { type: file.type });
+
+    const buffer = new Uint8Array(await safeFile.arrayBuffer());
     const sp = await uploadFileToCarResponse({
       fileBuffer: buffer,
-      fileName: file.name,
-      mimeType: file.type,
+      fileName: safeFile.name,
+      mimeType: safeFile.type,
       carNo: car.carNo,
     });
 
@@ -66,9 +78,9 @@ export async function POST(
 
       attachment = await repo.createAttachment({
         carResponseId: responseId,
-        fileName: file.name,
-        fileSize: file.size,
-        mimeType: file.type,
+        fileName: safeFile.name,
+        fileSize: safeFile.size,
+        mimeType: safeFile.type,
         spItemId: sp.spItemId,
         spWebUrl: sp.spWebUrl,
         spDownloadUrl: sp.spDownloadUrl,

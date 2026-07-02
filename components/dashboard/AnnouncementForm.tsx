@@ -25,7 +25,10 @@ export default function AnnouncementForm() {
       let attachmentData = null;
       if (file) {
         const fileData = new FormData();
-        fileData.append("file", file);
+        // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+        const safeName = encodeURIComponent(file.name);
+        fileData.append("file", file, safeName);
+        fileData.append("filename", file.name);
         fileData.append("path", "Announcements");
         
         const uploadRes = await fetch("/api/sharepoint/upload-file", {

@@ -5,6 +5,7 @@ import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 const announcementService = new AnnouncementService();
 const toggleSchema = z.object({ active: z.boolean() });
@@ -46,6 +47,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
       textColor: parsed.textColor,
     });
 
+    revalidatePath("/");
+    revalidatePath("/announcements");
+
     return sendSuccess(result, "Announcement updated successfully");
   } catch (error) {
     return handleApiError(error);
@@ -61,6 +65,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const parsed = toggleSchema.parse(body);
 
     const result = await announcementService.toggleAnnouncementActive(id, parsed.active);
+
+    revalidatePath("/");
+    revalidatePath("/announcements");
+
     return sendSuccess(result, "Announcement active status toggled successfully");
   } catch (error) {
     return handleApiError(error);
@@ -73,6 +81,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     await requireRole("QMS", "IT", "MR");
 
     await announcementService.deleteAnnouncement(id);
+
+    revalidatePath("/");
+    revalidatePath("/announcements");
+
     return sendSuccess({ id }, "Announcement deleted successfully");
   } catch (error) {
     return handleApiError(error);

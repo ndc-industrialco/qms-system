@@ -26,24 +26,36 @@ export async function POST(req: NextRequest, { params }: Params) {
     const data = JSON.parse(metadata);
     const validatedData = uploadRevisionSchema.parse(data);
 
-    if (file.size > MAX_FILE_SIZE) {
+    const rawFilename = (formData.get("filename") as string | null) || file.name;
+    let fileName = rawFilename;
+    try {
+      if (rawFilename.includes("%")) {
+        fileName = decodeURIComponent(rawFilename);
+      }
+    } catch {
+      // ignore
+    }
+
+    const safeFile = new File([file], fileName, { type: file.type });
+
+    if (safeFile.size > MAX_FILE_SIZE) {
       throw new ValidationError(`File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`);
     }
 
-    if (!ALLOWED_MIME.has(file.type)) {
-      throw new ValidationError(`File type ${file.type} is not allowed`);
+    if (!ALLOWED_MIME.has(safeFile.type)) {
+      throw new ValidationError(`File type ${safeFile.type} is not allowed`);
     }
 
-    const buffer = await file.arrayBuffer();
+    const buffer = await safeFile.arrayBuffer();
     const fileBuffer = new Uint8Array(buffer);
-    if (!hasValidMagicBytes(fileBuffer, file.type)) {
+    if (!hasValidMagicBytes(fileBuffer, safeFile.type)) {
       throw new ValidationError('File signature does not match its type');
     }
 
     const doc = await docService.addRevision(id, session.user.id, validatedData, {
       buffer: fileBuffer,
-      name: file.name,
-      type: file.type,
+      name: safeFile.name,
+      type: safeFile.type,
     }, session.user.authUserId);
 
     return sendSuccess(doc, 'Document revision uploaded successfully');

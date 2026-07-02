@@ -46,7 +46,10 @@ export function useCreateAnnouncement(
 
   async function uploadToSharePoint(f: File, path: string) {
     const fd = new FormData();
-    fd.append("file", f);
+    // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+    const safeName = encodeURIComponent(f.name);
+    fd.append("file", f, safeName);
+    fd.append("filename", f.name);
     fd.append("path", path);
     const res = await fetch("/api/sharepoint/upload-file", { method: "POST", body: fd });
     if (!res.ok) throw new Error("Upload failed");

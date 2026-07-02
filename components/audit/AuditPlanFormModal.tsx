@@ -311,7 +311,10 @@ export default function AuditPlanFormModal({ open, onClose, onSuccess }: Props) 
       // 3. Upload file if present
       if (formData.file) {
         const fd = new FormData();
-        fd.append("file", formData.file);
+        // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+        const safeName = encodeURIComponent(formData.file.name);
+        fd.append("file", formData.file, safeName);
+        fd.append("filename", formData.file.name);
         fd.append("planId", plan.id);
         fd.append("resourceType", "PLAN");
         fd.append("resourceId", plan.id);

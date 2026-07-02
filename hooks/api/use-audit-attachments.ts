@@ -9,7 +9,9 @@ async function uploadAttachment(
   file: File,
 ): Promise<AuditAttachmentRow> {
   const form = new FormData();
-  form.append("file", file);
+  const safeName = encodeURIComponent(file.name);
+  form.append("file", file, safeName);
+  form.append("filename", file.name);
   form.append("planId", planId);
   form.append("resourceType", "PLAN");
   form.append("resourceId", planId);

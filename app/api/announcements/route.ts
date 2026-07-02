@@ -6,6 +6,7 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { sendAnnouncementEmail } from "@/services/email";
 import { logger } from "@/lib/logger";
 import { type NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 
 const announcementService = new AnnouncementService();
 
@@ -84,6 +85,9 @@ export async function POST(req: NextRequest) {
         announcementId: result.id,
       }).catch((err: unknown) => logger.warn("[announcements] Email send failed", { err: err instanceof Error ? err.message : String(err) }));
     }
+
+    revalidatePath("/");
+    revalidatePath("/announcements");
 
     return sendSuccess(result, "Announcement created successfully", 201);
   } catch (error) {

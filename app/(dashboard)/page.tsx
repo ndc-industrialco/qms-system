@@ -18,7 +18,7 @@ export default async function CompanyCenterDashboard() {
   const currentYear = now.getFullYear();
 
   const activeFilter = {
-    pushToCompanyCenter: true,
+    status: "ACTIVE",
     OR: [{ startDate: null }, { startDate: { lte: now } }],
     AND: [{ OR: [{ endDate: null }, { endDate: { gte: now } }] }],
   };

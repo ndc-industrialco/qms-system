@@ -20,7 +20,10 @@ export default function CarAttachmentUpload({ carResponseId, onUploaded }: Props
     setError(null);
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+      const safeName = encodeURIComponent(file.name);
+      formData.append("file", file, safeName);
+      formData.append("filename", file.name);
 
       const res = await fetch(`/api/car/response/${carResponseId}/attachments`, {
         method: "POST",

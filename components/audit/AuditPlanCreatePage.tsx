@@ -663,7 +663,10 @@ export function AuditPlanCreatePage({ appointments, dbStandards }: Props) {
 
       if (form.file) {
         const fd = new FormData();
-        fd.append("file", form.file);
+        // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+        const safeName = encodeURIComponent(form.file.name);
+        fd.append("file", form.file, safeName);
+        fd.append("filename", form.file.name);
         fd.append("planId", plan.id);
         fd.append("resourceType", "PLAN");
         fd.append("resourceId", plan.id);

@@ -447,7 +447,10 @@ export default function DarAttachmentUpload(props: Props) {
       const errors: string[] = [];
       await Promise.all(files.map(async (file) => {
         const form = new FormData();
-        form.append("file", file);
+        // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+        const safeName = encodeURIComponent(file.name);
+        form.append("file", file, safeName);
+        form.append("filename", file.name);
         try {
           if (props.mode === "saved") {
             const res = await fetch(`/api/dar/${props.darId}/attachments`, { method: "POST", body: form });
