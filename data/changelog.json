@@ -1,0 +1,82 @@
+[
+  {
+    "id": "1",
+    "titleTh": "แก้ไขสิทธิ์ประกาศหน้าหลัก และลบตัวกรองศูนย์กลาง",
+    "titleEn": "Announcement Hub Bypass & Home Feed Fix",
+    "date": "2026-07-02",
+    "type": "improvement",
+    "commit": "93299ee",
+    "detailsTh": [
+      "นำเงื่อนไข pushToCompanyCenter ออกจากการกรองประกาศ ทำให้ข่าวสารและประกาศโชว์บนหน้าหลัก Dashboard ทุกรายการ",
+      "เพิ่มระบบตรวจสอบสถานะข้อมูลระบบ (System Info) บันทึกและดึงรหัส Git Commit SHA ล่าสุดมาแสดงผลโดยอัตโนมัติเมื่อทำการ Deploy"
+    ],
+    "detailsEn": [
+      "Removed pushToCompanyCenter filter from the main Dashboard query, allowing all active announcements to be displayed.",
+      "Integrated Git Commit SHA and Build Time extraction into the Docker build process for system diagnostics."
+    ]
+  },
+  {
+    "id": "2",
+    "titleTh": "แก้ไขบั๊ก Response Body Stream Lock (Next.js 15 / NextAuth v5)",
+    "titleEn": "Fix Request Body Disturbed & Locked Exception",
+    "date": "2026-07-02",
+    "type": "bugfix",
+    "commit": "f367e86",
+    "detailsTh": [
+      "แก้ไขปัญหา TypeError: Response body object should not be disturbed or locked",
+      "นำคำสั่ง req.clone().formData() มาใช้ใน API อัปโหลดไฟล์ทั้ง 9 เส้นทาง เพื่อแยกการทำงานของ Stream ระหว่างระบบเช็กความปลอดภัย (NextAuth) และระบบประมวลผลไฟล์ ป้องกันการชนกันของสายข้อมูลไฟล์อัปโหลด"
+    ],
+    "detailsEn": [
+      "Resolved TypeError: Response body object should not be disturbed or locked when uploading files.",
+      "Replaced req.formData() with req.clone().formData() in all 9 file upload routes, separating the request stream from middleware authentication."
+    ]
+  },
+  {
+    "id": "3",
+    "titleTh": "ปรับปรุงตัวกรองประกาศหน้าแรก และระบบล้างแคชอัตโนมัติ",
+    "titleEn": "Active Announcement Filtering & Cache Purging",
+    "date": "2026-07-02",
+    "type": "improvement",
+    "commit": "5ad007d",
+    "detailsTh": [
+      "เพิ่มเงื่อนไข status: 'ACTIVE' ในตัวกรองหน้าแรก ช่วยป้องกันการแสดงผลประกาศที่ถูก 'ปิดใช้งาน' แล้วค้างอยู่บน Dashboard",
+      "เพิ่มคำสั่ง revalidatePath สำหรับเคลียร์แคช Next.js หน้าแรก (/) และหน้ารวมประกาศ (/announcements) ทุกครั้งที่มีการบันทึก สร้าง หรือลบข้อมูลใน API ทำให้ข้อมูลหน้าหลักแสดงผลทันทีหลังการเปลี่ยนแปลง"
+    ],
+    "detailsEn": [
+      "Added status: 'ACTIVE' to the main dashboard query to prevent inactive announcements from displaying.",
+      "Integrated revalidatePath for the main page and public announcements route to trigger immediate Next.js cache purging on data changes."
+    ]
+  },
+  {
+    "id": "4",
+    "titleTh": "แก้บั๊กการอัปโหลดไฟล์ที่มีชื่อเป็นภาษาไทย (Multipart Non-ASCII Bug)",
+    "titleEn": "Thai / Non-ASCII Filename Upload Crash Fix",
+    "date": "2026-07-01",
+    "type": "bugfix",
+    "commit": "273ea43",
+    "detailsTh": [
+      "แก้ปัญหา API แครช TypeError: Failed to parse body as FormData เมื่อผู้ใช้อัปโหลดไฟล์ภาษาไทย",
+      "ทำระบบเข้ารหัสชื่อไฟล์ (Percent-Encoding) ที่หน้าบ้าน และส่งชื่อไฟล์จริงในพารามิเตอร์แยก ก่อนถอดรหัสในหลังบ้านเพื่อรองรับอักษรภาษาไทยอย่างสมบูรณ์ครอบคลุมทุกโมดูล (DAR, CAR, Audit, KPI และเอกสารควบคุม)"
+    ],
+    "detailsEn": [
+      "Fixed TypeError: Failed to parse body as FormData when uploading files containing Thai/non-ASCII characters.",
+      "Implemented client-side percent-encoding and server-side decoding of filenames across all application modules."
+    ]
+  },
+  {
+    "id": "5",
+    "titleTh": "Re-apply Multipart Upload Stream Lock Fix",
+    "titleEn": "Re-apply Multipart Upload Stream Lock Fix",
+    "date": "2026-07-02",
+    "type": "bugfix",
+    "commit": "f367e86",
+    "detailsTh": [
+      "Re-applied req.clone().formData() across all 9 multipart upload routes after the stream lock bug returned.",
+      "The regression came from handlers being switched back to req.formData() after auth or middleware had already touched the request stream."
+    ],
+    "detailsEn": [
+      "Re-applied req.clone().formData() across all 9 multipart upload routes after the stream lock bug returned.",
+      "The regression came from handlers being switched back to req.formData() after auth or middleware had already touched the request stream."
+    ]
+  }
+]
