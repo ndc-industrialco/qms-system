@@ -29,6 +29,7 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/health/route.ts",
   "app/api/health/live/route.ts",
   "app/api/health/ready/route.ts",
+  "app/api/system-info/route.ts",
   // Approve/reject/submit/review routes that receive no body (ID is path param)
   "app/api/dar/[id]/submit/route.ts",
   "app/api/kpi/[id]/approve/route.ts",
@@ -109,6 +110,7 @@ const NO_ERROR_HANDLER_ALLOWLIST = new Set([
   "app/api/health/route.ts",
   "app/api/health/live/route.ts",
   "app/api/health/ready/route.ts",
+  "app/api/system-info/route.ts",
   "app/api/it/ms365-groups/route.ts",
   "app/api/sharepoint/create-folder/route.ts",
   "app/api/sharepoint/delete-item/route.ts",
@@ -168,6 +170,7 @@ function checkSchemaValidation(content, relPath) {
 const DIRECT_DB_ALLOWLIST = new Set([
   "app/api/health/route.ts",
   "app/api/health/ready/route.ts",
+  "app/api/system-info/route.ts",
   // Routes that use db.$transaction() as a coordinator — pending LocalRoleGrantRepository extraction
   "app/api/audit/session-plans/[planId]/route.ts",
   "app/api/dar/role-users/route.ts",

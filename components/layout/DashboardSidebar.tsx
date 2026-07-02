@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ClipboardCheck,
   ClipboardList,
+  Cpu,
   FileText,
   FolderOpen,
   House,
@@ -194,8 +195,14 @@ function getSections(
     href: "/qms/doc-no-config",
     icon: <Settings className="h-4.5 w-4.5 shrink-0" />,
   };
+  const systemInfoItem: NavItem = {
+    labelTh: "ข้อมูลระบบและการทำงาน",
+    labelEn: "System Info & Status",
+    href: "/qms/system-info",
+    icon: <Cpu className="h-[18px] w-[18px] shrink-0" />,
+  };
 
-  const qmsConfigItems = [deptCodeItem, docNoConfigItem];
+  const qmsConfigItems = [deptCodeItem, docNoConfigItem, systemInfoItem];
   if (role === "QMS" || role === "MR") {
     sections.push({
       label: "QMS",

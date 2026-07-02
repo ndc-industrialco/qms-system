@@ -12,6 +12,12 @@ COPY . .
 # Generate Prisma client now that schema.prisma is present
 RUN npx prisma generate
 
+# Accept Git SHA and Build Time as build args to embed in Next.js static output
+ARG NEXT_PUBLIC_GIT_COMMIT_SHA
+ARG NEXT_PUBLIC_BUILD_TIME
+ENV NEXT_PUBLIC_GIT_COMMIT_SHA=$NEXT_PUBLIC_GIT_COMMIT_SHA
+ENV NEXT_PUBLIC_BUILD_TIME=$NEXT_PUBLIC_BUILD_TIME
+
 # Build Next.js (npm run build already calls set-runtime.js internally)
 RUN NEXT_TELEMETRY_DISABLED=1 npm run build -- --no-lint
 
