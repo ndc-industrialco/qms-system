@@ -29,6 +29,25 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    const moduleParam = req.nextUrl.searchParams.get("module");
+    let defaultAuthUserId: string | null = null;
+    const { SystemConfigRepository } = await import("@/repositories/systemConfigRepository");
+    const configRepo = new SystemConfigRepository();
+
+    if (role === "MR") {
+      defaultAuthUserId = await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
+    } else {
+      if (moduleParam === "DAR") {
+        defaultAuthUserId = await configRepo.findValueByKey("DAR_QMS_AUTH_USER_ID")
+          ?? await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID");
+      } else if (moduleParam === "CAR") {
+        defaultAuthUserId = await configRepo.findValueByKey("CAR_QMS_AUTH_USER_ID")
+          ?? await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID");
+      } else {
+        defaultAuthUserId = await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID");
+      }
+    }
+
     const users = await Promise.all(
       grants.map(async (g) => {
         const snap = await getUserSnapshot(g.authUserId).catch(() => null);
@@ -36,6 +55,7 @@ export async function GET(req: NextRequest) {
           authUserId: g.authUserId,
           name: snap?.name ?? g.displayName ?? g.authUserId,
           email: snap?.email ?? g.email ?? null,
+          isDefault: g.authUserId === defaultAuthUserId,
         };
       }),
     );

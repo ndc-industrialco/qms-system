@@ -69,13 +69,16 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
 
 // ── Approve modal ─────────────────────────────────────────────────────────────
 
-interface RoleUser { authUserId: string; name: string; email: string | null }
+interface RoleUser { authUserId: string; name: string; email: string | null; isDefault?: boolean }
 
-function useRoleUsers(role: "MR" | "QMS" | null) {
+function useRoleUsers(role: "MR" | "QMS" | null, module?: "DAR" | "CAR" | null) {
   return useQuery<RoleUser[]>({
-    queryKey: ["dar-role-users", role],
+    queryKey: ["dar-role-users", role, module],
     queryFn: async () => {
-      const res = await fetch(`/api/dar/role-users?role=${role}`);
+      const url = module
+        ? `/api/dar/role-users?role=${role}&module=${module}`
+        : `/api/dar/role-users?role=${role}`;
+      const res = await fetch(url);
       const json = await res.json();
       return (json.data ?? []) as RoleUser[];
     },
@@ -103,8 +106,17 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
   const pickRole = isReviewerStep ? "MR" : isMrStep ? "QMS" : null;
   const pickLabel = isReviewerStep ? "เลือกผู้อนุมัติ MR" : "เลือกผู้ประมวลผล QMS";
 
-  const { data: roleUsers = [], isLoading: roleUsersLoading } = useRoleUsers(pickRole);
+  const { data: roleUsers = [], isLoading: roleUsersLoading } = useRoleUsers(pickRole, "DAR");
   const [targetAuthUserId, setTargetAuthUserId] = useState("");
+
+  useEffect(() => {
+    if (roleUsers.length > 0 && !targetAuthUserId) {
+      const defaultUser = roleUsers.find((u) => u.isDefault);
+      if (defaultUser) {
+        setTargetAuthUserId(defaultUser.authUserId);
+      }
+    }
+  }, [roleUsers, targetAuthUserId]);
 
   const [sigDataUrl, setSigDataUrl] = useState<string | null>(null);
   const [sigType, setSigType] = useState<SigMode>("DRAW");

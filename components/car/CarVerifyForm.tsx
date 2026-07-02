@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,10 +15,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import type { CarStatus } from "@/types/car";
 import type { SignatureType } from "@/types/dar";
 
-interface RoleUser { authUserId: string; name: string; email: string | null }
+interface RoleUser { authUserId: string; name: string; email: string | null; isDefault?: boolean }
 
 async function fetchMrUsers(): Promise<RoleUser[]> {
-  const res = await fetch("/api/dar/role-users?role=MR");
+  const res = await fetch("/api/dar/role-users?role=MR&module=CAR");
   const json = await res.json();
   return (json.data ?? []) as RoleUser[];
 }
@@ -58,6 +58,7 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
   });
 
   const resultValue = watch("result");
+  const targetMrAuthUserIdValue = watch("targetMrAuthUserId");
 
   const { data: mrUsers = [], isLoading: mrUsersLoading } = useQuery({
     queryKey: ["car-mr-users"],
@@ -65,6 +66,15 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
     enabled: resultValue === "PASSED",
     staleTime: 60_000,
   });
+
+  useEffect(() => {
+    if (mrUsers.length > 0 && !targetMrAuthUserIdValue) {
+      const defaultUser = mrUsers.find((u) => u.isDefault);
+      if (defaultUser) {
+        setValue("targetMrAuthUserId", defaultUser.authUserId, { shouldValidate: true });
+      }
+    }
+  }, [mrUsers, targetMrAuthUserIdValue, setValue]);
 
   const qc = useQueryClient();
 

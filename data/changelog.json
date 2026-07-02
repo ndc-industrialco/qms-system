@@ -1,5 +1,23 @@
 [
   {
+    "id": "6",
+    "titleTh": "เพิ่มระบบกำหนดผู้อนุมัติอัตโนมัติ (Automated Approval Config)",
+    "titleEn": "Automated Approval Workflow Configuration",
+    "date": "2026-07-02",
+    "type": "feature",
+    "commit": "auto-config",
+    "detailsTh": [
+      "เพิ่มหน้าตั้งค่าผู้อนุมัติอัตโนมัติสำหรับโมดูล DAR และ CAR โดยสามารถระบุผู้อนุมัติ MR และเจ้าหน้าที่ QMS เริ่มต้นได้",
+      "อัปเดตระบบตรวจสอบการเลือกผู้อนุมัติใน backend ให้ดึงค่าเริ่มต้นอัตโนมัติเมื่อผู้ใช้ไม่ได้ระบุค่า",
+      "ปรับปรุง UI ฟอร์มอนุมัติของ DAR และ CAR ให้เลือกผู้รับผิดชอบเริ่มต้นโดยอัตโนมัติ"
+    ],
+    "detailsEn": [
+      "Added approval configuration dashboard for DAR and CAR to set default MR and QMS assignees.",
+      "Updated backend services to automatically fallback to configured default users if target assignees are omitted.",
+      "Enhanced DAR and CAR frontend forms to fetch and pre-populate configured default assignees."
+    ]
+  },
+  {
     "id": "1",
     "titleTh": "แก้ไขสิทธิ์ประกาศหน้าหลัก และลบตัวกรองศูนย์กลาง",
     "titleEn": "Announcement Hub Bypass & Home Feed Fix",

@@ -716,7 +716,11 @@ export class CarService {
     ]);
     if (!responderSnapshot) throw new ValidationError("Responder not found");
 
-    const mrAuthUserId = input.targetMrAuthUserId;
+    let mrAuthUserId: string | null = input.targetMrAuthUserId || null;
+    if (!mrAuthUserId) {
+      const resolved = await this.resolveMrUser(accessToken);
+      mrAuthUserId = resolved?.authUserId ?? null;
+    }
     if (!mrAuthUserId) throw new ValidationError("กรุณาเลือกผู้อนุมัติ MR");
     const mrUser = { authUserId: mrAuthUserId };
     const mrSnapshot = await this.getIdentitySnapshot(mrAuthUserId);
@@ -1042,7 +1046,11 @@ export class CarService {
     }
 
     let actionTokenValue: string | null = null;
-    const mrVerifyAuthUserId = input.result === "PASSED" ? (input.targetMrAuthUserId ?? null) : null;
+    let mrVerifyAuthUserId = input.result === "PASSED" ? (input.targetMrAuthUserId ?? null) : null;
+    if (input.result === "PASSED" && !mrVerifyAuthUserId) {
+      const resolved = await this.resolveMrUser(accessToken);
+      mrVerifyAuthUserId = resolved?.authUserId ?? null;
+    }
     if (input.result === "PASSED" && !mrVerifyAuthUserId) throw new ValidationError("กรุณาเลือกผู้อนุมัติ MR");
     const mrUserForVerify = mrVerifyAuthUserId ? { authUserId: mrVerifyAuthUserId } : null;
     const mrVerifySnapshot = mrUserForVerify ? await this.getIdentitySnapshot(mrUserForVerify.authUserId) : null;

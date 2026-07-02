@@ -144,7 +144,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     if (mrApprovedThisStep && hasPendingQmsStep && dar.darNo) {
-      const qmsAuthKey = await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID")
+      const qmsAuthKey = await configRepo.findValueByKey("DAR_QMS_AUTH_USER_ID")
+        ?? await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID")
         ?? await configRepo.findValueByKey("CURRENT_QMS_USER_ID");
 
       if (qmsAuthKey) {
@@ -161,6 +162,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         });
 
         const qmsEmail = qmsSnapshot?.email
+          ?? await configRepo.findValueByKey("DAR_QMS_EMAIL")
           ?? await configRepo.findValueByKey("CURRENT_QMS_EMAIL")
           ?? null;
         NotificationService.sendEmailOnce(

@@ -210,8 +210,14 @@ function getSections(
     href: "/qms/doc-no-config",
     icon: <Settings className="h-4.5 w-4.5 shrink-0" />,
   };
+  const approvalConfigItem: NavItem = {
+    labelTh: "ตั้งค่าผู้อนุมัติอัตโนมัติ",
+    labelEn: "Auto Approval Config",
+    href: "/qms/approval-config",
+    icon: <UserCog className="h-[18px] w-[18px] shrink-0" />,
+  };
 
-  const qmsConfigItems = [deptCodeItem, docNoConfigItem];
+  const qmsConfigItems = [deptCodeItem, docNoConfigItem, approvalConfigItem];
   if (role === "QMS" || role === "MR") {
     sections.push({
       label: "QMS",

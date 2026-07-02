@@ -1,4 +1,4 @@
-﻿import { db } from "@/lib/db";
+import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { AuditService } from "@/services/auditService";
 import { NotificationService } from "@/services/notificationService";
@@ -645,11 +645,19 @@ export class DarService {
         qmsUser = { authUserId: input.targetAuthUserId };
       } else {
         qmsUser = await this.resolveDesignatedUser(
-          "CURRENT_QMS_AUTH_USER_ID",
-          "CURRENT_QMS_USER_ID",
-          "QMS_QMS",
+          "DAR_QMS_AUTH_USER_ID",
+          "DAR_QMS_USER_ID",
+          undefined,
           actor.accessToken,
         );
+        if (!qmsUser) {
+          qmsUser = await this.resolveDesignatedUser(
+            "CURRENT_QMS_AUTH_USER_ID",
+            "CURRENT_QMS_USER_ID",
+            "QMS_QMS",
+            actor.accessToken,
+          );
+        }
       }
       if (!qmsUser) throw new AppError("QMS signer is not configured in the system", 400, "QMS_NOT_CONFIGURED");
     }
