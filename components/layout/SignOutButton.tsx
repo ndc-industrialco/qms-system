@@ -6,15 +6,18 @@ type Props = { label?: string };
 
 export default function SignOutButton({ label = "ออกจากระบบ" }: Props) {
   return (
-    <form action={signOutAction} className="w-full">
-      <Button
-        type="submit"
-        variant="ghost"
-        className="w-full flex items-center justify-start gap-2.5 px-3 py-2 rounded-xl text-[13px] text-rose-600 hover:bg-rose-50 hover:text-rose-700 h-auto font-normal"
-      >
-        <LogOut className="h-4 w-4 shrink-0" />
-        {label}
-      </Button>
-    </form>
+    <div className="flex flex-col items-start w-full">
+      <form action={signOutAction} className="w-full">
+        <Button
+          type="submit"
+          variant="ghost"
+          className="w-full flex items-center justify-start gap-2.5 px-3 py-2 rounded-xl text-[13px] text-rose-600 hover:bg-rose-50 hover:text-rose-700 h-auto font-normal"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          {label}
+        </Button>
+      </form>
+      <div className="text-[10px] text-slate-400/60 pl-3.5 mt-0.5 select-none">v2</div>
+    </div>
   );
 }
