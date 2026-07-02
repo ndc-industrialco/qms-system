@@ -14,10 +14,9 @@ const darService = new DarService();
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
+    const formData = await req.formData();
     const session = await requireAuth();
     const { id: darId } = paramSchema.parse(await params);
-
-    const formData = await req.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) throw new ValidationError("ไม่พบไฟล์ในคำขอ");
 

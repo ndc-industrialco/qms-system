@@ -33,9 +33,8 @@ function detectMimeFromBuffer(buf: Buffer): string | null {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireAuth();
-
     const formData = await req.formData();
+    const session = await requireAuth();
     const file = formData.get("file");
     const planId = formData.get("planId");
     const resourceType = (formData.get("resourceType") as string | null) ?? "PLAN";

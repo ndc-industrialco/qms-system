@@ -21,6 +21,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const formData = await req.formData();
     const session = await requireAuth();
     const { id: scheduleId } = await params;
 
@@ -33,8 +34,6 @@ export async function POST(
     if (!isPrivileged && !isLeadAuditor) {
       throw new ForbiddenError("Only the lead auditor or QMS/IT can submit a checklist");
     }
-
-    const formData = await req.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) throw new ValidationError("file is required");
 

@@ -22,8 +22,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireRole("QMS", "IT", "MR");
     const formData = await req.formData();
+    const session = await requireRole("QMS", "IT", "MR");
 
     const emailGroupMailsRaw = formData.get("emailGroupMails");
     const emailGroupMails: string[] = emailGroupMailsRaw

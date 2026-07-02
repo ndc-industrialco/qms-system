@@ -35,6 +35,7 @@ const querySchema = z.object({ tempId: z.string().uuid() });
 
 export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<TempAttachmentResponse>>> {
   try {
+    const formData = await req.formData();
     await requireAuth();
 
     const { searchParams } = req.nextUrl;
@@ -43,8 +44,6 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<T
       return NextResponse.json({ data: null, error: "tempId (uuid) is required" }, { status: 400 });
     }
     const { tempId } = parsed.data;
-
-    const formData = await req.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) {
       return NextResponse.json({ data: null, error: "ไม่พบไฟล์ในคำขอ" }, { status: 400 });

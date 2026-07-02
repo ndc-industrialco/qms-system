@@ -13,10 +13,9 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
+    const formData = await req.formData();
     const session = await requireRole('QMS', 'IT', 'MR');
     const { id } = await params;
-
-    const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const metadata = formData.get('metadata') as string | null;
 

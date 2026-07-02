@@ -27,6 +27,7 @@ export async function POST(
   { params }: { params: Promise<{ responseId: string }> },
 ) {
   try {
+    const formData = await req.formData();
     const session = await requireAuth();
     const { responseId } = await params;
 
@@ -44,8 +45,6 @@ export async function POST(
       ? user.authDepartmentId === car.targetAuthDepartmentId
       : user.departmentId === car.targetDepartmentId;
     if (!isPrivileged && !inTargetDept) throw new ForbiddenError();
-
-    const formData = await req.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) throw new ValidationError("ไม่พบไฟล์ในคำขอ");
     if (file.size > MAX_SIZE) throw new ValidationError("ไฟล์ต้องมีขนาดไม่เกิน 20 MB");

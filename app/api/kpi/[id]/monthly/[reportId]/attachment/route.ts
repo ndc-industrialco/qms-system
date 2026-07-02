@@ -10,9 +10,9 @@ const service = new KpiMonthlyService();
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   try {
+    const formData = await request.formData();
     const session = await requireAuth();
     const { reportId } = await params;
-    const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
     if (!file) throw new ValidationError('File is required');
