@@ -162,5 +162,5 @@ export default auth(async (req) => {
 });
 
 export const config = {
-  matcher: "/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.webp|.*\\.jpg|.*\\.jpeg|.*\\.svg).*)",
+  matcher: "/((?!_next/static|_next/image|favicon.ico|api/sharepoint/upload-file|api/dar/attachments/temp|api/announcements|api/audit/attachments/upload|api/audit/schedules/[^/]+/submit-checklist|api/car/response/[^/]+/attachments|api/dar/[^/]+/attachments|api/document-controls/[^/]+/upload|api/kpi/[^/]+/monthly/[^/]+/attachment|.*\\.png|.*\\.webp|.*\\.jpg|.*\\.jpeg|.*\\.svg).*)",
 };

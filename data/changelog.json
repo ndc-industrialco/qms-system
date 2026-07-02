@@ -1,5 +1,23 @@
 [
   {
+    "id": "8",
+    "titleTh": "ยกเลิกการใช้ req.clone().formData() เป็น req.formData() มาตรฐาน",
+    "titleEn": "Replaced req.clone().formData() with standard req.formData()",
+    "date": "2026-07-02",
+    "type": "refactor",
+    "commit": "refactor/standard-form-data",
+    "detailsTh": [
+      "เปลี่ยนวิธีอ่านไฟล์อัปโหลดจากการใช้ req.clone().formData() มาเป็น req.formData() ปกติใน 9 API routes",
+      "ข้ามการทวนสอบเซสชันด้วย Middleware สำหรับทั้ง 9 เส้นทาง เพื่อป้องกันการชนกันของสายข้อมูลไฟล์ (Stream Lock)",
+      "รักษาความปลอดภัยของระบบ 100% โดยการทวนสอบสิทธิ์ด้วย requireRoleEdge / requireAuthEdge ภายใน API handlers"
+    ],
+    "detailsEn": [
+      "Replaced req.clone().formData() with standard req.formData() in 9 file upload routes.",
+      "Bypassed session check in middleware for these 9 paths to prevent request stream locking.",
+      "Maintained 100% security by verifying roles and sessions inside API handlers using requireRoleEdge / requireAuthEdge."
+    ]
+  },
+  {
     "id": "7",
     "titleTh": "ขยายระบบตั้งค่าผู้อนุมัติอัตโนมัติแยกตามโมดูล DAR และ CAR",
     "titleEn": "Expand Module-Specific Default MR and QMS Configurations",

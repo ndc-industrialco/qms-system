@@ -28,7 +28,7 @@ export async function POST(
 ) {
   try {
     const session = await requireAuthEdge(req);
-    const formData = await req.clone().formData();
+    const formData = await req.formData();
     const { responseId } = await params;
 
     const response = await repo.findResponseWithCar(responseId);

@@ -22,7 +22,7 @@ export async function POST(
 ) {
   try {
     const session = await requireAuthEdge(req);
-    const formData = await req.clone().formData();
+    const formData = await req.formData();
     const { id: scheduleId } = await params;
 
     const schedule = await scheduleRepo.findWithPlan(scheduleId);

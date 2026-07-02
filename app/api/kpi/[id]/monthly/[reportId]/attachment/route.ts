@@ -11,7 +11,7 @@ const service = new KpiMonthlyService();
 export async function POST(request: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   try {
     const session = await requireAuthEdge(request);
-    const formData = await request.clone().formData();
+    const formData = await request.formData();
     const { reportId } = await params;
     const file = formData.get('file') as File | null;
 
