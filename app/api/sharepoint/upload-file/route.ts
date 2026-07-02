@@ -8,7 +8,7 @@ import { logger } from "@/lib/logger";
 export async function POST(req: NextRequest) {
   try {
     await requireRoleEdge(req, "QMS", "MR", "IT");
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
     const file = formData.get("file") as File | null;
     const folderPath = (formData.get("folderPath") as string | null) ?? (formData.get("path") as string | null) ?? "root";
 

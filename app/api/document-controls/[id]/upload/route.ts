@@ -14,7 +14,7 @@ type Params = { params: Promise<{ id: string }> };
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const session = await requireRoleEdge(req, 'QMS', 'IT', 'MR');
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
     const { id } = await params;
     const file = formData.get('file') as File | null;
     const metadata = formData.get('metadata') as string | null;

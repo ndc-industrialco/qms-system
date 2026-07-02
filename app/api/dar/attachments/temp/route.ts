@@ -36,7 +36,7 @@ const querySchema = z.object({ tempId: z.string().uuid() });
 export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<TempAttachmentResponse>>> {
   try {
     await requireAuthEdge(req);
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
 
     const { searchParams } = req.nextUrl;
     const parsed = querySchema.safeParse({ tempId: searchParams.get("tempId") });

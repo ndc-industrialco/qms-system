@@ -88,6 +88,22 @@ const DEVELOPMENT_LOGS: LogItem[] = [
       "Fixed TypeError: Failed to parse body as FormData when uploading files containing Thai/non-ASCII characters.",
       "Implemented client-side percent-encoding and server-side decoding of filenames across all application modules."
     ]
+  },
+  {
+    id: "4b",
+    titleTh: "Re-apply Multipart Upload Stream Lock Fix",
+    titleEn: "Re-apply Multipart Upload Stream Lock Fix",
+    date: "2026-07-02",
+    type: "bugfix",
+    commit: "f367e86",
+    detailsTh: [
+      "Re-applied req.clone().formData() across all 9 multipart upload routes after the stream lock bug returned.",
+      "The regression came from handlers being switched back to req.formData() after auth or middleware had already touched the request stream."
+    ],
+    detailsEn: [
+      "Re-applied req.clone().formData() across all 9 multipart upload routes after the stream lock bug returned.",
+      "The regression came from handlers being switched back to req.formData() after auth or middleware had already touched the request stream."
+    ]
   }
 ];
 
