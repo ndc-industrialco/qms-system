@@ -33,7 +33,7 @@ export async function requireAuthEdge(req: NextRequest) {
   const isProduction = process.env.NODE_ENV === "production";
   const cookieName = isProduction ? "__Secure-qms.session-token" : "qms.session-token";
   const token = await getToken({
-    req: req as any,
+    req: req as unknown as Parameters<typeof getToken>[0]["req"],
     secret: process.env.AUTH_SECRET!,
     cookieName,
     salt: cookieName,
@@ -47,7 +47,7 @@ export async function requireAuthEdge(req: NextRequest) {
       authUserId: (token.authUserId as string | undefined) ?? (token.sub as string),
       name: token.name as string | null,
       email: token.email as string | null,
-      role: token.role as any,
+      role: token.role as AnyQmsRole,
       departmentId: token.departmentId as string | undefined,
       authDepartmentId: token.authDepartmentId as string | undefined,
       accessToken: token.accessToken as string | undefined,

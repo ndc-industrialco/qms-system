@@ -1,5 +1,5 @@
 import { BaseRepository } from "./baseRepository";
-import { SystemConfig, Prisma } from "@/generated/prisma/client";
+import { SystemConfig, Prisma, PrismaClient } from "@/generated/prisma/client";
 
 export class SystemConfigRepository extends BaseRepository<SystemConfig> {
   constructor() {
@@ -54,5 +54,9 @@ export class SystemConfigRepository extends BaseRepository<SystemConfig> {
 
   async findManyByKeys(configKeys: string[], tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findMany({ where: { configKey: { in: configKeys } } });
+  }
+
+  async ping(tx?: Prisma.TransactionClient): Promise<void> {
+    await (this.getClient(tx) as unknown as PrismaClient).$queryRaw`SELECT 1`;
   }
 }

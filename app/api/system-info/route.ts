@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { redis } from "@/lib/redis";
 import { getGraphToken } from "@/lib/graph-token";
 import { logger } from "@/lib/logger";
+
+const sysRepo = new SystemConfigRepository();
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +20,7 @@ export async function GET() {
     let dbError: string | null = null;
     try {
       const dbStart = Date.now();
-      await db.$queryRaw`SELECT 1`;
+      await sysRepo.ping();
       dbLatencyMs = Date.now() - dbStart;
     } catch (err) {
       dbStatus = "DISCONNECTED";

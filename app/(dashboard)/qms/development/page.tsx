@@ -6,7 +6,6 @@ import {
   FileCode2,
   Calendar,
   Search,
-  Tag,
   CheckCircle2,
   Bug,
   Sparkles,

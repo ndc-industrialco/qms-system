@@ -5,7 +5,6 @@ import { useLocale } from "@/lib/locale-context";
 import { Button } from "@/components/ui/button";
 import {
   Activity,
-  CheckCircle2,
   AlertCircle,
   RefreshCw,
   Cpu,
