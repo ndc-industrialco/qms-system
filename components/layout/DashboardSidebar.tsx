@@ -216,8 +216,14 @@ function getSections(
     href: "/qms/approval-config",
     icon: <UserCog className="h-[18px] w-[18px] shrink-0" />,
   };
+  const footerConfigItem: NavItem = {
+    labelTh: "ตั้งค่าหัว/ท้ายเอกสาร",
+    labelEn: "Doc Footer Config",
+    href: "/qms/footer-config",
+    icon: <FileText className="h-4.5 w-4.5 shrink-0" />,
+  };
 
-  const qmsConfigItems = [deptCodeItem, docNoConfigItem, approvalConfigItem];
+  const qmsConfigItems = [deptCodeItem, docNoConfigItem, approvalConfigItem, footerConfigItem];
   if (role === "QMS" || role === "MR") {
     sections.push({
       label: "QMS",

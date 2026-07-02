@@ -31,6 +31,7 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/health/ready/route.ts",
   "app/api/system-info/route.ts",
   "app/api/development-logs/route.ts",
+  "app/api/qms/footer-config/route.ts",
   // Approve/reject/submit/review routes that receive no body (ID is path param)
   "app/api/dar/[id]/submit/route.ts",
   "app/api/kpi/[id]/approve/route.ts",

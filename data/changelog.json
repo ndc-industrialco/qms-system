@@ -1,5 +1,37 @@
 [
   {
+    "id": "10",
+    "titleTh": "สรุปความเข้าใจรายการอัปเดตจากการคุยกับแผนก QMS ลงเอกสาร",
+    "titleEn": "Documented QMS update-summary from application-backed meeting notes",
+    "date": "2026-07-02",
+    "type": "docs",
+    "commit": "docs/qms-update-summary",
+    "detailsTh": [
+      "เพิ่มไฟล์ docs/update-summary.md เพื่อสรุปความเข้าใจจากรายการอัปเดตที่คุยกับแผนก QMS",
+      "จัดกลุ่ม requirement เป็นภาพรวม งานแกนกลาง และรายละเอียดรายโมดูล เพื่อใช้ต่อยอดเป็น plan, list และ report"
+    ],
+    "detailsEn": [
+      "Added docs/update-summary.md to capture the current understanding of QMS-requested updates.",
+      "Grouped the requests into cross-cutting capabilities and module-specific items to support follow-up planning, task lists, and reporting."
+    ]
+  },
+  {
+    "id": "11",
+    "titleTh": "เพิ่มเอกสาร Summary และ Implementation Plan สำหรับงานอัปเดต QMS",
+    "titleEn": "Added summary and implementation plan documents for QMS updates",
+    "date": "2026-07-02",
+    "type": "docs",
+    "commit": "docs/qms-summary-and-implementation-plan",
+    "detailsTh": [
+      "ปรับ docs/update-summary.md ให้แยก shared platform features ออกจาก module-specific rules ชัดเจนขึ้น",
+      "เพิ่ม docs/implementation-plan.md เพื่อใช้แตกงาน implementation เป็น workstreams, batches, risks และ done criteria"
+    ],
+    "detailsEn": [
+      "Refined docs/update-summary.md to separate shared platform features from module-specific rules.",
+      "Added docs/implementation-plan.md to break the work into workstreams, batches, risks, and done criteria."
+    ]
+  },
+  {
     "id": "9",
     "titleTh": "จำกัดสิทธิ์การเลือกผู้อนุมัติ MR ให้เฉพาะกลุ่มบทบาท QMS_MR เท่านั้น",
     "titleEn": "Restricted MR Approver candidates strictly to QMS_MR role",
