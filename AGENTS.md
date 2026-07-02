@@ -32,12 +32,11 @@
 
 ## Pre-CI Pipeline (บังคับก่อน git push ทุกครั้ง)
 
-```bash
-npx tsc --noEmit        # TypeScript type check
-npm run lint            # ESLint
-npm run check:api       # Architecture guardrails (150 routes)
-npm test                # Unit tests (44 tests)
-```
+1. 📝 อัปเดตบันทึกการพัฒนาลงใน `data/changelog.json` (เพิ่มรายการบนสุดของไฟล์เสมอ)
+2. `npx tsc --noEmit`        # TypeScript type check
+3. `npm run lint`            # ESLint
+4. `npm run check:api`       # Architecture guardrails (150 routes)
+5. `npm test`                # Unit tests (44 tests)
 
 ถ้าผ่านทั้งหมด:
 ```bash
@@ -55,3 +54,4 @@ git push origin master
 3. ❌ ห้าม `window.open(spDownloadUrl)` → ใช้ API endpoint เพื่อรับ Fresh URL
 4. ❌ ห้าม `any` ใน TypeScript
 5. ✅ File download ต้องผ่าน `/api/sharepoint/get-file?itemId=` เสมอ
+6. 📝 ก่อน commit การเปลี่ยนงานใดๆ ต้องเขียนอธิบายการปรับปรุงลงใน `data/changelog.json` เสมอ
