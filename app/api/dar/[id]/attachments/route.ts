@@ -21,9 +21,21 @@ export async function POST(req: NextRequest, { params }: Params) {
     const file = formData.get("file");
     if (!(file instanceof File)) throw new ValidationError("ไม่พบไฟล์ในคำขอ");
 
+    const rawFilename = (formData.get("filename") as string | null) || file.name;
+    let fileName = rawFilename;
+    try {
+      if (rawFilename.includes("%")) {
+        fileName = decodeURIComponent(rawFilename);
+      }
+    } catch {
+      // ignore
+    }
+
+    const safeFile = new File([file], fileName, { type: file.type });
+
     const row: DarAttachmentRow = await darService.uploadAttachment(
       darId,
-      file,
+      safeFile,
       session.user.id,
       session.user.role
     );

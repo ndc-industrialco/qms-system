@@ -65,7 +65,10 @@ export function useEditAnnouncement(
 
       if (bgImageFile) {
         const fd = new FormData();
-        fd.append("file", bgImageFile);
+        // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+        const safeName = encodeURIComponent(bgImageFile.name);
+        fd.append("file", bgImageFile, safeName);
+        fd.append("filename", bgImageFile.name);
         fd.append("path", "Announcements/Backgrounds");
         const uploadRes = await fetch("/api/sharepoint/upload-file", { method: "POST", body: fd });
         if (!uploadRes.ok) throw new Error("Upload failed");

@@ -10,15 +10,25 @@ export async function POST(req: NextRequest) {
     await requireRole("QMS", "MR", "IT");
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const folderPath = (formData.get("folderPath") as string | null) ?? "root";
+    const folderPath = (formData.get("folderPath") as string | null) ?? (formData.get("path") as string | null) ?? "root";
 
     if (!file) {
       return NextResponse.json({ data: null, error: "No file provided" }, { status: 400 });
     }
 
+    const rawFilename = (formData.get("filename") as string | null) || file.name;
+    let fileName = rawFilename;
+    try {
+      if (rawFilename.includes("%")) {
+        fileName = decodeURIComponent(rawFilename);
+      }
+    } catch {
+      // Ignore URI errors and fallback to raw
+    }
+
     const buffer = new Uint8Array(await file.arrayBuffer());
 
-    const uploaded = await uploadFile(file.name, buffer, folderPath);
+    const uploaded = await uploadFile(fileName, buffer, folderPath);
 
     return NextResponse.json({ data: uploaded, error: null });
   } catch (err) {

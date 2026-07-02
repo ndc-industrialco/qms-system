@@ -88,7 +88,6 @@ export class AnnouncementRepository extends BaseRepository<Announcement> {
     return this.delegate(tx).findMany({
       where: {
         status: "ACTIVE",
-        pushToCompanyCenter: true,
         OR: [{ startDate: null }, { startDate: { lte: now } }],
         AND: [{ OR: [{ endDate: null }, { endDate: { gte: now } }] }],
       },

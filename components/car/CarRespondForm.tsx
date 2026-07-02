@@ -43,7 +43,10 @@ async function submitResponse(carId: string, data: CarRespondInput): Promise<Car
 
 async function uploadFile(responseId: string, file: File): Promise<void> {
   const fd = new FormData();
-  fd.append("file", file);
+  // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+  const safeName = encodeURIComponent(file.name);
+  fd.append("file", file, safeName);
+  fd.append("filename", file.name);
   const res = await fetch(`/api/car/response/${responseId}/attachments`, {
     method: "POST",
     body: fd,

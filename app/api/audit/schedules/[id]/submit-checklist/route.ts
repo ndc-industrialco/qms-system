@@ -37,16 +37,28 @@ export async function POST(
     const formData = await req.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) throw new ValidationError("file is required");
-    if (file.size > MAX_SIZE) throw new ValidationError("File exceeds 20 MB");
 
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const rawFilename = (formData.get("filename") as string | null) || file.name;
+    let fileName = rawFilename;
+    try {
+      if (rawFilename.includes("%")) {
+        fileName = decodeURIComponent(rawFilename);
+      }
+    } catch {
+      // ignore
+    }
+
+    const safeFile = new File([file], fileName, { type: file.type });
+    if (safeFile.size > MAX_SIZE) throw new ValidationError("File exceeds 20 MB");
+
+    const ext = safeFile.name.split(".").pop()?.toLowerCase() ?? "";
     if (!ALLOWED_EXT.has(ext)) throw new ValidationError("File type not allowed");
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer = Buffer.from(await safeFile.arrayBuffer());
     const result = await uploadFileToAudit({
       fileBuffer: buffer,
-      fileName: file.name,
-      mimeType: file.type || "application/octet-stream",
+      fileName: safeFile.name,
+      mimeType: safeFile.type || "application/octet-stream",
       planId: schedule.planId,
     });
 
@@ -57,11 +69,11 @@ export async function POST(
     const attachment = await repo.create({
       resourceType: "SCHEDULE_CHECKLIST",
       resourceId: scheduleId,
-      fileName: file.name,
+      fileName: safeFile.name,
       fileUrl: result.spWebUrl,
       sharePointItemId: result.spItemId,
-      mimeType: file.type || "application/octet-stream",
-      sizeBytes: file.size,
+      mimeType: safeFile.type || "application/octet-stream",
+      sizeBytes: safeFile.size,
       uploadedByAuthUserId: actorId,
       spDownloadUrl: result.spDownloadUrl ?? null,
     } as Parameters<typeof repo.create>[0]);
@@ -69,7 +81,7 @@ export async function POST(
     const updated = await planService.submitChecklist(
       scheduleId,
       { userId: session.user.id, authUserId: session.user.authUserId, role: session.user.role, name: session.user.name },
-      file.name
+      safeFile.name
     );
 
     if (schedule.plan.ownerEmail && schedule.departmentName) {

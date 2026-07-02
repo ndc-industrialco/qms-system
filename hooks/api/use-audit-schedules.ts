@@ -114,7 +114,10 @@ export function useSubmitChecklist(planId: string) {
   return useMutation({
     mutationFn: async ({ id, file }: { id: string; file: File }) => {
       const fd = new FormData();
-      fd.append("file", file);
+      // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
+      const safeName = encodeURIComponent(file.name);
+      fd.append("file", file, safeName);
+      fd.append("filename", file.name);
       const r = await fetch(`/api/audit/schedules/${id}/submit-checklist`, { method: "POST", body: fd });
       const json = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error((json as { message?: string }).message ?? "Failed");

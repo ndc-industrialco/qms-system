@@ -44,7 +44,19 @@ export async function POST(req: NextRequest) {
     if (!(file instanceof File)) throw new ValidationError("file is required");
     if (!planId || typeof planId !== "string") throw new ValidationError("planId is required");
     if (!resourceId || typeof resourceId !== "string") throw new ValidationError("resourceId is required");
-    if (file.size > MAX_SIZE_BYTES) throw new ValidationError("File exceeds the 20 MB size limit");
+
+    const rawFilename = (formData.get("filename") as string | null) || file.name;
+    let fileName = rawFilename;
+    try {
+      if (rawFilename.includes("%")) {
+        fileName = decodeURIComponent(rawFilename);
+      }
+    } catch {
+      // ignore
+    }
+
+    const safeFile = new File([file], fileName, { type: file.type });
+    if (safeFile.size > MAX_SIZE_BYTES) throw new ValidationError("File exceeds the 20 MB size limit");
 
     const isPrivileged = ["QMS", "IT", "MR"].includes(session.user.role);
     if (!isPrivileged) {
@@ -56,21 +68,21 @@ export async function POST(req: NextRequest) {
       if (!isOwner && !isAuditor) throw new ForbiddenError();
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer = Buffer.from(await safeFile.arrayBuffer());
     const detectedMime = detectMimeFromBuffer(buffer);
     if (detectedMime === "__reject__") throw new ValidationError("File type not allowed.");
     if (detectedMime !== null && !ALLOWED_MIME_TYPES.has(detectedMime)) throw new ValidationError("File type not allowed.");
 
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const ext = safeFile.name.split(".").pop()?.toLowerCase() ?? "";
     if (!ALLOWED_EXTENSIONS.has(ext)) {
       throw new ValidationError("File extension not allowed. Accepted types: PDF, Word, Excel, PNG, JPEG");
     }
 
-    const storedMimeType = detectedMime ?? file.type;
+    const storedMimeType = detectedMime ?? safeFile.type;
 
     const result = await uploadFileToAudit({
       fileBuffer: buffer,
-      fileName: file.name,
+      fileName: safeFile.name,
       mimeType: storedMimeType,
       planId,
     });
@@ -83,11 +95,11 @@ export async function POST(req: NextRequest) {
     const attachment = await repo.create({
       resourceType,
       resourceId,
-      fileName: file.name,
+      fileName: safeFile.name,
       fileUrl: result.spWebUrl,
       sharePointItemId: result.spItemId,
       mimeType: storedMimeType,
-      sizeBytes: file.size,
+      sizeBytes: safeFile.size,
       uploadedByAuthUserId: session.user.authUserId ?? session.user.id,
       spDownloadUrl: result.spDownloadUrl ?? null,
     } as Parameters<typeof repo.create>[0]);

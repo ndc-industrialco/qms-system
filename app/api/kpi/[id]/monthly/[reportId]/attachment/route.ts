@@ -16,13 +16,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const file = formData.get('file') as File | null;
 
     if (!file) throw new ValidationError('File is required');
+
+    const rawFilename = (formData.get("filename") as string | null) || file.name;
+    let fileName = rawFilename;
+    try {
+      if (rawFilename.includes("%")) {
+        fileName = decodeURIComponent(rawFilename);
+      }
+    } catch {
+      // ignore
+    }
+
+    const safeFile = new File([file], fileName, { type: file.type });
+
     monthlyAttachmentUploadSchema.parse({
-      fileName: file.name,
-      fileSize: file.size,
-      mimeType: file.type,
+      fileName: safeFile.name,
+      fileSize: safeFile.size,
+      mimeType: safeFile.type,
     });
 
-    const report = await service.uploadReportAttachment(reportId, file, {
+    const report = await service.uploadReportAttachment(reportId, safeFile, {
       userId: session.user.id,
       role: session.user.role,
       departmentId: session.user.authDepartmentId ?? session.user.departmentId,
