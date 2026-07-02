@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 import { authConfig } from "@/lib/auth.config";
 import { ForbiddenError, UnauthorizedError } from "@/lib/errors";
-import { hasQmsRole, type AnyQmsRole } from "@/lib/qms-roles";
+import { hasQmsRole, normalizeQmsRole, type AnyQmsRole } from "@/lib/qms-roles";
 
 // Edge-safe NextAuth instance — decodes JWT without any DB access.
 // DB callbacks (upsert, syncDepartment) live only in lib/auth-node.ts.
@@ -47,7 +47,7 @@ export async function requireAuthEdge(req: NextRequest) {
       authUserId: (token.authUserId as string | undefined) ?? (token.sub as string),
       name: token.name as string | null,
       email: token.email as string | null,
-      role: token.role as AnyQmsRole,
+      role: normalizeQmsRole(token.role) as "USER" | "QMS" | "MR" | "IT",
       departmentId: token.departmentId as string | undefined,
       authDepartmentId: token.authDepartmentId as string | undefined,
       accessToken: token.accessToken as string | undefined,
