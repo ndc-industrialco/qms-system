@@ -1,9 +1,27 @@
 import { NotificationService } from "@/services/notificationService";
-import { sendAuditAnnouncementEmail, sendAuditSignRequestEmail, sendAuditRejectionEmail, sendAuditApprovedEmail, buildAuditSignRequestHtml } from "./auditEmailService";
+import { sendAuditAnnouncementEmail, sendAuditSignRequestEmail, sendAuditRejectionEmail, sendAuditApprovedEmail, buildAuditSignRequestHtml, MailAttachment } from "./auditEmailService";
 import { AuditAttachmentRepository } from "@/repositories/audit/auditAttachmentRepository";
 import { logger } from "@/lib/logger";
+import { fetchSharePointAttachment } from "@/services/email";
 
 const attachmentRepo = new AuditAttachmentRepository();
+
+async function getEmailAttachments(planId: string): Promise<MailAttachment[] | undefined> {
+  try {
+    const atts = await attachmentRepo.findByResource("PLAN", planId);
+    if (!atts.length) return undefined;
+    const resolved = await Promise.all(
+      atts.map(async (att) => {
+        if (!att.sharePointItemId) return null;
+        return fetchSharePointAttachment(att.sharePointItemId, att.fileName, att.mimeType);
+      })
+    );
+    return resolved.filter((r): r is NonNullable<typeof r> => r !== null);
+  } catch (err) {
+    logger.error("[auditNotification] failed to fetch plan attachments", { planId, error: String(err) });
+    return undefined;
+  }
+}
 
 // ─── In-app notify helper ─────────────────────────────────────────────────────
 
@@ -198,15 +216,18 @@ export async function sendApprovedNotifyOnce(opts: {
   if (opts.reviewerEmail) {
     await NotificationService.sendEmailOnce(
       idempotencyKey,
-      () =>
-        sendAuditApprovedEmail({
+      async () => {
+        const attachments = await getEmailAttachments(opts.planId);
+        await sendAuditApprovedEmail({
           to: { name: opts.reviewerName, email: opts.reviewerEmail! },
           planTitle: opts.planTitle,
           auditNo: opts.auditNo,
           approverName: opts.approverName,
           planId: opts.planId,
           senderAccessToken: opts.senderAccessToken,
-        }),
+          attachments,
+        });
+      },
       opts.reviewerEmail,
       `[Audit] อนุมัติแล้ว ${opts.auditNo}`,
       opts.reviewerAuthUserId,
@@ -245,8 +266,9 @@ export async function sendSignRequestOnce(opts: {
 
   await NotificationService.sendEmailOnce(
     idempotencyKey,
-    () =>
-      sendAuditSignRequestEmail({
+    async () => {
+      const attachments = await getEmailAttachments(opts.planId);
+      await sendAuditSignRequestEmail({
         to: { name: opts.targetName, email: opts.targetEmail },
         planTitle: opts.planTitle,
         auditNo: opts.auditNo,
@@ -254,7 +276,9 @@ export async function sendSignRequestOnce(opts: {
         token: opts.token,
         planId: opts.planId,
         senderAccessToken: opts.senderAccessToken,
-      }),
+        attachments,
+      });
+    },
     opts.targetEmail,
     `[Audit Sign] ${opts.auditNo}`,
     opts.targetAuthUserId,

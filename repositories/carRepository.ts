@@ -340,7 +340,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
         targetDepartmentName: true,
         defectDetail: true,
         isoStandards: true,
-        response: { select: { plannedCompletionDate: true, responderAuthUserId: true } },
+        response: { select: { plannedCompletionDate: true, responderAuthUserId: true, attachments: { select: { spItemId: true, fileName: true, mimeType: true } } } },
       },
     });
   }

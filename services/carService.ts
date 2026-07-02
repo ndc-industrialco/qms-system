@@ -914,14 +914,15 @@ export class CarService {
     });
 
     // Send emails after transaction committed (non-blocking)
+    const spAttachments = car.response?.attachments ?? [];
     if (input.action === "APPROVED" && approvedRecipients.length > 0) {
-      sendCarPlanApprovedEmail({ carId: id, carNo: car.carNo, recipients: approvedRecipients, cc: emailCc }).catch((err) =>
+      sendCarPlanApprovedEmail({ carId: id, carNo: car.carNo, recipients: approvedRecipients, cc: emailCc, spAttachments }).catch((err) =>
         logger.error("[CarService.reviewResponseByMR] Approved email failed", err)
       );
     } else if (input.action === "REJECTED") {
       const rejectedTargets = [...new Set([...deptEmails, ...(responderEmail ? [responderEmail] : [])])];
       for (const email of rejectedTargets) {
-        sendCarPlanRejectedEmail({ carId: id, carNo: car.carNo, targetEmail: email, comment: input.comment, cc: emailCc }).catch((err) =>
+        sendCarPlanRejectedEmail({ carId: id, carNo: car.carNo, targetEmail: email, comment: input.comment, cc: emailCc, spAttachments }).catch((err) =>
           logger.error("[CarService.reviewResponseByMR] Rejected email failed", err)
         );
       }
@@ -1008,14 +1009,15 @@ export class CarService {
       }, tx);
     });
 
+    const spAttachments = car.response?.attachments ?? [];
     if (input.action === "APPROVED" && approvedRecipients.length > 0) {
-      sendCarPlanApprovedEmail({ carId: id, carNo: car.carNo, recipients: approvedRecipients, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
+      sendCarPlanApprovedEmail({ carId: id, carNo: car.carNo, recipients: approvedRecipients, cc: emailCc, senderAccessToken: accessToken, spAttachments }).catch((err) =>
         logger.error("[CarService.reviewResponseByMRAuthenticated] Approved email failed", err)
       );
     } else if (input.action === "REJECTED") {
       const rejectedTargets = [...new Set([...deptEmails, ...(responderEmail ? [responderEmail] : [])])];
       for (const email of rejectedTargets) {
-        sendCarPlanRejectedEmail({ carId: id, carNo: car.carNo, targetEmail: email, comment: input.comment, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
+        sendCarPlanRejectedEmail({ carId: id, carNo: car.carNo, targetEmail: email, comment: input.comment, cc: emailCc, senderAccessToken: accessToken, spAttachments }).catch((err) =>
           logger.error("[CarService.reviewResponseByMRAuthenticated] Rejected email failed", err)
         );
       }

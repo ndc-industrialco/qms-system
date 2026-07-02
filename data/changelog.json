@@ -1,5 +1,41 @@
 [
   {
+    "id": "15",
+    "titleTh": "เพิ่มการแนบไฟล์ในอีเมลอนุมัติของโมดูล DAR, CAR, KPI รายเดือน และ Audit",
+    "titleEn": "Added email attachments for approval notifications in DAR, CAR, KPI Monthly, and Audit modules",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/approval-email-attachments",
+    "detailsTh": [
+      "ดึงไฟล์แนบจาก SharePoint ในโมดูล DAR, CAR, KPI รายเดือน และ Audit โดยแปลงเป็น base64 และแนบตรงไปกับอีเมลแจ้งเตือนการอนุมัติ/ขอลายเซ็น",
+      "ช่วยให้ผู้มีอำนาจอนุมัติสามารถตรวจสอบไฟล์แนบได้โดยตรงจากกล่องจดหมายอีเมลทันทีโดยไม่จำเป็นต้องล็อกอินเข้าระบบ"
+    ],
+    "detailsEn": [
+      "Fetched SharePoint attachments for DAR, CAR, KPI Monthly, and Audit modules on-demand, encoded them to base64, and attached them directly to outgoing approval/sign-off emails.",
+      "Allows approvers and reviewers to verify document contents directly within their mail clients without needing to log in first."
+    ]
+  },
+  {
+    "id": "14",
+    "titleTh": "ปรับมาตรฐาน Document Control เพิ่ม Export Master List และลดความเสี่ยงเรื่องเลขเอกสารกับ relation",
+    "titleEn": "Standardized Document Control with master-list export and safer numbering and relation checks",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/document-control-standardization-export-hardening",
+    "detailsTh": [
+      "ขยายระบบ doc-no-config ให้รองรับ Document Control เพื่อลด hardcode ของเลขเอกสาร prefix และ running sequence",
+      "เพิ่ม export master list ของ Document Control ทั้งภาพรวม รายแผนก และรายหมวดหมู่ พร้อมปุ่มใช้งานในหน้า module",
+      "เพิ่ม validation การผูก DAR กับ revision ให้รับเฉพาะ DAR ที่สถานะ COMPLETED และบังคับ download revision เฉพาะรายการ ACTIVE",
+      "ปรับหน้า Document Control detail และ upload revision dialog ให้ใช้ UI pattern ที่สอดคล้องกับ design system และลดการใช้ any"
+    ],
+    "detailsEn": [
+      "Extended the shared document-number config path to support Document Control and reduce hardcoded prefix and sequence logic.",
+      "Added Document Control master-list export for all departments, a single department, and category-scoped views with UI entry points.",
+      "Validated DAR-to-revision links against COMPLETED DAR records only and restricted revision downloads to ACTIVE rows.",
+      "Refined the Document Control detail and revision-upload UI to align better with the design system and reduce any usage."
+    ]
+  },
+  {
     "id": "13",
     "titleTh": "เพิ่มการสร้างเลขเอกสารอัตโนมัติ การจำกัดดาวน์โหลด และการเชื่อมโยง DAR สำหรับ Document Control",
     "titleEn": "Auto document number generation, download restrictions, and DAR link for Document Control",

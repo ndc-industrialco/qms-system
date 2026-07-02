@@ -121,7 +121,11 @@ export async function POST(req: NextRequest, { params }: Params) {
                   : DOC_TYPE_LABELS[dar.docType],
                 reason: dar.reason,
                 items: dar.items,
-                attachments: dar.attachments.map((a) => ({ fileName: a.fileName, spWebUrl: a.spWebUrl })),
+                attachments: dar.attachments.map((a) => ({
+                  fileName: a.fileName,
+                  spWebUrl: a.spWebUrl,
+                  spItemId: a.spItemId,
+                })),
                 actionToken: mrToken,
                 senderAccessToken: session.user.accessToken,
               })

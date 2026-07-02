@@ -275,6 +275,7 @@ export interface DarEmailItem {
 export interface DarEmailAttachment {
   fileName: string;
   spWebUrl: string;
+  spItemId?: string | null;
 }
 
 export async function sendReviewerAssignedEmail(opts: {
@@ -293,10 +294,23 @@ export async function sendReviewerAssignedEmail(opts: {
   senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
+
+  let emailAttachments: Array<{ name: string; contentType: string; contentBytes: string }> | undefined = undefined;
+  if (opts.attachments?.length) {
+    const resolved = await Promise.all(
+      opts.attachments.map(async (att) => {
+        if (!att.spItemId) return null;
+        return fetchSharePointAttachment(att.spItemId, att.fileName);
+      })
+    );
+    emailAttachments = resolved.filter((r): r is NonNullable<typeof r> => r !== null);
+  }
+
   await sendMail({
     to: [opts.reviewer],
     senderAccessToken: opts.senderAccessToken,
     subject: `[DAR] Review Required - ${opts.darNo}`,
+    attachments: emailAttachments,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอเอกสาร DAR ${opts.darNo} รอตรวจสอบ`,
       titleEn: `DAR ${opts.darNo} Pending Review`,
@@ -334,10 +348,23 @@ export async function sendMrApprovalRequestEmail(opts: {
   senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
+
+  let emailAttachments: Array<{ name: string; contentType: string; contentBytes: string }> | undefined = undefined;
+  if (opts.attachments?.length) {
+    const resolved = await Promise.all(
+      opts.attachments.map(async (att) => {
+        if (!att.spItemId) return null;
+        return fetchSharePointAttachment(att.spItemId, att.fileName);
+      })
+    );
+    emailAttachments = resolved.filter((r): r is NonNullable<typeof r> => r !== null);
+  }
+
   await sendMail({
     to: [opts.mr],
     senderAccessToken: opts.senderAccessToken,
     subject: `[DAR] MR Approval Required - ${opts.darNo}`,
+    attachments: emailAttachments,
     bodyHtml: makeBilingualMail({
       titleTh: `คำขอ DAR ${opts.darNo} รออนุมัติ MR`,
       titleEn: `DAR ${opts.darNo} Pending MR Approval`,
@@ -644,12 +671,25 @@ export async function sendKpiMonthlyApprovalRequestEmail(opts: {
   details?: KpiMonthlyDetailRow[];
   actionToken: string;
   senderAccessToken?: string | null;
+  spItemId?: string | null;
+  fileName?: string | null;
+  mimeType?: string | null;
 }) {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
+
+  let emailAttachments: Array<{ name: string; contentType: string; contentBytes: string }> | undefined = undefined;
+  if (opts.spItemId && opts.fileName) {
+    const resolved = await fetchSharePointAttachment(opts.spItemId, opts.fileName, opts.mimeType);
+    if (resolved) {
+      emailAttachments = [resolved];
+    }
+  }
+
   await sendMail({
     to: [opts.approver],
     senderAccessToken: opts.senderAccessToken,
     subject: `[KPI Monthly] Approval Required - ${opts.departmentName} / ${opts.month} ${opts.year}`,
+    attachments: emailAttachments,
     bodyHtml: makeBilingualMail({
       titleTh: `KPI รายเดือน ${opts.departmentName} รออนุมัติ`,
       titleEn: `Monthly KPI ${opts.departmentName} Pending Approval`,
@@ -685,21 +725,9 @@ export async function sendAnnouncementEmail(opts: {
   let attachments: Array<{ name: string; contentType: string; contentBytes: string }> | undefined = undefined;
 
   if (opts.spItemId) {
-    try {
-      const info = await getFileInfo(opts.spItemId);
-      if (info.downloadUrl) {
-        const res = await fetch(info.downloadUrl);
-        if (res.ok) {
-          const buf = await res.arrayBuffer();
-          attachments = [{
-            name: opts.fileName || info.name || "attachment",
-            contentType: opts.mimeType || info.mimeType || "application/octet-stream",
-            contentBytes: Buffer.from(buf).toString("base64"),
-          }];
-        }
-      }
-    } catch (err) {
-      logger.warn("[sendAnnouncementEmail] Failed to download attachment from SharePoint", { error: err instanceof Error ? err.message : String(err) });
+    const file = await fetchSharePointAttachment(opts.spItemId, opts.fileName, opts.mimeType);
+    if (file) {
+      attachments = [file];
     }
   }
 
@@ -734,13 +762,26 @@ export async function sendKpiMonthlyResultEmail(opts: {
   details?: KpiMonthlyDetailRow[];
   reportId?: string;
   senderAccessToken?: string | null;
+  spItemId?: string | null;
+  fileName?: string | null;
+  mimeType?: string | null;
 }) {
   const url = getAppUrl(`/qms/kpi/monthly`);
   const statusTh = opts.status === "APPROVED" ? "อนุมัติแล้ว" : "ถูกปฏิเสธ";
+
+  let emailAttachments: Array<{ name: string; contentType: string; contentBytes: string }> | undefined = undefined;
+  if (opts.spItemId && opts.fileName) {
+    const resolved = await fetchSharePointAttachment(opts.spItemId, opts.fileName, opts.mimeType);
+    if (resolved) {
+      emailAttachments = [resolved];
+    }
+  }
+
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
     subject: `[KPI Monthly] ${opts.status} - ${opts.departmentName} / ${opts.month} ${opts.year}`,
+    attachments: emailAttachments,
     bodyHtml: makeBilingualMail({
       titleTh: `ผลการอนุมัติ KPI รายเดือน ${opts.departmentName}`,
       titleEn: `Monthly KPI ${opts.departmentName} Approval Result`,
@@ -787,4 +828,28 @@ export async function sendKpiMonthlyReminderEmail(opts: {
       actionUrl: url,
     }),
   });
+}
+
+export async function fetchSharePointAttachment(
+  spItemId: string,
+  fileName?: string | null,
+  mimeType?: string | null
+): Promise<{ name: string; contentType: string; contentBytes: string } | null> {
+  try {
+    const info = await getFileInfo(spItemId);
+    if (info.downloadUrl) {
+      const res = await fetch(info.downloadUrl);
+      if (res.ok) {
+        const buf = await res.arrayBuffer();
+        return {
+          name: fileName || info.name || "attachment",
+          contentType: mimeType || info.mimeType || "application/octet-stream",
+          contentBytes: Buffer.from(buf).toString("base64"),
+        };
+      }
+    }
+  } catch (err) {
+    logger.warn("[fetchSharePointAttachment] Failed to download attachment from SharePoint", { error: err instanceof Error ? err.message : String(err) });
+  }
+  return null;
 }

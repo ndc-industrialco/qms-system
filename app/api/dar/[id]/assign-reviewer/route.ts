@@ -95,6 +95,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           attachments: dar.attachments.map((a) => ({
             fileName: a.fileName,
             spWebUrl: a.spWebUrl,
+            spItemId: a.spItemId,
           })),
           actionToken: reviewerToken,
           senderAccessToken: session.user.accessToken,

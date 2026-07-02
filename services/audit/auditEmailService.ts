@@ -5,7 +5,7 @@
 
 import { logger } from "@/lib/logger";
 
-interface MailAttachment {
+export interface MailAttachment {
   name: string;
   contentType: string;
   contentBytes: string; // base64
@@ -344,12 +344,14 @@ export async function sendAuditApprovedEmail(opts: {
   approverName: string;
   planId: string;
   senderAccessToken?: string | null;
+  attachments?: MailAttachment[];
 }): Promise<void> {
   const url = getAppUrl(`/qms/audit/${opts.planId}`);
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
     subject: `[Audit] Plan Approved — ${opts.auditNo}`,
+    attachments: opts.attachments,
     bodyHtml: layout({
       badgeColor: "#10b981",
       badgeText: "Approved",
@@ -720,6 +722,7 @@ export async function sendAuditSignRequestEmail(opts: {
   token: string;
   planId: string;
   senderAccessToken?: string | null;
+  attachments?: MailAttachment[];
 }) {
   const rolePath = opts.signedRole === "APPROVER" ? "approver" : "reviewer";
   const url = opts.token && opts.token.length > 0
@@ -731,6 +734,7 @@ export async function sendAuditSignRequestEmail(opts: {
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
     subject: `[Audit] Signature Required — ${opts.auditNo} (${roleLabel})`,
+    attachments: opts.attachments,
     bodyHtml: layout({
       badgeColor: "#f59e0b",
       badgeText: "Signature Required",

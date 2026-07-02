@@ -1,4 +1,5 @@
 import { logger } from "@/lib/logger";
+import { fetchSharePointAttachment } from "./email";
 
 export function esc(value: string): string {
   return value
@@ -20,6 +21,7 @@ async function sendMail(opts: {
   subject: string;
   bodyHtml: string;
   senderAccessToken?: string | null;
+  attachments?: Array<{ name: string; contentType: string; contentBytes: string }>;
 }): Promise<void> {
   if (!opts.senderAccessToken) {
     logger.warn("[carEmail] No sender token - mail skipped", { subject: opts.subject, to: opts.to });
@@ -37,6 +39,7 @@ async function sendMail(opts: {
     subject: opts.subject,
     htmlBody: opts.bodyHtml,
     ...(opts.cc?.length ? { cc: opts.cc.map((email) => ({ email })) } : {}),
+    ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
   };
 
   const res = await fetch(`${base}/api/auth/mail/send`, {
@@ -433,8 +436,19 @@ export async function sendCarPlanApprovedEmail(opts: {
   recipients: string[];
   cc?: string[];
   senderAccessToken?: string | null;
+  spAttachments?: Array<{ spItemId: string; fileName: string; mimeType?: string | null }>;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
+
+  let emailAttachments: Array<{ name: string; contentType: string; contentBytes: string }> | undefined = undefined;
+  if (opts.spAttachments?.length) {
+    const resolved = await Promise.all(
+      opts.spAttachments.map(async (att) => {
+        return fetchSharePointAttachment(att.spItemId, att.fileName, att.mimeType);
+      })
+    );
+    emailAttachments = resolved.filter((r): r is NonNullable<typeof r> => r !== null);
+  }
 
   const html = carMailHtml({
     carNo: opts.carNo,
@@ -461,6 +475,7 @@ export async function sendCarPlanApprovedEmail(opts: {
       subject: `[CAR] อนุมัติแผนแก้ไขแล้ว / Plan Approved – ${opts.carNo}`,
       bodyHtml: html,
       senderAccessToken: opts.senderAccessToken,
+      attachments: emailAttachments,
     });
   }
 }
@@ -473,11 +488,22 @@ export async function sendCarPlanRejectedEmail(opts: {
   comment?: string;
   cc?: string[];
   senderAccessToken?: string | null;
+  spAttachments?: Array<{ spItemId: string; fileName: string; mimeType?: string | null }>;
 }): Promise<void> {
   const url = getAppUrl(`/car/${opts.carId}`);
   const commentLine = opts.comment
     ? `ความคิดเห็น MR: ${opts.comment}`
     : undefined;
+
+  let emailAttachments: Array<{ name: string; contentType: string; contentBytes: string }> | undefined = undefined;
+  if (opts.spAttachments?.length) {
+    const resolved = await Promise.all(
+      opts.spAttachments.map(async (att) => {
+        return fetchSharePointAttachment(att.spItemId, att.fileName, att.mimeType);
+      })
+    );
+    emailAttachments = resolved.filter((r): r is NonNullable<typeof r> => r !== null);
+  }
 
   const html = carMailHtml({
     carNo: opts.carNo,
@@ -503,6 +529,7 @@ export async function sendCarPlanRejectedEmail(opts: {
     subject: `[CAR] ปฏิเสธแผนแก้ไข / Plan Rejected – ${opts.carNo}`,
     bodyHtml: html,
     senderAccessToken: opts.senderAccessToken,
+    attachments: emailAttachments,
   });
 }
 
