@@ -142,7 +142,8 @@ model DarMaster {
   attachments   DarAttachment[]
   distributions DarDistribution[]
   items         DarItem[]
-  qmsProcessing QmsProcessing?
+  qmsProcessing           QmsProcessing?
+  documentRevisions       DocumentControlRevision[]
 
   @@index([status])
   @@index([requesterId])
@@ -566,6 +567,8 @@ model DocumentControlRevision {
   createdAt           DateTime         @default(now())
 
   documentControl DocumentControl @relation(fields: [documentControlId], references: [id], onDelete: Cascade)
+  darMasterId     String?          @map("dar_master_id")
+  darMaster       DarMaster?       @relation(fields: [darMasterId], references: [id], onDelete: SetNull)
 
   @@index([documentControlId])
   @@index([status])

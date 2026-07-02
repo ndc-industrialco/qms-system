@@ -49,6 +49,14 @@ const DOC_SELECT = {
       createdByAuthUserId: true,
       createdByName: true,
       createdAt: true,
+      darMasterId: true,
+      darMaster: {
+        select: {
+          id: true,
+          darNo: true,
+          objective: true,
+        },
+      },
     },
     orderBy: { createdAt: 'desc' as const },
   },

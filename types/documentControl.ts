@@ -45,6 +45,8 @@ export interface DocumentControlRevisionDetail {
   mimeType: string | null;
   createdBy: { id: string; authUserId?: string | null; name: string | null };
   createdAt: string;
+  darMasterId?: string | null;
+  darMaster?: { id: string; darNo: string | null; objective: string } | null;
 }
 
 export interface DocumentControlDetail extends DocumentControlSummary {

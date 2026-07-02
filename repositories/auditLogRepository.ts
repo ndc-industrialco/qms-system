@@ -4,6 +4,7 @@ import type { Prisma } from "@/generated/prisma/client";
 export interface AuditLogFilter {
   action?: string;
   resourceType?: string;
+  resourceId?: string;
   actorUserId?: string;
   from?: Date;
   to?: Date;
@@ -30,6 +31,7 @@ function buildWhere(filter: AuditLogFilter): Prisma.AuditLogWhereInput {
 
   if (filter.action) where.action = filter.action;
   if (filter.resourceType) where.resourceType = filter.resourceType;
+  if (filter.resourceId) where.resourceId = filter.resourceId;
   if (filter.actorUserId) where.actorUserId = filter.actorUserId;
 
   if (filter.from || filter.to) {

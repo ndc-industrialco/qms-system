@@ -11,6 +11,7 @@
  */
 
 import { logger } from "@/lib/logger";
+import { getFileInfo } from "@/lib/sharepoint";
 
 export interface MailRecipient {
   name: string;
@@ -673,10 +674,35 @@ export async function sendAnnouncementEmail(opts: {
   sourceSystem: string;
   senderAccessToken?: string | null;
   announcementId: string;
+  spItemId?: string | null;
+  fileName?: string | null;
+  mimeType?: string | null;
 }): Promise<void> {
   if (!opts.groupEmails.length) return;
   const url = getAppUrl(`/announcements/${opts.announcementId}`);
   const to = opts.groupEmails.map((e) => ({ name: e, email: e }));
+
+  let attachments: Array<{ name: string; contentType: string; contentBytes: string }> | undefined = undefined;
+
+  if (opts.spItemId) {
+    try {
+      const info = await getFileInfo(opts.spItemId);
+      if (info.downloadUrl) {
+        const res = await fetch(info.downloadUrl);
+        if (res.ok) {
+          const buf = await res.arrayBuffer();
+          attachments = [{
+            name: opts.fileName || info.name || "attachment",
+            contentType: opts.mimeType || info.mimeType || "application/octet-stream",
+            contentBytes: Buffer.from(buf).toString("base64"),
+          }];
+        }
+      }
+    } catch (err) {
+      logger.warn("[sendAnnouncementEmail] Failed to download attachment from SharePoint", { error: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
   await sendMail({
     to,
     senderAccessToken: opts.senderAccessToken,
@@ -693,6 +719,7 @@ export async function sendAnnouncementEmail(opts: {
       actionLabelEn: "View Announcement",
       actionUrl: url,
     }),
+    attachments,
   });
 }
 

@@ -1,5 +1,33 @@
 [
   {
+    "id": "13",
+    "titleTh": "เพิ่มการสร้างเลขเอกสารอัตโนมัติ การจำกัดดาวน์โหลด และการเชื่อมโยง DAR สำหรับ Document Control",
+    "titleEn": "Auto document number generation, download restrictions, and DAR link for Document Control",
+    "date": "2026-07-02",
+    "type": "feature",
+    "commit": "feat/doc-control-numbering-download-dar-link",
+    "detailsTh": [
+      "เพิ่ม API route /api/document-controls/next-number สำหรับดึงเลขเอกสารตามรหัสหมวดหมู่และแผนกแบบ {หมวดหมู่}-{แผนก}-{running no}",
+      "เพิ่มการดึงเลขเอกสารอัตโนมัติไปแสดงผลในฟิลด์ docNumber ของ DocumentControlModal เมื่อสร้างเอกสารใหม่",
+      "อัปเดตโมเดลใน schema.prisma และ PostgreSQL DB เพิ่มการเชื่อมโยง darMasterId และ darMaster เข้ากับ DocumentControlRevision",
+      "เพิ่มการเลือก DAR ที่มีสถานะเสร็จสิ้น (searchable/filterable) ในหน้าต่างอัปโหลดรีวิชัน (UploadRevisionDialog)",
+      "แสดงผลเลขที่ DAR ที่เชื่อมโยงในตารางประวัติการรีวิชันเอกสารของหน้ารายละเอียด",
+      "จำกัดห้ามดาวน์โหลดไฟล์เอกสารที่สถานะไม่ใช่ ACTIVE ทั้งทาง Frontend UI และทาง Backend download-latest API พร้อมแสดงข้อความเตือนชัดเจน",
+      "เพิ่ม API และส่วนแสดงผลประวัติการดาวน์โหลดเอกสาร (Download Audit Log) ต่อท้ายตารางประวัติรีวิชันในหน้ารายละเอียดเอกสาร",
+      "เพิ่มการส่งเอกสารแนบจาก SharePoint ไปกับอีเมลประกาศประกาศใหม่ (Announcement Mail Delivery)"
+    ],
+    "detailsEn": [
+      "Added API route /api/document-controls/next-number to generate next document number in format {category}-{dept}-{running no}.",
+      "Pre-filled docNumber field inside DocumentControlModal automatically when creating new document controls.",
+      "Updated schema.prisma and PostgreSQL DB to link DocumentControlRevision with DarMaster via darMasterId.",
+      "Integrated searchable/filterable completed DAR selection inside UploadRevisionDialog.",
+      "Displayed clickable linked DAR numbers within the revisions table on the Document Control detail page.",
+      "Blocked preview and downloads of non-ACTIVE documents on both Frontend UI and Backend download-latest API.",
+      "Rendered Download Audit Log table containing actor names, roles, and download timestamps below the revision history.",
+      "Integrated SharePoint file attachments into the new announcement email delivery flow."
+    ]
+  },
+  {
     "id": "12",
     "titleTh": "เพิ่มการอัปโหลดไฟล์แนบในการอนุมัติและปฏิเสธสำหรับโมดูล DAR, CAR, KPI",
     "titleEn": "Added file attachment uploads on approval & rejection for DAR, CAR, and KPI modules",

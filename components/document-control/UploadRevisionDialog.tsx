@@ -1,10 +1,10 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useT } from '@/lib/i18n';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { uploadRevisionSchema } from '@/schemas/documentControlSchema';
 import ResponsiveFormOverlay from '@/components/common/ResponsiveFormOverlay';
@@ -36,6 +36,25 @@ export function UploadRevisionDialog({
 }: UploadRevisionDialogProps) {
   const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [darSearch, setDarSearch] = useState('');
+
+  const { data: darsData } = useQuery({
+    queryKey: ['completed-dars'],
+    queryFn: async () => {
+      const res = await fetch('/api/dar?all=true');
+      if (!res.ok) throw new Error('Failed to fetch DARs');
+      const json = await res.json();
+      return (json.data || []) as any[];
+    },
+    enabled: open,
+  });
+
+  const dars = darsData || [];
+  const filteredDars = dars.filter((dar) =>
+    dar.status === 'COMPLETED' &&
+    (dar.darNo?.toLowerCase().includes(darSearch.toLowerCase()) ||
+     dar.objective?.toLowerCase().includes(darSearch.toLowerCase()))
+  );
 
   const {
     register,
@@ -50,6 +69,7 @@ export function UploadRevisionDialog({
       revision: '',
       effectiveDate: '',
       status: 'ACTIVE' as any,
+      darMasterId: '' as string | null,
     },
   });
 
@@ -96,6 +116,7 @@ export function UploadRevisionDialog({
         revision: data.revision,
         effectiveDate: data.effectiveDate || null,
         status: data.status,
+        darMasterId: data.darMasterId || null,
       })
     );
 
@@ -212,6 +233,37 @@ export function UploadRevisionDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Link with DAR (Searchable Dropdown) */}
+          <div className="space-y-1.5">
+            <Label htmlFor="dar-select" className="text-slate-800 text-sm font-semibold">
+              เชื่อมโยงเอกสาร DAR (ไม่บังคับ)
+            </Label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="ค้นหาเลขที่ DAR..."
+                value={darSearch}
+                onChange={(e) => setDarSearch(e.target.value)}
+                disabled={isLoading}
+                className="w-1/3 text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <select
+                id="dar-select"
+                value={watch('darMasterId') || ''}
+                onChange={(e) => setValue('darMasterId', e.target.value || null)}
+                disabled={isLoading}
+                className="flex-1 text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="">-- ไม่เชื่อมโยง --</option>
+                {filteredDars.map((dar) => (
+                  <option key={dar.id} value={dar.id}>
+                    {dar.darNo} - {dar.objective}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
         </form>

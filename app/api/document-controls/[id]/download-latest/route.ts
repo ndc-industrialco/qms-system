@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { DocumentControlService } from '@/services/documentControlService';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { NotFoundError } from '@/lib/errors';
+import { NotFoundError, ValidationError } from '@/lib/errors';
 import { getFileInfo } from '@/lib/sharepoint';
+import { AuditService } from '@/services/auditService';
 
 const docService = new DocumentControlService();
 
@@ -12,10 +13,14 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
-    await requireAuth();
+    const session = await requireAuth();
     const { id } = await params;
 
     const doc = await docService.getDocument(id);
+
+    if (doc.status !== 'ACTIVE') {
+      throw new ValidationError('เอกสารนี้ถูกยกเลิกหรือยังไม่เปิดใช้งาน ไม่สามารถดาวน์โหลดได้');
+    }
 
     // Find latest ACTIVE revision; fall back to the most-recent revision
     const latestRevision = (doc.revisions ?? []).find((r: any) => r.status === 'ACTIVE')
@@ -24,6 +29,17 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (!latestRevision) {
       throw new NotFoundError('No downloadable revision found');
     }
+
+    // Log the download action in AuditLog
+    await AuditService.record({
+      actorUserId: session.user.id,
+      actorAuthUserId: session.user.authUserId,
+      actorRole: session.user.role,
+      action: 'DOWNLOAD' as any,
+      resourceType: 'DOCUMENT',
+      resourceId: id,
+      after: { docNumber: doc.docNumber, docName: doc.docName, revision: latestRevision.revision },
+    });
 
     // Prefer a fresh @microsoft.graph.downloadUrl fetched on-demand so that
     // the link never expires (Graph pre-signed URLs are only valid for ~1 hour).

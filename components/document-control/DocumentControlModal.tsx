@@ -84,9 +84,20 @@ export function DocumentControlModal({
           description: '',
           status: 'DRAFT' as DocControlStatus,
         });
+
+        if (categoryId && departmentId) {
+          fetch(`/api/document-controls/next-number?categoryId=${categoryId}&departmentId=${departmentId}`)
+            .then((res) => res.json())
+            .then((json) => {
+              if (json?.data?.nextNumber) {
+                setValue('docNumber', json.data.nextNumber, { shouldValidate: true });
+              }
+            })
+            .catch((err) => console.error('Failed to fetch next document number', err));
+        }
       }
     }
-  }, [open, document, categoryId, departmentId, reset]);
+  }, [open, document, categoryId, departmentId, reset, setValue]);
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {

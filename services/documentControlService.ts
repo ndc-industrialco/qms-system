@@ -28,6 +28,40 @@ export class DocumentControlService {
     return db.docControlDept.findUnique({ where: { id } });
   }
 
+  async previewNextDocNumber(categoryId: string, departmentId: string): Promise<string> {
+    const [dept, category] = await Promise.all([
+      this.findDept(departmentId),
+      this.categoryRepo.findForDocControl(categoryId),
+    ]);
+    if (!dept || !category) throw new ValidationError('Department or category not found');
+
+    const categoryCode = category.name;
+    const deptCode = dept.authDeptCode || dept.name;
+    const prefix = `${categoryCode}-${deptCode}-`;
+
+    const existing = await db.documentControl.findMany({
+      where: {
+        categoryId,
+        departmentId,
+        docNumber: { startsWith: prefix },
+      },
+      select: { docNumber: true },
+    });
+
+    let maxSeq = 0;
+    for (const doc of existing) {
+      const suffix = doc.docNumber.slice(prefix.length);
+      const seq = parseInt(suffix, 10);
+      if (!isNaN(seq) && seq > maxSeq) {
+        maxSeq = seq;
+      }
+    }
+
+    const nextSeq = maxSeq + 1;
+    const runningNo = String(nextSeq).padStart(3, '0');
+    return `${prefix}${runningNo}`;
+  }
+
   private async getIdentitySnapshot(authUserId: string) {
     // Try cache first (populated at login, no DB hit needed)
     const cached = await getUserSnapshot(authUserId);
@@ -210,7 +244,7 @@ export class DocumentControlService {
   async addRevision(
     id: string,
     userId: string,
-    data: { revision: string; effectiveDate?: string | null; status?: DocControlStatus },
+    data: { revision: string; effectiveDate?: string | null; status?: DocControlStatus; darMasterId?: string | null },
     file: { buffer: Uint8Array; name: string; type: string },
     authUserId?: string | null,
   ) {
@@ -263,6 +297,7 @@ export class DocumentControlService {
             createdById: userId,
             createdByAuthUserId: authUserId ?? null,
             createdByName: creator?.name ?? null,
+            darMasterId: data.darMasterId || null,
           },
           tx,
         );

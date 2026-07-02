@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/lib/i18n';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
@@ -37,6 +37,18 @@ export function DocumentControlDetailClient({
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  const { data: downloadLogsData, refetch: refetchLogs } = useQuery({
+    queryKey: ['document-download-logs', document.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/document-controls/${document.id}/download-logs`);
+      if (!res.ok) throw new Error('Failed to fetch download logs');
+      const json = await res.json();
+      return (json.data || []) as any[];
+    },
+  });
+
+  const downloadLogs = downloadLogsData || [];
+
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/document-controls/${document.id}`, {
@@ -49,14 +61,13 @@ export function DocumentControlDetailClient({
       toast.success(t('documentControl.messages.deleteSuccess'));
       router.push('/qms/document-controls');
     },
-    onError: () => {
-      toast.error(t('common.error'));
-    },
+    onError: (err: any) => toast.error(err.message),
   });
 
   // Opens a fresh (non-expired) download URL for the latest revision.
   const handleDocDownload = () => {
     window.open(`/api/document-controls/${document.id}/download-latest`, '_blank');
+    setTimeout(() => refetchLogs(), 1500);
   };
 
   // Fetches a fresh Graph API pre-signed URL for a specific revision by spItemId.
@@ -96,7 +107,7 @@ export function DocumentControlDetailClient({
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {document.spDownloadUrl && (
+            {document.spDownloadUrl && document.status === 'ACTIVE' && (
               <Button
                 onClick={handleDocDownload}
                 variant="outline"
@@ -194,7 +205,7 @@ export function DocumentControlDetailClient({
                   {document.mimeType}
                 </p>
               </div>
-              {document.spDownloadUrl && (
+              {document.spDownloadUrl && document.status === 'ACTIVE' && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -225,6 +236,7 @@ export function DocumentControlDetailClient({
                     <th className="text-slate-800 text-sm font-semibold py-3 px-4">{t('documentControl.field.status')}</th>
                     <th className="text-slate-800 text-sm font-semibold py-3 px-4">{t('documentControl.field.effectiveDate')}</th>
                     <th className="text-slate-800 text-sm font-semibold py-3 px-4">{t('documentControl.field.fileName')}</th>
+                    <th className="text-slate-800 text-sm font-semibold py-3 px-4">DAR</th>
                     <th className="text-slate-800 text-sm font-semibold py-3 px-4">{t('documentControl.field.createdBy')}</th>
                     <th className="text-slate-800 text-sm font-semibold py-3 px-4">{t('documentControl.field.createdAt')}</th>
                     <th className="text-slate-800 text-sm font-semibold py-3 px-4 text-right">{t('documentControl.table.colActions')}</th>
@@ -242,6 +254,18 @@ export function DocumentControlDetailClient({
                       </td>
                       <td className="py-3 px-4 max-w-[200px] truncate text-slate-600 font-medium" title={rev.fileName || ''}>
                         {rev.fileName || '—'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 font-medium">
+                        {rev.darMaster?.darNo ? (
+                          <a
+                            href={`/qms/dar/${rev.darMasterId}`}
+                            className="text-primary hover:underline font-mono text-xs"
+                          >
+                            {rev.darMaster.darNo}
+                          </a>
+                        ) : (
+                          '—'
+                        )}
                       </td>
                       <td className="py-3 px-4 text-slate-500">{rev.createdBy?.name || '—'}</td>
                       <td className="py-3 px-4 font-mono text-xs text-slate-500">
@@ -261,6 +285,48 @@ export function DocumentControlDetailClient({
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Download Audit Log */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
+          <p className="text-slate-800 font-semibold text-sm mb-4">
+            ประวัติการดาวน์โหลดเอกสาร (Download Audit Log)
+          </p>
+          {!downloadLogs.length ? (
+            <p className="text-slate-400 text-xs text-center py-4">ยังไม่มีประวัติการดาวน์โหลดสำหรับเอกสารนี้</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="sticky top-0 z-10 bg-slate-50 border-b border-slate-100">
+                  <tr>
+                    <th className="text-slate-600 font-semibold py-2 px-3">ผู้ดาวน์โหลด</th>
+                    <th className="text-slate-600 font-semibold py-2 px-3">บทบาท</th>
+                    <th className="text-slate-600 font-semibold py-2 px-3">เวอร์ชันที่ดาวน์โหลด</th>
+                    <th className="text-slate-600 font-semibold py-2 px-3">วันเวลาดาวน์โหลด</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {downloadLogs.map((log) => {
+                    const afterData = (log.after || {}) as any;
+                    return (
+                      <tr key={log.id} className="border-b border-slate-100/50 hover:bg-slate-50/50 transition-colors">
+                        <td className="py-2 px-3 text-slate-700 font-medium">
+                          {log.actorName || 'Unknown User'}
+                        </td>
+                        <td className="py-2 px-3 text-slate-500">{log.actorRole}</td>
+                        <td className="py-2 px-3 text-slate-600 font-mono">
+                          {afterData.revision ? `Rev. ${afterData.revision}` : '—'}
+                        </td>
+                        <td className="py-2 px-3 font-mono text-slate-500">
+                          {formatDate(log.createdAt)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

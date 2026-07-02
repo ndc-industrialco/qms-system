@@ -19,6 +19,7 @@ export const uploadRevisionSchema = z.object({
   revision: z.string().min(1, 'Revision is required').max(20),
   effectiveDate: z.string().optional().nullable(),
   status: z.enum(DOC_STATUSES).default('ACTIVE'),
+  darMasterId: z.string().optional().nullable(),
 });
 
 export const documentControlQuerySchema = z.object({

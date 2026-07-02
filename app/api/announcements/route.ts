@@ -83,6 +83,9 @@ export async function POST(req: NextRequest) {
         sourceSystem: validatedData.sourceSystem ?? "QMS",
         senderAccessToken: session.user.accessToken,
         announcementId: result.id,
+        spItemId: validatedData.spItemId || null,
+        fileName: validatedData.fileName || null,
+        mimeType: validatedData.mimeType || null,
       }).catch((err: unknown) => logger.warn("[announcements] Email send failed", { err: err instanceof Error ? err.message : String(err) }));
     }
 
