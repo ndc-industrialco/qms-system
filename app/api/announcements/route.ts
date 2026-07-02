@@ -22,7 +22,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
     const session = await requireRole("QMS", "IT", "MR");
 
     const emailGroupMailsRaw = formData.get("emailGroupMails");

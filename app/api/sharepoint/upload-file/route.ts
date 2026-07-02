@@ -7,7 +7,7 @@ import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
     await requireRole("QMS", "MR", "IT");
     const file = formData.get("file") as File | null;
     const folderPath = (formData.get("folderPath") as string | null) ?? (formData.get("path") as string | null) ?? "root";

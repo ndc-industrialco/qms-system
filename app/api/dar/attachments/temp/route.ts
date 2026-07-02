@@ -35,7 +35,7 @@ const querySchema = z.object({ tempId: z.string().uuid() });
 
 export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<TempAttachmentResponse>>> {
   try {
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
     await requireAuth();
 
     const { searchParams } = req.nextUrl;

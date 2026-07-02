@@ -27,7 +27,7 @@ export async function POST(
   { params }: { params: Promise<{ responseId: string }> },
 ) {
   try {
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
     const session = await requireAuth();
     const { responseId } = await params;
 

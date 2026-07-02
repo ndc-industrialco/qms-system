@@ -14,7 +14,7 @@ const darService = new DarService();
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
     const session = await requireAuth();
     const { id: darId } = paramSchema.parse(await params);
     const file = formData.get("file");

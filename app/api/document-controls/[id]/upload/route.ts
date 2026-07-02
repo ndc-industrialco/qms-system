@@ -13,7 +13,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function POST(req: NextRequest, { params }: Params) {
   try {
-    const formData = await req.formData();
+    const formData = await req.clone().formData();
     const session = await requireRole('QMS', 'IT', 'MR');
     const { id } = await params;
     const file = formData.get('file') as File | null;
