@@ -11,6 +11,7 @@ import ResponsiveFormOverlay from '@/components/common/ResponsiveFormOverlay';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { readApiErrorMessage, readApiJson } from '@/lib/client-api';
 import {
   Select,
   SelectContent,
@@ -61,10 +62,9 @@ export function UploadRevisionDialog({
         body: formData,
       });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error?.message || 'Failed to upload revision');
+        throw new Error(await readApiErrorMessage(res, 'Failed to upload revision'));
       }
-      return res.json();
+      return readApiJson(res, 'Failed to upload revision');
     },
     onSuccess: () => {
       toast.success(t('documentControl.messages.uploadSuccess'));

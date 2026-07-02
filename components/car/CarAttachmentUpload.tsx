@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { readApiErrorMessage } from "@/lib/client-api";
 
 interface Props {
   carResponseId: string;
@@ -29,10 +30,11 @@ export default function CarAttachmentUpload({ carResponseId, onUploaded }: Props
         method: "POST",
         body: formData,
       });
+
       if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        throw new Error(json.message ?? "อัปโหลดไม่สำเร็จ");
+        throw new Error(await readApiErrorMessage(res, "Upload failed"));
       }
+
       onUploaded?.();
     } catch (err) {
       setError((err as Error).message);

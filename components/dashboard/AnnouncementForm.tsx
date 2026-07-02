@@ -6,7 +6,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { readApiErrorMessage, readApiJson } from "@/lib/client-api";
 import { useT } from "@/lib/i18n";
+
+type SharePointUploadResponse = {
+  data?: {
+    id: string;
+    webUrl: string;
+    "@microsoft.graph.downloadUrl"?: string;
+  } | null;
+  error?: string | null;
+};
 
 export default function AnnouncementForm() {
   const router = useRouter();
@@ -22,7 +32,7 @@ export default function AnnouncementForm() {
       const formData = new FormData(e.currentTarget);
       
       // 1. Upload file if exists
-      let attachmentData = null;
+      let attachmentData: SharePointUploadResponse | null = null;
       if (file) {
         const fileData = new FormData();
         // Use URL-encoded filename to bypass Next.js/Undici multipart non-ASCII body parsing bugs
@@ -36,8 +46,8 @@ export default function AnnouncementForm() {
           body: fileData,
         });
         
-        if (!uploadRes.ok) throw new Error(t("announcement.uploadFail"));
-        attachmentData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(await readApiErrorMessage(uploadRes, t("announcement.uploadFail")));
+        attachmentData = await readApiJson<SharePointUploadResponse>(uploadRes, t("announcement.uploadFail"));
       }
 
       // 2. Add attachment details to formData if uploaded
@@ -56,7 +66,7 @@ export default function AnnouncementForm() {
       });
 
       if (!createRes.ok) {
-        throw new Error(t("announcement.saveFail"));
+        throw new Error(await readApiErrorMessage(createRes, t("announcement.saveFail")));
       }
 
       router.push("/qms/announcements");
