@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    // 1. Authenticate & Authorize (IT, QMS, MR only)
-    const session = await requireRole("QMS", "IT", "MR");
+    // 1. Authenticate & Authorize (IT only)
+    const session = await requireRole("IT");
 
     // 2. Test DB Connection
     let dbStatus = "CONNECTED";

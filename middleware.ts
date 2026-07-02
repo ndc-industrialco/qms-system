@@ -133,6 +133,16 @@ export default auth(async (req) => {
   }
 
   if (
+    (path.startsWith("/qms/system-info") || path.startsWith("/qms/development")) &&
+    !hasQmsRole(role, "IT", "QMS_IT")
+  ) {
+    return withRequestId(
+      NextResponse.redirect(new URL("/unauthorized?reason=insufficient_role", req.url)),
+      requestId,
+    );
+  }
+
+  if (
     path.startsWith("/qms/") &&
     !path.startsWith("/qms/document-controls") &&
     !path.startsWith("/qms/kpi") &&
