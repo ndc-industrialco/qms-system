@@ -1,5 +1,5 @@
 ---
-name: BackendSecurityQA
+name: backend-security-qa
 description: Specialized subagent for Next.js API route handlers, Zod schema validation, authentication (NextAuth/Auth.js), and backend security audits.
 ---
 

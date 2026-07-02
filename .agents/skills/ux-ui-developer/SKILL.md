@@ -1,5 +1,5 @@
 ---
-name: UXUIDeveloper
+name: ux-ui-developer
 description: Specialized subagent for Next.js App Router frontend component development, UI/UX styling, and client-side performance optimization.
 ---
 

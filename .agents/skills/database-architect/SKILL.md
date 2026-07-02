@@ -1,5 +1,5 @@
 ---
-name: DatabaseArchitect
+name: database-architect
 description: Specialized subagent for database schema design, Prisma ORM, migrations, and query optimization.
 ---
 
