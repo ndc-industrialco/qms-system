@@ -184,6 +184,12 @@ export class CarService {
 
   /** Resolve the designated MR user: SystemConfig first, then fallback to first QMS_MR/MR role grant. */
   private async resolveMrUser(accessToken?: string | null): Promise<{ authUserId: string; email?: string | null } | null> {
+    const [carAuthKey, carEmailKey] = await Promise.all([
+      this.configRepo.findValueByKey("CAR_MR_AUTH_USER_ID"),
+      this.configRepo.findValueByKey("CAR_MR_EMAIL"),
+    ]);
+    if (carAuthKey) return { authUserId: carAuthKey, email: carEmailKey };
+
     const [authKey, emailKey] = await Promise.all([
       this.configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID"),
       this.configRepo.findValueByKey("CURRENT_MR_EMAIL"),

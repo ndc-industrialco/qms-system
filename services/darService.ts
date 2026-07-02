@@ -636,7 +636,10 @@ export class DarService {
       if (input.targetAuthUserId) {
         mrUser = { authUserId: input.targetAuthUserId };
       } else {
-        mrUser = await this.resolveDesignatedUser("CURRENT_MR_AUTH_USER_ID", "CURRENT_MR_USER_ID", "QMS_MR", actor.accessToken);
+        mrUser = await this.resolveDesignatedUser("DAR_MR_AUTH_USER_ID", "DAR_MR_USER_ID", undefined, actor.accessToken);
+        if (!mrUser) {
+          mrUser = await this.resolveDesignatedUser("CURRENT_MR_AUTH_USER_ID", "CURRENT_MR_USER_ID", "QMS_MR", actor.accessToken);
+        }
       }
       if (!mrUser) throw new AppError("MR user is not configured. Please select an MR user.", 400, "MR_NOT_CONFIGURED");
     }

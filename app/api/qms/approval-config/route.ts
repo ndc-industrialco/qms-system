@@ -16,9 +16,13 @@ const approvalConfigSchema = z.object({
   }).optional(),
   darQmsAuthUserId: z.string().nullable().optional(),
   carQmsAuthUserId: z.string().nullable().optional(),
+  darMrAuthUserId: z.string().nullable().optional(),
+  carMrAuthUserId: z.string().nullable().optional(),
   moduleEmails: z.object({
     darQmsEmail: z.string().nullable().optional(),
     carQmsEmail: z.string().nullable().optional(),
+    darMrEmail: z.string().nullable().optional(),
+    carMrEmail: z.string().nullable().optional(),
   }).optional(),
 });
 
@@ -45,6 +49,8 @@ export async function POST(req: NextRequest) {
       validated.darQmsAuthUserId ?? null,
       validated.carQmsAuthUserId ?? null,
       validated.moduleEmails,
+      validated.darMrAuthUserId ?? null,
+      validated.carMrAuthUserId ?? null,
     );
 
     return sendSuccess(null, "Approval configurations updated successfully");

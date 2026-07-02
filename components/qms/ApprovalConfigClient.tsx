@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShieldCheck, UserCheck, FileText, CheckSquare, Loader2 } from "lucide-react";
+import { ShieldCheck, FileText, CheckSquare, Loader2 } from "lucide-react";
 
 interface UserOption {
   id: string;
@@ -22,10 +22,14 @@ interface ConfigResponse {
   currentQmsUserId: string | null;
   darQmsUserId: string | null;
   carQmsUserId: string | null;
+  darMrUserId: string | null;
+  carMrUserId: string | null;
   currentMrEmail: string | null;
   currentQmsEmail: string | null;
   darQmsEmail: string | null;
   carQmsEmail: string | null;
+  darMrEmail: string | null;
+  carMrEmail: string | null;
 }
 
 export default function ApprovalConfigClient() {
@@ -35,6 +39,8 @@ export default function ApprovalConfigClient() {
   const [qmsUserId, setQmsUserId] = useState<string>("");
   const [darQmsUserId, setDarQmsUserId] = useState<string>("");
   const [carQmsUserId, setCarQmsUserId] = useState<string>("");
+  const [darMrUserId, setDarMrUserId] = useState<string>("");
+  const [carMrUserId, setCarMrUserId] = useState<string>("");
 
   const { data, isLoading, error } = useQuery<ConfigResponse>({
     queryKey: ["qms-approval-config"],
@@ -54,6 +60,8 @@ export default function ApprovalConfigClient() {
       setQmsUserId(data.currentQmsUserId ?? "");
       setDarQmsUserId(data.darQmsUserId ?? "");
       setCarQmsUserId(data.carQmsUserId ?? "");
+      setDarMrUserId(data.darMrUserId ?? "");
+      setCarMrUserId(data.carMrUserId ?? "");
     }
   }, [data]);
 
@@ -64,6 +72,8 @@ export default function ApprovalConfigClient() {
       const selectedQms = data?.users.find((u) => u.authUserId === qmsUserId);
       const selectedDarQms = data?.users.find((u) => u.authUserId === darQmsUserId);
       const selectedCarQms = data?.users.find((u) => u.authUserId === carQmsUserId);
+      const selectedDarMr = data?.users.find((u) => u.authUserId === darMrUserId);
+      const selectedCarMr = data?.users.find((u) => u.authUserId === carMrUserId);
 
       const payload = {
         mrAuthUserId: mrUserId || null,
@@ -74,9 +84,13 @@ export default function ApprovalConfigClient() {
         },
         darQmsAuthUserId: darQmsUserId || null,
         carQmsAuthUserId: carQmsUserId || null,
+        darMrAuthUserId: darMrUserId || null,
+        carMrAuthUserId: carMrUserId || null,
         moduleEmails: {
           darQmsEmail: selectedDarQms?.email || null,
           carQmsEmail: selectedCarQms?.email || null,
+          darMrEmail: selectedDarMr?.email || null,
+          carMrEmail: selectedCarMr?.email || null,
         },
       };
 
@@ -105,8 +119,7 @@ export default function ApprovalConfigClient() {
       <div className="space-y-6">
         <Skeleton className="h-10 w-1/3 rounded-xl" />
         <Skeleton className="h-6 w-1/2 rounded-xl" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-48 w-full rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Skeleton className="h-48 w-full rounded-xl" />
           <Skeleton className="h-48 w-full rounded-xl" />
           <Skeleton className="h-48 w-full rounded-xl" />
@@ -135,138 +148,154 @@ export default function ApprovalConfigClient() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">ตั้งค่าผู้อนุมัติอัตโนมัติ</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          กำหนดผู้อนุมัติ MR และผู้ประมวลผล/ทวนสอบ QMS เริ่มต้นของแต่ละระบบ หากไม่มีการระบุผู้รับผิดชอบ ระบบจะส่งให้บุคคลที่เลือกไว้ที่นี่โดยอัตโนมัติ
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* MR Configuration Card */}
-        <Card className="border-slate-200 shadow-sm rounded-xl">
-          <CardHeader className="pb-3 flex flex-row items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#0F1059]/10 flex items-center justify-center text-[#0F1059] shrink-0">
-              <UserCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <CardTitle className="text-base font-semibold text-slate-900">ผู้อนุมัติ MR (Default MR)</CardTitle>
-              <p className="text-xs text-slate-500">ผู้อนุมัติสูงสุดของ CAR และ DAR</p>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">
-                เลือก MR สำหรับลงนามปิด CAR และอนุมัติ DAR
-              </label>
-              <select
-                className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
-                value={mrUserId}
-                onChange={(e) => setMrUserId(e.target.value)}
-              >
-                <option value="">-- ไม่กำหนด (ใช้ระบบค้นหาสิทธิ์ของ Auth Center) --</option>
-                {mrList.map((u) => (
-                  <option key={u.authUserId} value={u.authUserId}>
-                    {u.name || u.email} ({u.role})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </CardContent>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Card 1: DAR Module */}
+        <Card className="border-slate-200 shadow-sm rounded-xl flex flex-col justify-between">
+          <div>
+            <CardHeader className="pb-3 flex flex-row items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#0F1059]/10 flex items-center justify-center text-[#0F1059] shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <CardTitle className="text-base font-semibold text-slate-900">DAR Module</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">
+                  ผู้อนุมัติ MR
+                </label>
+                <select
+                  className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
+                  value={darMrUserId}
+                  onChange={(e) => setDarMrUserId(e.target.value)}
+                >
+                  <option value="">-- ใช้ค่าเริ่มต้น (Global Default) --</option>
+                  {mrList.map((u) => (
+                    <option key={u.authUserId} value={u.authUserId}>
+                      {u.name || u.email} ({u.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">
+                  ผู้ประมวลผล QMS
+                </label>
+                <select
+                  className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
+                  value={darQmsUserId}
+                  onChange={(e) => setDarQmsUserId(e.target.value)}
+                >
+                  <option value="">-- ใช้ค่าเริ่มต้น (Global Default) --</option>
+                  {qmsList.map((u) => (
+                    <option key={u.authUserId} value={u.authUserId}>
+                      {u.name || u.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </CardContent>
+          </div>
         </Card>
 
-        {/* DAR QMS Processor Card */}
-        <Card className="border-slate-200 shadow-sm rounded-xl">
-          <CardHeader className="pb-3 flex flex-row items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#0F1059]/10 flex items-center justify-center text-[#0F1059] shrink-0">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <CardTitle className="text-base font-semibold text-slate-900">DAR: ผู้ประมวลผล QMS (Default QMS)</CardTitle>
-              <p className="text-xs text-slate-500">ผู้รับผิดชอบการประมวลผลเอกสารของ DAR</p>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">
-                เลือกเจ้าหน้าที่ QMS สำหรับขั้นตอน QMS Processing ใน DAR
-              </label>
-              <select
-                className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
-                value={darQmsUserId}
-                onChange={(e) => setDarQmsUserId(e.target.value)}
-              >
-                <option value="">-- ไม่กำหนด (ใช้ผู้ประมวลผล QMS เริ่มต้นของระบบ) --</option>
-                {qmsList.map((u) => (
-                  <option key={u.authUserId} value={u.authUserId}>
-                    {u.name || u.email}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </CardContent>
+        {/* Card 2: CAR Module */}
+        <Card className="border-slate-200 shadow-sm rounded-xl flex flex-col justify-between">
+          <div>
+            <CardHeader className="pb-3 flex flex-row items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#0F1059]/10 flex items-center justify-center text-[#0F1059] shrink-0">
+                <CheckSquare className="w-5 h-5" />
+              </div>
+              <CardTitle className="text-base font-semibold text-slate-900">CAR Module</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">
+                  ผู้อนุมัติ MR
+                </label>
+                <select
+                  className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
+                  value={carMrUserId}
+                  onChange={(e) => setCarMrUserId(e.target.value)}
+                >
+                  <option value="">-- ใช้ค่าเริ่มต้น (Global Default) --</option>
+                  {mrList.map((u) => (
+                    <option key={u.authUserId} value={u.authUserId}>
+                      {u.name || u.email} ({u.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">
+                  ผู้ทวนสอบ QMS
+                </label>
+                <select
+                  className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
+                  value={carQmsUserId}
+                  onChange={(e) => setCarQmsUserId(e.target.value)}
+                >
+                  <option value="">-- ใช้ค่าเริ่มต้น (Global Default) --</option>
+                  {qmsList.map((u) => (
+                    <option key={u.authUserId} value={u.authUserId}>
+                      {u.name || u.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </CardContent>
+          </div>
         </Card>
 
-        {/* CAR QMS Verifier Card */}
-        <Card className="border-slate-200 shadow-sm rounded-xl">
-          <CardHeader className="pb-3 flex flex-row items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#0F1059]/10 flex items-center justify-center text-[#0F1059] shrink-0">
-              <CheckSquare className="w-5 h-5" />
-            </div>
-            <div>
-              <CardTitle className="text-base font-semibold text-slate-900">CAR: ผู้ทวนสอบ QMS (Default QMS Verifier)</CardTitle>
-              <p className="text-xs text-slate-500">ผู้รับผิดชอบการทวนสอบปิดประเด็นของ CAR</p>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">
-                เลือกเจ้าหน้าที่ QMS สำหรับขั้นตอน Verification ใน CAR
-              </label>
-              <select
-                className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
-                value={carQmsUserId}
-                onChange={(e) => setCarQmsUserId(e.target.value)}
-              >
-                <option value="">-- ไม่กำหนด (ใช้ผู้ทวนสอบ QMS เริ่มต้นของระบบ) --</option>
-                {qmsList.map((u) => (
-                  <option key={u.authUserId} value={u.authUserId}>
-                    {u.name || u.email}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Card 3: System-Wide Fallbacks */}
+        <Card className="border-slate-200 shadow-sm rounded-xl flex flex-col justify-between">
+          <div>
+            <CardHeader className="pb-3 flex flex-row items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#0F1059]/10 flex items-center justify-center text-[#0F1059] shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <CardTitle className="text-base font-semibold text-slate-900">Global Default</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">
+                  ผู้อนุมัติ MR
+                </label>
+                <select
+                  className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
+                  value={mrUserId}
+                  onChange={(e) => setMrUserId(e.target.value)}
+                >
+                  <option value="">-- ไม่กำหนด (ใช้ระบบค้นหาสิทธิ์ของ Auth Center) --</option>
+                  {mrList.map((u) => (
+                    <option key={u.authUserId} value={u.authUserId}>
+                      {u.name || u.email} ({u.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        {/* System Fallback QMS Card */}
-        <Card className="border-slate-200 shadow-sm rounded-xl">
-          <CardHeader className="pb-3 flex flex-row items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#0F1059]/10 flex items-center justify-center text-[#0F1059] shrink-0">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <CardTitle className="text-base font-semibold text-slate-900">QMS เริ่มต้นของระบบ (System Fallback QMS)</CardTitle>
-              <p className="text-xs text-slate-500">เจ้าหน้าที่ QMS หลักของระบบ (Fallback)</p>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">
-                เลือกเจ้าหน้าที่ QMS สำหรับขั้นตอนทั่วไปในระบบ
-              </label>
-              <select
-                className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
-                value={qmsUserId}
-                onChange={(e) => setQmsUserId(e.target.value)}
-              >
-                <option value="">-- ไม่กำหนด (ใช้สิทธิ์แรกของ Auth Center) --</option>
-                {qmsList.map((u) => (
-                  <option key={u.authUserId} value={u.authUserId}>
-                    {u.name || u.email}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </CardContent>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">
+                  ผู้ประมวลผล QMS
+                </label>
+                <select
+                  className="w-full h-10 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F1059]/30 focus:border-[#0F1059]/60 transition-colors"
+                  value={qmsUserId}
+                  onChange={(e) => setQmsUserId(e.target.value)}
+                >
+                  <option value="">-- ไม่กำหนด (ใช้สิทธิ์แรกของ Auth Center) --</option>
+                  {qmsList.map((u) => (
+                    <option key={u.authUserId} value={u.authUserId}>
+                      {u.name || u.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </CardContent>
+          </div>
         </Card>
       </div>
 

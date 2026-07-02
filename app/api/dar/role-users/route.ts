@@ -35,7 +35,15 @@ export async function GET(req: NextRequest) {
     const configRepo = new SystemConfigRepository();
 
     if (role === "MR") {
-      defaultAuthUserId = await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
+      if (moduleParam === "DAR") {
+        defaultAuthUserId = await configRepo.findValueByKey("DAR_MR_AUTH_USER_ID")
+          ?? await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
+      } else if (moduleParam === "CAR") {
+        defaultAuthUserId = await configRepo.findValueByKey("CAR_MR_AUTH_USER_ID")
+          ?? await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
+      } else {
+        defaultAuthUserId = await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
+      }
     } else {
       if (moduleParam === "DAR") {
         defaultAuthUserId = await configRepo.findValueByKey("DAR_QMS_AUTH_USER_ID")

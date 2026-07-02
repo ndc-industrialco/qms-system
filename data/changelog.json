@@ -1,5 +1,23 @@
 [
   {
+    "id": "7",
+    "titleTh": "ขยายระบบตั้งค่าผู้อนุมัติอัตโนมัติแยกตามโมดูล DAR และ CAR",
+    "titleEn": "Expand Module-Specific Default MR and QMS Configurations",
+    "date": "2026-07-02",
+    "type": "feature",
+    "commit": "feat/module-specific-approval-config",
+    "detailsTh": [
+      "ขยายระบบตั้งค่าผู้อนุมัติอัตโนมัติแยกโมดูล DAR และ CAR สำหรับทั้งผู้อนุมัติ MR และเจ้าหน้าที่ QMS",
+      "ปรับปรุงระบบ Backend logic และ API route ให้ดึงค่าเริ่มต้นและทวนสอบสิทธิ์แยกตามโมดูลอย่างถูกต้อง",
+      "ปรับปรุงหน้าตา UI ในส่วนของการตั้งค่าให้ดูเรียบง่ายและเป็นระเบียบตามกลุ่มโมดูล"
+    ],
+    "detailsEn": [
+      "Expanded automatic approval configuration to allow module-specific Default MR and QMS settings for both DAR and CAR.",
+      "Updated backend logic, API fallback flows, and role resolution queries to prioritize module-specific configurations.",
+      "Redesigned the configuration UI into a cleaner, minimalist layout grouped by module."
+    ]
+  },
+  {
     "id": "6",
     "titleTh": "เพิ่มระบบกำหนดผู้อนุมัติอัตโนมัติ (Automated Approval Config)",
     "titleEn": "Automated Approval Workflow Configuration",
