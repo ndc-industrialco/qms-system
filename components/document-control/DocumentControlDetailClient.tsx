@@ -45,6 +45,7 @@ export function DocumentControlDetailClient({
       const json = await res.json();
       return (json.data || []) as any[];
     },
+    enabled: !!canEdit,
   });
 
   const downloadLogs = downloadLogsData || [];
@@ -261,7 +262,7 @@ export function DocumentControlDetailClient({
                         {formatDate(rev.createdAt)}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        {rev.status === 'ACTIVE' && (
+                        {(rev.spItemId || rev.spDownloadUrl) && rev.status === 'ACTIVE' && (
                           <Button
                             size="sm"
                             variant="ghost"
@@ -281,46 +282,48 @@ export function DocumentControlDetailClient({
         </div>
 
         {/* Download Audit Log */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
-          <p className="text-slate-800 font-semibold text-sm mb-4">
-            ประวัติการดาวน์โหลดเอกสาร (Download Audit Log)
-          </p>
-          {!downloadLogs.length ? (
-            <p className="text-slate-400 text-xs text-center py-4">ยังไม่มีประวัติการดาวน์โหลดสำหรับเอกสารนี้</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="sticky top-0 z-10 bg-slate-50 border-b border-slate-100">
-                  <tr>
-                    <th className="text-slate-600 font-semibold py-2 px-3">ผู้ดาวน์โหลด</th>
-                    <th className="text-slate-600 font-semibold py-2 px-3">บทบาท</th>
-                    <th className="text-slate-600 font-semibold py-2 px-3">เวอร์ชันที่ดาวน์โหลด</th>
-                    <th className="text-slate-600 font-semibold py-2 px-3">วันเวลาดาวน์โหลด</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {downloadLogs.map((log) => {
-                    const afterData = (log.after || {}) as any;
-                    return (
-                      <tr key={log.id} className="border-b border-slate-100/50 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-2 px-3 text-slate-700 font-medium">
-                          {log.actorName || 'Unknown User'}
-                        </td>
-                        <td className="py-2 px-3 text-slate-500">{log.actorRole}</td>
-                        <td className="py-2 px-3 text-slate-600 font-mono">
-                          {afterData.revision ? `Rev. ${afterData.revision}` : '—'}
-                        </td>
-                        <td className="py-2 px-3 font-mono text-slate-500">
-                          {formatDate(log.createdAt)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        {canEdit && (
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
+            <p className="text-slate-800 font-semibold text-sm mb-4">
+              ประวัติการดาวน์โหลดเอกสาร (Download Audit Log)
+            </p>
+            {!downloadLogs.length ? (
+              <p className="text-slate-400 text-xs text-center py-4">ยังไม่มีประวัติการดาวน์โหลดสำหรับเอกสารนี้</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="sticky top-0 z-10 bg-slate-50 border-b border-slate-100">
+                    <tr>
+                      <th className="text-slate-600 font-semibold py-2 px-3">ผู้ดาวน์โหลด</th>
+                      <th className="text-slate-600 font-semibold py-2 px-3">บทบาท</th>
+                      <th className="text-slate-600 font-semibold py-2 px-3">เวอร์ชันที่ดาวน์โหลด</th>
+                      <th className="text-slate-600 font-semibold py-2 px-3">วันเวลาดาวน์โหลด</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {downloadLogs.map((log) => {
+                      const afterData = (log.after || {}) as any;
+                      return (
+                        <tr key={log.id} className="border-b border-slate-100/50 hover:bg-slate-50/50 transition-colors">
+                          <td className="py-2 px-3 text-slate-700 font-medium">
+                            {log.actorName || 'Unknown User'}
+                          </td>
+                          <td className="py-2 px-3 text-slate-500">{log.actorRole}</td>
+                          <td className="py-2 px-3 text-slate-600 font-mono">
+                            {afterData.revision ? `Rev. ${afterData.revision}` : '—'}
+                          </td>
+                          <td className="py-2 px-3 font-mono text-slate-500">
+                            {formatDate(log.createdAt)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Metadata */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
