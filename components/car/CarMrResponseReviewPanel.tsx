@@ -29,6 +29,7 @@ async function submitReview(
   signatureType: SignatureType,
   saveToProfile: boolean,
   qmsAuthUserId?: string,
+  attachments?: { fileName: string; spItemId: string; spWebUrl: string }[],
 ): Promise<void> {
   const res = await fetch(`/api/car/${carId}/review-response`, {
     method: "POST",
@@ -39,6 +40,7 @@ async function submitReview(
       ...(comment ? { comment } : {}),
       ...(signaturePath ? { signaturePath, signatureType, saveToProfile } : {}),
       ...(qmsAuthUserId ? { qmsAuthUserId } : {}),
+      attachments,
     }),
   });
   if (!res.ok) {
@@ -261,22 +263,69 @@ interface ActionModalProps {
 function ActionModal({ carId, token, action, savedSignatureUrl, savedSignatureType, onClose, onDone }: ActionModalProps) {
   const isApprove = action === "APPROVED";
   const [comment, setComment] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; spItemId: string; spWebUrl: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [sigDataUrl, setSigDataUrl] = useState<string | null>(null);
   const [sigType, setSigType] = useState<SigMode>("DRAW");
   const [saveToProfile, setSaveToProfile] = useState(false);
   const [qmsAuthUserId, setQmsAuthUserId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const { data: qmsUsers = [], isLoading: qmsLoading } = useQuery<{ authUserId: string; name: string; email: string | null }[]>({
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setError(null);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folderPath", "CAR/approvals");
+        const res = await fetch("/api/sharepoint/upload-file", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) throw new Error("อัปโหลดไฟล์ล้มเหลว");
+        const json = await res.json();
+        if (json.data) {
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              fileName: json.data.name || file.name,
+              spItemId: json.data.id,
+              spWebUrl: json.data.webUrl,
+            },
+          ]);
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+      setError(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const { data: qmsUsers = [], isLoading: qmsLoading } = useQuery<{ authUserId: string; name: string; email: string | null; isDefault?: boolean }[]>({
     queryKey: ["car-qms-users"],
     queryFn: async () => {
-      const res = await fetch("/api/dar/role-users?role=QMS");
+      const res = await fetch("/api/dar/role-users?role=QMS&module=CAR");
       const json = await res.json();
       return json.data ?? [];
     },
     enabled: isApprove,
     staleTime: 60_000,
   });
+
+  useEffect(() => {
+    if (qmsUsers.length > 0 && !qmsAuthUserId && isApprove) {
+      const defaultUser = qmsUsers.find((u) => u.isDefault);
+      if (defaultUser) {
+        setQmsAuthUserId(defaultUser.authUserId);
+      }
+    }
+  }, [qmsUsers, qmsAuthUserId, isApprove]);
 
   const handleSigChange = useCallback((url: string | null, type: SigMode) => {
     setSigDataUrl(url);
@@ -288,13 +337,13 @@ function ActionModal({ carId, token, action, savedSignatureUrl, savedSignatureTy
       if (isApprove && !qmsAuthUserId) throw new Error("กรุณาเลือกผู้ประมวลผล QMS");
       if (isApprove && !sigDataUrl) throw new Error("กรุณาเซ็นลายมือชื่อก่อน");
       if (!isApprove && !comment.trim()) throw new Error("กรุณาระบุเหตุผลในการส่งคืน");
-      return submitReview(carId, token, action, comment, sigDataUrl, sigType as SignatureType, saveToProfile, qmsAuthUserId || undefined);
+      return submitReview(carId, token, action, comment, sigDataUrl, sigType as SignatureType, saveToProfile, qmsAuthUserId || undefined, uploadedFiles);
     },
     onSuccess: () => onDone(action),
     onError: (err: Error) => setError(err.message),
   });
 
-  const canSubmit = !mutation.isPending && (isApprove ? (!!qmsAuthUserId && !!sigDataUrl) : !!comment.trim());
+  const canSubmit = !mutation.isPending && !uploading && (isApprove ? (!!qmsAuthUserId && !!sigDataUrl) : !!comment.trim());
 
   return (
     <Modal onClose={onClose}>
@@ -399,6 +448,37 @@ function ActionModal({ carId, token, action, savedSignatureUrl, savedSignatureTy
             </div>
           </>
         )}
+
+        {/* Attachments Section */}
+        <div className="flex flex-col gap-1.5 border-t border-slate-100 pt-3">
+          <label className="text-xs font-medium text-slate-600">
+            เอกสารแนบประกอบ
+          </label>
+          <input
+            type="file"
+            multiple
+            onChange={handleFileUpload}
+            disabled={uploading}
+            className="text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 transition-colors cursor-pointer"
+          />
+          {uploading && <p className="text-xs text-slate-500 animate-pulse">กำลังอัปโหลด...</p>}
+          {uploadedFiles.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {uploadedFiles.map((file, i) => (
+                <div key={i} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 pl-2.5 pr-1.5 py-1 rounded-lg text-xs text-slate-700">
+                  <span className="truncate max-w-[180px]">{file.fileName}</span>
+                  <button
+                    type="button"
+                    onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                    className="w-4 h-4 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {error && (
           <div className="flex items-start gap-2 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">

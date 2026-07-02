@@ -871,6 +871,14 @@ export class CarService {
     ]);
     const responderEmail = responderSnapshot?.email ?? null;
 
+    let dbComment = input.comment;
+    if (input.attachments && input.attachments.length > 0) {
+      dbComment = JSON.stringify({
+        text: input.comment ?? "",
+        attachments: input.attachments,
+      });
+    }
+
     await db.$transaction(async (tx) => {
       await this.carRepo.createMrResponseReviewAndUseToken(
         id,
@@ -882,7 +890,7 @@ export class CarService {
           mrEmployeeId: mrSnapshot?.employeeId ?? null,
         },
         input.action,
-        input.comment,
+        dbComment,
         nextStatus,
         tx,
         input.signaturePath,
@@ -958,6 +966,14 @@ export class CarService {
     ]);
     const responderEmail = responderSnapshot?.email ?? null;
 
+    let dbComment = input.comment;
+    if (input.attachments && input.attachments.length > 0) {
+      dbComment = JSON.stringify({
+        text: input.comment ?? "",
+        attachments: input.attachments,
+      });
+    }
+
     await db.$transaction(async (tx) => {
       await this.carRepo.createMrResponseReview(
         id,
@@ -968,7 +984,7 @@ export class CarService {
           mrEmployeeId: mrSnapshot?.employeeId ?? null,
         },
         input.action,
-        input.comment,
+        dbComment,
         nextStatus,
         tx,
         input.signaturePath,
@@ -1068,10 +1084,18 @@ export class CarService {
     const verifierSnapshot = await this.getIdentitySnapshot(verifierId);
     if (!verifierSnapshot) throw new ValidationError("Verifier not found");
 
+    let dbFindings = input.findings;
+    if (input.attachments && input.attachments.length > 0) {
+      dbFindings = JSON.stringify({
+        text: input.findings,
+        attachments: input.attachments,
+      });
+    }
+
     await db.$transaction(async (tx) => {
       await this.carRepo.createVerificationAndSetStatus(
         id,
-        input,
+        { ...input, findings: dbFindings },
         verifierId,
         {
           verifierAuthUserId: verifierAuthUserId ?? verifierSnapshot.authUserId,
@@ -1156,7 +1180,7 @@ export class CarService {
     return this.mapDetail(detail);
   }
 
-  async closeCar(id: string, token: string, comment: string | null | undefined, signaturePath?: string | null): Promise<CarDetail> {
+  async closeCar(id: string, token: string, comment: string | null | undefined, signaturePath?: string | null, attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null): Promise<CarDetail> {
     const { ActionTokenRepository } = await import("@/repositories/actionTokenRepository");
     const tokenRepo = new ActionTokenRepository();
     const tokenData = await tokenRepo.findByToken(token);
@@ -1174,6 +1198,14 @@ export class CarService {
     if (car.status !== "CLOSED") throw new ValidationError("CAR is not ready for MR sign-off.");
     const mrSnapshot = await this.getIdentitySnapshot(tokenData.issuedTo);
 
+    let dbComment = comment;
+    if (attachments && attachments.length > 0) {
+      dbComment = JSON.stringify({
+        text: comment ?? "",
+        attachments,
+      });
+    }
+
     await db.$transaction(async (tx) => {
       await this.carRepo.createMrSignatureAndUseToken(
         id,
@@ -1184,7 +1216,7 @@ export class CarService {
           mrUserName: mrSnapshot?.name ?? null,
           mrEmployeeId: mrSnapshot?.employeeId ?? null,
         },
-        comment,
+        dbComment,
         tx,
         signaturePath,
       );
@@ -1215,12 +1247,21 @@ export class CarService {
     comment: string | null | undefined,
     mrAuthUserId?: string | null,
     signaturePath?: string | null,
+    attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null,
   ): Promise<CarDetail> {
     const car = await this.carRepo.findForClose(id);
     if (!car) throw new NotFoundError("CAR");
     if (car.status !== "CLOSED") throw new ValidationError("CAR is not ready for MR sign-off.");
 
     const mrSnapshot = mrAuthUserId ? await this.getIdentitySnapshot(mrAuthUserId) : null;
+
+    let dbComment = comment;
+    if (attachments && attachments.length > 0) {
+      dbComment = JSON.stringify({
+        text: comment ?? "",
+        attachments,
+      });
+    }
 
     await db.$transaction(async (tx) => {
       await this.carRepo.createMrSignature(
@@ -1231,7 +1272,7 @@ export class CarService {
           mrUserName: mrSnapshot?.name ?? null,
           mrEmployeeId: mrSnapshot?.employeeId ?? null,
         },
-        comment,
+        dbComment,
         tx,
         signaturePath,
       );

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
 export const createKpiSchema = z.object({
@@ -80,6 +81,13 @@ export const monthlyQuerySchema = z.object({
 
 export const rejectReportSchema = z.object({
   reason: z.string().min(1, 'Rejection reason is required'),
+  attachments: z.array(
+    z.object({
+      fileName: z.string(),
+      spItemId: z.string(),
+      spWebUrl: z.string(),
+    })
+  ).optional().nullable(),
 });
 
 export const submitKpiObjectivesSchema = z.object({

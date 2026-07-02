@@ -601,7 +601,7 @@ export class KpiService {
     return { ...updated, notifyUserIds };
   }
 
-  async rejectObjectives(id: string, actor: ActorContext, reason?: string) {
+  async rejectObjectives(id: string, actor: ActorContext, reason?: string, attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
     if (kpi.status !== 'PENDING_REVIEW' && kpi.status !== 'PENDING_APPROVAL') throw new ConflictError('KPI cannot be rejected in current status');
@@ -615,6 +615,15 @@ export class KpiService {
       throw new ForbiddenError('You are not assigned in this KPI workflow');
     }
     const rejectedStep = isRejectReviewer ? 'REVIEWER' : 'APPROVER';
+    
+    let dbComment = reason;
+    if (attachments && attachments.length > 0) {
+      dbComment = JSON.stringify({
+        text: reason ?? "",
+        attachments,
+      });
+    }
+
     const updated = await db.$transaction(async (tx) => {
       const result = await this.kpiRepo.setStatus(id, 'REJECTED', tx);
       await this.approvalSignatureRepo.upsertStep({
@@ -625,7 +634,7 @@ export class KpiService {
         signerAuthUserId: actor.authUserId ?? null,
         action: 'REJECTED',
         actionDate: new Date(),
-        comment: reason ?? null,
+        comment: dbComment ?? null,
       }, tx);
 
       await AuditService.record({

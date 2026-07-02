@@ -77,6 +77,43 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
   const [sheetOpen, setSheetOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; spItemId: string; spWebUrl: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folderPath", "KPI/approvals");
+        const res = await fetch("/api/sharepoint/upload-file", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) throw new Error("อัปโหลดไฟล์ล้มเหลว");
+        const json = await res.json();
+        if (json.data) {
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              fileName: json.data.name || file.name,
+              spItemId: json.data.id,
+              spWebUrl: json.data.webUrl,
+            },
+          ]);
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const query = useAppQuery({
     queryKey: ["approve-action", type, id, kpiId],
@@ -100,6 +137,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
     action: "approve" | "reject",
     sigPayload?: { signatureDataUrl: string; signatureType: string; saveSignature: boolean },
     reason?: string,
+    attachments?: { fileName: string; spItemId: string; spWebUrl: string }[],
   ) {
     try {
       setSubmitting(true);
@@ -120,6 +158,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
 
       const bodyPayload = {
         ...(action === "reject" && reason ? { reason } : {}),
+        ...(action === "reject" && attachments ? { attachments } : {}),
         ...(sigPayload ?? {}),
       };
 
@@ -414,31 +453,59 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
       />
 
       {/* Reject reason dialog */}
-      <Dialog open={rejectOpen} onOpenChange={(o) => { if (!submitting) { setRejectOpen(o); } }}>
+      <Dialog open={rejectOpen} onOpenChange={(o) => { if (!submitting) { setRejectOpen(o); if (!o) { setUploadedFiles([]); setRejectReason(""); } } }}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-rose-600">{t("kpi.monthly.actions.reject")}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-sm text-slate-500">กรุณาระบุเหตุผลการปฏิเสธ / Please provide a reason for rejection</p>
             <Textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="ระบุเหตุผล..."
-              className="rounded-xl min-h-25"
+              className="rounded-xl min-h-25 text-slate-700"
               autoFocus
             />
+            {/* Rejection Attachments */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-xs font-semibold text-slate-600">เอกสารแนบประกอบ</label>
+              <input
+                type="file"
+                multiple
+                onChange={handleFileUpload}
+                disabled={uploading}
+                className="text-xs text-slate-600 block w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
+              />
+              {uploading && <p className="text-[11px] text-slate-400 animate-pulse">กำลังอัปโหลด...</p>}
+              {uploadedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {uploadedFiles.map((file, i) => (
+                    <div key={i} className="flex items-center gap-1 bg-slate-50 border border-slate-200 pl-2 pr-1 py-0.5 rounded text-[11px]">
+                      <span className="truncate max-w-[150px]">{file.fileName}</span>
+                      <button
+                        type="button"
+                        onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                        className="text-rose-500 hover:text-rose-700 font-bold"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" className="rounded-xl" disabled={submitting} onClick={() => setRejectOpen(false)}>
               {t("common.cancel")}
             </Button>
             <Button
               variant="destructive"
               className="rounded-xl"
-              disabled={submitting || !rejectReason.trim()}
+              disabled={submitting || uploading || !rejectReason.trim()}
               onClick={async () => {
-                await submitAction("reject", undefined, rejectReason.trim());
+                await submitAction("reject", undefined, rejectReason.trim(), uploadedFiles);
                 setRejectOpen(false);
               }}
             >

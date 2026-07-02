@@ -2,6 +2,7 @@
 
 import { useT } from "@/lib/i18n";
 import { useLocale } from "@/lib/locale-context";
+import { parseComment } from "@/lib/utils";
 
 type ApprovalAction = "PENDING" | "APPROVED" | "REJECTED";
 type ApprovalStep = "PREPARER" | "REVIEWER" | "APPROVER";
@@ -157,12 +158,32 @@ export default function KpiApprovalTimeline({
                 )}
 
                 {/* Comment */}
-                {sig?.comment && (
-                  <div className="rounded-lg bg-slate-50 border border-slate-100 p-2.5">
-                    <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">{t("dar.approval.commentLabel")}</p>
-                    <p className="text-xs text-slate-700 leading-relaxed">{sig.comment}</p>
-                  </div>
-                )}
+                {sig?.comment && (() => {
+                  const parsed = parseComment(sig.comment);
+                  return (
+                    <div className="rounded-lg bg-slate-50 border border-slate-100 p-2.5 flex flex-col gap-1.5">
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">{t("dar.approval.commentLabel")}</p>
+                        <p className="text-xs text-slate-700 leading-relaxed">{parsed.text || "—"}</p>
+                      </div>
+                      {parsed.attachments && parsed.attachments.length > 0 && (
+                        <div className="border-t border-slate-200/60 pt-1.5 flex flex-col gap-1">
+                          {parsed.attachments.map((file, idx) => (
+                            <a
+                              key={idx}
+                              href={`/api/sharepoint/get-file?itemId=${file.spItemId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                            >
+                              {file.fileName}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           );
@@ -237,12 +258,38 @@ export default function KpiApprovalTimeline({
                   )}
                 </p>
               )}
-              {sig.comment && (
-                <div className="mt-3 rounded-xl bg-slate-50 border border-slate-100 p-3">
-                  <p className="text-xs text-slate-500 mb-1 font-semibold uppercase tracking-wider">{t("dar.approval.commentLabel")}</p>
-                  <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{sig.comment}</p>
-                </div>
-              )}
+              {sig.comment && (() => {
+                const parsed = parseComment(sig.comment);
+                return (
+                  <div className="mt-3 rounded-xl bg-slate-50 border border-slate-100 p-3 flex flex-col gap-2">
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1 font-semibold uppercase tracking-wider">{t("dar.approval.commentLabel")}</p>
+                      <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{parsed.text || "—"}</p>
+                    </div>
+                    {parsed.attachments && parsed.attachments.length > 0 && (
+                      <div className="border-t border-slate-200/60 pt-2 flex flex-col gap-1.5">
+                        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">เอกสารแนบประกอบ</p>
+                        <div className="flex flex-col gap-1">
+                          {parsed.attachments.map((file, idx) => (
+                            <a
+                              key={idx}
+                              href={`/api/sharepoint/get-file?itemId=${file.spItemId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1.5"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              {file.fileName}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               {sig.signaturePath && action === "APPROVED" && (
                 <div className="mt-3 border border-slate-200 rounded-xl bg-white inline-block p-2 shadow-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element */}

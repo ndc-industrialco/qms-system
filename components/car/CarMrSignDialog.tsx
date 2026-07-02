@@ -25,6 +25,7 @@ async function submitSignoff(
   signaturePath: string,
   signatureType: SignatureType,
   saveToProfile: boolean,
+  attachments?: { fileName: string; spItemId: string; spWebUrl: string }[],
 ): Promise<void> {
   const res = await fetch(`/api/car/${carId}/close`, {
     method: "POST",
@@ -35,6 +36,7 @@ async function submitSignoff(
       signaturePath,
       signatureType,
       saveToProfile,
+      attachments,
     }),
   });
   if (!res.ok) {
@@ -116,9 +118,46 @@ interface SignModalProps {
 
 function SignModal({ carId, car, token, savedSignatureUrl, savedSignatureType, onClose, onDone }: SignModalProps) {
   const [comment, setComment] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; spItemId: string; spWebUrl: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [sigDataUrl, setSigDataUrl] = useState<string | null>(null);
   const [sigType, setSigType] = useState<SigMode>("DRAW");
   const [saveToProfile, setSaveToProfile] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folderPath", "CAR/approvals");
+        const res = await fetch("/api/sharepoint/upload-file", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) throw new Error("อัปโหลดไฟล์ล้มเหลว");
+        const json = await res.json();
+        if (json.data) {
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              fileName: json.data.name || file.name,
+              spItemId: json.data.id,
+              spWebUrl: json.data.webUrl,
+            },
+          ]);
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSigChange = useCallback((url: string | null, type: SigMode) => {
     setSigDataUrl(url);
@@ -128,7 +167,7 @@ function SignModal({ carId, car, token, savedSignatureUrl, savedSignatureType, o
   const mutation = useMutation({
     mutationFn: () => {
       if (!sigDataUrl) throw new Error("กรุณาเซ็นลายมือชื่อก่อน");
-      return submitSignoff(carId, token, comment, sigDataUrl, sigType as SignatureType, saveToProfile);
+      return submitSignoff(carId, token, comment, sigDataUrl, sigType as SignatureType, saveToProfile, uploadedFiles);
     },
     onSuccess: onDone,
     onError: (err: Error) => toast.error(err.message),
@@ -209,6 +248,37 @@ function SignModal({ carId, car, token, savedSignatureUrl, savedSignatureType, o
             />
           </div>
 
+          {/* Attachments Section */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-slate-600">
+              เอกสารแนบประกอบ
+            </label>
+            <input
+              type="file"
+              multiple
+              onChange={handleFileUpload}
+              disabled={uploading}
+              className="text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 transition-colors cursor-pointer"
+            />
+            {uploading && <p className="text-xs text-slate-500 animate-pulse">กำลังอัปโหลด...</p>}
+            {uploadedFiles.length > 0 && (
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {uploadedFiles.map((file, i) => (
+                  <div key={i} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 pl-2.5 pr-1.5 py-1 rounded-lg text-xs text-slate-700">
+                    <span className="truncate max-w-[180px]">{file.fileName}</span>
+                    <button
+                      type="button"
+                      onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                      className="w-4 h-4 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {mutation.error && (
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-600">
               {(mutation.error as Error).message}
@@ -225,7 +295,7 @@ function SignModal({ carId, car, token, savedSignatureUrl, savedSignatureType, o
           <button
             type="button"
             onClick={() => mutation.mutate()}
-            disabled={mutation.isPending || !sigDataUrl}
+            disabled={mutation.isPending || uploading || !sigDataUrl}
             className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60 transition-colors"
           >
             {mutation.isPending ? "กำลังบันทึก..." : "ยืนยันลงนามปิด CAR"}

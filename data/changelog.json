@@ -1,5 +1,29 @@
 [
   {
+    "id": "12",
+    "titleTh": "เพิ่มการอัปโหลดไฟล์แนบในการอนุมัติและปฏิเสธสำหรับโมดูล DAR, CAR, KPI",
+    "titleEn": "Added file attachment uploads on approval & rejection for DAR, CAR, and KPI modules",
+    "date": "2026-07-02",
+    "type": "feature",
+    "commit": "feat/approval-attachments-dar-car-kpi",
+    "detailsTh": [
+      "เพิ่มปุ่มอัปโหลดและแสดงรายการไฟล์แนบใน RejectModal ของ DAR",
+      "เพิ่มการอัปโหลดและแสดงรายการไฟล์แนบใน ActionModal (MR Review) และ SignModal (MR Close) ของ CAR",
+      "เพิ่มการอัปโหลดและแสดงรายการไฟล์แนบในใบรายงานผลการตรวจติดตาม (CarVerifyForm) ของ CAR",
+      "เพิ่มการอัปโหลดและแสดงรายการไฟล์แนบใน Dialog ปฏิเสธ (reject dialog) ของ KPI และ KPI รายเดือน",
+      "อัปเดต Timeline ของ DAR, CAR, KPI ให้แสดงและดาวน์โหลดไฟล์แนบประกอบการอนุมัติ/ปฏิเสธผ่าน SharePoint get-file API",
+      "บันทึกไฟล์แนบในฟิลด์ comment/findings โดยการแปลงเป็น JSON เพื่อเลี่ยงการแก้ไข Database Schema"
+    ],
+    "detailsEn": [
+      "Added upload inputs and file tag lists in DAR RejectModal.",
+      "Added upload inputs and file tag lists in CAR MR ActionModal and SignModal.",
+      "Added upload inputs and file tag lists in CAR CarVerifyForm.",
+      "Added upload inputs and file tag lists in KPI and Monthly KPI reject dialogs.",
+      "Updated DAR, CAR, and KPI timeline displays to parse and show download links using SharePoint get-file API.",
+      "Stored attachments serialized as JSON within existing comment and findings fields to avoid database migrations."
+    ]
+  },
+  {
     "id": "10",
     "titleTh": "สรุปความเข้าใจรายการอัปเดตจากการคุยกับแผนก QMS ลงเอกสาร",
     "titleEn": "Documented QMS update-summary from application-backed meeting notes",

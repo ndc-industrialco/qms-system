@@ -270,7 +270,7 @@ export class KpiMonthlyService {
     });
   }
 
-  async rejectReport(reportId: string, reason: string, actor: ActorContext) {
+  async rejectReport(reportId: string, reason: string, actor: ActorContext, attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null) {
     if (!['QMS', 'MR', 'IT'].includes(actor.role)) {
       throw new ForbiddenError('Only QMS/MR/IT can reject monthly reports');
     }
@@ -279,6 +279,14 @@ export class KpiMonthlyService {
       throw new ConflictError(`Cannot reject a report in ${report.status} status`);
     }
     ensureMonthlyStatusTransition(report.status, 'REJECTED');
+
+    let dbComment = reason;
+    if (attachments && attachments.length > 0) {
+      dbComment = JSON.stringify({
+        text: reason,
+        attachments,
+      });
+    }
 
     return db.$transaction(async (tx) => {
       const updated = await this.reportRepo.updateStatus(reportId, 'REJECTED', undefined, tx);
@@ -290,7 +298,7 @@ export class KpiMonthlyService {
         signerAuthUserId: actor.authUserId ?? null,
         action: 'REJECTED',
         actionDate: new Date(),
-        comment: reason,
+        comment: dbComment,
       }, tx);
       await AuditService.record({
         actorUserId: actor.userId,

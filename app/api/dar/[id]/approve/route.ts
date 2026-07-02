@@ -24,6 +24,13 @@ const schema = z.object({
   signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]),
   saveSignature: z.boolean().default(false),
   comment: z.string().max(1000).optional().nullable(),
+  attachments: z.array(
+    z.object({
+      fileName: z.string(),
+      spItemId: z.string(),
+      spWebUrl: z.string(),
+    })
+  ).optional().nullable(),
   targetAuthUserId: z.string().optional().nullable(),
   qmsProcessing: z.object({
     chkHasAttachment: z.boolean(),
@@ -53,6 +60,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       signatureType: parsed.signatureType,
       saveSignature: parsed.saveSignature,
       comment: parsed.comment ?? null,
+      attachments: parsed.attachments ?? null,
       targetAuthUserId: parsed.targetAuthUserId ?? null,
       qmsProcessing: parsed.qmsProcessing ?? null,
     });

@@ -25,6 +25,7 @@ type ApproveDarInput = {
   signatureType: SignatureType;
   saveSignature: boolean;
   comment: string | null;
+  attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null;
   targetAuthUserId?: string | null; // MR (from REVIEWER step) or QMS (from APPROVER_MR step)
   qmsProcessing?: {
     chkHasAttachment: boolean;
@@ -670,6 +671,14 @@ export class DarService {
     const qmsSnapshot = qmsUser ? await this.getIdentitySnapshot(qmsUser.authUserId) : null;
 
     const now = new Date();
+    let dbComment = input.comment;
+    if (input.attachments && input.attachments.length > 0) {
+      dbComment = JSON.stringify({
+        text: input.comment ?? "",
+        attachments: input.attachments,
+      });
+    }
+
     await db.$transaction(async (tx) => {
       await this.darRepo.updateApproval(
         myStep.id,
@@ -678,7 +687,7 @@ export class DarService {
           actionDate: now,
           signatureUsedUrl: input.signatureDataUrl,
           signatureTypeUsed: input.signatureType,
-          comment: input.comment ?? null,
+          comment: dbComment ?? null,
         },
         tx
       );
@@ -695,7 +704,7 @@ export class DarService {
           action: "APPROVED",
           actionDate: now,
           signaturePath: input.signatureDataUrl,
-          comment: input.comment ?? null,
+          comment: dbComment ?? null,
         },
         tx
       );
@@ -821,7 +830,7 @@ export class DarService {
     return detail!;
   }
 
-  async rejectDar(darId: string, actor: ActorIdentity, comment: string): Promise<DarDetail> {
+  async rejectDar(darId: string, actor: ActorIdentity, comment: string, attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null): Promise<DarDetail> {
     const userId = actor.userId;
     const dar = await this.darRepo.findById(darId);
     if (!dar) throw new NotFoundError("DAR");
@@ -831,8 +840,16 @@ export class DarService {
 
     const now = new Date();
     const actorSnapshot = await this.getIdentitySnapshot(userId);
+    let dbComment = comment;
+    if (attachments && attachments.length > 0) {
+      dbComment = JSON.stringify({
+        text: comment,
+        attachments,
+      });
+    }
+
     await db.$transaction(async (tx) => {
-      await this.darRepo.updateApproval(myStep.id, { action: "REJECTED", actionDate: now, comment }, tx);
+      await this.darRepo.updateApproval(myStep.id, { action: "REJECTED", actionDate: now, comment: dbComment }, tx);
       await this.approvalSignatureRepo.upsertStep(
         {
           module: "DAR",
@@ -845,7 +862,7 @@ export class DarService {
           signerDepartmentName: actorSnapshot?.department?.name ?? null,
           action: "REJECTED",
           actionDate: now,
-          comment,
+          comment: dbComment,
         },
         tx
       );

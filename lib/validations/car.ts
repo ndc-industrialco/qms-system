@@ -85,6 +85,13 @@ export const carVerifySchema = z.object({
   verifierSignatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
   saveToProfile: z.boolean().optional(),
   targetMrAuthUserId: z.string().optional().nullable(),
+  attachments: z.array(
+    z.object({
+      fileName: z.string(),
+      spItemId: z.string(),
+      spWebUrl: z.string(),
+    })
+  ).optional().nullable(),
 }).refine(
   (data) => !(data.result === "FAILED" && data.round === 1 && !data.nextDueDate),
   { message: "กรุณาระบุวันติดตามครั้งที่ 2", path: ["nextDueDate"] },
@@ -99,6 +106,13 @@ export const carCloseSchema = z.object({
   signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(204800).optional(),
   signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
   saveToProfile: z.boolean().optional(),
+  attachments: z.array(
+    z.object({
+      fileName: z.string(),
+      spItemId: z.string(),
+      spWebUrl: z.string(),
+    })
+  ).optional().nullable(),
 });
 
 export const carReviewResponseSchema = z.object({
@@ -109,6 +123,13 @@ export const carReviewResponseSchema = z.object({
   signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
   saveToProfile: z.boolean().optional(),
   qmsAuthUserId: z.string().optional(),
+  attachments: z.array(
+    z.object({
+      fileName: z.string(),
+      spItemId: z.string(),
+      spWebUrl: z.string(),
+    })
+  ).optional().nullable(),
 });
 
 export const carListQuerySchema = z.object({

@@ -51,6 +51,43 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
   const round = getRound(currentStatus);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [showSignDialog, setShowSignDialog] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; spItemId: string; spWebUrl: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folderPath", "CAR/approvals");
+        const res = await fetch("/api/sharepoint/upload-file", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) throw new Error("อัปโหลดไฟล์ล้มเหลว");
+        const json = await res.json();
+        if (json.data) {
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              fileName: json.data.name || file.name,
+              spItemId: json.data.id,
+              spWebUrl: json.data.webUrl,
+            },
+          ]);
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const { register, watch, handleSubmit, setValue, formState: { errors } } = useForm<CarVerifyInput>({
     resolver: zodResolver(carVerifySchema),
@@ -100,7 +137,7 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
   }
 
   return (
-    <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5">
+    <form onSubmit={handleSubmit((d) => mutation.mutate({ ...d, attachments: uploadedFiles }))} className="space-y-5">
       <input type="hidden" {...register("round", { valueAsNumber: true })} />
 
       {/* Result — card-style pick */}
@@ -174,6 +211,35 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
           className={cn(INPUT_CLASS, "resize-none")}
         />
         {errors.findings && <p className="mt-1 text-xs text-rose-500">{errors.findings.message}</p>}
+
+        {/* Attachments Section */}
+        <div className="flex flex-col gap-1.5 mt-2 pl-1">
+          <label className="text-xs font-semibold text-slate-600">เอกสารแนบประกอบ</label>
+          <input
+            type="file"
+            multiple
+            onChange={handleFileUpload}
+            disabled={uploading}
+            className="text-xs text-slate-600 block file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
+          />
+          {uploading && <p className="text-[11px] text-slate-400 animate-pulse">กำลังอัปโหลด...</p>}
+          {uploadedFiles.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {uploadedFiles.map((file, i) => (
+                <div key={i} className="flex items-center gap-1 bg-slate-50 border border-slate-200 pl-2 pr-1 py-0.5 rounded text-[11px]">
+                  <span className="truncate max-w-[150px]">{file.fileName}</span>
+                  <button
+                    type="button"
+                    onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                    className="text-rose-500 hover:text-rose-700 font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* FAILED round 1 — next due date */}
@@ -284,7 +350,7 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
       </Dialog>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={mutation.isPending || !resultValue}>
+        <Button type="submit" disabled={mutation.isPending || uploading || !resultValue}>
           {mutation.isPending && <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin mr-1.5" />}
           {mutation.isPending ? t("car.verify.btnSaving") : t("car.verify.btnSave", { round: String(round) })}
         </Button>

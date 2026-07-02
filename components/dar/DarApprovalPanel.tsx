@@ -122,6 +122,8 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
   const [sigType, setSigType] = useState<SigMode>("DRAW");
   const [saveSignature, setSaveSignature] = useState(false);
   const [comment, setComment] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; spItemId: string; spWebUrl: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [qmsComment, setQmsComment] = useState("");
   const [qmsChecklist, setQmsChecklist] = useState({
     chkHasAttachment: false,
@@ -134,6 +136,42 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
   });
   const [error, setError] = useState<string | null>(null);
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setError(null);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folderPath", "DAR/approvals");
+        const res = await fetch("/api/sharepoint/upload-file", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) throw new Error("อัปโหลดไฟล์ล้มเหลว");
+        const json = await res.json();
+        if (json.data) {
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              fileName: json.data.name || file.name,
+              spItemId: json.data.id,
+              spWebUrl: json.data.webUrl,
+            },
+          ]);
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+      setError(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const submitMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/dar/${darId}/approve`, {
@@ -143,6 +181,7 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
           signatureType: sigType,
           saveSignature,
           comment: comment.trim() || null,
+          attachments: uploadedFiles,
           targetAuthUserId: targetAuthUserId || null,
           qmsProcessing: isQmsStep ? { ...qmsChecklist, comments: qmsComment.trim() || null } : null,
         }),
@@ -236,6 +275,37 @@ function ApproveModal({ darId, stepLabel, stepRole, savedSignatureUrl, savedSign
             maxLength={1000}
             className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-colors"
           />
+        </div>
+
+        {/* Attachments */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-slate-600">
+            เอกสารแนบประกอบ
+          </label>
+          <input
+            type="file"
+            multiple
+            onChange={handleFileUpload}
+            disabled={uploading}
+            className="text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#0F1059]/10 file:text-[#0F1059] hover:file:bg-[#0F1059]/20 transition-colors cursor-pointer"
+          />
+          {uploading && <p className="text-xs text-slate-500 animate-pulse">กำลังอัปโหลด...</p>}
+          {uploadedFiles.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {uploadedFiles.map((file, i) => (
+                <div key={i} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 pl-2.5 pr-1.5 py-1 rounded-lg text-xs text-slate-700">
+                  <span className="truncate max-w-[180px]">{file.fileName}</span>
+                  <button
+                    type="button"
+                    onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                    className="w-4 h-4 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {isQmsStep && (
@@ -332,13 +402,54 @@ interface RejectModalProps {
 function RejectModal({ darId, stepLabel, onClose, onDone }: RejectModalProps) {
   const t = useT();
   const [reason, setReason] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; spItemId: string; spWebUrl: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setError(null);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folderPath", "DAR/approvals");
+        const res = await fetch("/api/sharepoint/upload-file", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) throw new Error("อัปโหลดไฟล์ล้มเหลว");
+        const json = await res.json();
+        if (json.data) {
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              fileName: json.data.name || file.name,
+              spItemId: json.data.id,
+              spWebUrl: json.data.webUrl,
+            },
+          ]);
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+      setError(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const submitMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/dar/${darId}/reject`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: reason.trim() }),
+        body: JSON.stringify({
+          reason: reason.trim(),
+          attachments: uploadedFiles,
+        }),
       });
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(getErrorMessage(json.error, t("dar.approval.errorGeneric")));
@@ -397,6 +508,37 @@ function RejectModal({ darId, stepLabel, onClose, onDone }: RejectModalProps) {
           <p className="text-[11px] text-slate-400 text-right">{reason.length}/1000</p>
         </div>
 
+        {/* Attachments */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-slate-600">
+            เอกสารแนบประกอบ
+          </label>
+          <input
+            type="file"
+            multiple
+            onChange={handleFileUpload}
+            disabled={uploading}
+            className="text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 transition-colors cursor-pointer"
+          />
+          {uploading && <p className="text-xs text-slate-500 animate-pulse">กำลังอัปโหลด...</p>}
+          {uploadedFiles.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {uploadedFiles.map((file, i) => (
+                <div key={i} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 pl-2.5 pr-1.5 py-1 rounded-lg text-xs text-slate-700">
+                  <span className="truncate max-w-[180px]">{file.fileName}</span>
+                  <button
+                    type="button"
+                    onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                    className="w-4 h-4 flex items-center justify-center rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {error && (
           <div className="flex items-start gap-2 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -411,7 +553,7 @@ function RejectModal({ darId, stepLabel, onClose, onDone }: RejectModalProps) {
       <div className="flex justify-end gap-2 px-6 py-4 border-t border-slate-100 bg-slate-50/60">
         <Button variant="ghost" size="sm" type="button" onClick={onClose} disabled={submitting}>{t("common.cancel")}</Button>
         <button type="button"
-          disabled={!reason.trim() || submitting}
+          disabled={!reason.trim() || submitting || uploading}
           onClick={handleSubmit}
           className="h-8 px-5 text-xs font-semibold rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1.5">
           {submitting

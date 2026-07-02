@@ -20,7 +20,7 @@ export async function POST(
 
     let car;
     if (input.token) {
-      car = await carService.closeCar(id, input.token, input.comment, input.signaturePath);
+      car = await carService.closeCar(id, input.token, input.comment, input.signaturePath, input.attachments);
     } else {
       const session = await requireAuth();
       if (session.user.role !== "MR") {
@@ -32,6 +32,7 @@ export async function POST(
         input.comment,
         session.user.authUserId,
         input.signaturePath,
+        input.attachments,
       );
       if (input.saveToProfile && input.signaturePath && input.signatureType && session.user.authUserId) {
         const prefRepo = new UserPreferenceRepository();

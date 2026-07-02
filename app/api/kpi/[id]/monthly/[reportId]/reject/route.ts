@@ -14,14 +14,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const session = await requireAuth();
     const { reportId } = await params;
-    const { reason } = rejectReportSchema.parse(await request.json());
+    const { reason, attachments } = rejectReportSchema.parse(await request.json());
     const updated = await service.rejectReport(reportId, reason, {
       userId: session.user.id,
       authUserId: session.user.authUserId,
       role: session.user.role,
       departmentId: session.user.authDepartmentId ?? session.user.departmentId,
       accessToken: session.user.accessToken,
-    });
+    }, attachments);
 
     const detail = await service.getReportById(reportId);
     const preparerSig = detail.approvalSignatures?.find((s: { step: string }) => s.step === 'PREPARER');

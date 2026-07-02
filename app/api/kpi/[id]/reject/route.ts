@@ -17,6 +17,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const { id } = await params;
     const body = await _request.json().catch(() => ({}));
     const reason: string | undefined = body.reason || undefined;
+    const attachments = body.attachments || undefined;
 
     const signatures = await approvalSigRepo.findByDocument('KPI', id);
     const preparerSig = signatures.find(s => s.step === 'PREPARER');
@@ -27,7 +28,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       role: session.user.role,
       departmentId: session.user.authDepartmentId ?? session.user.departmentId,
       accessToken: session.user.accessToken,
-    }, reason);
+    }, reason, attachments);
 
     const kpiRejectFacts = [
       { labelTh: "หน่วยงาน", labelEn: "Department", value: updated.department },

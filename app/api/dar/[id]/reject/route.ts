@@ -13,6 +13,13 @@ const darService = new DarService();
 
 const schema = z.object({
   reason: z.string().min(1, "กรุณาระบุเหตุผล").max(1000),
+  attachments: z.array(
+    z.object({
+      fileName: z.string(),
+      spItemId: z.string(),
+      spWebUrl: z.string(),
+    })
+  ).optional().nullable(),
 });
 
 const paramSchema = z.object({ id: z.string().uuid() });
@@ -29,7 +36,12 @@ export async function POST(req: NextRequest, { params }: Params) {
     const darBefore = await darService.getDarById(id, session.user.id, true);
     const darNoBeforeReject = darBefore.darNo;
 
-    const dar = await darService.rejectDar(id, { userId: session.user.id, authUserId: session.user.authUserId, accessToken: session.user.accessToken }, parsed.reason);
+    const dar = await darService.rejectDar(
+      id,
+      { userId: session.user.id, authUserId: session.user.authUserId, accessToken: session.user.accessToken },
+      parsed.reason,
+      parsed.attachments ?? null
+    );
 
     revalidateTag(`dar-${id}`);
     revalidateTag("dar-list");

@@ -7,18 +7,42 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import type { CarDetail } from "@/types/car";
 
+import { parseComment } from "@/lib/utils";
+
 function Comment({ text }: { text: string }) {
   const [expanded, setExpanded] = useState(false);
-  const isLong = text.length > 80;
+  const parsed = parseComment(text);
+  const commentText = parsed.text;
+  const isLong = commentText.length > 80;
   return (
-    <p className="mt-1 text-xs text-slate-600 italic">
-      &quot;{isLong && !expanded ? text.slice(0, 80) + "…" : text}&quot;
-      {isLong && (
-        <button onClick={() => setExpanded(!expanded)} className="ml-1 text-blue-500 hover:underline not-italic">
-          {expanded ? "ย่อ" : "ดูเพิ่ม"}
-        </button>
+    <div className="mt-1 flex flex-col gap-1">
+      <p className="text-xs text-slate-600 italic">
+        &quot;{isLong && !expanded ? commentText.slice(0, 80) + "…" : commentText}&quot;
+        {isLong && (
+          <button onClick={() => setExpanded(!expanded)} className="ml-1 text-blue-500 hover:underline not-italic">
+            {expanded ? "ย่อ" : "ดูเพิ่ม"}
+          </button>
+        )}
+      </p>
+      {parsed.attachments && parsed.attachments.length > 0 && (
+        <div className="flex flex-col gap-1 mt-0.5 pl-2 border-l-2 border-slate-200">
+          {parsed.attachments.map((file, idx) => (
+            <a
+              key={idx}
+              href={`/api/sharepoint/get-file?itemId=${file.spItemId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1 not-italic font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {file.fileName}
+            </a>
+          ))}
+        </div>
       )}
-    </p>
+    </div>
   );
 }
 
