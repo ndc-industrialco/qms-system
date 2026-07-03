@@ -6,6 +6,7 @@ export interface CreateKpiDTO {
   prepare?: string;
   reviewer?: string;
   approver?: string;
+  documentName?: string | null;
 }
 
 export interface UpdateKpiDTO {
@@ -14,6 +15,7 @@ export interface UpdateKpiDTO {
   prepare?: string;
   reviewer?: string;
   approver?: string;
+  documentName?: string | null;
 }
 
 export interface CreateKpiObjectiveDTO {
@@ -50,6 +52,7 @@ export interface UpdateMonthlyDetailDTO {
 
 export interface UpdateMonthlyReportDTO {
   remark?: string | null;
+  documentName?: string | null;
 }
 
 export interface MonthlyReportAttachmentDTO {

@@ -55,6 +55,8 @@ const DOC_SELECT = {
           id: true,
           darNo: true,
           objective: true,
+          requesterName: true,
+          requestDate: true,
         },
       },
     },
@@ -173,5 +175,53 @@ export class DocumentControlRepository extends BaseRepository<DocumentControl> {
         );
       }),
     );
+  }
+
+  async findForExport(where: Prisma.DocumentControlWhereInput = {}, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findMany({
+      where,
+      orderBy: [
+        { departmentName: 'asc' },
+        { category: { name: 'asc' } },
+        { docNumber: 'asc' },
+      ],
+      select: {
+        id: true,
+        docNumber: true,
+        docName: true,
+        revision: true,
+        description: true,
+        status: true,
+        effectiveDate: true,
+        createdByName: true,
+        createdAt: true,
+        departmentName: true,
+        category: { select: { name: true } },
+        revisions: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            revision: true,
+            status: true,
+            effectiveDate: true,
+            createdAt: true,
+            createdByName: true,
+            darMaster: {
+              select: {
+                darNo: true,
+                objective: true,
+                requestDate: true,
+                requesterName: true,
+                distributions: {
+                  select: {
+                    departmentName: true,
+                    authDepartmentId: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 }

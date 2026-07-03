@@ -296,6 +296,11 @@ model KPI {
   approverAuthUserId    String?            @map("approver_auth_user_id")
   approverEmail         String?            @map("approver_email")
   submittedAt       DateTime?          @map("submitted_at")
+  documentName      String?            @map("document_name") @db.Text
+  publishedAt       DateTime?          @map("published_at")
+  publishedBy       String?            @map("published_by")
+  isRevision        Boolean            @default(false) @map("is_revision")
+  revisionYear      Int?               @map("revision_year")
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   objectives        KPIObjective[]
@@ -315,6 +320,7 @@ model KPIObjective {
   calculationFormula   String             @map("calculation_formula") @db.Text
   actionPlanGuidelines String             @map("action_plan_guidelines") @db.Text
   referenceDocuments   String?            @map("reference_documents") @db.Text
+  isRevised            Boolean            @default(false) @map("is_revised")
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   kpi                  KPI                @relation(fields: [kpiId], references: [id], onDelete: Cascade)
@@ -335,6 +341,7 @@ model KPIMonthlyReport {
   submittedAt DateTime?          @map("submitted_at")
   approvedAt  DateTime?          @map("approved_at")
   remark      String?            @db.Text
+  documentName String?           @map("document_name") @db.Text
   attachmentFileName String?     @map("attachment_file_name")
   attachmentFileSize Int?        @map("attachment_file_size")
   attachmentMimeType String?     @map("attachment_mime_type")
@@ -472,6 +479,8 @@ enum KpiObjectiveStatus {
   PENDING_REVIEW
   PENDING_APPROVAL
   APPROVED
+  QMS_CHECK
+  ANNOUNCED
   REJECTED
 }
 
@@ -578,6 +587,7 @@ model DocumentControlRevision {
 enum DocControlStatus {
   DRAFT
   ACTIVE
+  CANCELLED
   OBSOLETE
 }
 

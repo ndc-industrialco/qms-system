@@ -44,6 +44,7 @@ export type KPIObjectiveMinAggregateOutputType = {
   calculationFormula: string | null
   actionPlanGuidelines: string | null
   referenceDocuments: string | null
+  isRevised: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -58,6 +59,7 @@ export type KPIObjectiveMaxAggregateOutputType = {
   calculationFormula: string | null
   actionPlanGuidelines: string | null
   referenceDocuments: string | null
+  isRevised: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -72,6 +74,7 @@ export type KPIObjectiveCountAggregateOutputType = {
   calculationFormula: number
   actionPlanGuidelines: number
   referenceDocuments: number
+  isRevised: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -96,6 +99,7 @@ export type KPIObjectiveMinAggregateInputType = {
   calculationFormula?: true
   actionPlanGuidelines?: true
   referenceDocuments?: true
+  isRevised?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -110,6 +114,7 @@ export type KPIObjectiveMaxAggregateInputType = {
   calculationFormula?: true
   actionPlanGuidelines?: true
   referenceDocuments?: true
+  isRevised?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +129,7 @@ export type KPIObjectiveCountAggregateInputType = {
   calculationFormula?: true
   actionPlanGuidelines?: true
   referenceDocuments?: true
+  isRevised?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -225,6 +231,7 @@ export type KPIObjectiveGroupByOutputType = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments: string | null
+  isRevised: boolean
   createdAt: Date
   updatedAt: Date
   _count: KPIObjectiveCountAggregateOutputType | null
@@ -262,6 +269,7 @@ export type KPIObjectiveWhereInput = {
   calculationFormula?: Prisma.StringFilter<"KPIObjective"> | string
   actionPlanGuidelines?: Prisma.StringFilter<"KPIObjective"> | string
   referenceDocuments?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
+  isRevised?: Prisma.BoolFilter<"KPIObjective"> | boolean
   createdAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   kpi?: Prisma.XOR<Prisma.KPIScalarRelationFilter, Prisma.KPIWhereInput>
@@ -278,6 +286,7 @@ export type KPIObjectiveOrderByWithRelationInput = {
   calculationFormula?: Prisma.SortOrder
   actionPlanGuidelines?: Prisma.SortOrder
   referenceDocuments?: Prisma.SortOrderInput | Prisma.SortOrder
+  isRevised?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   kpi?: Prisma.KPIOrderByWithRelationInput
@@ -297,6 +306,7 @@ export type KPIObjectiveWhereUniqueInput = Prisma.AtLeast<{
   calculationFormula?: Prisma.StringFilter<"KPIObjective"> | string
   actionPlanGuidelines?: Prisma.StringFilter<"KPIObjective"> | string
   referenceDocuments?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
+  isRevised?: Prisma.BoolFilter<"KPIObjective"> | boolean
   createdAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   kpi?: Prisma.XOR<Prisma.KPIScalarRelationFilter, Prisma.KPIWhereInput>
@@ -313,6 +323,7 @@ export type KPIObjectiveOrderByWithAggregationInput = {
   calculationFormula?: Prisma.SortOrder
   actionPlanGuidelines?: Prisma.SortOrder
   referenceDocuments?: Prisma.SortOrderInput | Prisma.SortOrder
+  isRevised?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.KPIObjectiveCountOrderByAggregateInput
@@ -335,6 +346,7 @@ export type KPIObjectiveScalarWhereWithAggregatesInput = {
   calculationFormula?: Prisma.StringWithAggregatesFilter<"KPIObjective"> | string
   actionPlanGuidelines?: Prisma.StringWithAggregatesFilter<"KPIObjective"> | string
   referenceDocuments?: Prisma.StringNullableWithAggregatesFilter<"KPIObjective"> | string | null
+  isRevised?: Prisma.BoolWithAggregatesFilter<"KPIObjective"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"KPIObjective"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"KPIObjective"> | Date | string
 }
@@ -348,6 +360,7 @@ export type KPIObjectiveCreateInput = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments?: string | null
+  isRevised?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   kpi: Prisma.KPICreateNestedOneWithoutObjectivesInput
@@ -364,6 +377,7 @@ export type KPIObjectiveUncheckedCreateInput = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments?: string | null
+  isRevised?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUncheckedCreateNestedManyWithoutKpiObjectiveInput
@@ -378,6 +392,7 @@ export type KPIObjectiveUpdateInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   kpi?: Prisma.KPIUpdateOneRequiredWithoutObjectivesNestedInput
@@ -394,6 +409,7 @@ export type KPIObjectiveUncheckedUpdateInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUncheckedUpdateManyWithoutKpiObjectiveNestedInput
@@ -409,6 +425,7 @@ export type KPIObjectiveCreateManyInput = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments?: string | null
+  isRevised?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -422,6 +439,7 @@ export type KPIObjectiveUpdateManyMutationInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -436,6 +454,7 @@ export type KPIObjectiveUncheckedUpdateManyInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -460,6 +479,7 @@ export type KPIObjectiveCountOrderByAggregateInput = {
   calculationFormula?: Prisma.SortOrder
   actionPlanGuidelines?: Prisma.SortOrder
   referenceDocuments?: Prisma.SortOrder
+  isRevised?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -478,6 +498,7 @@ export type KPIObjectiveMaxOrderByAggregateInput = {
   calculationFormula?: Prisma.SortOrder
   actionPlanGuidelines?: Prisma.SortOrder
   referenceDocuments?: Prisma.SortOrder
+  isRevised?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -492,6 +513,7 @@ export type KPIObjectiveMinOrderByAggregateInput = {
   calculationFormula?: Prisma.SortOrder
   actionPlanGuidelines?: Prisma.SortOrder
   referenceDocuments?: Prisma.SortOrder
+  isRevised?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -578,6 +600,7 @@ export type KPIObjectiveCreateWithoutKpiInput = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments?: string | null
+  isRevised?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailCreateNestedManyWithoutKpiObjectiveInput
@@ -592,6 +615,7 @@ export type KPIObjectiveUncheckedCreateWithoutKpiInput = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments?: string | null
+  isRevised?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUncheckedCreateNestedManyWithoutKpiObjectiveInput
@@ -636,6 +660,7 @@ export type KPIObjectiveScalarWhereInput = {
   calculationFormula?: Prisma.StringFilter<"KPIObjective"> | string
   actionPlanGuidelines?: Prisma.StringFilter<"KPIObjective"> | string
   referenceDocuments?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
+  isRevised?: Prisma.BoolFilter<"KPIObjective"> | boolean
   createdAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
 }
@@ -649,6 +674,7 @@ export type KPIObjectiveCreateWithoutMonthlyDetailsInput = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments?: string | null
+  isRevised?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   kpi: Prisma.KPICreateNestedOneWithoutObjectivesInput
@@ -664,6 +690,7 @@ export type KPIObjectiveUncheckedCreateWithoutMonthlyDetailsInput = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments?: string | null
+  isRevised?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -693,6 +720,7 @@ export type KPIObjectiveUpdateWithoutMonthlyDetailsInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   kpi?: Prisma.KPIUpdateOneRequiredWithoutObjectivesNestedInput
@@ -708,6 +736,7 @@ export type KPIObjectiveUncheckedUpdateWithoutMonthlyDetailsInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -721,6 +750,7 @@ export type KPIObjectiveCreateManyKpiInput = {
   calculationFormula: string
   actionPlanGuidelines: string
   referenceDocuments?: string | null
+  isRevised?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -734,6 +764,7 @@ export type KPIObjectiveUpdateWithoutKpiInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUpdateManyWithoutKpiObjectiveNestedInput
@@ -748,6 +779,7 @@ export type KPIObjectiveUncheckedUpdateWithoutKpiInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUncheckedUpdateManyWithoutKpiObjectiveNestedInput
@@ -762,6 +794,7 @@ export type KPIObjectiveUncheckedUpdateManyWithoutKpiInput = {
   calculationFormula?: Prisma.StringFieldUpdateOperationsInput | string
   actionPlanGuidelines?: Prisma.StringFieldUpdateOperationsInput | string
   referenceDocuments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -807,6 +840,7 @@ export type KPIObjectiveSelect<ExtArgs extends runtime.Types.Extensions.Internal
   calculationFormula?: boolean
   actionPlanGuidelines?: boolean
   referenceDocuments?: boolean
+  isRevised?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -824,6 +858,7 @@ export type KPIObjectiveSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   calculationFormula?: boolean
   actionPlanGuidelines?: boolean
   referenceDocuments?: boolean
+  isRevised?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -839,6 +874,7 @@ export type KPIObjectiveSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   calculationFormula?: boolean
   actionPlanGuidelines?: boolean
   referenceDocuments?: boolean
+  isRevised?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -854,11 +890,12 @@ export type KPIObjectiveSelectScalar = {
   calculationFormula?: boolean
   actionPlanGuidelines?: boolean
   referenceDocuments?: boolean
+  isRevised?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type KPIObjectiveOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kpiId" | "target" | "unit" | "objective" | "frequency" | "calculationFormula" | "actionPlanGuidelines" | "referenceDocuments" | "createdAt" | "updatedAt", ExtArgs["result"]["kPIObjective"]>
+export type KPIObjectiveOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kpiId" | "target" | "unit" | "objective" | "frequency" | "calculationFormula" | "actionPlanGuidelines" | "referenceDocuments" | "isRevised" | "createdAt" | "updatedAt", ExtArgs["result"]["kPIObjective"]>
 export type KPIObjectiveInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
   monthlyDetails?: boolean | Prisma.KPIObjective$monthlyDetailsArgs<ExtArgs>
@@ -887,6 +924,7 @@ export type $KPIObjectivePayload<ExtArgs extends runtime.Types.Extensions.Intern
     calculationFormula: string
     actionPlanGuidelines: string
     referenceDocuments: string | null
+    isRevised: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["kPIObjective"]>
@@ -1323,6 +1361,7 @@ export interface KPIObjectiveFieldRefs {
   readonly calculationFormula: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly actionPlanGuidelines: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly referenceDocuments: Prisma.FieldRef<"KPIObjective", 'String'>
+  readonly isRevised: Prisma.FieldRef<"KPIObjective", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"KPIObjective", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"KPIObjective", 'DateTime'>
 }

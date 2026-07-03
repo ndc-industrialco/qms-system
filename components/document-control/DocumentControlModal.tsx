@@ -1,8 +1,7 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useT } from '@/lib/i18n';
 import { useMutation } from '@tanstack/react-query';
@@ -19,7 +18,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import type { DocumentControlDetail, DocControlStatus } from '@/types/documentControl';
+import type {
+  CreateDocumentControlInput,
+  DocumentControlDetail,
+  DocControlStatus,
+  UpdateDocumentControlInput,
+} from '@/types/documentControl';
 
 interface DocumentControlModalProps {
   open: boolean;
@@ -31,7 +35,7 @@ interface DocumentControlModalProps {
   onSuccess?: () => void;
 }
 
-const STATUSES = ['DRAFT', 'ACTIVE', 'OBSOLETE'];
+const STATUSES: DocControlStatus[] = ['ACTIVE', 'CANCELLED'];
 
 export function DocumentControlModal({
   open,
@@ -50,16 +54,16 @@ export function DocumentControlModal({
     setValue,
     reset,
     formState: { errors },
-  } = useForm({
-    resolver: zodResolver(document ? updateDocumentControlSchema : createDocumentControlSchema),
-    defaultValues: {
-      categoryId: categoryId || '',
-      departmentId: departmentId || '',
-      docNumber: '',
-      docName: '',
-      description: '',
-      status: 'DRAFT' as DocControlStatus,
-    },
+  } = useForm<CreateDocumentControlInput | UpdateDocumentControlInput>({
+      resolver: zodResolver(document ? updateDocumentControlSchema : createDocumentControlSchema) as unknown as Resolver<CreateDocumentControlInput | UpdateDocumentControlInput>,
+      defaultValues: {
+        categoryId: categoryId || '',
+        departmentId: departmentId || '',
+        docNumber: '',
+        docName: '',
+        description: '',
+        status: 'ACTIVE' as DocControlStatus,
+      },
   });
 
   const status = watch('status') || 'DRAFT';
@@ -72,8 +76,8 @@ export function DocumentControlModal({
           departmentId: document.departmentId || '',
           docNumber: document.docNumber,
           docName: document.docName,
-          description: (document as any).description ?? '',
-          status: document.status,
+          description: document.description ?? '',
+          status: document.status === 'CANCELLED' ? 'CANCELLED' : 'ACTIVE',
         });
       } else {
         reset({
@@ -82,7 +86,7 @@ export function DocumentControlModal({
           docNumber: '',
           docName: '',
           description: '',
-          status: 'DRAFT' as DocControlStatus,
+          status: 'ACTIVE' as DocControlStatus,
         });
 
         if (categoryId && departmentId) {
@@ -100,7 +104,7 @@ export function DocumentControlModal({
   }, [open, document, categoryId, departmentId, reset, setValue]);
 
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: CreateDocumentControlInput) => {
       const res = await fetch('/api/document-controls', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,11 +122,11 @@ export function DocumentControlModal({
       onClose();
       onSuccess?.();
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: UpdateDocumentControlInput) => {
       const res = await fetch(`/api/document-controls/${document?.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -139,14 +143,14 @@ export function DocumentControlModal({
       onClose();
       onSuccess?.();
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: CreateDocumentControlInput | UpdateDocumentControlInput) => {
     if (document) {
-      await updateMutation.mutateAsync(data);
+      await updateMutation.mutateAsync(data as UpdateDocumentControlInput);
     } else {
-      await createMutation.mutateAsync(data);
+      await createMutation.mutateAsync(data as CreateDocumentControlInput);
     }
   };
 
@@ -187,11 +191,11 @@ export function DocumentControlModal({
                 id="docNumber"
                 {...register('docNumber')}
                 disabled={isLoading || !!document}
-                placeholder={t('documentControl.placeholder.docNumber' as any)}
+                placeholder={t('documentControl.placeholder.docNumber' as never)}
                 className="bg-slate-50/50 border border-slate-200 rounded-xl focus-visible:ring-primary font-mono"
               />
-              {(errors as any).docNumber && (
-                <p className="text-rose-500 text-xs">{String((errors as any).docNumber.message)}</p>
+              {'docNumber' in errors && errors.docNumber && (
+                <p className="text-rose-500 text-xs">{String(errors.docNumber.message)}</p>
               )}
             </div>
 
@@ -214,7 +218,7 @@ export function DocumentControlModal({
             {/* Description */}
             <div className="space-y-1.5">
               <Label htmlFor="description" className="text-slate-800 text-sm font-semibold">
-                {t('documentControl.field.description')}
+                {t('documentControl.field.description')} <span className="text-rose-500">*</span>
               </Label>
               <Input
                 id="description"
@@ -223,6 +227,9 @@ export function DocumentControlModal({
                 placeholder={t('documentControl.placeholder.description')}
                 className="bg-slate-50/50 border border-slate-200 rounded-xl focus-visible:ring-primary"
               />
+              {errors.description && (
+                <p className="text-rose-500 text-xs">{String(errors.description.message)}</p>
+              )}
             </div>
 
             {/* Status */}
@@ -241,7 +248,7 @@ export function DocumentControlModal({
                 <SelectContent>
                   {STATUSES.map((st) => (
                     <SelectItem key={st} value={st}>
-                      {t(`documentControl.status.${st}` as any)}
+                      {t(`documentControl.status.${st}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>

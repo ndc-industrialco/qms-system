@@ -3,10 +3,12 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Download } from "lucide-react";
 import type { DarSummary } from "@/types/dar";
 import { OBJECTIVE_LABELS, DOC_TYPE_LABELS, DAR_STATUS_LABELS } from "@/types/dar";
 import type { DarStatus, DarObjective } from "@/types/dar";
 import DarTable from "@/components/dar/DarTable";
+import DarExportPreviewModal from "./DarExportPreviewModal";
 import DarCardList from "@/components/dar/DarCardList";
 import FilterBar from "@/components/common/FilterBar";
 import PageHeader from "@/components/common/PageHeader";
@@ -66,6 +68,7 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
   const [pendingDelete, setPendingDelete] = useState<{ id: string; darNo: string | null } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [exportPreviewOpen, setExportPreviewOpen] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -93,7 +96,7 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
   }
 
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
-    keys: ["search", "status", "objective", "page"] as const,
+    keys: ["search", "status", "objective", "page", "year", "month", "from", "to"] as const,
     searchKey: "search",
     debounceMs: 300,
   });
@@ -121,6 +124,33 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
       .filter((d) => {
         if (params.status && d.status !== (params.status as DarStatus)) return false;
         if (params.objective && d.objective !== (params.objective as DarObjective)) return false;
+
+        // Year filter
+        if (params.year) {
+          const dYear = new Date(d.requestDate).getFullYear();
+          if (dYear !== parseInt(params.year, 10)) return false;
+        }
+
+        // Month filter
+        if (params.month) {
+          const dMonth = new Date(d.requestDate).getMonth() + 1;
+          if (dMonth !== parseInt(params.month, 10)) return false;
+        }
+
+        // Start Date filter
+        if (params.from) {
+          const fromDate = new Date(params.from);
+          fromDate.setHours(0, 0, 0, 0);
+          if (new Date(d.requestDate) < fromDate) return false;
+        }
+
+        // End Date filter
+        if (params.to) {
+          const toDate = new Date(params.to);
+          toDate.setHours(23, 59, 59, 999);
+          if (new Date(d.requestDate) > toDate) return false;
+        }
+
         if (q) {
           const haystack = [
             d.darNo ?? "",
@@ -139,7 +169,7 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
         else if (sortKey === "status") cmp = a.status.localeCompare(b.status);
         return sortDir === "asc" ? cmp : -cmp;
       });
-  }, [dars, params.search, params.status, params.objective, sortKey, sortDir]);
+  }, [dars, params.search, params.status, params.objective, params.year, params.month, params.from, params.to, sortKey, sortDir]);
 
   const isFilteredEmpty = dars.length > 0 && filtered.length === 0;
 
@@ -159,11 +189,59 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
     label: objectiveLabel(k),
   }));
 
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const y = currentYear - i;
+    return { value: String(y), label: String(y + 543) };
+  });
+
+  const monthOptions = [
+    { value: "1", label: "มกราคม" },
+    { value: "2", label: "กุมภาพันธ์" },
+    { value: "3", label: "มีนาคม" },
+    { value: "4", label: "เมษายน" },
+    { value: "5", label: "พฤษภาคม" },
+    { value: "6", label: "มิถุนายน" },
+    { value: "7", label: "กรกฎาคม" },
+    { value: "8", label: "สิงหาคม" },
+    { value: "9", label: "กันยายน" },
+    { value: "10", label: "ตุลาคม" },
+    { value: "11", label: "พฤศจิกายน" },
+    { value: "12", label: "ธันวาคม" },
+  ];
+
+  function handleExport() {
+    const q = new URLSearchParams();
+    if (params.status) q.set("status", params.status);
+    if (params.objective) q.set("objective", params.objective);
+    if (params.search) q.set("search", params.search);
+
+    const currentParams = new URLSearchParams(window.location.search);
+    for (const key of ["department", "user", "userId", "year", "month", "from", "to"]) {
+      const val = currentParams.get(key);
+      if (val) q.set(key, val);
+    }
+
+    window.location.href = `/api/dar/export?${q.toString()}`;
+    setExportPreviewOpen(false);
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
         title={t("dar.list.title")}
         subtitle={t("dar.list.subtitle")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-[#0F1059] flex items-center gap-1.5"
+            onClick={() => setExportPreviewOpen(true)}
+          >
+            <Download className="h-4 w-4" />
+            {t("dar.list.exportExcel") || "ส่งออก Excel"}
+          </Button>
+        }
       />
 
       {/* Status count cards */}
@@ -210,8 +288,27 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
               allLabel: t("dar.list.allObjectives"),
               minWidth: "12rem",
             },
+            {
+              key: "year",
+              label: "ปี",
+              options: yearOptions,
+              allLabel: "ทุกปี",
+              minWidth: "6rem",
+            },
+            {
+              key: "month",
+              label: "เดือน",
+              options: monthOptions,
+              allLabel: "ทุกเดือน",
+              minWidth: "8rem",
+            },
           ]}
-          filterValues={{ status: params.status, objective: params.objective }}
+          filterValues={{
+            status: params.status,
+            objective: params.objective,
+            year: params.year,
+            month: params.month,
+          }}
           onFilterChange={setParam}
           hasActiveFilters={hasFilters}
           onClearAll={clearAll}
@@ -220,6 +317,27 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
           totalCount={dars.length}
           countLabel={t("dar.list.countLabel")}
         >
+          <div className="flex items-center gap-2 flex-wrap self-end">
+            <div className="flex flex-col">
+              <span className="text-[11px] text-[#0F1059] font-bold mb-1">วันที่เริ่มต้น</span>
+              <input
+                type="date"
+                className="h-8 px-2 border border-slate-200 rounded-lg text-[13px] outline-none bg-white text-slate-700 shadow-sm focus:border-[#0F1059] transition-all"
+                value={params.from || ""}
+                onChange={(e) => setParam("from", e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[11px] text-[#0F1059] font-bold mb-1">วันที่สิ้นสุด</span>
+              <input
+                type="date"
+                className="h-8 px-2 border border-slate-200 rounded-lg text-[13px] outline-none bg-white text-slate-700 shadow-sm focus:border-[#0F1059] transition-all"
+                value={params.to || ""}
+                onChange={(e) => setParam("to", e.target.value)}
+              />
+            </div>
+          </div>
+
           <div className="flex items-center gap-1.5 self-end">
             <Select value={sortKey} onValueChange={(val) => setSortKey(val as SortKey)}>
               <SelectTrigger className="h-8 w-28">
@@ -330,6 +448,15 @@ export default function QmsDarListClient({ dars: initialDars }: { dars: DarSumma
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Export Preview Modal */}
+      <DarExportPreviewModal
+        isOpen={exportPreviewOpen}
+        onClose={() => setExportPreviewOpen(false)}
+        items={filtered}
+        onDownload={handleExport}
+        isTh={true}
+      />
     </div>
   );
 }

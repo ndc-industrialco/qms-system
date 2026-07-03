@@ -51,6 +51,7 @@ export class AuditAppointmentRepository extends BaseRepository<AuditAppointment>
       },
       include: {
         members: { orderBy: { orderIndex: "asc" } },
+        signoffs: true,
       },
       orderBy: { createdAt: "desc" },
     });

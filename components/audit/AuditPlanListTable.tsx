@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import FilterBar from "@/components/common/FilterBar";
@@ -148,7 +148,25 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
         resultCount={plans.length}
         totalCount={total}
         countLabel="แผน"
-      />
+      >
+        {_isPrivileged && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 rounded-lg border-slate-200"
+            onClick={() => {
+              const query = new URLSearchParams();
+              if (params.search) query.set("search", params.search);
+              if (params.auditType) query.set("auditType", params.auditType);
+              if (params.status) query.set("status", params.status);
+              window.open(`/api/audit/plans/export?${query.toString()}`);
+            }}
+          >
+            <Download className="mr-1.5 h-3.5 w-3.5" />
+            ส่งออกแผนการตรวจ
+          </Button>
+        )}
+      </FilterBar>
 
       {plans.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-6">

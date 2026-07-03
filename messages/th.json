@@ -717,6 +717,7 @@
     "status": {
       "DRAFT": "ร่าง",
       "ACTIVE": "ใช้งาน",
+      "CANCELLED": "ยกเลิก",
       "OBSOLETE": "ไม่ใช้แล้ว"
     },
     "docType": {

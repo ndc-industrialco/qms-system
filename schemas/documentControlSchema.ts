@@ -1,19 +1,30 @@
 import { z } from 'zod';
 
-const DOC_STATUSES = ['DRAFT', 'ACTIVE', 'OBSOLETE'] as const;
+const DOC_STATUSES = ['DRAFT', 'ACTIVE', 'CANCELLED', 'OBSOLETE'] as const;
+const CREATE_DOC_STATUSES = ['ACTIVE', 'CANCELLED'] as const;
+
+const requiredDescriptionSchema = z
+  .string()
+  .trim()
+  .min(1, 'Description is required')
+  .max(500);
 
 export const createDocumentControlSchema = z.object({
   categoryId: z.string().min(1, 'Category is required'),
   departmentId: z.string().min(1, 'Department is required'),
   docNumber: z.string().min(1, 'Document number is required').max(50),
   docName: z.string().min(1, 'Document name is required').max(255),
-  description: z.string().max(500).optional().nullable(),
-  status: z.enum(DOC_STATUSES).default('DRAFT'),
+  description: requiredDescriptionSchema,
+  status: z.enum(CREATE_DOC_STATUSES).default('ACTIVE'),
 });
 
-export const updateDocumentControlSchema = createDocumentControlSchema
-  .omit({ docNumber: true })
-  .partial();
+export const updateDocumentControlSchema = z.object({
+  categoryId: z.string().min(1, 'Category is required').optional(),
+  departmentId: z.string().min(1, 'Department is required').optional(),
+  docName: z.string().trim().min(1, 'Document name is required').max(255).optional(),
+  description: z.string().trim().min(1, 'Description is required').max(500).optional().nullable(),
+  status: z.enum(CREATE_DOC_STATUSES).optional(),
+});
 
 export const uploadRevisionSchema = z.object({
   revision: z.string().min(1, 'Revision is required').max(20),

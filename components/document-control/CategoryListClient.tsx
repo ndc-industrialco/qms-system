@@ -1,12 +1,12 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight, Download, Home } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryFolderGrid } from './CategoryFolderGrid';
 import { CategoryModal } from './CategoryModal';
@@ -14,6 +14,8 @@ import ConfirmModal from '@/components/common/ConfirmModal';
 import PageHeader from '@/components/common/PageHeader';
 import FilterBar from '@/components/common/FilterBar';
 import type { DocumentCategorySummary } from '@/types/documentControl';
+import { useLocale } from '@/lib/locale-context';
+import DocumentControlExportPreviewModal from './DocumentControlExportPreviewModal';
 
 interface CategoryListClientProps {
   department: { id: string; name: string };
@@ -28,6 +30,19 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<DocumentCategorySummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DocumentCategorySummary | null>(null);
+  const [exportPreviewOpen, setExportPreviewOpen] = useState(false);
+  const locale = useLocale();
+  const isTh = locale === 'th';
+
+  const { data: previewData } = useQuery({
+    queryKey: ['documents-preview-dept', department.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/document-controls?departmentId=${department.id}&limit=5`);
+      if (!res.ok) throw new Error('Failed to fetch preview');
+      return res.json();
+    },
+    enabled: exportPreviewOpen,
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['document-categories', department.id],
@@ -51,7 +66,7 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
       setDeleteTarget(null);
       queryClient.invalidateQueries({ queryKey: ['document-categories', department.id] });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message);
       setDeleteTarget(null);
     },
@@ -65,6 +80,11 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
   const handleEdit = (cat: DocumentCategorySummary) => {
     setEditingCategory(cat);
     setModalOpen(true);
+  };
+
+  const executeExport = () => {
+    window.open(`/api/document-controls/export?departmentId=${department.id}&t=${Date.now()}`, '_blank');
+    setExportPreviewOpen(false);
   };
 
   const categories: DocumentCategorySummary[] = useMemo(() => data?.data ?? [], [data?.data]);
@@ -115,6 +135,16 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
         <PageHeader
           title={department.name}
           subtitle={t('documentCategory.list')}
+          actions={canManage ? (
+            <Button
+              variant="outline"
+              onClick={() => setExportPreviewOpen(true)}
+              className="gap-1.5"
+            >
+              <Download className="w-4 h-4" />
+              Export Master List
+            </Button>
+          ) : undefined}
         />
 
         <FilterBar
@@ -154,11 +184,11 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
         ) : (
           <CategoryFolderGrid
             departmentId={department.id}
-            categories={sorted as any}
+            categories={sorted}
             canManage={canManage}
             onAdd={handleAdd}
-            onEdit={handleEdit as any}
-            onDelete={(cat: any) => setDeleteTarget(cat)}
+            onEdit={handleEdit}
+            onDelete={(cat) => setDeleteTarget(cat)}
           />
         )}
       </div>
@@ -185,6 +215,15 @@ export function CategoryListClient({ department, canManage }: CategoryListClient
           onCancel={() => setDeleteTarget(null)}
         />
       )}
+
+      <DocumentControlExportPreviewModal
+        isOpen={exportPreviewOpen}
+        onClose={() => setExportPreviewOpen(false)}
+        items={previewData?.data ?? []}
+        totalCount={previewData?.meta?.total ?? 0}
+        onDownload={executeExport}
+        isTh={isTh}
+      />
     </>
   );
 }

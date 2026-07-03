@@ -8,6 +8,7 @@ export const createKpiSchema = z.object({
   prepare: z.string().min(1, 'Preparer is required'),
   reviewer: z.string().min(1, 'Reviewer is required'),
   approver: z.string().min(1, 'Approver is required'),
+  documentName: z.string().max(500).nullable().optional(),
 });
 
 export const autoCreateKpiSchema = z.object({
@@ -16,6 +17,7 @@ export const autoCreateKpiSchema = z.object({
   prepare: z.string().optional().default(''),
   reviewer: z.string().optional().default(''),
   approver: z.string().optional().default(''),
+  documentName: z.string().max(500).nullable().optional(),
 });
 
 export const updateKpiSchema = createKpiSchema.partial();
@@ -53,6 +55,7 @@ export const updateMonthlyDetailSchema = z.object({
 
 export const updateMonthlyReportSchema = z.object({
   remark: z.string().max(5000).nullable().optional(),
+  documentName: z.string().max(500).nullable().optional(),
 });
 
 export const monthlyAttachmentUploadSchema = z.object({
@@ -76,7 +79,7 @@ export const monthlyQuerySchema = z.object({
   year: z.coerce.number().int().positive().optional(),
   month: z.enum(MONTHS).optional(),
   department: z.string().optional(),
-  status: z.enum(['DRAFT', 'PENDING_REVIEW', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED']).optional(),
+  status: z.enum(['DRAFT', 'PENDING_REVIEW', 'PENDING_APPROVAL', 'APPROVED', 'QMS_CHECK', 'ANNOUNCED', 'REJECTED']).optional(),
 });
 
 export const rejectReportSchema = z.object({
@@ -101,4 +104,36 @@ export const submitKpiObjectivesSchema = z.object({
   approverName: z.string().max(255).optional().nullable(),
   approverEmail: z.string().email().optional().nullable(),
   preparerAuthUserId: z.string().optional().nullable(),
+});
+
+export const qmsCheckKpiSchema = z.object({
+  signatureDataUrl: z.string().optional(),
+  saveSignature: z.boolean().optional(),
+});
+
+export const publishKpiSchema = z.object({
+  documentName: z.string().max(500).nullable().optional(),
+});
+
+export const copyKpiSchema = z.object({
+  sourceKpiId: z.string().uuid('Invalid KPI ID'),
+  targetYear: z.number().int().min(2000).max(2100),
+});
+
+export const reviseKpiSchema = z.object({
+  reason: z.string().min(1, 'Revision reason is required'),
+  objectiveIds: z.array(z.string().uuid()).optional(),
+});
+
+export const reviewApproveAttachmentSchema = z.object({
+  attachments: z.array(
+    z.object({
+      fileName: z.string(),
+      spItemId: z.string(),
+      spWebUrl: z.string(),
+    })
+  ).optional().nullable(),
+  signatureDataUrl: z.string().optional(),
+  saveSignature: z.boolean().optional(),
+  signatureType: z.string().optional(),
 });

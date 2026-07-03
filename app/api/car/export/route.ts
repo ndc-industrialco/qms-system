@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import ExcelJS from "exceljs";
 import { CarExportService } from "@/services/carExportService";
+import { QmsConfigService } from "@/services/qmsConfigService";
 
 const filterSchema = z.object({
   status:     z.string().optional(),
@@ -33,18 +34,24 @@ export async function GET(req: NextRequest) {
       to:         sp.get("to")         ?? undefined,
     });
 
-    const rows = await exportService.listCars({
+    const [rows, naming] = await Promise.all([
+      exportService.listCars({
       ...(filter.status && { status: filter.status as never }),
       ...(filter.sourceType && { sourceType: filter.sourceType as never }),
       ...(filter.department && { targetDepartmentName: { contains: filter.department } }),
       ...(filter.from || filter.to ? { createdAt: { gte: filter.from, lte: filter.to } } : {}),
-    });
+      }),
+      qmsConfigService.getExportNamingMeta("CAR", {
+        label: "Corrective Action Request",
+        fileBaseName: "car-export",
+      }),
+    ]);
 
     const wb = new ExcelJS.Workbook();
     wb.creator = "QMS System";
     wb.created = new Date();
 
-    const ws = wb.addWorksheet("CAR");
+    const ws = wb.addWorksheet(naming.worksheetName);
 
     const headerFill: ExcelJS.Fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F1059" } };
     const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
@@ -128,7 +135,7 @@ export async function GET(req: NextRequest) {
     return new Response(buffer as BodyInit, {
       headers: {
         "Content-Type":        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="car-export-${date}.xlsx"`,
+        "Content-Disposition": `attachment; filename="${naming.fileBaseName}-${date}.xlsx"`,
         "Cache-Control":       "no-store",
       },
     });
@@ -138,3 +145,4 @@ export async function GET(req: NextRequest) {
 }
 
 const exportService = new CarExportService();
+const qmsConfigService = new QmsConfigService();

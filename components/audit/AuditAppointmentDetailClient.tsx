@@ -13,6 +13,7 @@ import {
   RotateCcw,
   PenLine,
   Pencil,
+  Printer,
   Trash2,
   CalendarCheck,
 } from "lucide-react";
@@ -149,9 +150,22 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit, canCrud =
                 <h1 className="text-lg font-bold text-slate-900 leading-snug">{appt.title}</h1>
                 <p className="text-sm text-slate-500 mt-1">ประจำปี พ.ศ. {appt.year}</p>
               </div>
-              {canCrud && (
-                <div className="flex items-center gap-2 shrink-0">
-                  {canEdit && (
+              <div className="flex items-center gap-2 shrink-0">
+                <Button asChild variant="outline" size="sm" className="rounded-lg">
+                  <Link href={`/print/audit/appointment/${appt.id}`} target="_blank" rel="noreferrer">
+                    <Printer className="mr-1.5 h-3.5 w-3.5" />
+                    Print
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="rounded-lg">
+                  <Link href={`/print/audit/auditor/${appt.id}`} target="_blank" rel="noreferrer">
+                    <Printer className="mr-1.5 h-3.5 w-3.5" />
+                    พิมพ์เอกสารผู้ตรวจ (Auditor Doc)
+                  </Link>
+                </Button>
+                {canCrud && (
+                  <>
+                    {canEdit && (
                     <button
                       type="button"
                       onClick={() => setEditOpen(true)}
@@ -160,17 +174,18 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit, canCrud =
                       <Pencil className="w-3.5 h-3.5" />
                       แก้ไข
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setDeleteOpen(true)}
-                    className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    ลบ
-                  </button>
-                </div>
-              )}
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setDeleteOpen(true)}
+                      className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      ลบ
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             {appt.standards.length > 0 && (

@@ -56,7 +56,9 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     return this.delegate(tx).findMany({
       where,
       include: {
-        objectives: true,
+        objectives: {
+          orderBy: { createdAt: 'asc' },
+        },
       },
       orderBy: [{ yearly: "desc" }, { department: "asc" }],
     });
@@ -179,7 +181,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     });
   }
 
-  async setStatus(id: string, status: 'DRAFT' | 'PENDING_REVIEW' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED', tx?: Prisma.TransactionClient) {
+  async setStatus(id: string, status: 'DRAFT' | 'PENDING_REVIEW' | 'PENDING_APPROVAL' | 'APPROVED' | 'QMS_CHECK' | 'ANNOUNCED' | 'REJECTED', tx?: Prisma.TransactionClient) {
     return this.delegate(tx).update({
       where: { id },
       data: { status },

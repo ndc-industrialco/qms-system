@@ -4,27 +4,28 @@
  * Format string tokens:
  *   {PREFIX}       — literal prefix stored in config (e.g. "DAR", "C", "APPT")
  *   {DEPT}         — department short code (only for DAR; empty string for other modules)
- *   {YEAR:YY}      — last 2 digits of current year  e.g. "26"
- *   {YEAR:YYYY}    — full 4-digit year               e.g. "2026"
+ *   {YEAR:YY}      — last 2 digits of Buddhist year (พ.ศ.)  e.g. "69" (2569)
+ *   {YEAR:YYYY}    — full 4-digit Buddhist year (พ.ศ.)        e.g. "2569"
  *   {SEQ:N}        — running sequence padded to N digits e.g. {SEQ:4} → "0001"
  *
  * Any literal text outside tokens is preserved verbatim (including separators).
  * Example formats:
  *   DAR-{DEPT}-{SEQ:4}            → DAR-PD-0001
- *   C{YEAR:YY}-{SEQ:3}            → C26-001
- *   APPT-{YEAR:YY}-{SEQ:3}        → APPT-26-001
- *   {PREFIX}-{DEPT}-{YEAR:YY}-{SEQ:4} → DAR-PD-26-0001
+ *   C{YEAR:YY}-{SEQ:3}            → C69-001
+ *   APPT-{YEAR:YY}-{SEQ:3}        → APPT-69-001
+ *   {PREFIX}-{DEPT}-{YEAR:YY}-{SEQ:4} → DAR-PD-69-0001
  */
 
 import { db } from "@/lib/db";
 
-export type DocNoModule = "DAR" | "CAR" | "AUDIT_APPT" | "AUDIT_PLAN";
+export type DocNoModule = "DAR" | "CAR" | "AUDIT_APPT" | "AUDIT_PLAN" | "DOC_CONTROL";
 
 const DEFAULTS: Record<DocNoModule, string> = {
   DAR:        "DAR-{DEPT}-{SEQ:4}",
   CAR:        "C{YEAR:YY}-{SEQ:3}",
   AUDIT_APPT: "APPT-{YEAR:YY}-{SEQ:3}",
   AUDIT_PLAN: "AUD-{YEAR:YY}-{SEQ:3}",
+  DOC_CONTROL:"{PREFIX}-{DEPT}-{SEQ:2}",
 };
 
 export async function getDocNoFormat(module: DocNoModule): Promise<string> {
@@ -64,7 +65,7 @@ export function buildLikePrefix(
   format: string,
   opts: { prefix?: string; dept?: string; year?: number },
 ): { likePrefix: string; pad: number } {
-  const year = opts.year ?? new Date().getFullYear();
+  const year = (opts.year ?? new Date().getFullYear()) + 543;
   const yy   = String(year).slice(-2);
   const yyyy = String(year);
 
@@ -94,12 +95,12 @@ export function renderDocNo(
 ): string {
   const { likePrefix, pad } = buildLikePrefix(format, opts);
   const seqStr = String(opts.seq).padStart(pad, "0");
-  // Re-substitute SEQ in the full string after the prefix
+  const year = (opts.year ?? new Date().getFullYear()) + 543;
   return format
     .replace(/\{PREFIX\}/g, opts.prefix ?? "")
     .replace(/\{DEPT\}/g,   opts.dept   ?? "")
-    .replace(/\{YEAR:YYYY\}/g, String(opts.year ?? new Date().getFullYear()))
-    .replace(/\{YEAR:YY\}/g,   String(opts.year ?? new Date().getFullYear()).slice(-2))
+    .replace(/\{YEAR:YYYY\}/g, String(year))
+    .replace(/\{YEAR:YY\}/g,   String(year).slice(-2))
     .replace(/\{SEQ:\d+\}/g, seqStr);
   void likePrefix; // used for LIKE queries, not here
 }

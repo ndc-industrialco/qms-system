@@ -178,7 +178,7 @@ export class KpiMonthlyService {
   async reviewReport(
     reportId: string,
     actor: ActorContext,
-    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean }
+    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean; attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null }
   ) {
     const report = await this.getReportById(reportId);
 
@@ -212,6 +212,7 @@ export class KpiMonthlyService {
         action: 'APPROVED',
         actionDate: now,
         signaturePath: sigBody?.signatureDataUrl,
+        comment: sigBody?.attachments?.length ? JSON.stringify({ text: 'Review attachments', attachments: sigBody.attachments }) : null,
       }, tx);
 
       if (sigBody?.saveSignature && sigBody.signatureDataUrl && actor.authUserId) {
@@ -228,7 +229,7 @@ export class KpiMonthlyService {
   async approveReport(
     reportId: string,
     actor: ActorContext,
-    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean }
+    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean; attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null }
   ) {
     const report = await this.getReportById(reportId);
     ensureMonthlyStatusTransition(report.status, 'APPROVED');
@@ -257,6 +258,7 @@ export class KpiMonthlyService {
         action: 'APPROVED',
         actionDate: now,
         signaturePath: sigBody?.signatureDataUrl,
+        comment: sigBody?.attachments?.length ? JSON.stringify({ text: 'Approval attachments', attachments: sigBody.attachments }) : null,
       }, tx);
 
       if (sigBody?.saveSignature && sigBody.signatureDataUrl && actor.authUserId) {

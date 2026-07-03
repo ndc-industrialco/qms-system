@@ -394,6 +394,11 @@ export const KPIScalarFieldEnum = {
   approverAuthUserId: 'approverAuthUserId',
   approverEmail: 'approverEmail',
   submittedAt: 'submittedAt',
+  documentName: 'documentName',
+  publishedAt: 'publishedAt',
+  publishedBy: 'publishedBy',
+  isRevision: 'isRevision',
+  revisionYear: 'revisionYear',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -411,6 +416,7 @@ export const KPIObjectiveScalarFieldEnum = {
   calculationFormula: 'calculationFormula',
   actionPlanGuidelines: 'actionPlanGuidelines',
   referenceDocuments: 'referenceDocuments',
+  isRevised: 'isRevised',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -430,6 +436,7 @@ export const KPIMonthlyReportScalarFieldEnum = {
   submittedAt: 'submittedAt',
   approvedAt: 'approvedAt',
   remark: 'remark',
+  documentName: 'documentName',
   attachmentFileName: 'attachmentFileName',
   attachmentFileSize: 'attachmentFileSize',
   attachmentMimeType: 'attachmentMimeType',
@@ -538,7 +545,8 @@ export const DocumentControlRevisionScalarFieldEnum = {
   createdById: 'createdById',
   createdByAuthUserId: 'createdByAuthUserId',
   createdByName: 'createdByName',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  darMasterId: 'darMasterId'
 } as const
 
 export type DocumentControlRevisionScalarFieldEnum = (typeof DocumentControlRevisionScalarFieldEnum)[keyof typeof DocumentControlRevisionScalarFieldEnum]

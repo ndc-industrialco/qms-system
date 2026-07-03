@@ -1,10 +1,10 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentStatusBadge } from './DocumentStatusBadge';
@@ -18,6 +18,9 @@ import Pagination from '@/components/common/Pagination';
 import { ActionIconButton } from '@/components/common/ActionButtons';
 import { useUrlFilters } from '@/hooks/use-url-filters';
 import { Plus, ChevronRight, Hash, Download, Home } from 'lucide-react';
+import type { DocumentControlSummary } from '@/types/documentControl';
+import { useLocale } from '@/lib/locale-context';
+import DocumentControlExportPreviewModal from './DocumentControlExportPreviewModal';
 
 interface DocumentControlListClientProps {
   department: { id: string; name: string };
@@ -25,7 +28,20 @@ interface DocumentControlListClientProps {
   canCreate: boolean;
 }
 
-const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'OBSOLETE'];
+interface DocumentListResponse {
+  data: DocumentControlSummary[];
+  meta: { page: number; limit: number; total: number };
+}
+
+const STATUS_OPTIONS = ['DRAFT', 'ACTIVE', 'CANCELLED', 'OBSOLETE'];
+const EDITABLE_STATUS_OPTIONS = ['ACTIVE', 'CANCELLED'];
+
+const STATUS_SELECT_STYLES: Record<string, string> = {
+  DRAFT: 'bg-slate-50 text-slate-600 border-slate-200',
+  ACTIVE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  CANCELLED: 'bg-rose-50 text-rose-700 border-rose-200',
+  OBSOLETE: 'bg-amber-50 text-amber-700 border-amber-200',
+};
 
 export function DocumentControlListClient({ department, category, canCreate }: DocumentControlListClientProps) {
   const t = useT();
@@ -33,6 +49,9 @@ export function DocumentControlListClient({ department, category, canCreate }: D
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [exportPreviewOpen, setExportPreviewOpen] = useState(false);
+  const locale = useLocale();
+  const isTh = locale === 'th';
 
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
     keys: ['search', 'status', 'page', 'sortBy', 'sortOrder'] as const,
@@ -42,7 +61,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
 
   const page = Math.max(1, parseInt(params.page || '1', 10));
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<DocumentListResponse>({
     queryKey: ['documents', category.id, params.search, params.status, page, params.sortBy, params.sortOrder],
     queryFn: async () => {
       const p = new URLSearchParams();
@@ -69,6 +88,43 @@ export function DocumentControlListClient({ department, category, canCreate }: D
   const openDetail = (id: string) => {
     setSelectedDocId(id);
     setDetailModalOpen(true);
+  };
+
+  const handleExport = () => {
+    setExportPreviewOpen(true);
+  };
+
+  const executeExport = () => {
+    const exportParams = new URLSearchParams();
+    exportParams.set('departmentId', department.id);
+    exportParams.set('categoryId', category.id);
+    if (params.status) exportParams.set('status', params.status);
+    if (params.search) exportParams.set('search', params.search);
+    exportParams.set('t', String(Date.now()));
+    window.open(`/api/document-controls/export?${exportParams.toString()}`, '_blank');
+    setExportPreviewOpen(false);
+  };
+
+  const updateStatus = async (docId: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/document-controls/${docId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error((await res.json())?.error ?? 'Error');
+      queryClient.invalidateQueries({ queryKey: ['documents', category.id] });
+      toast.success(t(`documentControl.messages.updateSuccess` as never));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('documentControl.messages.updateFailed' as never));
+    }
+  };
+
+  const handleStatusChange = (docId: string, e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value;
+    if (newStatus) {
+      updateStatus(docId, newStatus);
+    }
   };
 
   const sortOptions = [
@@ -116,10 +172,16 @@ export function DocumentControlListClient({ department, category, canCreate }: D
           subtitle={t('documentControl.list')}
           actions={
             canCreate && (
-              <Button onClick={() => setModalOpen(true)} className="gap-1.5">
-                <Plus className="w-4 h-4" />
-                {t('documentControl.button.create')}
-              </Button>
+              <>
+                <Button variant="outline" onClick={handleExport} className="gap-1.5">
+                  <Download className="w-4 h-4" />
+                  Export Master List
+                </Button>
+                <Button onClick={() => setModalOpen(true)} className="gap-1.5">
+                  <Plus className="w-4 h-4" />
+                  {t('documentControl.button.create')}
+                </Button>
+              </>
             )
           }
         />
@@ -159,8 +221,13 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                 setParam('sortOrder', order);
               }
               setParam('page', '1');
-            } else {
-              setParam(key as any, val);
+            } else if (
+              key === 'search' ||
+              key === 'page' ||
+              key === 'sortBy' ||
+              key === 'sortOrder'
+            ) {
+              setParam(key, val);
             }
           }}
           hasActiveFilters={hasFilters}
@@ -185,7 +252,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
           <>
             {/* Mobile Card List */}
             <div className="lg:hidden space-y-3">
-              {data.data.map((doc: any) => (
+              {data.data.map((doc) => (
                 <div
                   key={doc.id}
                   onClick={() => openDetail(doc.id)}
@@ -199,9 +266,24 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                         <span className="font-mono truncate">{doc.docNumber}</span>
                       </div>
                     </div>
-                    <DocumentStatusBadge status={doc.status} />
+                    {canCreate ? (
+                      <select
+                        value={doc.status}
+                        onChange={(e) => { e.stopPropagation(); handleStatusChange(doc.id, e); }}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`text-xs font-medium rounded-full border px-2.5 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0F1059]/20 shrink-0 ${STATUS_SELECT_STYLES[doc.status] ?? 'bg-white text-slate-700 border-slate-200'}`}
+                      >
+                        {EDITABLE_STATUS_OPTIONS.map((st) => (
+                          <option key={st} value={st} className={STATUS_SELECT_STYLES[st]}>
+                            {t(`documentControl.status.${st}` as never)}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <DocumentStatusBadge status={doc.status} />
+                    )}
                   </div>
-                  {doc.spDownloadUrl && (
+                  {doc.status === 'ACTIVE' && (
                     <div className="flex items-center gap-2">
                       <a
                         href={`/api/document-controls/${doc.id}/download-latest`}
@@ -232,7 +314,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                   </tr>
                 </thead>
                 <tbody>
-                  {data.data.map((doc: any) => (
+                  {data.data.map((doc) => (
                     <tr
                       key={doc.id}
                       onClick={() => openDetail(doc.id)}
@@ -252,7 +334,22 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <DocumentStatusBadge status={doc.status} />
+                        {canCreate ? (
+                          <select
+                            value={doc.status}
+                            onChange={(e) => { e.stopPropagation(); handleStatusChange(doc.id, e); }}
+                            onClick={(e) => e.stopPropagation()}
+                            className={`text-xs font-medium rounded-full border px-2.5 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0F1059]/20 ${STATUS_SELECT_STYLES[doc.status] ?? 'bg-white text-slate-700 border-slate-200'}`}
+                          >
+                            {EDITABLE_STATUS_OPTIONS.map((st) => (
+                              <option key={st} value={st} className={STATUS_SELECT_STYLES[st]}>
+                                {t(`documentControl.status.${st}` as never)}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <DocumentStatusBadge status={doc.status} />
+                        )}
                       </td>
                       <td className="text-neutral text-xs font-mono px-4 py-3 text-center">
                         {doc.effectiveDate ? formatDate(doc.effectiveDate) : '—'}
@@ -264,7 +361,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
                             label="View"
                             onClick={(e) => { e.stopPropagation(); openDetail(doc.id); }}
                           />
-                          {doc.spDownloadUrl && (
+                          {doc.status === 'ACTIVE' && (doc.spItemId || doc.spDownloadUrl) && (
                             <a
                               href={`/api/document-controls/${doc.id}/download-latest`}
                               onClick={(e) => e.stopPropagation()}
@@ -313,7 +410,17 @@ export function DocumentControlListClient({ department, category, canCreate }: D
         onClose={() => setDetailModalOpen(false)}
         canEdit={canCreate}
         canDelete={canCreate}
+        canViewAuditLog={canCreate}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['documents', category.id] })}
+      />
+
+      <DocumentControlExportPreviewModal
+        isOpen={exportPreviewOpen}
+        onClose={() => setExportPreviewOpen(false)}
+        items={data?.data ?? []}
+        totalCount={data?.meta?.total ?? 0}
+        onDownload={executeExport}
+        isTh={isTh}
       />
     </>
   );

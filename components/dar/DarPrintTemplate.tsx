@@ -1,14 +1,23 @@
 "use client";
 
-import { toast } from "sonner";
 import type { DarDetail } from "@/types/dar";
+import type { FooterConfig } from "@/services/qmsConfigService";
+import PrintPageActions from "@/components/shared/PrintPageActions";
 
-export default function DarPrintTemplate({ dar }: { dar: DarDetail }) {
+interface DarPrintTemplateProps {
+  dar: DarDetail;
+  footerConfig?: FooterConfig | null;
+}
+
+export default function DarPrintTemplate({ dar, footerConfig }: DarPrintTemplateProps) {
   const distRowsCount = Math.max(4, Math.ceil(dar.distributions.length / 2));
   const leftDistributions = Array.from({ length: distRowsCount }).map((_, i) => dar.distributions[i]);
   const rightDistributions = Array.from({ length: distRowsCount }).map((_, i) => dar.distributions[i + distRowsCount]);
 
   const renderItems = dar.items.length > 0 ? dar.items : [{ docName: "", docNumber: "", revision: "" }, { docName: "", docNumber: "", revision: "" }];
+  const footerLabel = footerConfig?.label?.trim() || "Document Action Request (DAR) | ใบคำขอดำเนินการเรื่องเอกสาร (DAR)";
+  const footerPrefix = footerConfig?.prefix?.trim() || "FM-DC-01";
+  const [primaryTitle, secondaryTitle] = splitBilingualLabel(footerLabel);
 
   return (
     <>
@@ -261,26 +270,7 @@ export default function DarPrintTemplate({ dar }: { dar: DarDetail }) {
       }} />
 
       <div className="py-8 bg-slate-100 min-h-screen">
-        <div className="max-w-[194mm] mx-auto mb-4 flex justify-end gap-3 no-print">
-          <button 
-            onClick={() => {
-              // Note: Using native print dialog for PDF saving is standard without external heavy libraries
-              toast.info("สำหรับการ Download ให้เลือกปลายทาง (Destination) เป็น 'Save as PDF' ในหน้าต่าง Print นะครับ", { duration: 4000 });
-              window.print();
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-white text-[#0F1059] border border-[#0F1059] rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Download PDF
-          </button>
-          <button 
-            onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0F1059] text-white rounded-lg text-sm font-medium hover:bg-[#161875] transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            Print
-          </button>
-        </div>
+        <PrintPageActions />
 
         <div className="print-container">
           {/* 1. Header (Logo & Form Name) */}
@@ -294,8 +284,8 @@ export default function DarPrintTemplate({ dar }: { dar: DarDetail }) {
                   </div>
                 </td>
                 <td style={{ width: "50%", textAlign: "center" }}>
-                  <div className="font-bold" style={{ fontSize: "13px", letterSpacing: "0.5px" }}>(Document Action Request)</div>
-                  <div className="font-bold" style={{ fontSize: "12px" }}>ใบคำขอดำเนินการเรื่องเอกสาร (DAR)</div>
+                  <div className="font-bold" style={{ fontSize: "13px", letterSpacing: "0.5px" }}>{primaryTitle}</div>
+                  <div className="font-bold" style={{ fontSize: "12px" }}>{secondaryTitle}</div>
                 </td>
                 <td style={{ width: "25%", padding: 0, verticalAlign: "top" }}>
                   <table style={{ width: "100%", height: "100%", border: "none", margin: 0 }}>
@@ -783,12 +773,24 @@ export default function DarPrintTemplate({ dar }: { dar: DarDetail }) {
             </table>
           </div>
 
-          <div className="footer-note">
-            FM-DC-01 : Rev.02 : 18-07-2025
-          </div>
+          <div className="footer-note">{footerPrefix}</div>
 
         </div>
       </div>
     </>
   );
+}
+
+function splitBilingualLabel(label: string): [string, string] {
+  const parts = label
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return [parts[0], parts[1]];
+  }
+
+  const single = parts[0] || label.trim() || "Document Action Request (DAR)";
+  return [single, single];
 }

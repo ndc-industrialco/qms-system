@@ -853,3 +853,36 @@ export async function fetchSharePointAttachment(
   }
   return null;
 }
+
+export async function sendKpiAnnouncementEmail(opts: {
+  to: MailRecipient;
+  departmentName: string;
+  year: number;
+  actorName: string;
+  senderAccessToken?: string | null;
+  kpiId?: string;
+  attachment?: { name: string; contentType: string; contentBytes: string };
+}) {
+  const url = getAppUrl(`/qms/kpi`);
+  const attachments = opts.attachment ? [opts.attachment] : undefined;
+
+  await sendMail({
+    to: [opts.to],
+    senderAccessToken: opts.senderAccessToken,
+    subject: `[KPI] ประกาศใช้ ${opts.departmentName} ${opts.year} / KPI Announced`,
+    bodyHtml: makeBilingualMail({
+      titleTh: `ประกาศใช้ KPI ${opts.departmentName} ปี ${opts.year}`,
+      titleEn: `KPI ${opts.departmentName} ${opts.year} Announced`,
+      facts: [
+        { labelTh: "สถานะ", labelEn: "Status", value: "ประกาศใช้ / ANNOUNCED" },
+        { labelTh: "ดำเนินการโดย", labelEn: "Action By", value: opts.actorName },
+        { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
+        { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
+      ],
+      actionLabelTh: "เปิด KPI",
+      actionLabelEn: "Open KPI",
+      actionUrl: url,
+    }),
+    attachments,
+  });
+}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { FileText, Plus, Search, ChevronRight, Pencil, Trash2, Send } from "lucide-react";
+import { FileText, Plus, Search, ChevronRight, Pencil, Trash2, Send, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -13,6 +13,8 @@ import { useAuditAppointments, useDeleteAuditAppointment, useResendAuditNotifica
 import { AuditAppointmentStatusBadge } from "./AuditAppointmentStatusBadge";
 import type { AuditAppointmentRow } from "@/types/audit";
 import { fmtDate } from "@/lib/format";
+// ... (skip lines to reach component output)
+// Note: We need to make this replacement cleanly. Let's target the exact import block first, then the buttons.
 
 const MEMBER_ROLE_LABELS: Record<string, string> = {
   LEAD_AUDITOR: "Lead Auditor",
@@ -168,6 +170,26 @@ export function AuditAppointmentListClient({ initialData, canCreate, canCrud = f
               className="pl-9 rounded-xl border-slate-200"
             />
           </div>
+          {(canCreate || canCrud) && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => window.open("/api/audit/appointments/export")}
+                className="rounded-xl shrink-0 border-slate-200"
+              >
+                <Download className="h-4 w-4 mr-1.5" />
+                ส่งออกประกาศ
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.open("/api/audit/auditors/export")}
+                className="rounded-xl shrink-0 border-slate-200"
+              >
+                <Download className="h-4 w-4 mr-1.5" />
+                ส่งออกผู้ตรวจ (Auditor)
+              </Button>
+            </>
+          )}
           {canCreate && (
             <Button
               onClick={onCreateClick}

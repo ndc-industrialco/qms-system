@@ -6,21 +6,15 @@ import { ActionIconButton } from '@/components/common/ActionButtons';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/lib/i18n';
 import EmptyState from '@/components/common/EmptyState';
-
-interface CategoryCard {
-  id: string;
-  name: string;
-  description: string | null;
-  _count: { documents: number };
-}
+import type { DocumentCategorySummary } from '@/types/documentControl';
 
 interface CategoryFolderGridProps {
   departmentId: string;
-  categories: CategoryCard[];
+  categories: DocumentCategorySummary[];
   canManage: boolean;
   onAdd: () => void;
-  onEdit: (cat: CategoryCard) => void;
-  onDelete: (cat: CategoryCard) => void;
+  onEdit: (cat: DocumentCategorySummary) => void;
+  onDelete: (cat: DocumentCategorySummary) => void;
 }
 
 export function CategoryFolderGrid({
@@ -78,7 +72,7 @@ export function CategoryFolderGrid({
               {/* Doc count */}
               <div className="flex items-center gap-1 text-xs text-neutral mt-auto">
                 <FileText className="w-3 h-3" />
-                <span>{cat._count.documents} docs</span>
+                <span>{cat._count?.documents ?? 0} docs</span>
               </div>
 
               {/* Hover actions — raised above Link overlay */}

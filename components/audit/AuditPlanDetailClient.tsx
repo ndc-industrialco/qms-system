@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
-import { Calendar, Building2, FileText, Paperclip, ClipboardCheck, Plus, Trash2, CheckCircle2, XCircle, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail } from "lucide-react";
+import { Calendar, Building2, FileText, Paperclip, ClipboardCheck, Plus, Trash2, CheckCircle2, XCircle, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail, Printer, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -73,6 +74,28 @@ const SCHEDULE_TEAM_ROLES: { role: AuditTeamRole; label: string }[] = [
   { role: "OBSERVER", label: "ผู้สังเกตการณ์" },
 ];
 
+const TH_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+const TH_DAYS = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+
+const getLocalDateString = (dateStr: string | null | undefined) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+const formatDateThai = (dateStr: string) => {
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10) - 1;
+  const d = parseInt(parts[2], 10);
+  return `${d} ${TH_MONTHS[m]} ${y + 543}`;
+};
+
 function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: boolean }) {
   const [showAdd, setShowAdd] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -81,6 +104,12 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
   const [checklistTarget, setChecklistTarget] = useState<string | null>(null);
   const [checklistFile, setChecklistFile] = useState<File | null>(null);
   const [addTeam, setAddTeam] = useState<TeamEntry[]>([]);
+  const [proposedStart, setProposedStart] = useState("");
+  const [proposedEnd, setProposedEnd] = useState("");
+  const [scheduleViewMode, setScheduleViewMode] = useState<"list" | "calendar">("list");
+  const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(() => new Date().getMonth());
+  const [selectedDateStr, setSelectedDateStr] = useState<string | null>(null);
 
   const { data: schedules = plan.schedules, isLoading } = useAuditSchedules(plan.id);
   const createMutation = useCreateSchedule(plan.id);
@@ -115,23 +144,94 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
 
   function handleUnavailable() {
     if (!unavailableTarget || !unavailableReason.trim()) return;
-    confirmMutation.mutate({ id: unavailableTarget, input: { status: "UNAVAILABLE", reason: unavailableReason.trim() } }, {
-      onSuccess: () => { toast.success("บันทึกเรียบร้อย"); setUnavailableTarget(null); setUnavailableReason(""); },
+    const displayProposed = (proposedStart && proposedEnd)
+      ? ` | เสนอวันเวลาใหม่: ${formatDateTime(proposedStart)} - ${formatDateTime(proposedEnd)}`
+      : "";
+    confirmMutation.mutate({ id: unavailableTarget, input: { status: "UNAVAILABLE", reason: unavailableReason.trim() + displayProposed } }, {
+      onSuccess: () => {
+        toast.success("บันทึกเรียบร้อย");
+        setUnavailableTarget(null);
+        setUnavailableReason("");
+        setProposedStart("");
+        setProposedEnd("");
+      },
       onError: (err) => toast.error(err.message),
     });
   }
+
+  const daysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
+  const firstDayOfMonth = (y: number, m: number) => new Date(y, m, 1).getDay();
+
+  const totalDays = daysInMonth(viewYear, viewMonth);
+  const startDay = firstDayOfMonth(viewYear, viewMonth);
+  const cells: (number | null)[] = [...Array(startDay).fill(null), ...Array.from({ length: totalDays }, (_, i) => i + 1)];
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const DEPT_COLORS = [
+    "bg-indigo-500", "bg-violet-500", "bg-blue-500", "bg-teal-500",
+    "bg-emerald-500", "bg-amber-500", "bg-rose-500", "bg-fuchsia-500",
+  ];
+  const deptIds = [...new Set(schedules.map((s) => s.departmentId).filter(Boolean))];
+  const colorMap = Object.fromEntries(deptIds.map((id, i) => [id, DEPT_COLORS[i % DEPT_COLORS.length]]));
+
+  const byDate: Record<string, typeof schedules> = {};
+  schedules.forEach((s) => {
+    const key = getLocalDateString(s.startAt);
+    if (key) {
+      if (!byDate[key]) byDate[key] = [];
+      byDate[key].push(s);
+    }
+  });
+
+  const monthlySchedules = schedules.filter((s) => {
+    if (!s.startAt) return false;
+    const d = new Date(s.startAt);
+    return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+  });
+
+  const displayedSchedules = selectedDateStr
+    ? schedules.filter((s) => getLocalDateString(s.startAt) === selectedDateStr)
+    : monthlySchedules;
 
   if (isLoading) return <Skeleton className="h-24 w-full rounded-xl" />;
 
   return (
     <div className="space-y-4">
-      {canManage && (
-        <div className="flex justify-end">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        {/* Toggle View Mode */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+          <button
+            type="button"
+            onClick={() => { setScheduleViewMode("list"); setSelectedDateStr(null); }}
+            className={cn(
+              "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all",
+              scheduleViewMode === "list"
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            รายการตาราง
+          </button>
+          <button
+            type="button"
+            onClick={() => setScheduleViewMode("calendar")}
+            className={cn(
+              "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all",
+              scheduleViewMode === "calendar"
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            ปฏิทิน
+          </button>
+        </div>
+
+        {canManage && (
           <Button size="sm" onClick={() => setShowAdd(!showAdd)}>
             <Plus className="h-4 w-4 mr-1.5" />เพิ่มตารางเวลา
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Add form */}
       {showAdd && (
@@ -229,139 +329,413 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
         </form>
       )}
 
-      {/* Schedule list */}
-      {schedules.length === 0 ? (
-        <p className="text-sm text-slate-400 py-6 text-center">ยังไม่มีตารางเวลา</p>
-      ) : (
-        <div className="space-y-3">
-          {schedules.map((s) => {
-            const cfg = CONFIRM_STATUS_CONFIG[s.confirmStatus ?? "PENDING"];
-            const StatusIcon = cfg.icon;
-            return (
-              <div key={s.id} className={cn(
-                "rounded-xl border bg-white p-4 space-y-3",
-                s.confirmStatus === "UNAVAILABLE" ? "border-red-200" : "border-slate-100"
-              )}>
-                {/* Header row */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {s.departmentName && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                          <Building2 className="h-3 w-3" />{s.departmentName}
+      {/* Schedule list / Calendar View */}
+      {scheduleViewMode === "list" ? (
+        schedules.length === 0 ? (
+          <p className="text-sm text-slate-400 py-6 text-center">ยังไม่มีตารางเวลา</p>
+        ) : (
+          <div className="space-y-3">
+            {schedules.map((s) => {
+              const cfg = CONFIRM_STATUS_CONFIG[s.confirmStatus ?? "PENDING"];
+              const StatusIcon = cfg.icon;
+              return (
+                <div key={s.id} className={cn(
+                  "rounded-xl border bg-white p-4 space-y-3",
+                  s.confirmStatus === "UNAVAILABLE" ? "border-red-200" : "border-slate-100"
+                )}>
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {s.departmentName && (
+                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                            <Building2 className="h-3 w-3" />{s.departmentName}
+                          </span>
+                        )}
+                        <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold", cfg.className)}>
+                          <StatusIcon className="h-3 w-3" />{cfg.label}
                         </span>
+                      </div>
+                      <p className="mt-1 text-sm font-semibold text-slate-800">{s.sessionTitle}</p>
+                      {s.location && <p className="text-xs text-slate-500 mt-0.5">{s.location}</p>}
+                      <p className="text-xs text-slate-400 mt-1 font-mono">{formatDateTime(s.startAt)} — {formatDateTime(s.endAt)}</p>
+                      {s.agenda && <p className="text-xs text-slate-600 mt-1 whitespace-pre-wrap">{s.agenda}</p>}
+                      {s.confirmStatus === "UNAVAILABLE" && s.unavailableReason && (
+                        <div className="mt-2 rounded-lg bg-red-50 border border-red-100 px-3 py-2">
+                          <p className="text-xs font-medium text-red-700">เหตุผล: {s.unavailableReason}</p>
+                        </div>
                       )}
-                      <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold", cfg.className)}>
-                        <StatusIcon className="h-3 w-3" />{cfg.label}
-                      </span>
+                      {s.team && s.team.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {(["LEAD_AUDITOR", "AUDITOR", "OBSERVER", "AUDITEE"] as AuditTeamRole[])
+                            .map((role) => {
+                              const members = s.team.filter((m) => m.role === role);
+                              if (members.length === 0) return null;
+                              return (
+                                <div key={role} className="flex flex-wrap items-center gap-1.5">
+                                  <span className="text-[11px] text-slate-400 shrink-0 w-24">{AUDIT_TEAM_ROLE_LABELS[role]}:</span>
+                                  {members.map((m) => (
+                                    <span key={m.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                                      {m.nameSnapshot ?? m.authUserId}
+                                    </span>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                        </div>
+                      )}
+                      {(!s.team || s.team.length === 0) && s.leadAuditorNameSnapshot && (
+                        <p className="text-xs text-slate-600 mt-1.5 flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-md px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
+                            {s.leadAuditorNameSnapshot}
+                          </span>
+                          <span className="text-slate-400">หัวผู้ตรวจสอบ</span>
+                        </p>
+                      )}
+                      {s.confirmStatus !== "PENDING" && s.confirmedByName && (
+                        <p className="text-xs text-slate-400 mt-1">
+                          {s.confirmStatus === "CONFIRMED" ? "ยืนยันโดย" : "แจ้งโดย"}: {s.confirmedByName}
+                          {s.confirmedAt ? ` · ${formatDateTime(s.confirmedAt)}` : ""}
+                        </p>
+                      )}
+                      {/* Checklist status */}
+                      {s.checklistSubmittedAt ? (
+                        <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          ส่ง Checklist แล้ว — {s.checklistSubmittedByName}
+                          {s.checklistDueAt && ` (กำหนด ${formatDateTime(s.checklistDueAt)})`}
+                        </p>
+                      ) : s.checklistDueAt ? (
+                        <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          กำหนดส่ง Checklist: {formatDateTime(s.checklistDueAt)}
+                        </p>
+                      ) : null}
                     </div>
-                    <p className="mt-1 text-sm font-semibold text-slate-800">{s.sessionTitle}</p>
-                    {s.location && <p className="text-xs text-slate-500 mt-0.5">{s.location}</p>}
-                    <p className="text-xs text-slate-400 mt-1 font-mono">{formatDateTime(s.startAt)} — {formatDateTime(s.endAt)}</p>
-                    {s.agenda && <p className="text-xs text-slate-600 mt-1 whitespace-pre-wrap">{s.agenda}</p>}
-                    {s.confirmStatus === "UNAVAILABLE" && s.unavailableReason && (
-                      <div className="mt-2 rounded-lg bg-red-50 border border-red-100 px-3 py-2">
-                        <p className="text-xs font-medium text-red-700">เหตุผล: {s.unavailableReason}</p>
-                      </div>
+                    {canManage && (
+                      <button type="button" aria-label="ลบ" onClick={() => setDeleteTarget(s.id)}
+                        className="shrink-0 h-7 w-7 rounded-lg border border-rose-200 bg-white text-rose-500 hover:bg-rose-50 flex items-center justify-center">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     )}
-                    {s.team && s.team.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {(["LEAD_AUDITOR", "AUDITOR", "OBSERVER", "AUDITEE"] as AuditTeamRole[])
-                          .map((role) => {
-                            const members = s.team.filter((m) => m.role === role);
-                            if (members.length === 0) return null;
-                            return (
-                              <div key={role} className="flex flex-wrap items-center gap-1.5">
-                                <span className="text-[11px] text-slate-400 shrink-0 w-24">{AUDIT_TEAM_ROLE_LABELS[role]}:</span>
-                                {members.map((m) => (
-                                  <span key={m.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
-                                    {m.nameSnapshot ?? m.authUserId}
-                                  </span>
-                                ))}
-                              </div>
-                            );
-                          })}
-                      </div>
-                    )}
-                    {(!s.team || s.team.length === 0) && s.leadAuditorNameSnapshot && (
-                      <p className="text-xs text-slate-600 mt-1.5 flex items-center gap-1">
-                        <span className="inline-flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-md px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
-                          {s.leadAuditorNameSnapshot}
-                        </span>
-                        <span className="text-slate-400">หัวผู้ตรวจสอบ</span>
-                      </p>
-                    )}
-                    {s.confirmStatus !== "PENDING" && s.confirmedByName && (
-                      <p className="text-xs text-slate-400 mt-1">
-                        {s.confirmStatus === "CONFIRMED" ? "ยืนยันโดย" : "แจ้งโดย"}: {s.confirmedByName}
-                        {s.confirmedAt ? ` · ${formatDateTime(s.confirmedAt)}` : ""}
-                      </p>
-                    )}
-                    {/* Checklist status */}
-                    {s.checklistSubmittedAt ? (
-                      <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        ส่ง Checklist แล้ว — {s.checklistSubmittedByName}
-                        {s.checklistDueAt && ` (กำหนด ${formatDateTime(s.checklistDueAt)})`}
-                      </p>
-                    ) : s.checklistDueAt ? (
-                      <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        กำหนดส่ง Checklist: {formatDateTime(s.checklistDueAt)}
-                      </p>
-                    ) : null}
                   </div>
-                  {canManage && (
-                    <button type="button" aria-label="ลบ" onClick={() => setDeleteTarget(s.id)}
-                      className="shrink-0 h-7 w-7 rounded-lg border border-rose-200 bg-white text-rose-500 hover:bg-rose-50 flex items-center justify-center">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+
+                  {/* Action row — confirm / unavailable buttons */}
+                  {s.confirmStatus === "PENDING" && (
+                    <div className="flex gap-2 pt-1 border-t border-slate-100">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-xs"
+                        disabled={confirmMutation.isPending}
+                        onClick={() => handleConfirm(s.id)}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" />ยืนยันว่าง
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 border-red-200 text-red-600 hover:bg-red-50 text-xs"
+                        onClick={() => { setUnavailableTarget(s.id); setUnavailableReason(""); }}
+                      >
+                        <XCircle className="h-3.5 w-3.5 mr-1" />ไม่ว่าง
+                      </Button>
+                    </div>
+                  )}
+                  {s.confirmStatus === "UNAVAILABLE" && canManage && (
+                    <div className="flex gap-2 pt-1 border-t border-slate-100">
+                      <p className="text-xs text-slate-400 self-center flex-1">QMS/IT แก้ไขวันใหม่เพื่อรีเซ็ตสถานะ</p>
+                    </div>
+                  )}
+                  {/* Checklist submit button — shown when confirmed + no checklist yet */}
+                  {s.confirmStatus === "CONFIRMED" && !s.checklistSubmittedAt && (
+                    <div className="flex gap-2 pt-1 border-t border-slate-100">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 border-violet-200 text-violet-700 hover:bg-violet-50 text-xs"
+                        onClick={() => { setChecklistTarget(s.id); setChecklistFile(null); }}
+                      >
+                        <Paperclip className="h-3.5 w-3.5 mr-1" />ส่ง Checklist
+                      </Button>
+                    </div>
                   )}
                 </div>
+              );
+            })}
+          </div>
+        )
+      ) : (
+        <div className="space-y-4">
+          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+            {/* Month/Year Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
+              <button
+                type="button"
+                onClick={() => {
+                  if (viewMonth === 0) {
+                    setViewMonth(11);
+                    setViewYear((y) => y - 1);
+                  } else {
+                    setViewMonth((m) => m - 1);
+                  }
+                  setSelectedDateStr(null);
+                }}
+                className="p-1 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4 text-slate-500" />
+              </button>
+              <span className="text-sm font-bold text-slate-700">
+                {TH_MONTHS[viewMonth]} {viewYear + 543}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (viewMonth === 11) {
+                    setViewMonth(0);
+                    setViewYear((y) => y + 1);
+                  } else {
+                    setViewMonth((m) => m + 1);
+                  }
+                  setSelectedDateStr(null);
+                }}
+                className="p-1 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                <ChevronRight className="h-4 w-4 text-slate-500" />
+              </button>
+            </div>
 
-                {/* Action row — confirm / unavailable buttons */}
-                {s.confirmStatus === "PENDING" && (
-                  <div className="flex gap-2 pt-1 border-t border-slate-100">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-xs"
-                      disabled={confirmMutation.isPending}
-                      onClick={() => handleConfirm(s.id)}
+            {/* Day Headers */}
+            <div className="grid grid-cols-7 border-b border-slate-100 text-center bg-slate-50/50">
+              {TH_DAYS.map((d) => (
+                <div key={d} className="text-xs font-semibold text-slate-400 py-2">{d}</div>
+              ))}
+            </div>
+
+            {/* Day Cells */}
+            <div className="grid grid-cols-7 divide-x divide-y divide-slate-100">
+              {cells.map((day, idx) => {
+                if (!day) return <div key={idx} className="min-h-[90px] bg-slate-50/30" />;
+                const key = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                const daySessions = byDate[key] ?? [];
+                const isToday =
+                  new Date().getFullYear() === viewYear &&
+                  new Date().getMonth() === viewMonth &&
+                  new Date().getDate() === day;
+                const isSelected = selectedDateStr === key;
+
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedDateStr(null);
+                      } else {
+                        setSelectedDateStr(key);
+                      }
+                    }}
+                    className={cn(
+                      "min-h-[90px] p-2 flex flex-col gap-1.5 cursor-pointer hover:bg-slate-50/80 transition-colors select-none",
+                      isSelected && "bg-blue-50/50"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full self-start leading-none",
+                        isToday && "bg-primary text-white",
+                        isSelected && !isToday && "bg-blue-100 text-blue-700"
+                      )}
                     >
-                      <CheckCircle2 className="h-3.5 w-3.5 mr-1" />ยืนยันว่าง
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 border-red-200 text-red-600 hover:bg-red-50 text-xs"
-                      onClick={() => { setUnavailableTarget(s.id); setUnavailableReason(""); }}
-                    >
-                      <XCircle className="h-3.5 w-3.5 mr-1" />ไม่ว่าง
-                    </Button>
+                      {day}
+                    </span>
+                    <div className="flex flex-col gap-1 overflow-y-auto max-h-[60px]">
+                      {daySessions.map((s) => {
+                        const bgCol = s.departmentId ? colorMap[s.departmentId] : "bg-slate-500";
+                        return (
+                          <div
+                            key={s.id}
+                            title={`${s.departmentName ?? "ไม่ระบุแผนก"}: ${s.sessionTitle}`}
+                            className={cn(
+                              "rounded px-1.5 py-0.5 text-[10px] font-medium text-white leading-tight truncate",
+                              bgCol
+                            )}
+                          >
+                            {s.departmentName ?? s.sessionTitle}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Calendar List View */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-800">
+                {selectedDateStr ? (
+                  <>
+                    รายการตารางของวันที่ {formatDateThai(selectedDateStr)}{" "}
+                    <span className="text-slate-500 font-normal">({displayedSchedules.length} รายการ)</span>
+                  </>
+                ) : (
+                  <>
+                    รายการตารางในเดือน {TH_MONTHS[viewMonth]} {viewYear + 543}{" "}
+                    <span className="text-slate-500 font-normal">({displayedSchedules.length} รายการ)</span>
+                  </>
                 )}
-                {s.confirmStatus === "UNAVAILABLE" && canManage && (
-                  <div className="flex gap-2 pt-1 border-t border-slate-100">
-                    <p className="text-xs text-slate-400 self-center flex-1">QMS/IT แก้ไขวันใหม่เพื่อรีเซ็ตสถานะ</p>
-                  </div>
-                )}
-                {/* Checklist submit button — shown when confirmed + no checklist yet */}
-                {s.confirmStatus === "CONFIRMED" && !s.checklistSubmittedAt && (
-                  <div className="flex gap-2 pt-1 border-t border-slate-100">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 border-violet-200 text-violet-700 hover:bg-violet-50 text-xs"
-                      onClick={() => { setChecklistTarget(s.id); setChecklistFile(null); }}
-                    >
-                      <Paperclip className="h-3.5 w-3.5 mr-1" />ส่ง Checklist
-                    </Button>
-                  </div>
-                )}
+              </h3>
+              {selectedDateStr && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-primary hover:bg-slate-100 font-semibold"
+                  onClick={() => setSelectedDateStr(null)}
+                >
+                  แสดงทั้งหมดในเดือนนี้
+                </Button>
+              )}
+            </div>
+
+            {displayedSchedules.length === 0 ? (
+              <p className="text-sm text-slate-400 py-6 text-center border rounded-xl border-dashed border-slate-200 bg-white">
+                ไม่มีตารางเวลาสำหรับช่วงที่เลือก
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {displayedSchedules.map((s) => {
+                  const cfg = CONFIRM_STATUS_CONFIG[s.confirmStatus ?? "PENDING"];
+                  const StatusIcon = cfg.icon;
+                  return (
+                    <div key={s.id} className={cn(
+                      "rounded-xl border bg-white p-4 space-y-3 shadow-sm",
+                      s.confirmStatus === "UNAVAILABLE" ? "border-red-200" : "border-slate-100"
+                    )}>
+                      {/* Header row */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {s.departmentName && (
+                              <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                <Building2 className="h-3 w-3" />{s.departmentName}
+                              </span>
+                            )}
+                            <span className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold", cfg.className)}>
+                              <StatusIcon className="h-3 w-3" />{cfg.label}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-sm font-semibold text-slate-800">{s.sessionTitle}</p>
+                          {s.location && <p className="text-xs text-slate-500 mt-0.5">{s.location}</p>}
+                          <p className="text-xs text-slate-400 mt-1 font-mono">{formatDateTime(s.startAt)} — {formatDateTime(s.endAt)}</p>
+                          {s.agenda && <p className="text-xs text-slate-600 mt-1 whitespace-pre-wrap">{s.agenda}</p>}
+                          {s.confirmStatus === "UNAVAILABLE" && s.unavailableReason && (
+                            <div className="mt-2 rounded-lg bg-red-50 border border-red-100 px-3 py-2">
+                              <p className="text-xs font-medium text-red-700">เหตุผล: {s.unavailableReason}</p>
+                            </div>
+                          )}
+                          {s.team && s.team.length > 0 && (
+                            <div className="mt-2 space-y-1">
+                              {(["LEAD_AUDITOR", "AUDITOR", "OBSERVER", "AUDITEE"] as AuditTeamRole[])
+                                .map((role) => {
+                                  const members = s.team.filter((m) => m.role === role);
+                                  if (members.length === 0) return null;
+                                  return (
+                                    <div key={role} className="flex flex-wrap items-center gap-1.5">
+                                      <span className="text-[11px] text-slate-400 shrink-0 w-24">{AUDIT_TEAM_ROLE_LABELS[role]}:</span>
+                                      {members.map((m) => (
+                                        <span key={m.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                                          {m.nameSnapshot ?? m.authUserId}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          )}
+                          {(!s.team || s.team.length === 0) && s.leadAuditorNameSnapshot && (
+                            <p className="text-xs text-slate-600 mt-1.5 flex items-center gap-1">
+                              <span className="inline-flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-md px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
+                                {s.leadAuditorNameSnapshot}
+                              </span>
+                              <span className="text-slate-400">หัวผู้ตรวจสอบ</span>
+                            </p>
+                          )}
+                          {s.confirmStatus !== "PENDING" && s.confirmedByName && (
+                            <p className="text-xs text-slate-400 mt-1">
+                              {s.confirmStatus === "CONFIRMED" ? "ยืนยันโดย" : "แจ้งโดย"}: {s.confirmedByName}
+                              {s.confirmedAt ? ` · ${formatDateTime(s.confirmedAt)}` : ""}
+                            </p>
+                          )}
+                          {/* Checklist status */}
+                          {s.checklistSubmittedAt ? (
+                            <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              ส่ง Checklist แล้ว — {s.checklistSubmittedByName}
+                              {s.checklistDueAt && ` (กำหนด ${formatDateTime(s.checklistDueAt)})`}
+                            </p>
+                          ) : s.checklistDueAt ? (
+                            <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              กำหนดส่ง Checklist: {formatDateTime(s.checklistDueAt)}
+                            </p>
+                          ) : null}
+                        </div>
+                        {canManage && (
+                          <button type="button" aria-label="ลบ" onClick={() => setDeleteTarget(s.id)}
+                            className="shrink-0 h-7 w-7 rounded-lg border border-rose-200 bg-white text-rose-500 hover:bg-rose-50 flex items-center justify-center">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Action row — confirm / unavailable buttons */}
+                      {s.confirmStatus === "PENDING" && (
+                        <div className="flex gap-2 pt-1 border-t border-slate-100">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-xs"
+                            disabled={confirmMutation.isPending}
+                            onClick={() => handleConfirm(s.id)}
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />ยืนยันว่าง
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 border-red-200 text-red-600 hover:bg-red-50 text-xs"
+                            onClick={() => { setUnavailableTarget(s.id); setUnavailableReason(""); }}
+                          >
+                            <XCircle className="h-3.5 w-3.5 mr-1" />ไม่ว่าง
+                          </Button>
+                        </div>
+                      )}
+                      {s.confirmStatus === "UNAVAILABLE" && canManage && (
+                        <div className="flex gap-2 pt-1 border-t border-slate-100">
+                          <p className="text-xs text-slate-400 self-center flex-1">QMS/IT แก้ไขวันใหม่เพื่อรีเซ็ตสถานะ</p>
+                        </div>
+                      )}
+                      {/* Checklist submit button — shown when confirmed + no checklist yet */}
+                      {s.confirmStatus === "CONFIRMED" && !s.checklistSubmittedAt && (
+                        <div className="flex gap-2 pt-1 border-t border-slate-100">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 border-violet-200 text-violet-700 hover:bg-violet-50 text-xs"
+                            onClick={() => { setChecklistTarget(s.id); setChecklistFile(null); }}
+                          >
+                            <Paperclip className="h-3.5 w-3.5 mr-1" />ส่ง Checklist
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            )}
+          </div>
         </div>
       )}
 
@@ -409,25 +783,50 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
       </Dialog>
 
       {/* Unavailable reason dialog */}
-      <Dialog open={!!unavailableTarget} onOpenChange={(v) => { if (!v) { setUnavailableTarget(null); setUnavailableReason(""); } }}>
+      <Dialog open={!!unavailableTarget} onOpenChange={(v) => { if (!v) { setUnavailableTarget(null); setUnavailableReason(""); setProposedStart(""); setProposedEnd(""); } }}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-500" />แจ้งไม่ว่าง
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">เหตุผล <span className="text-red-500">*</span></label>
-            <textarea
-              rows={3}
-              value={unavailableReason}
-              onChange={(e) => setUnavailableReason(e.target.value)}
-              placeholder="ระบุเหตุผลที่ไม่ว่าง..."
-              className={cn(INPUT_CLASS, "resize-none")}
-            />
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">เหตุผล <span className="text-red-500">*</span></label>
+              <textarea
+                rows={3}
+                value={unavailableReason}
+                onChange={(e) => setUnavailableReason(e.target.value)}
+                placeholder="ระบุเหตุผลที่ไม่ว่าง..."
+                className={cn(INPUT_CLASS, "resize-none")}
+              />
+            </div>
+            <div className="space-y-2 border-t border-slate-100 pt-3">
+              <span className="text-xs font-semibold text-slate-700 block">เสนอวันเวลาที่สะดวกใหม่ (ถ้ามี)</span>
+              <div className="grid gap-2 grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-[11px] font-medium text-slate-500">เริ่มต้น</label>
+                  <input
+                    type="datetime-local"
+                    value={proposedStart}
+                    onChange={(e) => setProposedStart(e.target.value)}
+                    className={INPUT_CLASS}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] font-medium text-slate-500">สิ้นสุด</label>
+                  <input
+                    type="datetime-local"
+                    value={proposedEnd}
+                    onChange={(e) => setProposedEnd(e.target.value)}
+                    className={INPUT_CLASS}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="ghost" className="rounded-xl" onClick={() => setUnavailableTarget(null)}>ยกเลิก</Button>
+            <Button variant="ghost" className="rounded-xl" onClick={() => { setUnavailableTarget(null); setUnavailableReason(""); setProposedStart(""); setProposedEnd(""); }}>ยกเลิก</Button>
             <Button
               variant="destructive"
               className="rounded-xl"
@@ -706,6 +1105,20 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
           <p className="mt-1 text-slate-600 text-sm">{plan.title}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/print/audit/plan/${plan.id}`} target="_blank" rel="noreferrer">
+              <Printer className="mr-1.5 h-4 w-4" />
+              Print
+            </Link>
+          </Button>
+          {plan.appointmentId && (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/print/audit/auditor/${plan.appointmentId}`} target="_blank" rel="noreferrer">
+                <Printer className="mr-1.5 h-4 w-4" />
+                พิมพ์เอกสารผู้ตรวจ (Auditor Doc)
+              </Link>
+            </Button>
+          )}
           {canEdit && (
             <Button variant="outline" size="sm" onClick={() => setShowEdit(true)}>แก้ไข</Button>
           )}

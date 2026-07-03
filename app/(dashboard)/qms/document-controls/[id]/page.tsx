@@ -37,7 +37,8 @@ export default async function DocumentControlDetailPage(props: { params: Params 
 
   const document = response.data;
   const canEdit = ['QMS', 'IT', 'MR'].includes(session.user.role);
-  const canDelete = ['QMS', 'IT', 'MR'].includes(session.user.role);
+  const canDelete = ['QMS', 'IT'].includes(session.user.role);
+  const canViewAuditLog = ['QMS', 'IT', 'MR'].includes(session.user.role);
 
   return (
     <div className="px-4 md:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
@@ -45,6 +46,7 @@ export default async function DocumentControlDetailPage(props: { params: Params 
         document={document}
         canEdit={canEdit}
         canDelete={canDelete}
+        canViewAuditLog={canViewAuditLog}
       />
     </div>
   );

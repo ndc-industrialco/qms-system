@@ -225,4 +225,29 @@ export class AuditPlanRepository extends BaseRepository<AuditPlan> {
       }),
     ]);
   }
+
+  async findForExport(
+    filter: {
+      search?: string;
+      auditType?: AuditType;
+      status?: AuditPlanStatus;
+    },
+    tx?: Prisma.TransactionClient,
+  ) {
+    const where: Prisma.AuditPlanWhereInput = {};
+
+    if (filter.auditType) where.auditType = filter.auditType;
+    if (filter.status) where.status = filter.status;
+    if (filter.search) {
+      where.OR = [
+        { title: { contains: filter.search, mode: "insensitive" } },
+        { auditNo: { contains: filter.search, mode: "insensitive" } },
+      ];
+    }
+
+    return this.delegate(tx).findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+  }
 }

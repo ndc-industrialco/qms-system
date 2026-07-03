@@ -52,6 +52,7 @@ export type DocumentControlRevisionMinAggregateOutputType = {
   createdByAuthUserId: string | null
   createdByName: string | null
   createdAt: Date | null
+  darMasterId: string | null
 }
 
 export type DocumentControlRevisionMaxAggregateOutputType = {
@@ -72,6 +73,7 @@ export type DocumentControlRevisionMaxAggregateOutputType = {
   createdByAuthUserId: string | null
   createdByName: string | null
   createdAt: Date | null
+  darMasterId: string | null
 }
 
 export type DocumentControlRevisionCountAggregateOutputType = {
@@ -92,6 +94,7 @@ export type DocumentControlRevisionCountAggregateOutputType = {
   createdByAuthUserId: number
   createdByName: number
   createdAt: number
+  darMasterId: number
   _all: number
 }
 
@@ -122,6 +125,7 @@ export type DocumentControlRevisionMinAggregateInputType = {
   createdByAuthUserId?: true
   createdByName?: true
   createdAt?: true
+  darMasterId?: true
 }
 
 export type DocumentControlRevisionMaxAggregateInputType = {
@@ -142,6 +146,7 @@ export type DocumentControlRevisionMaxAggregateInputType = {
   createdByAuthUserId?: true
   createdByName?: true
   createdAt?: true
+  darMasterId?: true
 }
 
 export type DocumentControlRevisionCountAggregateInputType = {
@@ -162,6 +167,7 @@ export type DocumentControlRevisionCountAggregateInputType = {
   createdByAuthUserId?: true
   createdByName?: true
   createdAt?: true
+  darMasterId?: true
   _all?: true
 }
 
@@ -269,6 +275,7 @@ export type DocumentControlRevisionGroupByOutputType = {
   createdByAuthUserId: string | null
   createdByName: string | null
   createdAt: Date
+  darMasterId: string | null
   _count: DocumentControlRevisionCountAggregateOutputType | null
   _avg: DocumentControlRevisionAvgAggregateOutputType | null
   _sum: DocumentControlRevisionSumAggregateOutputType | null
@@ -312,7 +319,9 @@ export type DocumentControlRevisionWhereInput = {
   createdByAuthUserId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
   createdByName?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DocumentControlRevision"> | Date | string
+  darMasterId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
   documentControl?: Prisma.XOR<Prisma.DocumentControlScalarRelationFilter, Prisma.DocumentControlWhereInput>
+  darMaster?: Prisma.XOR<Prisma.DarMasterNullableScalarRelationFilter, Prisma.DarMasterWhereInput> | null
 }
 
 export type DocumentControlRevisionOrderByWithRelationInput = {
@@ -333,7 +342,9 @@ export type DocumentControlRevisionOrderByWithRelationInput = {
   createdByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  darMasterId?: Prisma.SortOrderInput | Prisma.SortOrder
   documentControl?: Prisma.DocumentControlOrderByWithRelationInput
+  darMaster?: Prisma.DarMasterOrderByWithRelationInput
 }
 
 export type DocumentControlRevisionWhereUniqueInput = Prisma.AtLeast<{
@@ -357,7 +368,9 @@ export type DocumentControlRevisionWhereUniqueInput = Prisma.AtLeast<{
   createdByAuthUserId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
   createdByName?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DocumentControlRevision"> | Date | string
+  darMasterId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
   documentControl?: Prisma.XOR<Prisma.DocumentControlScalarRelationFilter, Prisma.DocumentControlWhereInput>
+  darMaster?: Prisma.XOR<Prisma.DarMasterNullableScalarRelationFilter, Prisma.DarMasterWhereInput> | null
 }, "id">
 
 export type DocumentControlRevisionOrderByWithAggregationInput = {
@@ -378,6 +391,7 @@ export type DocumentControlRevisionOrderByWithAggregationInput = {
   createdByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  darMasterId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DocumentControlRevisionCountOrderByAggregateInput
   _avg?: Prisma.DocumentControlRevisionAvgOrderByAggregateInput
   _max?: Prisma.DocumentControlRevisionMaxOrderByAggregateInput
@@ -406,6 +420,7 @@ export type DocumentControlRevisionScalarWhereWithAggregatesInput = {
   createdByAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControlRevision"> | string | null
   createdByName?: Prisma.StringNullableWithAggregatesFilter<"DocumentControlRevision"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DocumentControlRevision"> | Date | string
+  darMasterId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControlRevision"> | string | null
 }
 
 export type DocumentControlRevisionCreateInput = {
@@ -426,6 +441,7 @@ export type DocumentControlRevisionCreateInput = {
   createdByName?: string | null
   createdAt?: Date | string
   documentControl: Prisma.DocumentControlCreateNestedOneWithoutRevisionsInput
+  darMaster?: Prisma.DarMasterCreateNestedOneWithoutDocumentRevisionsInput
 }
 
 export type DocumentControlRevisionUncheckedCreateInput = {
@@ -446,6 +462,7 @@ export type DocumentControlRevisionUncheckedCreateInput = {
   createdByAuthUserId?: string | null
   createdByName?: string | null
   createdAt?: Date | string
+  darMasterId?: string | null
 }
 
 export type DocumentControlRevisionUpdateInput = {
@@ -466,6 +483,7 @@ export type DocumentControlRevisionUpdateInput = {
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentControl?: Prisma.DocumentControlUpdateOneRequiredWithoutRevisionsNestedInput
+  darMaster?: Prisma.DarMasterUpdateOneWithoutDocumentRevisionsNestedInput
 }
 
 export type DocumentControlRevisionUncheckedUpdateInput = {
@@ -486,6 +504,7 @@ export type DocumentControlRevisionUncheckedUpdateInput = {
   createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  darMasterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DocumentControlRevisionCreateManyInput = {
@@ -506,6 +525,7 @@ export type DocumentControlRevisionCreateManyInput = {
   createdByAuthUserId?: string | null
   createdByName?: string | null
   createdAt?: Date | string
+  darMasterId?: string | null
 }
 
 export type DocumentControlRevisionUpdateManyMutationInput = {
@@ -545,6 +565,7 @@ export type DocumentControlRevisionUncheckedUpdateManyInput = {
   createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  darMasterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DocumentControlRevisionListRelationFilter = {
@@ -575,6 +596,7 @@ export type DocumentControlRevisionCountOrderByAggregateInput = {
   createdByAuthUserId?: Prisma.SortOrder
   createdByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  darMasterId?: Prisma.SortOrder
 }
 
 export type DocumentControlRevisionAvgOrderByAggregateInput = {
@@ -599,6 +621,7 @@ export type DocumentControlRevisionMaxOrderByAggregateInput = {
   createdByAuthUserId?: Prisma.SortOrder
   createdByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  darMasterId?: Prisma.SortOrder
 }
 
 export type DocumentControlRevisionMinOrderByAggregateInput = {
@@ -619,10 +642,53 @@ export type DocumentControlRevisionMinOrderByAggregateInput = {
   createdByAuthUserId?: Prisma.SortOrder
   createdByName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  darMasterId?: Prisma.SortOrder
 }
 
 export type DocumentControlRevisionSumOrderByAggregateInput = {
   fileSize?: Prisma.SortOrder
+}
+
+export type DocumentControlRevisionCreateNestedManyWithoutDarMasterInput = {
+  create?: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput> | Prisma.DocumentControlRevisionCreateWithoutDarMasterInput[] | Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput[]
+  connectOrCreate?: Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput | Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput[]
+  createMany?: Prisma.DocumentControlRevisionCreateManyDarMasterInputEnvelope
+  connect?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+}
+
+export type DocumentControlRevisionUncheckedCreateNestedManyWithoutDarMasterInput = {
+  create?: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput> | Prisma.DocumentControlRevisionCreateWithoutDarMasterInput[] | Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput[]
+  connectOrCreate?: Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput | Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput[]
+  createMany?: Prisma.DocumentControlRevisionCreateManyDarMasterInputEnvelope
+  connect?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+}
+
+export type DocumentControlRevisionUpdateManyWithoutDarMasterNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput> | Prisma.DocumentControlRevisionCreateWithoutDarMasterInput[] | Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput[]
+  connectOrCreate?: Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput | Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput[]
+  upsert?: Prisma.DocumentControlRevisionUpsertWithWhereUniqueWithoutDarMasterInput | Prisma.DocumentControlRevisionUpsertWithWhereUniqueWithoutDarMasterInput[]
+  createMany?: Prisma.DocumentControlRevisionCreateManyDarMasterInputEnvelope
+  set?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+  disconnect?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+  delete?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+  connect?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+  update?: Prisma.DocumentControlRevisionUpdateWithWhereUniqueWithoutDarMasterInput | Prisma.DocumentControlRevisionUpdateWithWhereUniqueWithoutDarMasterInput[]
+  updateMany?: Prisma.DocumentControlRevisionUpdateManyWithWhereWithoutDarMasterInput | Prisma.DocumentControlRevisionUpdateManyWithWhereWithoutDarMasterInput[]
+  deleteMany?: Prisma.DocumentControlRevisionScalarWhereInput | Prisma.DocumentControlRevisionScalarWhereInput[]
+}
+
+export type DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput> | Prisma.DocumentControlRevisionCreateWithoutDarMasterInput[] | Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput[]
+  connectOrCreate?: Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput | Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput[]
+  upsert?: Prisma.DocumentControlRevisionUpsertWithWhereUniqueWithoutDarMasterInput | Prisma.DocumentControlRevisionUpsertWithWhereUniqueWithoutDarMasterInput[]
+  createMany?: Prisma.DocumentControlRevisionCreateManyDarMasterInputEnvelope
+  set?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+  disconnect?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+  delete?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+  connect?: Prisma.DocumentControlRevisionWhereUniqueInput | Prisma.DocumentControlRevisionWhereUniqueInput[]
+  update?: Prisma.DocumentControlRevisionUpdateWithWhereUniqueWithoutDarMasterInput | Prisma.DocumentControlRevisionUpdateWithWhereUniqueWithoutDarMasterInput[]
+  updateMany?: Prisma.DocumentControlRevisionUpdateManyWithWhereWithoutDarMasterInput | Prisma.DocumentControlRevisionUpdateManyWithWhereWithoutDarMasterInput[]
+  deleteMany?: Prisma.DocumentControlRevisionScalarWhereInput | Prisma.DocumentControlRevisionScalarWhereInput[]
 }
 
 export type DocumentControlRevisionCreateNestedManyWithoutDocumentControlInput = {
@@ -667,6 +733,96 @@ export type DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNest
   deleteMany?: Prisma.DocumentControlRevisionScalarWhereInput | Prisma.DocumentControlRevisionScalarWhereInput[]
 }
 
+export type DocumentControlRevisionCreateWithoutDarMasterInput = {
+  id?: string
+  revision: string
+  effectiveDate?: Date | string | null
+  status?: $Enums.DocControlStatus
+  spDriveId?: string | null
+  spItemId?: string | null
+  spWebUrl?: string | null
+  spDownloadUrl?: string | null
+  spFolderPath?: string | null
+  fileName?: string | null
+  fileSize?: number | null
+  mimeType?: string | null
+  createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
+  createdAt?: Date | string
+  documentControl: Prisma.DocumentControlCreateNestedOneWithoutRevisionsInput
+}
+
+export type DocumentControlRevisionUncheckedCreateWithoutDarMasterInput = {
+  id?: string
+  documentControlId: string
+  revision: string
+  effectiveDate?: Date | string | null
+  status?: $Enums.DocControlStatus
+  spDriveId?: string | null
+  spItemId?: string | null
+  spWebUrl?: string | null
+  spDownloadUrl?: string | null
+  spFolderPath?: string | null
+  fileName?: string | null
+  fileSize?: number | null
+  mimeType?: string | null
+  createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
+  createdAt?: Date | string
+}
+
+export type DocumentControlRevisionCreateOrConnectWithoutDarMasterInput = {
+  where: Prisma.DocumentControlRevisionWhereUniqueInput
+  create: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput>
+}
+
+export type DocumentControlRevisionCreateManyDarMasterInputEnvelope = {
+  data: Prisma.DocumentControlRevisionCreateManyDarMasterInput | Prisma.DocumentControlRevisionCreateManyDarMasterInput[]
+  skipDuplicates?: boolean
+}
+
+export type DocumentControlRevisionUpsertWithWhereUniqueWithoutDarMasterInput = {
+  where: Prisma.DocumentControlRevisionWhereUniqueInput
+  update: Prisma.XOR<Prisma.DocumentControlRevisionUpdateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedUpdateWithoutDarMasterInput>
+  create: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput>
+}
+
+export type DocumentControlRevisionUpdateWithWhereUniqueWithoutDarMasterInput = {
+  where: Prisma.DocumentControlRevisionWhereUniqueInput
+  data: Prisma.XOR<Prisma.DocumentControlRevisionUpdateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedUpdateWithoutDarMasterInput>
+}
+
+export type DocumentControlRevisionUpdateManyWithWhereWithoutDarMasterInput = {
+  where: Prisma.DocumentControlRevisionScalarWhereInput
+  data: Prisma.XOR<Prisma.DocumentControlRevisionUpdateManyMutationInput, Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterInput>
+}
+
+export type DocumentControlRevisionScalarWhereInput = {
+  AND?: Prisma.DocumentControlRevisionScalarWhereInput | Prisma.DocumentControlRevisionScalarWhereInput[]
+  OR?: Prisma.DocumentControlRevisionScalarWhereInput[]
+  NOT?: Prisma.DocumentControlRevisionScalarWhereInput | Prisma.DocumentControlRevisionScalarWhereInput[]
+  id?: Prisma.StringFilter<"DocumentControlRevision"> | string
+  documentControlId?: Prisma.StringFilter<"DocumentControlRevision"> | string
+  revision?: Prisma.StringFilter<"DocumentControlRevision"> | string
+  effectiveDate?: Prisma.DateTimeNullableFilter<"DocumentControlRevision"> | Date | string | null
+  status?: Prisma.EnumDocControlStatusFilter<"DocumentControlRevision"> | $Enums.DocControlStatus
+  spDriveId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  spItemId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  spWebUrl?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  spDownloadUrl?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  spFolderPath?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  fileName?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  fileSize?: Prisma.IntNullableFilter<"DocumentControlRevision"> | number | null
+  mimeType?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  createdById?: Prisma.StringFilter<"DocumentControlRevision"> | string
+  createdByAuthUserId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  createdByName?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"DocumentControlRevision"> | Date | string
+  darMasterId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
+}
+
 export type DocumentControlRevisionCreateWithoutDocumentControlInput = {
   id?: string
   revision: string
@@ -684,6 +840,7 @@ export type DocumentControlRevisionCreateWithoutDocumentControlInput = {
   createdByAuthUserId?: string | null
   createdByName?: string | null
   createdAt?: Date | string
+  darMaster?: Prisma.DarMasterCreateNestedOneWithoutDocumentRevisionsInput
 }
 
 export type DocumentControlRevisionUncheckedCreateWithoutDocumentControlInput = {
@@ -703,6 +860,7 @@ export type DocumentControlRevisionUncheckedCreateWithoutDocumentControlInput = 
   createdByAuthUserId?: string | null
   createdByName?: string | null
   createdAt?: Date | string
+  darMasterId?: string | null
 }
 
 export type DocumentControlRevisionCreateOrConnectWithoutDocumentControlInput = {
@@ -731,27 +889,84 @@ export type DocumentControlRevisionUpdateManyWithWhereWithoutDocumentControlInpu
   data: Prisma.XOR<Prisma.DocumentControlRevisionUpdateManyMutationInput, Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlInput>
 }
 
-export type DocumentControlRevisionScalarWhereInput = {
-  AND?: Prisma.DocumentControlRevisionScalarWhereInput | Prisma.DocumentControlRevisionScalarWhereInput[]
-  OR?: Prisma.DocumentControlRevisionScalarWhereInput[]
-  NOT?: Prisma.DocumentControlRevisionScalarWhereInput | Prisma.DocumentControlRevisionScalarWhereInput[]
-  id?: Prisma.StringFilter<"DocumentControlRevision"> | string
-  documentControlId?: Prisma.StringFilter<"DocumentControlRevision"> | string
-  revision?: Prisma.StringFilter<"DocumentControlRevision"> | string
-  effectiveDate?: Prisma.DateTimeNullableFilter<"DocumentControlRevision"> | Date | string | null
-  status?: Prisma.EnumDocControlStatusFilter<"DocumentControlRevision"> | $Enums.DocControlStatus
-  spDriveId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  spItemId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  spWebUrl?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  spDownloadUrl?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  spFolderPath?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  fileName?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  fileSize?: Prisma.IntNullableFilter<"DocumentControlRevision"> | number | null
-  mimeType?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  createdById?: Prisma.StringFilter<"DocumentControlRevision"> | string
-  createdByAuthUserId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  createdByName?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"DocumentControlRevision"> | Date | string
+export type DocumentControlRevisionCreateManyDarMasterInput = {
+  id?: string
+  documentControlId: string
+  revision: string
+  effectiveDate?: Date | string | null
+  status?: $Enums.DocControlStatus
+  spDriveId?: string | null
+  spItemId?: string | null
+  spWebUrl?: string | null
+  spDownloadUrl?: string | null
+  spFolderPath?: string | null
+  fileName?: string | null
+  fileSize?: number | null
+  mimeType?: string | null
+  createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
+  createdAt?: Date | string
+}
+
+export type DocumentControlRevisionUpdateWithoutDarMasterInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.StringFieldUpdateOperationsInput | string
+  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
+  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentControl?: Prisma.DocumentControlUpdateOneRequiredWithoutRevisionsNestedInput
+}
+
+export type DocumentControlRevisionUncheckedUpdateWithoutDarMasterInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  documentControlId?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.StringFieldUpdateOperationsInput | string
+  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
+  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  documentControlId?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.StringFieldUpdateOperationsInput | string
+  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
+  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type DocumentControlRevisionCreateManyDocumentControlInput = {
@@ -771,6 +986,7 @@ export type DocumentControlRevisionCreateManyDocumentControlInput = {
   createdByAuthUserId?: string | null
   createdByName?: string | null
   createdAt?: Date | string
+  darMasterId?: string | null
 }
 
 export type DocumentControlRevisionUpdateWithoutDocumentControlInput = {
@@ -790,6 +1006,7 @@ export type DocumentControlRevisionUpdateWithoutDocumentControlInput = {
   createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  darMaster?: Prisma.DarMasterUpdateOneWithoutDocumentRevisionsNestedInput
 }
 
 export type DocumentControlRevisionUncheckedUpdateWithoutDocumentControlInput = {
@@ -809,6 +1026,7 @@ export type DocumentControlRevisionUncheckedUpdateWithoutDocumentControlInput = 
   createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  darMasterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlInput = {
@@ -828,6 +1046,7 @@ export type DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlInpu
   createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  darMasterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -850,7 +1069,9 @@ export type DocumentControlRevisionSelect<ExtArgs extends runtime.Types.Extensio
   createdByAuthUserId?: boolean
   createdByName?: boolean
   createdAt?: boolean
+  darMasterId?: boolean
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
+  darMaster?: boolean | Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>
 }, ExtArgs["result"]["documentControlRevision"]>
 
 export type DocumentControlRevisionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -871,7 +1092,9 @@ export type DocumentControlRevisionSelectCreateManyAndReturn<ExtArgs extends run
   createdByAuthUserId?: boolean
   createdByName?: boolean
   createdAt?: boolean
+  darMasterId?: boolean
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
+  darMaster?: boolean | Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>
 }, ExtArgs["result"]["documentControlRevision"]>
 
 export type DocumentControlRevisionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -892,7 +1115,9 @@ export type DocumentControlRevisionSelectUpdateManyAndReturn<ExtArgs extends run
   createdByAuthUserId?: boolean
   createdByName?: boolean
   createdAt?: boolean
+  darMasterId?: boolean
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
+  darMaster?: boolean | Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>
 }, ExtArgs["result"]["documentControlRevision"]>
 
 export type DocumentControlRevisionSelectScalar = {
@@ -913,23 +1138,28 @@ export type DocumentControlRevisionSelectScalar = {
   createdByAuthUserId?: boolean
   createdByName?: boolean
   createdAt?: boolean
+  darMasterId?: boolean
 }
 
-export type DocumentControlRevisionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "documentControlId" | "revision" | "effectiveDate" | "status" | "spDriveId" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "spFolderPath" | "fileName" | "fileSize" | "mimeType" | "createdById" | "createdByAuthUserId" | "createdByName" | "createdAt", ExtArgs["result"]["documentControlRevision"]>
+export type DocumentControlRevisionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "documentControlId" | "revision" | "effectiveDate" | "status" | "spDriveId" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "spFolderPath" | "fileName" | "fileSize" | "mimeType" | "createdById" | "createdByAuthUserId" | "createdByName" | "createdAt" | "darMasterId", ExtArgs["result"]["documentControlRevision"]>
 export type DocumentControlRevisionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
+  darMaster?: boolean | Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>
 }
 export type DocumentControlRevisionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
+  darMaster?: boolean | Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>
 }
 export type DocumentControlRevisionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
+  darMaster?: boolean | Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>
 }
 
 export type $DocumentControlRevisionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DocumentControlRevision"
   objects: {
     documentControl: Prisma.$DocumentControlPayload<ExtArgs>
+    darMaster: Prisma.$DarMasterPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -949,6 +1179,7 @@ export type $DocumentControlRevisionPayload<ExtArgs extends runtime.Types.Extens
     createdByAuthUserId: string | null
     createdByName: string | null
     createdAt: Date
+    darMasterId: string | null
   }, ExtArgs["result"]["documentControlRevision"]>
   composites: {}
 }
@@ -1344,6 +1575,7 @@ readonly fields: DocumentControlRevisionFieldRefs;
 export interface Prisma__DocumentControlRevisionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   documentControl<T extends Prisma.DocumentControlDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControlDefaultArgs<ExtArgs>>): Prisma.Prisma__DocumentControlClient<runtime.Types.Result.GetResult<Prisma.$DocumentControlPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  darMaster<T extends Prisma.DocumentControlRevision$darMasterArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>>): Prisma.Prisma__DarMasterClient<runtime.Types.Result.GetResult<Prisma.$DarMasterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1390,6 +1622,7 @@ export interface DocumentControlRevisionFieldRefs {
   readonly createdByAuthUserId: Prisma.FieldRef<"DocumentControlRevision", 'String'>
   readonly createdByName: Prisma.FieldRef<"DocumentControlRevision", 'String'>
   readonly createdAt: Prisma.FieldRef<"DocumentControlRevision", 'DateTime'>
+  readonly darMasterId: Prisma.FieldRef<"DocumentControlRevision", 'String'>
 }
     
 
@@ -1788,6 +2021,25 @@ export type DocumentControlRevisionDeleteManyArgs<ExtArgs extends runtime.Types.
    * Limit how many DocumentControlRevisions to delete.
    */
   limit?: number
+}
+
+/**
+ * DocumentControlRevision.darMaster
+ */
+export type DocumentControlRevision$darMasterArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DarMaster
+   */
+  select?: Prisma.DarMasterSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DarMaster
+   */
+  omit?: Prisma.DarMasterOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DarMasterInclude<ExtArgs> | null
+  where?: Prisma.DarMasterWhereInput
 }
 
 /**

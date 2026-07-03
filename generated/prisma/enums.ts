@@ -130,6 +130,8 @@ export const KpiObjectiveStatus = {
   PENDING_REVIEW: 'PENDING_REVIEW',
   PENDING_APPROVAL: 'PENDING_APPROVAL',
   APPROVED: 'APPROVED',
+  QMS_CHECK: 'QMS_CHECK',
+  ANNOUNCED: 'ANNOUNCED',
   REJECTED: 'REJECTED'
 } as const
 
@@ -159,6 +161,7 @@ export type AchievedStatus = (typeof AchievedStatus)[keyof typeof AchievedStatus
 export const DocControlStatus = {
   DRAFT: 'DRAFT',
   ACTIVE: 'ACTIVE',
+  CANCELLED: 'CANCELLED',
   OBSOLETE: 'OBSOLETE'
 } as const
 

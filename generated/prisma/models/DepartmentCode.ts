@@ -204,14 +204,14 @@ export type DepartmentCodeOrderByWithRelationInput = {
 export type DepartmentCodeWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   authDeptId?: string
-  code?: string
   AND?: Prisma.DepartmentCodeWhereInput | Prisma.DepartmentCodeWhereInput[]
   OR?: Prisma.DepartmentCodeWhereInput[]
   NOT?: Prisma.DepartmentCodeWhereInput | Prisma.DepartmentCodeWhereInput[]
   departmentName?: Prisma.StringFilter<"DepartmentCode"> | string
+  code?: Prisma.StringFilter<"DepartmentCode"> | string
   createdAt?: Prisma.DateTimeFilter<"DepartmentCode"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DepartmentCode"> | Date | string
-}, "id" | "authDeptId" | "code">
+}, "id" | "authDeptId">
 
 export type DepartmentCodeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

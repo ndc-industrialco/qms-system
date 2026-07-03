@@ -515,19 +515,25 @@ export class AuditPlanService {
     const schedule = await this.scheduleRepo.findById(scheduleId);
     if (!schedule) throw new NotFoundError("Schedule not found");
 
+    const plan = await this.repo.findDetailById(schedule.planId);
+    if (!plan) throw new NotFoundError("Audit plan not found");
+
+    const actorId = actor.authUserId ?? actor.userId;
+
     const PRIVILEGED = new Set(["QMS", "MR", "IT"]);
     if (!PRIVILEGED.has(actor.role)) {
-      const scheduleDept = schedule.departmentId;
-      if (!scheduleDept || !actor.departmentId || actor.departmentId !== scheduleDept) {
-        throw new ForbiddenError("You are not authorized to confirm this schedule");
+      const isLeadAuditor = plan.leadAuditorAuthUserId === actorId;
+      const isAssignedAuditor = plan.auditors.some((a) => a.assigneeAuthUserId === actorId);
+
+      if (!isLeadAuditor && !isAssignedAuditor) {
+        const scheduleDept = schedule.departmentId;
+        if (!scheduleDept || !actor.departmentId || actor.departmentId !== scheduleDept) {
+          throw new ForbiddenError("You are not authorized to confirm this schedule");
+        }
       }
     }
 
-    const plan = await this.repo.findById(schedule.planId);
-    if (!plan) throw new NotFoundError("Audit plan not found");
-
     const now = new Date();
-    const actorId = actor.authUserId ?? actor.userId;
 
     const updated = await db.$transaction(async (tx) => {
       const u = await tx.auditSchedule.update({

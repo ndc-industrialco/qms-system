@@ -1,58 +1,132 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { requireRole } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import ExcelJS from "exceljs";
 import { DarExportService } from "@/services/darExportService";
+import { QmsConfigService } from "@/services/qmsConfigService";
+import { OBJECTIVE_LABELS, DOC_TYPE_LABELS, DAR_STATUS_LABELS } from "@/types/dar";
+import type { DarObjective, DarDocType, DarStatus } from "@/types/dar";
 
 const filterSchema = z.object({
   status:     z.string().optional(),
   department: z.string().optional(),
+  docType:    z.string().optional(),
+  objective:  z.string().optional(),
+  search:     z.string().optional(),
+  user:       z.string().optional(),
+  userId:     z.string().optional(),
+  year:       z.string().optional(),
+  month:      z.string().optional(),
   from:       z.string().optional().transform((v) => (v ? new Date(v) : undefined)),
   to:         z.string().optional().transform((v) => (v ? new Date(v) : undefined)),
 });
 
+const exportService = new DarExportService();
+const qmsConfigService = new QmsConfigService();
+
 export async function GET(req: NextRequest) {
   try {
-    await requireRole("QMS", "MR", "IT");
+    const session = await requireAuth();
+    const isPrivileged = ["QMS", "MR", "IT"].includes(session.user.role);
 
     const sp = req.nextUrl.searchParams;
     const filter = filterSchema.parse({
       status:     sp.get("status")     ?? undefined,
       department: sp.get("department") ?? undefined,
+      docType:    sp.get("docType")    ?? undefined,
+      objective:  sp.get("objective")  ?? undefined,
+      search:     sp.get("search")     ?? undefined,
+      user:       sp.get("user")       ?? undefined,
+      userId:     sp.get("userId")     ?? undefined,
+      year:       sp.get("year")       ?? undefined,
+      month:      sp.get("month")      ?? undefined,
       from:       sp.get("from")       ?? undefined,
       to:         sp.get("to")         ?? undefined,
     });
 
-    const rows = await exportService.listDars({
-      ...(filter.status && { status: filter.status as never }),
-      ...(filter.department && { requesterDepartmentName: { contains: filter.department } }),
-      ...(filter.from || filter.to ? { requestDate: { gte: filter.from, lte: filter.to } } : {}),
-    });
+    // Date/Month/Year range filtering logic
+    let fromDate = filter.from;
+    let toDate = filter.to;
+    if (filter.year) {
+      const yearVal = parseInt(filter.year, 10);
+      if (!isNaN(yearVal)) {
+        if (filter.month) {
+          const monthMap: Record<string, number> = {
+            "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+            "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+            "january": 1, "february": 2, "march": 3, "april": 4, "june": 6,
+            "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12
+          };
+          let mVal = parseInt(filter.month, 10);
+          if (isNaN(mVal) && monthMap[filter.month.toLowerCase()]) {
+            mVal = monthMap[filter.month.toLowerCase()];
+          }
+          if (!isNaN(mVal) && mVal >= 1 && mVal <= 12) {
+            fromDate = new Date(yearVal, mVal - 1, 1);
+            toDate = new Date(yearVal, mVal, 0, 23, 59, 59, 999);
+          } else {
+            fromDate = new Date(yearVal, 0, 1);
+            toDate = new Date(yearVal, 11, 31, 23, 59, 59, 999);
+          }
+        } else {
+          fromDate = new Date(yearVal, 0, 1);
+          toDate = new Date(yearVal, 11, 31, 23, 59, 59, 999);
+        }
+      }
+    }
+
+    const [rows, naming] = await Promise.all([
+      exportService.listDars({
+        ...(filter.status && { status: filter.status as never }),
+        ...(filter.department && { requesterDepartmentName: { contains: filter.department, mode: "insensitive" } }),
+        ...(filter.docType && { docType: filter.docType }),
+        ...(filter.objective && { objective: filter.objective }),
+        ...(filter.userId && { OR: [{ requesterId: filter.userId }, { requesterAuthUserId: filter.userId }] }),
+        ...(filter.user && { requesterName: { contains: filter.user, mode: "insensitive" } }),
+        ...(filter.search && {
+          OR: [
+            { darNo: { contains: filter.search, mode: "insensitive" } },
+            { objective: { contains: filter.search, mode: "insensitive" } },
+            { docType: { contains: filter.search, mode: "insensitive" } },
+            { reason: { contains: filter.search, mode: "insensitive" } },
+            { requesterName: { contains: filter.search, mode: "insensitive" } },
+          ],
+        }),
+        ...(!isPrivileged && { OR: [{ requesterId: session.user.id }, { requesterAuthUserId: session.user.id }] }),
+        ...(fromDate || toDate ? { requestDate: { gte: fromDate, lte: toDate } } : {}),
+      }),
+      qmsConfigService.getExportNamingMeta("DAR", {
+        label: "Document Action Request (DAR)",
+        fileBaseName: "dar-export",
+        worksheetName: "DAR",
+      }),
+    ]);
 
     const wb = new ExcelJS.Workbook();
     wb.creator = "QMS System";
     wb.created = new Date();
 
-    const ws = wb.addWorksheet("DAR");
+    const ws = wb.addWorksheet(naming.worksheetName);
 
     const headerFill: ExcelJS.Fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F1059" } };
     const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
     const border: Partial<ExcelJS.Border> = { style: "thin", color: { argb: "FFCCCCCC" } };
     const allBorders: Partial<ExcelJS.Borders> = { top: border, left: border, bottom: border, right: border };
 
+    // Format all headers and metadata columns in Thai
     ws.columns = [
-      { header: "DAR No.",           key: "darNo",          width: 20 },
-      { header: "Request Date",      key: "requestDate",    width: 18 },
-      { header: "Department",        key: "department",     width: 24 },
-      { header: "Requester",         key: "requester",      width: 24 },
-      { header: "Objective",         key: "objective",      width: 40 },
-      { header: "Doc Type",          key: "docType",        width: 16 },
-      { header: "Status",            key: "status",         width: 18 },
-      { header: "Doc Numbers",       key: "docNumbers",     width: 40 },
-      { header: "Doc Names",         key: "docNames",       width: 50 },
-      { header: "QMS Processed By",  key: "qmsUser",        width: 24 },
-      { header: "QMS Process Date",  key: "qmsDate",        width: 18 },
+      { header: "เลขที่คำขอ (DAR No.)",     key: "darNo",          width: 22 },
+      { header: "วันที่ยื่นคำขอ",            key: "requestDate",    width: 18 },
+      { header: "แผนก",                   key: "department",     width: 24 },
+      { header: "ผู้ยื่นคำขอ",             key: "requester",      width: 24 },
+      { header: "วัตถุประสงค์",             key: "objective",      width: 32 },
+      { header: "ประเภทเอกสาร",             key: "docType",        width: 22 },
+      { header: "สถานะ",                  key: "status",         width: 18 },
+      { header: "เลขที่เอกสารในคำขอ",        key: "docNumbers",     width: 40 },
+      { header: "ชื่อเอกสารในคำขอ",          key: "docNames",       width: 50 },
+      { header: "ผู้ดำเนินการ QMS",        key: "qmsUser",        width: 24 },
+      { header: "วันที่ QMS ดำเนินการ",      key: "qmsDate",        width: 18 },
     ];
 
     ws.getRow(1).eachCell((cell) => {
@@ -61,17 +135,22 @@ export async function GET(req: NextRequest) {
       cell.border = allBorders;
       cell.alignment = { vertical: "middle", horizontal: "center" };
     });
-    ws.getRow(1).height = 22;
+    ws.getRow(1).height = 24;
 
     for (const r of rows) {
+      // Map enums to their corresponding Thai labels
+      const objLabel = OBJECTIVE_LABELS[r.objective as DarObjective] || r.objective;
+      const typeLabel = DOC_TYPE_LABELS[r.docType as DarDocType] || r.docType;
+      const statusLabel = DAR_STATUS_LABELS[r.status as DarStatus] || r.status;
+
       const added = ws.addRow({
         darNo:       r.darNo ?? "",
         requestDate: r.requestDate.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" }),
         department:  r.requesterDepartmentName ?? "",
         requester:   r.requesterName ?? r.requesterId,
-        objective:   r.objective,
-        docType:     r.docType,
-        status:      r.status,
+        objective:   objLabel,
+        docType:     typeLabel,
+        status:      statusLabel,
         docNumbers:  r.items.map((i: { docNumber: string }) => i.docNumber).join(", "),
         docNames:    r.items.map((i: { docName: string }) => i.docName).join(", "),
         qmsUser:     r.qmsProcessing?.qmsUserName ?? "",
@@ -94,7 +173,7 @@ export async function GET(req: NextRequest) {
     return new Response(buffer as BodyInit, {
       headers: {
         "Content-Type":        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="dar-export-${date}.xlsx"`,
+        "Content-Disposition": `attachment; filename="${naming.fileBaseName}-${date}.xlsx"`,
         "Cache-Control":       "no-store",
       },
     });
@@ -102,5 +181,3 @@ export async function GET(req: NextRequest) {
     return handleApiError(err);
   }
 }
-
-const exportService = new DarExportService();

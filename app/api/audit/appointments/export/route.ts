@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import ExcelJS from "exceljs";
 import { AuditAppointmentExportService } from "@/services/audit/auditAppointmentExportService";
+import { QmsConfigService } from "@/services/qmsConfigService";
 
 const filterSchema = z.object({
   year:   z.coerce.number().optional(),
@@ -20,17 +21,26 @@ export async function GET(req: NextRequest) {
       status: sp.get("status") ?? undefined,
     });
 
-    const rows = await exportService.listAppointments({
-      year: filter.year,
-      status: filter.status as never,
-    });
+    const [rows, naming, auditorConfig] = await Promise.all([
+      exportService.listAppointments({
+        year: filter.year,
+        status: filter.status as never,
+      }),
+      qmsConfigService.getExportNamingMeta("AUDIT_APPT", {
+        label: "Audit Appointment Letter",
+        fileBaseName: "audit-appointments-export",
+        worksheetName: "Appointments",
+      }),
+      qmsConfigService.getSingleFooterConfig("AUDITOR"),
+    ]);
 
     const wb = new ExcelJS.Workbook();
     wb.creator = "QMS System";
     wb.created = new Date();
+    wb.title = naming.label;
 
     // ── Sheet 1: Appointments ────────────────────────────────────────────────
-    const wsAppt = wb.addWorksheet("Appointments");
+    const wsAppt = wb.addWorksheet(naming.worksheetName);
 
     const headerFill: ExcelJS.Fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F1059" } };
     const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
@@ -84,7 +94,8 @@ export async function GET(req: NextRequest) {
     wsAppt.views = [{ state: "frozen", ySplit: 1 }];
 
     // ── Sheet 2: Auditors (members) ──────────────────────────────────────────
-    const wsMem = wb.addWorksheet("Auditors");
+    const auditorSheetLabel = auditorConfig.label.trim() || "Auditors";
+    const wsMem = wb.addWorksheet(getRelatedWorksheetName(naming.worksheetName, auditorSheetLabel));
 
     wsMem.columns = [
       { header: "Appointment No.", key: "apptNo",     width: 22 },
@@ -129,7 +140,7 @@ export async function GET(req: NextRequest) {
     return new Response(buffer as BodyInit, {
       headers: {
         "Content-Type":        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="audit-appointments-export-${date}.xlsx"`,
+        "Content-Disposition": `attachment; filename="${naming.fileBaseName}-${date}.xlsx"`,
         "Cache-Control":       "no-store",
       },
     });
@@ -139,3 +150,12 @@ export async function GET(req: NextRequest) {
 }
 
 const exportService = new AuditAppointmentExportService();
+const qmsConfigService = new QmsConfigService();
+
+function getRelatedWorksheetName(baseName: string, suffix: string): string {
+  const reservedLength = suffix.length + 3;
+  const trimmedBase = baseName.trim();
+  const truncatedBase = trimmedBase.slice(0, Math.max(0, 31 - reservedLength)).trim();
+  const worksheetBase = truncatedBase || trimmedBase.slice(0, 31).trim() || "Export";
+  return `${worksheetBase} - ${suffix}`.slice(0, 31);
+}

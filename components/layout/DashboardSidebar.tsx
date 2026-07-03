@@ -121,6 +121,12 @@ function getSections(
 
   const qmsItems: NavItem[] = [
     {
+      labelTh: "หน้าสรุปผลภาพรวม",
+      labelEn: "QMS Summary Dashboard",
+      href: "/qms/summary",
+      icon: <BarChart3 className="h-[18px] w-[18px] shrink-0" />,
+    },
+    {
       labelTh: "มาตรฐาน Audit",
       labelEn: "Audit Standards",
       href: "/qms/audit-standards",

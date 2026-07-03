@@ -22,12 +22,21 @@ export interface DocumentControlSummary {
   status: DocControlStatus;
   effectiveDate: string | null;
   fileName: string | null;
+  spItemId?: string | null;
+  spDownloadUrl?: string | null;
   createdBy: { id: string; authUserId?: string | null; name: string | null };
   createdAt: string;
   departmentId: string | null;
   department?: { id: string; name: string } | null;
   categoryId: string | null;
   category?: { id: string; name: string; departmentId: string } | null;
+  revisions?: {
+    id: string;
+    revision: string;
+    status: DocControlStatus;
+    effectiveDate?: string | null;
+    createdAt: string;
+  }[];
 }
 
 export interface DocumentControlRevisionDetail {
@@ -95,4 +104,25 @@ export interface UploadRevisionInput {
   revision: string;
   effectiveDate?: string | null;
   status?: DocControlStatus;
+}
+
+export interface DocumentControlExportRow {
+  id: string;
+  docNumber: string;
+  docName: string;
+  revision: string | null;
+  status: DocControlStatus;
+  effectiveDate: string | null;
+  description: string | null;
+  departmentName: string | null;
+  categoryName: string | null;
+  createdByName: string | null;
+  createdAt: string;
+  requestedByName: string | null;
+  latestRevisionCreatedAt: string | null;
+  latestRevisionCreatedByName: string | null;
+  latestDarNo: string | null;
+  latestDarObjective: string | null;
+  latestDarRequestDate: string | null;
+  distributions?: { departmentName: string; authDepartmentId: string | null }[];
 }

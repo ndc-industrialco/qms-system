@@ -5,9 +5,11 @@ import { useT } from "@/lib/i18n";
 import { KPI_UNITS } from "@/lib/kpi-units";
 import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye, XCircle } from "lucide-react";
+import { Plus, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye, XCircle, Megaphone, Edit3, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -26,6 +28,10 @@ import {
   useReviewKpiObjectives,
   useApproveKpiObjectives,
   useRejectKpiObjectives,
+  useQmsCheckKpi,
+  useAnnounceKpi,
+  useReviseKpi,
+  useUpdateKpi,
 } from "@/hooks/api/use-kpi";
 import KpiApprovalTimeline from "@/components/kpi/KpiApprovalTimeline";
 import type { KPIObjective } from "@/generated/prisma/client";
@@ -47,7 +53,10 @@ interface Props {
 const STATUS_CONFIG = {
   DRAFT:          { label: "Draft",           icon: null,          class: "bg-slate-50 text-slate-500 border-slate-200" },
   PENDING_REVIEW: { label: "Pending Review",  icon: Clock,         class: "bg-amber-50 text-amber-600 border-amber-200" },
+  PENDING_APPROVAL: { label: "Pending Approval", icon: Clock,      class: "bg-amber-50 text-amber-600 border-amber-200" },
   APPROVED:       { label: "Approved ✓",      icon: CheckCircle2,  class: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+  QMS_CHECK:      { label: "QMS Check",       icon: ShieldCheck,   class: "bg-sky-50 text-sky-600 border-sky-200" },
+  ANNOUNCED:      { label: "Announced",       icon: Megaphone,     class: "bg-emerald-50 text-emerald-600 border-emerald-200" },
   REJECTED:       { label: "Rejected ✕",      icon: null,          class: "bg-rose-50 text-rose-600 border-rose-200" },
 } as const;
 
@@ -111,7 +120,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [signatureOpen, setSignatureOpen] = useState(false);
-  const [signatureMode, setSignatureMode] = useState<"submit" | "review" | "approve">("submit");
+  const [signatureMode, setSignatureMode] = useState<"submit" | "review" | "approve" | "qmsCheck">("submit");
   const [pendingSignature, setPendingSignature] = useState<string | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
 
@@ -123,6 +132,15 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const reviewMutation = useReviewKpiObjectives();
   const approveMutation = useApproveKpiObjectives();
   const rejectMutation = useRejectKpiObjectives();
+  const qmsCheckMutation = useQmsCheckKpi();
+  const announceMutation = useAnnounceKpi();
+  const reviseMutation = useReviseKpi();
+  const updateKpiMutation = useUpdateKpi();
+
+  const [docNameEditOpen, setDocNameEditOpen] = useState(false);
+  const [docNameValue, setDocNameValue] = useState("");
+  const [reviseDialogOpen, setReviseDialogOpen] = useState(false);
+  const [reviseReason, setReviseReason] = useState("");
 
   async function handleSignatureConfirm(payload: { signatureDataUrl: string }) {
     setPendingSignature(payload.signatureDataUrl);
@@ -142,6 +160,15 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
       try {
         await approveMutation.mutateAsync({ kpiId, data: { signatureDataUrl: payload.signatureDataUrl } });
         toast.success(t("kpi.approve.success"));
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+      } finally {
+        setPendingSignature(null);
+      }
+    } else if (signatureMode === "qmsCheck") {
+      try {
+        await qmsCheckMutation.mutateAsync({ kpiId, data: { signatureDataUrl: payload.signatureDataUrl } });
+        toast.success("QMS Check completed");
       } catch (err) {
         toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
       } finally {
@@ -211,6 +238,9 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const canReview = isReviewer && kpiStatus === "PENDING_REVIEW" && !reviewerAlreadySigned;
   const canApprove = isApprover && kpiStatus === "PENDING_REVIEW" && reviewerAlreadySigned;
   const canReject = (isReviewer || isApprover) && kpiStatus === "PENDING_REVIEW";
+  const canQmsCheck = privileged && kpiStatus === "APPROVED";
+  const canAnnounce = privileged && kpiStatus === "QMS_CHECK";
+  const canRevise = privileged && (kpiStatus === "APPROVED" || kpiStatus === "ANNOUNCED");
 
   // USER must belong to the same department as this KPI
   const deptMatch = privileged
@@ -302,6 +332,51 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                 disabled={submitMutation.isPending}
               >
                 <Send className="w-4 h-4 mr-2" />{t("kpi.submit.button")}
+              </Button>
+            )}
+            {canQmsCheck && (
+              <Button
+                onClick={() => { setSignatureMode("qmsCheck"); setSignatureOpen(true); }}
+                className="rounded-xl bg-sky-600 hover:bg-sky-700 text-white"
+                disabled={qmsCheckMutation.isPending}
+              >
+                <ShieldCheck className="w-4 h-4 mr-2" />QMS Check
+              </Button>
+            )}
+            {canAnnounce && (
+              <Button
+                onClick={async () => {
+                  try {
+                    await announceMutation.mutateAsync({ kpiId, data: { documentName: (kpi as Record<string, unknown>).documentName as string } });
+                    toast.success("KPI announced successfully");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Announcement failed", { duration: Infinity });
+                  }
+                }}
+                className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+                disabled={announceMutation.isPending}
+              >
+                <Megaphone className="w-4 h-4 mr-2" />Announce
+              </Button>
+            )}
+            {canRevise && (
+              <Button
+                onClick={() => { setReviseReason(""); setReviseDialogOpen(true); }}
+                variant="outline"
+                className="rounded-xl border-amber-200 text-amber-700 hover:bg-amber-50"
+                disabled={reviseMutation.isPending}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />Revise
+              </Button>
+            )}
+            {privileged && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => { setDocNameValue(((kpi as Record<string, unknown>).documentName as string) ?? ""); setDocNameEditOpen(true); }}
+                className="rounded-xl"
+              >
+                <Edit3 className="w-4 h-4 text-slate-400" />
               </Button>
             )}
           </div>
@@ -565,7 +640,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
       {/* Step 1: Signature */}
       <KpiSignatureDialog
         open={signatureOpen}
-        title={signatureMode === "review" ? t("kpi.review.signatureTitle") : signatureMode === "approve" ? t("kpi.approve.signatureTitle") : t("kpi.submit.signatureTitle")}
+        title={signatureMode === "review" ? t("kpi.review.signatureTitle") : signatureMode === "approve" ? t("kpi.approve.signatureTitle") : signatureMode === "qmsCheck" ? "QMS Check Signature" : t("kpi.submit.signatureTitle")}
         onOpenChange={setSignatureOpen}
         onConfirm={handleSignatureConfirm}
       />
@@ -581,6 +656,86 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
         initialApproverId={kpi.approverUserId ?? undefined}
         onConfirm={handleAssignConfirm}
       />
+
+      {/* Document Name Edit Dialog */}
+      <Dialog open={docNameEditOpen} onOpenChange={setDocNameEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Document Name / แก้ไขชื่อเอกสาร</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label htmlFor="docName">Document Name (ใช้ใน Footer และ PDF export)</Label>
+            <Input
+              id="docName"
+              value={docNameValue}
+              onChange={(e) => setDocNameValue(e.target.value)}
+              placeholder="e.g. KPI 2026 - Department Name"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDocNameEditOpen(false)} disabled={updateKpiMutation.isPending}>
+              Cancel
+            </Button>
+            <Button
+              disabled={updateKpiMutation.isPending}
+              onClick={async () => {
+                try {
+                  await updateKpiMutation.mutateAsync({ id: kpiId, data: { documentName: docNameValue || null } });
+                  toast.success("Document name updated");
+                  setDocNameEditOpen(false);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Update failed", { duration: Infinity });
+                }
+              }}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Revise KPI Dialog */}
+      <Dialog open={reviseDialogOpen} onOpenChange={(o) => { if (!reviseMutation.isPending) setReviseDialogOpen(o); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-amber-600 flex items-center gap-2">
+              <RefreshCw className="w-5 h-5" />
+              Revise KPI / แก้ไข KPI
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-slate-500">Provide a reason for revision. The KPI will be reset to Draft and remaining monthly reports will be regenerated.</p>
+            <Textarea
+              placeholder="Revision reason / เหตุผลการแก้ไข..."
+              value={reviseReason}
+              onChange={(e) => setReviseReason(e.target.value)}
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setReviseDialogOpen(false)} disabled={reviseMutation.isPending}>
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              className="bg-amber-600 hover:bg-amber-700"
+              disabled={reviseMutation.isPending || !reviseReason.trim()}
+              onClick={async () => {
+                try {
+                  await reviseMutation.mutateAsync({ kpiId, data: { reason: reviseReason.trim() } });
+                  toast.success("KPI revised successfully. Remaining months regenerated.");
+                  setReviseDialogOpen(false);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Revision failed", { duration: Infinity });
+                }
+              }}
+            >
+              {reviseMutation.isPending ? "..." : "Revise"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

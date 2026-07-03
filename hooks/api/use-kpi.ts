@@ -37,6 +37,7 @@ export interface KpiPayload {
   prepare: string;
   reviewer: string;
   approver: string;
+  documentName?: string | null;
 }
 
 export interface KpiObjectivePayload {
@@ -281,6 +282,81 @@ export function useSubmitKpiObjectives() {
   return useMutation({
     mutationFn: async ({ kpiId, data }: { kpiId: string; data: KpiSubmitPayload }) => {
       const res = await fetch(`/api/kpi/${kpiId}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, { kpiId }) => {
+      qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
+    },
+  });
+}
+
+export function useQmsCheckKpi() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ kpiId, data }: { kpiId: string; data?: { signatureDataUrl?: string; saveSignature?: boolean } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/qms-check`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data ?? {}),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, { kpiId }) => {
+      qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
+    },
+  });
+}
+
+export function useAnnounceKpi() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ kpiId, data }: { kpiId: string; data?: { documentName?: string | null } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/announce`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data ?? {}),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: (_, { kpiId }) => {
+      qc.invalidateQueries({ queryKey: ["kpi", kpiId] });
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
+    },
+  });
+}
+
+export function useCopyKpi() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { sourceKpiId: string; targetYear: number }) => {
+      const res = await fetch("/api/kpi/copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      return res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["kpi-list"] });
+    },
+  });
+}
+
+export function useReviseKpi() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ kpiId, data }: { kpiId: string; data: { reason: string; objectiveIds?: string[] } }) => {
+      const res = await fetch(`/api/kpi/${kpiId}/revise`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

@@ -15,11 +15,12 @@ export default async function DocNoConfigPage() {
     throw e;
   }
 
-  const [dar, car, auditAppt, auditPlan] = await Promise.all([
+  const [dar, car, auditAppt, auditPlan, docControl] = await Promise.all([
     getDocNoFormat("DAR"),
     getDocNoFormat("CAR"),
     getDocNoFormat("AUDIT_APPT"),
     getDocNoFormat("AUDIT_PLAN"),
+    getDocNoFormat("DOC_CONTROL"),
   ]);
 
   return (
@@ -30,6 +31,7 @@ export default async function DocNoConfigPage() {
           { module: "CAR",        label: "CAR (Corrective Action Request)",  format: car },
           { module: "AUDIT_APPT", label: "Audit Appointment Letter",         format: auditAppt },
           { module: "AUDIT_PLAN", label: "Audit Plan",                       format: auditPlan },
+          { module: "DOC_CONTROL", label: "Document Control",                format: docControl },
         ]}
       />
     </div>

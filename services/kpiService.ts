@@ -1,9 +1,10 @@
 import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
 import { AuditService } from '@/services/auditService';
 import { NotificationService } from '@/services/notificationService';
-import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail } from '@/services/email';
+import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail, sendKpiAnnouncementEmail } from '@/services/email';
 import { ActionTokenService } from '@/services/actionTokenService';
 import { ApprovalModule, ApprovalStep } from '@/generated/prisma/client';
+import { ensureKpiStatusTransition } from '@/lib/kpi-state-machine';
 import { db } from '@/lib/db';
 import { KpiRepository } from '@/repositories/kpiRepository';
 import { KpiObjectiveRepository } from '@/repositories/kpiObjectiveRepository';
@@ -13,9 +14,11 @@ import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRep
 import { UserRepository } from '@/repositories/userRepository';
 import { UserPreferenceRepository } from '@/repositories/userPreferenceRepository';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
+import { listAuthCenterAppMembers } from '@/lib/auth-center-admin-client';
 import { CreateKpiDTO, UpdateKpiDTO, CreateKpiObjectiveDTO, UpdateKpiObjectiveDTO, ListKpiQuery, SubmitKpiObjectivesDTO } from '@/types/kpi';
 import type { ActorContext } from '@/types/kpi';
 import type { Prisma, SignatureType } from '@/generated/prisma/client';
+import ExcelJS from 'exceljs';
 
 const KPI_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
@@ -94,7 +97,7 @@ export class KpiService {
     const existing = await this.kpiRepo.findByDepartmentYear(dto.department, dto.yearly);
     if (existing) throw new ConflictError(`KPI for ${dto.department} in ${dto.yearly} already exists`);
     try {
-      return await this.kpiRepo.create(dto);
+      return await this.kpiRepo.create({ ...dto, documentName: dto.documentName ?? null });
     } catch (error) {
       if ((error as { code?: string })?.code === 'P2002') {
         throw new ConflictError(`KPI for ${dto.department} in ${dto.yearly} already exists`);
@@ -105,7 +108,7 @@ export class KpiService {
 
   async updateKpi(id: string, dto: UpdateKpiDTO) {
     await this.getKpiById(id);
-    return this.kpiRepo.update(id, dto);
+    return this.kpiRepo.update(id, dto as Record<string, unknown>);
   }
 
   async deleteKpi(id: string, actor?: ActorContext) {
@@ -293,7 +296,7 @@ export class KpiService {
   async reviewObjectives(
     id: string,
     actor: ActorContext,
-    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean }
+    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean; attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null }
   ) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
@@ -315,6 +318,7 @@ export class KpiService {
         action: 'APPROVED',
         actionDate: new Date(),
         signaturePath: sigBody?.signatureDataUrl,
+        comment: sigBody?.attachments?.length ? JSON.stringify({ text: 'Review attachments', attachments: sigBody.attachments }) : null,
       }, tx);
 
       if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
@@ -393,7 +397,7 @@ export class KpiService {
   async approveObjectives(
     id: string,
     actor: ActorContext,
-    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean }
+    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean; attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null }
   ) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
@@ -421,6 +425,7 @@ export class KpiService {
         action: 'APPROVED',
         actionDate: new Date(),
         signaturePath: sigBody?.signatureDataUrl,
+        comment: sigBody?.attachments?.length ? JSON.stringify({ text: 'Approval attachments', attachments: sigBody.attachments }) : null,
       }, tx);
 
       if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
@@ -701,6 +706,322 @@ export class KpiService {
     }
 
     return { ...updated, objectives: kpi.objectives };
+  }
+
+  async qmsCheckKpi(
+    id: string,
+    actor: ActorContext,
+    sigBody?: { signatureDataUrl?: string; signatureType?: SignatureType; saveSignature?: boolean }
+  ) {
+    const kpi = await this.kpiRepo.findByIdWithRelations(id);
+    if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
+    ensureKpiStatusTransition(kpi.status, 'QMS_CHECK');
+    if (!['QMS', 'IT'].includes(actor.role)) throw new ForbiddenError('Only QMS/IT can perform QMS check');
+
+    const now = new Date();
+    return db.$transaction(async (tx) => {
+      const result = await this.kpiRepo.setStatus(id, 'QMS_CHECK', tx);
+      await this.approvalSignatureRepo.upsertStep({
+        module: 'KPI',
+        documentId: id,
+        step: 'QMS_CHECK' as ApprovalStep,
+        signerUserId: actor.userId,
+        signerAuthUserId: actor.authUserId ?? null,
+        action: 'APPROVED',
+        actionDate: now,
+        signaturePath: sigBody?.signatureDataUrl,
+      }, tx);
+
+      if (sigBody?.saveSignature && sigBody.signatureDataUrl) {
+        await this.userPrefRepo.upsertSignature(actor.userId, {
+          savedSignatureUrl: sigBody.signatureDataUrl,
+          signatureType: sigBody.signatureType ?? 'DRAW',
+        }, tx);
+      }
+
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
+        actorRole: actor.role,
+        action: 'QMS_CHECK' as Parameters<typeof AuditService.record>[0]['action'],
+        resourceType: 'KPI',
+        resourceId: id,
+        before: { status: kpi.status },
+        after: { status: result.status },
+      }, tx);
+
+      return result;
+    });
+  }
+
+  async announceKpi(
+    id: string,
+    actor: ActorContext,
+    senderAccessToken?: string | null,
+    documentName?: string | null,
+  ) {
+    const kpi = await this.kpiRepo.findByIdWithRelations(id);
+    if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
+    ensureKpiStatusTransition(kpi.status, 'ANNOUNCED');
+    if (!['QMS', 'IT'].includes(actor.role)) throw new ForbiddenError('Only QMS/IT can announce KPIs');
+
+    const now = new Date();
+    const updated = await db.$transaction(async (tx) => {
+      const result = await this.kpiRepo.update(id, {
+        status: 'ANNOUNCED',
+        publishedAt: now,
+        publishedBy: actor.userId,
+        ...(documentName ? { documentName } : {}),
+      } as Record<string, unknown>, tx);
+      return result;
+    });
+
+    await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
+
+    // Fetch all department members from Auth Center
+    let deptMembers: { id: string; email?: string | null; name?: string | null }[] = [];
+    try {
+      const kpiDept = await db.kpiDept.findFirst({ where: { name: kpi.department, isActive: true } });
+      if (kpiDept?.authDeptCode) {
+        const members = await listAuthCenterAppMembers({ accessToken: senderAccessToken ?? undefined });
+        deptMembers = members
+          .filter(m => {
+            const dept = (m as Record<string, unknown>).department as string | undefined;
+            return dept === kpiDept.authDeptCode || dept === kpi.department;
+          })
+          .map(m => ({ id: m.id, email: m.email, name: m.displayName }));
+      }
+    } catch {
+      // Fallback: notify only known users
+    }
+
+    // Generate Excel attachment for announcement email
+    let excelAttachment: { name: string; contentType: string; contentBytes: string } | null = null;
+    try {
+      excelAttachment = await this.generateAnnouncementExcel(kpi);
+    } catch {
+      // Excel generation is best-effort
+    }
+
+    // Send announcement email to all department members
+    const emailSubject = `[ประกาศ] KPI ${kpi.department} ปี ${kpi.yearly} / KPI Announcement`;
+    for (const member of deptMembers) {
+      if (!member.email) continue;
+      NotificationService.sendEmailOnce(
+        `KPI:${id}:ANNOUNCED:${member.id}`,
+        () => sendKpiAnnouncementEmail({
+          to: { name: member.name ?? '', email: member.email! },
+          departmentName: kpi.department,
+          year: kpi.yearly,
+          actorName: actor.name ?? '',
+          kpiId: id,
+          senderAccessToken,
+          attachment: excelAttachment ?? undefined,
+        }),
+        member.email,
+        emailSubject,
+        member.id,
+        {
+          title: 'KPI ประกาศใช้',
+          body: `KPI ${kpi.department} ${kpi.yearly} ประกาศใช้แล้ว`,
+          htmlBody: makeBilingualMail({
+            titleTh: `KPI ${kpi.department} ปี ${kpi.yearly} ประกาศใช้`,
+            titleEn: `KPI ${kpi.department} ${kpi.yearly} Announced`,
+            facts: [
+              { labelTh: 'หน่วยงาน', labelEn: 'Department', value: kpi.department },
+              { labelTh: 'ปี', labelEn: 'Year', value: String(kpi.yearly) },
+            ],
+          }),
+          module: 'KPI',
+          resourceId: id,
+          resourceType: 'KPI_ANNOUNCEMENT',
+        },
+      ).catch(() => {});
+    }
+
+    // Also create in-app notifications for department members
+    NotificationService.notifyDeptMembers(
+      kpi.department,
+      senderAccessToken,
+      {
+        title: `KPI ${kpi.department} ${kpi.yearly} ประกาศใช้ / Announced`,
+        body: `KPI ${kpi.department} ปี ${kpi.yearly} ประกาศใช้แล้ว`,
+        module: 'KPI',
+        resourceId: id,
+        resourceType: 'KPI_ANNOUNCEMENT',
+      },
+    ).catch(() => {});
+
+    return updated;
+  }
+
+  async copyKpiFromPreviousYear(sourceKpiId: string, targetYear: number, actor: ActorContext) {
+    const sourceKpi = await this.kpiRepo.findByIdWithRelations(sourceKpiId);
+    if (!sourceKpi) throw new NotFoundError(`Source KPI ${sourceKpiId} not found`);
+    if (sourceKpi.yearly >= targetYear) throw new ConflictError('Target year must be after source year');
+
+    const existing = await this.kpiRepo.findByDepartmentYear(sourceKpi.department, targetYear);
+    if (existing) throw new ConflictError(`KPI for ${sourceKpi.department} in ${targetYear} already exists`);
+
+    return db.$transaction(async (tx) => {
+      const newKpi = await this.kpiRepo.create({
+        yearly: targetYear,
+        department: sourceKpi.department,
+        prepare: sourceKpi.prepare,
+        reviewer: sourceKpi.reviewer,
+        approver: sourceKpi.approver,
+        documentName: sourceKpi.documentName ?? undefined,
+      }, tx);
+
+      for (const obj of sourceKpi.objectives) {
+        await this.objectiveRepo.createObjective({
+          kpiId: newKpi.id,
+          target: obj.target,
+          unit: obj.unit ?? undefined,
+          objective: obj.objective,
+          frequency: obj.frequency,
+          calculationFormula: obj.calculationFormula,
+          actionPlanGuidelines: obj.actionPlanGuidelines,
+          referenceDocuments: obj.referenceDocuments ?? undefined,
+          isRevised: false,
+        }, tx);
+      }
+
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
+        actorRole: actor.role,
+        action: 'COPY' as Parameters<typeof AuditService.record>[0]['action'],
+        resourceType: 'KPI',
+        resourceId: newKpi.id,
+        metadata: { sourceKpiId, sourceYear: sourceKpi.yearly, targetYear },
+      }, tx);
+
+      return this.kpiRepo.findByIdWithRelations(newKpi.id, tx);
+    });
+  }
+
+  async reviseKpi(
+    id: string,
+    actor: ActorContext,
+    reason: string,
+    objectiveIds?: string[],
+  ) {
+    const kpi = await this.kpiRepo.findByIdWithRelations(id);
+    if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
+    if (kpi.status !== 'APPROVED' && kpi.status !== 'ANNOUNCED') {
+      throw new ConflictError('Only APPROVED or ANNOUNCED KPIs can be revised');
+    }
+    if (!['QMS', 'MR', 'IT'].includes(actor.role)) throw new ForbiddenError('Only QMS/MR/IT can revise KPIs');
+
+    const revisionMonth = new Date().getMonth();
+    const remainingMonthIdx = revisionMonth + 1;
+
+    return db.$transaction(async (tx) => {
+      // Reset KPI status to DRAFT and mark as revision
+      const result = await this.kpiRepo.update(id, {
+        status: 'DRAFT',
+        isRevision: true,
+        revisionYear: kpi.yearly,
+        publishedAt: null,
+        publishedBy: null,
+      } as Record<string, unknown>, tx);
+
+      // Mark specified objectives (or all) as revised
+      const targetObjIds = (objectiveIds && objectiveIds.length > 0) ? objectiveIds : kpi.objectives.map(o => o.id);
+      for (const objId of targetObjIds) {
+        await this.objectiveRepo.update(objId, { isRevised: true } as Record<string, unknown>, tx);
+      }
+
+      // Delete monthly reports from the revision month onward, regenerate remaining
+      await this.monthlyReportRepo.deleteByKpiIdFromMonth(id, KPI_MONTHS[remainingMonthIdx] ?? 'Oct', tx);
+
+      // Regenerate remaining months
+      const remainingMonths = KPI_MONTHS.slice(remainingMonthIdx);
+      if (remainingMonths.length > 0) {
+        await this.generateMonthlyReportsForApprovedKpi({
+          kpiId: kpi.id,
+          year: kpi.yearly,
+          objectiveIds: kpi.objectives.map(o => o.id),
+        }, tx);
+      }
+
+      await this.approvalSignatureRepo.deleteByDocument('KPI', id, tx);
+      await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
+
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
+        actorRole: actor.role,
+        action: 'REVISE' as Parameters<typeof AuditService.record>[0]['action'],
+        resourceType: 'KPI',
+        resourceId: id,
+        before: { status: kpi.status },
+        after: { status: 'DRAFT', reason },
+        metadata: { revisedObjectives: targetObjIds.length },
+      }, tx);
+
+      return result;
+    });
+  }
+
+  private async generateAnnouncementExcel(kpi: Awaited<ReturnType<KpiRepository['findByIdWithRelations']>>) {
+    if (!kpi) return null;
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'QMS System';
+    const ws = wb.addWorksheet('KPI Objectives');
+
+    const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F1059' } };
+    const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+    const border: Partial<ExcelJS.Border> = { style: 'thin', color: { argb: 'FFCCCCCC' } };
+    const allBorders: Partial<ExcelJS.Borders> = { top: border, left: border, bottom: border, right: border };
+
+    ws.columns = [
+      { header: 'No.', key: 'no', width: 6 },
+      { header: 'Objective', key: 'objective', width: 50 },
+      { header: 'Target', key: 'target', width: 12 },
+      { header: 'Unit', key: 'unit', width: 12 },
+      { header: 'Frequency', key: 'frequency', width: 14 },
+      { header: 'Formula', key: 'formula', width: 40 },
+      { header: 'Guidelines', key: 'guidelines', width: 50 },
+    ];
+
+    ws.getRow(1).eachCell((cell) => {
+      cell.fill = headerFill;
+      cell.font = headerFont;
+      cell.border = allBorders;
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+    ws.getRow(1).height = 22;
+
+    // Info row
+    const infoRow = ws.addRow({ no: '', objective: `Department: ${kpi.department} | Year: ${kpi.yearly}`, target: '', unit: '', frequency: '', formula: '', guidelines: '' });
+    infoRow.eachCell((cell) => { cell.font = { bold: true, size: 11 }; });
+
+    for (let i = 0; i < kpi.objectives.length; i++) {
+      const obj = kpi.objectives[i];
+      const row = ws.addRow({
+        no: i + 1,
+        objective: obj.objective,
+        target: obj.target,
+        unit: obj.unit ?? '',
+        frequency: obj.frequency,
+        formula: obj.calculationFormula,
+        guidelines: obj.actionPlanGuidelines,
+      });
+      row.eachCell((cell) => {
+        cell.border = allBorders;
+        cell.alignment = { vertical: 'top', wrapText: false };
+      });
+    }
+
+    const buffer = await wb.xlsx.writeBuffer();
+    return {
+      name: `KPI_${kpi.department}_${kpi.yearly}.xlsx`,
+      contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      contentBytes: Buffer.from(buffer).toString('base64'),
+    };
   }
 
   async getMonthlySummary(year: number) {

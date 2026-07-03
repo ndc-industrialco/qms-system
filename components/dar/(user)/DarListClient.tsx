@@ -7,6 +7,7 @@ import type { DarSummary } from "@/types/dar";
 import { OBJECTIVE_LABELS, DOC_TYPE_LABELS, DAR_STATUS_LABELS } from "@/types/dar";
 import type { DarStatus, DarObjective, DarDocType } from "@/types/dar";
 import DarListHeader from "@/components/dar/DarListHeader";
+import DarExportPreviewModal from "../DarExportPreviewModal";
 import DarTable from "@/components/dar/DarTable";
 import DarCardList from "@/components/dar/DarCardList";
 import DarModal from "@/components/dar/DarModal";
@@ -85,6 +86,7 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
   }, []);
   const [sortKey, setSortKey] = useState<SortKey>("requestDate");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [exportPreviewOpen, setExportPreviewOpen] = useState(false);
 
   const t = useT();
   const locale = useLocale();
@@ -92,7 +94,7 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
 
   // ── URL-bound filters (search debounced, others immediate) ─────────────────
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
-    keys: ["search", "status", "objective", "page"] as const,
+    keys: ["search", "status", "objective", "page", "year", "month", "from", "to"] as const,
     searchKey: "search",
     debounceMs: 300,
   });
@@ -116,6 +118,33 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
       .filter((d: DarSummary) => {
         if (params.status && d.status !== (params.status as DarStatus)) return false;
         if (params.objective && d.objective !== (params.objective as DarObjective)) return false;
+
+        // Year filter
+        if (params.year) {
+          const dYear = new Date(d.requestDate).getFullYear();
+          if (dYear !== parseInt(params.year, 10)) return false;
+        }
+
+        // Month filter
+        if (params.month) {
+          const dMonth = new Date(d.requestDate).getMonth() + 1;
+          if (dMonth !== parseInt(params.month, 10)) return false;
+        }
+
+        // Start Date filter
+        if (params.from) {
+          const fromDate = new Date(params.from);
+          fromDate.setHours(0, 0, 0, 0);
+          if (new Date(d.requestDate) < fromDate) return false;
+        }
+
+        // End Date filter
+        if (params.to) {
+          const toDate = new Date(params.to);
+          toDate.setHours(23, 59, 59, 999);
+          if (new Date(d.requestDate) > toDate) return false;
+        }
+
         if (q) {
           const haystack = [
             d.darNo ?? "",
@@ -135,7 +164,7 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
         return sortDir === "asc" ? cmp : -cmp;
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dars, params.search, params.status, params.objective, sortKey, sortDir, isTh]);
+  }, [dars, params.search, params.status, params.objective, params.year, params.month, params.from, params.to, sortKey, sortDir, isTh]);
 
   const isAllEmpty = dars.length === 0;
   const isFilteredEmpty = !isAllEmpty && filtered.length === 0;
@@ -161,9 +190,49 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
     label: objectiveLabel(k),
   }));
 
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const y = currentYear - i;
+    return { value: String(y), label: isTh ? String(y + 543) : String(y) };
+  });
+
+  const monthOptions = [
+    { value: "1", label: isTh ? "มกราคม" : "January" },
+    { value: "2", label: isTh ? "กุมภาพันธ์" : "February" },
+    { value: "3", label: isTh ? "มีนาคม" : "March" },
+    { value: "4", label: isTh ? "เมษายน" : "April" },
+    { value: "5", label: isTh ? "พฤษภาคม" : "May" },
+    { value: "6", label: isTh ? "มิถุนายน" : "June" },
+    { value: "7", label: isTh ? "กรกฎาคม" : "July" },
+    { value: "8", label: isTh ? "สิงหาคม" : "August" },
+    { value: "9", label: isTh ? "กันยายน" : "September" },
+    { value: "10", label: isTh ? "ตุลาคม" : "October" },
+    { value: "11", label: isTh ? "พฤศจิกายน" : "November" },
+    { value: "12", label: isTh ? "ธันวาคม" : "December" },
+  ];
+
+  function handleExport() {
+    const q = new URLSearchParams();
+    if (params.status) q.set("status", params.status);
+    if (params.objective) q.set("objective", params.objective);
+    if (params.search) q.set("search", params.search);
+
+    const currentParams = new URLSearchParams(window.location.search);
+    for (const key of ["department", "user", "userId", "year", "month", "from", "to"]) {
+      const val = currentParams.get(key);
+      if (val) q.set(key, val);
+    }
+
+    window.location.href = `/api/dar/export?${q.toString()}`;
+    setExportPreviewOpen(false);
+  }
+
   return (
     <>
-      <DarListHeader onNewRequest={() => setModalOpen(true)} />
+      <DarListHeader 
+        onNewRequest={() => setModalOpen(true)} 
+        onExport={() => setExportPreviewOpen(true)} 
+      />
 
       {!isAllEmpty && (
         <FilterBar
@@ -184,8 +253,27 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
               allLabel: isTh ? "ทุกวัตถุประสงค์" : "All Objectives",
               minWidth: "12rem",
             },
+            {
+              key: "year",
+              label: isTh ? "ปี" : "Year",
+              options: yearOptions,
+              allLabel: isTh ? "ทุกปี" : "All Years",
+              minWidth: "6rem",
+            },
+            {
+              key: "month",
+              label: isTh ? "เดือน" : "Month",
+              options: monthOptions,
+              allLabel: isTh ? "ทุกเดือน" : "All Months",
+              minWidth: "8rem",
+            },
           ]}
-          filterValues={{ status: params.status, objective: params.objective }}
+          filterValues={{
+            status: params.status,
+            objective: params.objective,
+            year: params.year,
+            month: params.month,
+          }}
           onFilterChange={setParam}
           hasActiveFilters={hasFilters}
           onClearAll={clearAll}
@@ -193,7 +281,28 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
           resultCount={filtered.length}
           totalCount={dars.length}
           countLabel={isTh ? "รายการ" : "items"}
-        />
+        >
+          <div className="flex items-center gap-2 flex-wrap self-end">
+            <div className="flex flex-col">
+              <span className="text-[11px] text-[#0F1059] font-bold mb-1">{isTh ? "วันที่เริ่มต้น" : "Start Date"}</span>
+              <input
+                type="date"
+                className="h-8 px-2 border border-slate-200 rounded-lg text-[13px] outline-none bg-white text-slate-700 shadow-sm focus:border-[#0F1059] transition-all"
+                value={params.from || ""}
+                onChange={(e) => setParam("from", e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[11px] text-[#0F1059] font-bold mb-1">{isTh ? "วันที่สิ้นสุด" : "End Date"}</span>
+              <input
+                type="date"
+                className="h-8 px-2 border border-slate-200 rounded-lg text-[13px] outline-none bg-white text-slate-700 shadow-sm focus:border-[#0F1059] transition-all"
+                value={params.to || ""}
+                onChange={(e) => setParam("to", e.target.value)}
+              />
+            </div>
+          </div>
+        </FilterBar>
       )}
 
       {isAllEmpty ? (
@@ -238,6 +347,14 @@ export default function DarListClient({ dars: initialDars, requesterInfo }: Prop
       <DarEditModal
         darId={editDarId}
         onClose={() => setEditDarId(null)}
+      />
+
+      <DarExportPreviewModal
+        isOpen={exportPreviewOpen}
+        onClose={() => setExportPreviewOpen(false)}
+        items={filtered}
+        onDownload={handleExport}
+        isTh={isTh}
       />
     </>
   );

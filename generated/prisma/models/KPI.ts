@@ -28,10 +28,12 @@ export type AggregateKPI = {
 
 export type KPIAvgAggregateOutputType = {
   yearly: number | null
+  revisionYear: number | null
 }
 
 export type KPISumAggregateOutputType = {
   yearly: number | null
+  revisionYear: number | null
 }
 
 export type KPIMinAggregateOutputType = {
@@ -50,6 +52,11 @@ export type KPIMinAggregateOutputType = {
   approverAuthUserId: string | null
   approverEmail: string | null
   submittedAt: Date | null
+  documentName: string | null
+  publishedAt: Date | null
+  publishedBy: string | null
+  isRevision: boolean | null
+  revisionYear: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -70,6 +77,11 @@ export type KPIMaxAggregateOutputType = {
   approverAuthUserId: string | null
   approverEmail: string | null
   submittedAt: Date | null
+  documentName: string | null
+  publishedAt: Date | null
+  publishedBy: string | null
+  isRevision: boolean | null
+  revisionYear: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -90,6 +102,11 @@ export type KPICountAggregateOutputType = {
   approverAuthUserId: number
   approverEmail: number
   submittedAt: number
+  documentName: number
+  publishedAt: number
+  publishedBy: number
+  isRevision: number
+  revisionYear: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -98,10 +115,12 @@ export type KPICountAggregateOutputType = {
 
 export type KPIAvgAggregateInputType = {
   yearly?: true
+  revisionYear?: true
 }
 
 export type KPISumAggregateInputType = {
   yearly?: true
+  revisionYear?: true
 }
 
 export type KPIMinAggregateInputType = {
@@ -120,6 +139,11 @@ export type KPIMinAggregateInputType = {
   approverAuthUserId?: true
   approverEmail?: true
   submittedAt?: true
+  documentName?: true
+  publishedAt?: true
+  publishedBy?: true
+  isRevision?: true
+  revisionYear?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -140,6 +164,11 @@ export type KPIMaxAggregateInputType = {
   approverAuthUserId?: true
   approverEmail?: true
   submittedAt?: true
+  documentName?: true
+  publishedAt?: true
+  publishedBy?: true
+  isRevision?: true
+  revisionYear?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -160,6 +189,11 @@ export type KPICountAggregateInputType = {
   approverAuthUserId?: true
   approverEmail?: true
   submittedAt?: true
+  documentName?: true
+  publishedAt?: true
+  publishedBy?: true
+  isRevision?: true
+  revisionYear?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -267,6 +301,11 @@ export type KPIGroupByOutputType = {
   approverAuthUserId: string | null
   approverEmail: string | null
   submittedAt: Date | null
+  documentName: string | null
+  publishedAt: Date | null
+  publishedBy: string | null
+  isRevision: boolean
+  revisionYear: number | null
   createdAt: Date
   updatedAt: Date
   _count: KPICountAggregateOutputType | null
@@ -310,6 +349,11 @@ export type KPIWhereInput = {
   approverAuthUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
   approverEmail?: Prisma.StringNullableFilter<"KPI"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"KPI"> | Date | string | null
+  documentName?: Prisma.StringNullableFilter<"KPI"> | string | null
+  publishedAt?: Prisma.DateTimeNullableFilter<"KPI"> | Date | string | null
+  publishedBy?: Prisma.StringNullableFilter<"KPI"> | string | null
+  isRevision?: Prisma.BoolFilter<"KPI"> | boolean
+  revisionYear?: Prisma.IntNullableFilter<"KPI"> | number | null
   createdAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
   objectives?: Prisma.KPIObjectiveListRelationFilter
@@ -332,6 +376,11 @@ export type KPIOrderByWithRelationInput = {
   approverAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   approverEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  documentName?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  isRevision?: Prisma.SortOrder
+  revisionYear?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   objectives?: Prisma.KPIObjectiveOrderByRelationAggregateInput
@@ -358,6 +407,11 @@ export type KPIWhereUniqueInput = Prisma.AtLeast<{
   approverAuthUserId?: Prisma.StringNullableFilter<"KPI"> | string | null
   approverEmail?: Prisma.StringNullableFilter<"KPI"> | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"KPI"> | Date | string | null
+  documentName?: Prisma.StringNullableFilter<"KPI"> | string | null
+  publishedAt?: Prisma.DateTimeNullableFilter<"KPI"> | Date | string | null
+  publishedBy?: Prisma.StringNullableFilter<"KPI"> | string | null
+  isRevision?: Prisma.BoolFilter<"KPI"> | boolean
+  revisionYear?: Prisma.IntNullableFilter<"KPI"> | number | null
   createdAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPI"> | Date | string
   objectives?: Prisma.KPIObjectiveListRelationFilter
@@ -380,6 +434,11 @@ export type KPIOrderByWithAggregationInput = {
   approverAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   approverEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  documentName?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  isRevision?: Prisma.SortOrder
+  revisionYear?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.KPICountOrderByAggregateInput
@@ -408,6 +467,11 @@ export type KPIScalarWhereWithAggregatesInput = {
   approverAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
   approverEmail?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
   submittedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"KPI"> | Date | string | null
+  documentName?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
+  publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"KPI"> | Date | string | null
+  publishedBy?: Prisma.StringNullableWithAggregatesFilter<"KPI"> | string | null
+  isRevision?: Prisma.BoolWithAggregatesFilter<"KPI"> | boolean
+  revisionYear?: Prisma.IntNullableWithAggregatesFilter<"KPI"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"KPI"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"KPI"> | Date | string
 }
@@ -428,6 +492,11 @@ export type KPICreateInput = {
   approverAuthUserId?: string | null
   approverEmail?: string | null
   submittedAt?: Date | string | null
+  documentName?: string | null
+  publishedAt?: Date | string | null
+  publishedBy?: string | null
+  isRevision?: boolean
+  revisionYear?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   objectives?: Prisma.KPIObjectiveCreateNestedManyWithoutKpiInput
@@ -450,6 +519,11 @@ export type KPIUncheckedCreateInput = {
   approverAuthUserId?: string | null
   approverEmail?: string | null
   submittedAt?: Date | string | null
+  documentName?: string | null
+  publishedAt?: Date | string | null
+  publishedBy?: string | null
+  isRevision?: boolean
+  revisionYear?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   objectives?: Prisma.KPIObjectiveUncheckedCreateNestedManyWithoutKpiInput
@@ -472,6 +546,11 @@ export type KPIUpdateInput = {
   approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevision?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  revisionYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   objectives?: Prisma.KPIObjectiveUpdateManyWithoutKpiNestedInput
@@ -494,6 +573,11 @@ export type KPIUncheckedUpdateInput = {
   approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevision?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  revisionYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   objectives?: Prisma.KPIObjectiveUncheckedUpdateManyWithoutKpiNestedInput
@@ -516,6 +600,11 @@ export type KPICreateManyInput = {
   approverAuthUserId?: string | null
   approverEmail?: string | null
   submittedAt?: Date | string | null
+  documentName?: string | null
+  publishedAt?: Date | string | null
+  publishedBy?: string | null
+  isRevision?: boolean
+  revisionYear?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -536,6 +625,11 @@ export type KPIUpdateManyMutationInput = {
   approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevision?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  revisionYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -556,6 +650,11 @@ export type KPIUncheckedUpdateManyInput = {
   approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevision?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  revisionYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -581,12 +680,18 @@ export type KPICountOrderByAggregateInput = {
   approverAuthUserId?: Prisma.SortOrder
   approverEmail?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
+  documentName?: Prisma.SortOrder
+  publishedAt?: Prisma.SortOrder
+  publishedBy?: Prisma.SortOrder
+  isRevision?: Prisma.SortOrder
+  revisionYear?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type KPIAvgOrderByAggregateInput = {
   yearly?: Prisma.SortOrder
+  revisionYear?: Prisma.SortOrder
 }
 
 export type KPIMaxOrderByAggregateInput = {
@@ -605,6 +710,11 @@ export type KPIMaxOrderByAggregateInput = {
   approverAuthUserId?: Prisma.SortOrder
   approverEmail?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
+  documentName?: Prisma.SortOrder
+  publishedAt?: Prisma.SortOrder
+  publishedBy?: Prisma.SortOrder
+  isRevision?: Prisma.SortOrder
+  revisionYear?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -625,12 +735,18 @@ export type KPIMinOrderByAggregateInput = {
   approverAuthUserId?: Prisma.SortOrder
   approverEmail?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
+  documentName?: Prisma.SortOrder
+  publishedAt?: Prisma.SortOrder
+  publishedBy?: Prisma.SortOrder
+  isRevision?: Prisma.SortOrder
+  revisionYear?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type KPISumOrderByAggregateInput = {
   yearly?: Prisma.SortOrder
+  revisionYear?: Prisma.SortOrder
 }
 
 export type KPIScalarRelationFilter = {
@@ -640,6 +756,14 @@ export type KPIScalarRelationFilter = {
 
 export type EnumKpiObjectiveStatusFieldUpdateOperationsInput = {
   set?: $Enums.KpiObjectiveStatus
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type KPICreateNestedOneWithoutObjectivesInput = {
@@ -686,6 +810,11 @@ export type KPICreateWithoutObjectivesInput = {
   approverAuthUserId?: string | null
   approverEmail?: string | null
   submittedAt?: Date | string | null
+  documentName?: string | null
+  publishedAt?: Date | string | null
+  publishedBy?: string | null
+  isRevision?: boolean
+  revisionYear?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   monthlyReports?: Prisma.KPIMonthlyReportCreateNestedManyWithoutKpiInput
@@ -707,6 +836,11 @@ export type KPIUncheckedCreateWithoutObjectivesInput = {
   approverAuthUserId?: string | null
   approverEmail?: string | null
   submittedAt?: Date | string | null
+  documentName?: string | null
+  publishedAt?: Date | string | null
+  publishedBy?: string | null
+  isRevision?: boolean
+  revisionYear?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   monthlyReports?: Prisma.KPIMonthlyReportUncheckedCreateNestedManyWithoutKpiInput
@@ -744,6 +878,11 @@ export type KPIUpdateWithoutObjectivesInput = {
   approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevision?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  revisionYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monthlyReports?: Prisma.KPIMonthlyReportUpdateManyWithoutKpiNestedInput
@@ -765,6 +904,11 @@ export type KPIUncheckedUpdateWithoutObjectivesInput = {
   approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevision?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  revisionYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monthlyReports?: Prisma.KPIMonthlyReportUncheckedUpdateManyWithoutKpiNestedInput
@@ -786,6 +930,11 @@ export type KPICreateWithoutMonthlyReportsInput = {
   approverAuthUserId?: string | null
   approverEmail?: string | null
   submittedAt?: Date | string | null
+  documentName?: string | null
+  publishedAt?: Date | string | null
+  publishedBy?: string | null
+  isRevision?: boolean
+  revisionYear?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   objectives?: Prisma.KPIObjectiveCreateNestedManyWithoutKpiInput
@@ -807,6 +956,11 @@ export type KPIUncheckedCreateWithoutMonthlyReportsInput = {
   approverAuthUserId?: string | null
   approverEmail?: string | null
   submittedAt?: Date | string | null
+  documentName?: string | null
+  publishedAt?: Date | string | null
+  publishedBy?: string | null
+  isRevision?: boolean
+  revisionYear?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   objectives?: Prisma.KPIObjectiveUncheckedCreateNestedManyWithoutKpiInput
@@ -844,6 +998,11 @@ export type KPIUpdateWithoutMonthlyReportsInput = {
   approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevision?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  revisionYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   objectives?: Prisma.KPIObjectiveUpdateManyWithoutKpiNestedInput
@@ -865,6 +1024,11 @@ export type KPIUncheckedUpdateWithoutMonthlyReportsInput = {
   approverAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approverEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  documentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isRevision?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  revisionYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   objectives?: Prisma.KPIObjectiveUncheckedUpdateManyWithoutKpiNestedInput
@@ -926,6 +1090,11 @@ export type KPISelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   approverAuthUserId?: boolean
   approverEmail?: boolean
   submittedAt?: boolean
+  documentName?: boolean
+  publishedAt?: boolean
+  publishedBy?: boolean
+  isRevision?: boolean
+  revisionYear?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   objectives?: boolean | Prisma.KPI$objectivesArgs<ExtArgs>
@@ -949,6 +1118,11 @@ export type KPISelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   approverAuthUserId?: boolean
   approverEmail?: boolean
   submittedAt?: boolean
+  documentName?: boolean
+  publishedAt?: boolean
+  publishedBy?: boolean
+  isRevision?: boolean
+  revisionYear?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["kPI"]>
@@ -969,6 +1143,11 @@ export type KPISelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   approverAuthUserId?: boolean
   approverEmail?: boolean
   submittedAt?: boolean
+  documentName?: boolean
+  publishedAt?: boolean
+  publishedBy?: boolean
+  isRevision?: boolean
+  revisionYear?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["kPI"]>
@@ -989,11 +1168,16 @@ export type KPISelectScalar = {
   approverAuthUserId?: boolean
   approverEmail?: boolean
   submittedAt?: boolean
+  documentName?: boolean
+  publishedAt?: boolean
+  publishedBy?: boolean
+  isRevision?: boolean
+  revisionYear?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type KPIOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "yearly" | "department" | "prepare" | "reviewer" | "approver" | "status" | "prepareSignature" | "reviewerUserId" | "reviewerAuthUserId" | "reviewerEmail" | "approverUserId" | "approverAuthUserId" | "approverEmail" | "submittedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["kPI"]>
+export type KPIOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "yearly" | "department" | "prepare" | "reviewer" | "approver" | "status" | "prepareSignature" | "reviewerUserId" | "reviewerAuthUserId" | "reviewerEmail" | "approverUserId" | "approverAuthUserId" | "approverEmail" | "submittedAt" | "documentName" | "publishedAt" | "publishedBy" | "isRevision" | "revisionYear" | "createdAt" | "updatedAt", ExtArgs["result"]["kPI"]>
 export type KPIInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   objectives?: boolean | Prisma.KPI$objectivesArgs<ExtArgs>
   monthlyReports?: boolean | Prisma.KPI$monthlyReportsArgs<ExtArgs>
@@ -1024,6 +1208,11 @@ export type $KPIPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     approverAuthUserId: string | null
     approverEmail: string | null
     submittedAt: Date | null
+    documentName: string | null
+    publishedAt: Date | null
+    publishedBy: string | null
+    isRevision: boolean
+    revisionYear: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["kPI"]>
@@ -1466,6 +1655,11 @@ export interface KPIFieldRefs {
   readonly approverAuthUserId: Prisma.FieldRef<"KPI", 'String'>
   readonly approverEmail: Prisma.FieldRef<"KPI", 'String'>
   readonly submittedAt: Prisma.FieldRef<"KPI", 'DateTime'>
+  readonly documentName: Prisma.FieldRef<"KPI", 'String'>
+  readonly publishedAt: Prisma.FieldRef<"KPI", 'DateTime'>
+  readonly publishedBy: Prisma.FieldRef<"KPI", 'String'>
+  readonly isRevision: Prisma.FieldRef<"KPI", 'Boolean'>
+  readonly revisionYear: Prisma.FieldRef<"KPI", 'Int'>
   readonly createdAt: Prisma.FieldRef<"KPI", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"KPI", 'DateTime'>
 }

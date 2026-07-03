@@ -4,6 +4,8 @@
  */
 
 import { logger } from "@/lib/logger";
+import ExcelJS from "exceljs";
+import { QmsConfigService } from "@/services/qmsConfigService";
 
 export interface MailAttachment {
   name: string;
@@ -637,12 +639,92 @@ export async function sendAppointmentPublishedEmail(opts: {
 }): Promise<void> {
   if (!opts.recipients.length && !opts.cc?.length) return;
   const yearEn = opts.year - 543;
+
+  const qmsConfigService = new QmsConfigService();
+  const naming = await qmsConfigService.getExportNamingMeta("AUDITOR", {
+    label: "Auditor List",
+    fileBaseName: "auditor-export",
+    worksheetName: "Auditors",
+  });
+
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "QMS System";
+  wb.created = new Date();
+  wb.title = naming.label;
+
+  const ws = wb.addWorksheet(naming.worksheetName);
+
+  const headerFill: ExcelJS.Fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F1059" } };
+  const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
+  const border: Partial<ExcelJS.Border> = { style: "thin", color: { argb: "FFCCCCCC" } };
+  const allBorders: Partial<ExcelJS.Borders> = { top: border, left: border, bottom: border, right: border };
+
+  ws.columns = [
+    { header: "Appointment No.",    key: "apptNo",      width: 22 },
+    { header: "Year",               key: "year",        width: 8  },
+    { header: "Auditor Name",       key: "auditorName", width: 28 },
+    { header: "Department",         key: "department",  width: 26 },
+    { header: "Role",               key: "role",        width: 16 },
+    { header: "Standards",          key: "standards",   width: 28 },
+    { header: "Reviewer",           key: "reviewer",    width: 24 },
+    { header: "Approver",           key: "approver",    width: 24 },
+    { header: "Published At",       key: "publishedAt", width: 18 },
+    { header: "Created At",         key: "createdAt",   width: 18 },
+  ];
+
+  ws.getRow(1).eachCell((cell) => {
+    cell.fill = headerFill;
+    cell.font = headerFont;
+    cell.border = allBorders;
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+  });
+  ws.getRow(1).height = 22;
+
+  const fmt = (d: Date | null | undefined) =>
+    d ? d.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" }) : "";
+
+  const now = new Date();
+
+  for (const m of opts.members) {
+    const roleStr = Array.isArray(m.role) ? (m.role as string[]).join(", ") : String(m.role || "");
+    const standardsStr = Array.isArray(m.standards) ? (m.standards as string[]).join(", ") : String(m.standards || "");
+
+    const added = ws.addRow({
+      apptNo:      opts.appointmentNo,
+      year:        opts.year,
+      auditorName: m.name,
+      department:  m.department ?? "",
+      role:        roleStr,
+      standards:   standardsStr,
+      reviewer:    opts.reviewerName ?? "",
+      approver:    opts.approverName ?? "",
+      publishedAt: fmt(now),
+      createdAt:   fmt(now),
+    });
+    added.eachCell((cell) => {
+      cell.border = allBorders;
+      cell.alignment = { vertical: "top", wrapText: false };
+    });
+  }
+
+  ws.autoFilter = { from: "A1", to: "J1" };
+  ws.views = [{ state: "frozen", ySplit: 1 }];
+
+  const buf = Buffer.from(await wb.xlsx.writeBuffer());
+
+  const attachment: MailAttachment = {
+    name: `${naming.fileBaseName}-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    contentBytes: buf.toString("base64"),
+  };
+
   await sendMail({
     to: opts.recipients,
     cc: opts.cc?.length ? opts.cc : undefined,
     senderAccessToken: opts.senderAccessToken,
     subject: `[QMS] Appointment Letter Published — ${opts.appointmentNo} (Year ${yearEn})`,
     bodyHtml: buildAppointmentPublishedHtml(opts),
+    attachments: [attachment],
   });
 }
 

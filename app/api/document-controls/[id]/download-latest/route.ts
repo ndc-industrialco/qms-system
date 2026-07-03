@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { DocumentControlService } from '@/services/documentControlService';
@@ -22,8 +21,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       throw new ValidationError('เอกสารนี้ถูกยกเลิกหรือยังไม่เปิดใช้งาน ไม่สามารถดาวน์โหลดได้');
     }
 
-    // Find latest ACTIVE revision; fall back to the most-recent revision
-    const latestRevision = (doc.revisions ?? []).find((r: any) => r.status === 'ACTIVE')
+    const latestRevision = (doc.revisions ?? []).find((revision) => revision.status === 'ACTIVE')
       ?? doc.revisions?.[0];
 
     if (!latestRevision) {
@@ -43,9 +41,8 @@ export async function GET(req: NextRequest, { params }: Params) {
 
     // Prefer a fresh @microsoft.graph.downloadUrl fetched on-demand so that
     // the link never expires (Graph pre-signed URLs are only valid for ~1 hour).
-    const revision = latestRevision as typeof latestRevision & { spItemId?: string | null };
-    if (revision.spItemId) {
-      const info = await getFileInfo(revision.spItemId);
+    if (latestRevision.spItemId) {
+      const info = await getFileInfo(latestRevision.spItemId);
       if (info.downloadUrl) {
         return NextResponse.redirect(info.downloadUrl);
       }

@@ -14,18 +14,32 @@ import {
   buildDocControlCategoryFolderPath,
   buildDocControlDocumentFolderPath,
 } from '@/services/sharepoint';
+import { buildLikePrefix, getDocNoFormat, renderDocNo } from '@/lib/docNoConfig';
 import type { CreateDocumentControlInput, UpdateDocumentControlInput } from '@/types/documentControl';
 import { DocControlStatus, Prisma } from '@/generated/prisma/client';
+import { DepartmentCodeRepository } from '@/repositories/departmentCodeRepository';
 import { UserRepository } from '@/repositories/userRepository';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
 
 export class DocumentControlService {
   private repo = new DocumentControlRepository();
   private categoryRepo = new DocumentCategoryRepository();
+  private deptCodeRepo = new DepartmentCodeRepository();
   private userRepo = new UserRepository();
 
   private async findDept(id: string) {
     return db.docControlDept.findUnique({ where: { id } });
+  }
+
+  private async resolveDocControlDeptCode(dept: NonNullable<Awaited<ReturnType<DocumentControlService['findDept']>>>) {
+    if (dept.authDeptCode) {
+      const mapped = await this.deptCodeRepo.findByAuthDeptId(dept.authDeptCode);
+      if (mapped?.code?.trim()) {
+        return mapped.code.trim();
+      }
+    }
+
+    return dept.authDeptCode?.trim() || dept.name.trim();
   }
 
   async previewNextDocNumber(categoryId: string, departmentId: string): Promise<string> {
@@ -36,30 +50,33 @@ export class DocumentControlService {
     if (!dept || !category) throw new ValidationError('Department or category not found');
 
     const categoryCode = category.name;
-    const deptCode = dept.authDeptCode || dept.name;
-    const prefix = `${categoryCode}-${deptCode}-`;
-
-    const existing = await db.documentControl.findMany({
-      where: {
-        categoryId,
-        departmentId,
-        docNumber: { startsWith: prefix },
-      },
-      select: { docNumber: true },
+    const deptCode = await this.resolveDocControlDeptCode(dept);
+    const year = new Date().getFullYear();
+    const format = await getDocNoFormat('DOC_CONTROL');
+    const { likePrefix } = buildLikePrefix(format, {
+      prefix: categoryCode,
+      dept: deptCode,
+      year,
     });
 
-    let maxSeq = 0;
-    for (const doc of existing) {
-      const suffix = doc.docNumber.slice(prefix.length);
-      const seq = parseInt(suffix, 10);
-      if (!isNaN(seq) && seq > maxSeq) {
-        maxSeq = seq;
-      }
-    }
+    const escPrefix = likePrefix.replace(/[$()*+.[\\\]^{|}?]/g, '\\$&');
+    const regexPattern = `^${escPrefix}[0-9]+$`;
+    const startPos = likePrefix.length + 1;
 
-    const nextSeq = maxSeq + 1;
-    const runningNo = String(nextSeq).padStart(3, '0');
-    return `${prefix}${runningNo}`;
+    const rows = await db.$queryRaw<{ next_seq: number }[]>`
+      SELECT COALESCE(MAX(
+        CASE WHEN "docNumber" ~ ${regexPattern}
+          THEN CAST(SUBSTR("docNumber", ${startPos}) AS INTEGER)
+          ELSE 0 END
+      ), 0) + 1 AS next_seq
+      FROM "DocumentControl"
+      WHERE "categoryId" = ${categoryId}
+        AND "departmentId" = ${departmentId}
+        AND "docNumber" LIKE ${`${likePrefix}%`}
+    `;
+
+    const nextSeq = rows[0]?.next_seq ?? 1;
+    return renderDocNo(format, { prefix: categoryCode, dept: deptCode, year, seq: nextSeq });
   }
 
   private async getIdentitySnapshot(authUserId: string) {
@@ -125,8 +142,8 @@ export class DocumentControlService {
     const doc = await this.repo.create({
       docNumber: data.docNumber,
       docName: data.docName,
-      description: data.description ?? null,
-      status: (data.status || 'DRAFT') as DocControlStatus,
+      description: data.description,
+      status: (data.status || 'ACTIVE') as DocControlStatus,
       departmentId: data.departmentId,
       authDepartmentId: dept.authDeptCode ?? dept.name,
       departmentName: dept.name,
@@ -256,6 +273,19 @@ export class DocumentControlService {
     const deptName = doc.departmentName ?? 'Unknown';
     const categoryName = doc.category?.name ?? 'Uncategorized';
     const creator = await this.getIdentitySnapshot(userId);
+
+    if (data.darMasterId) {
+      const dar = await db.darMaster.findUnique({
+        where: { id: data.darMasterId },
+        select: { id: true, status: true },
+      });
+      if (!dar) {
+        throw new ValidationError('Linked DAR was not found');
+      }
+      if (dar.status !== 'COMPLETED') {
+        throw new ValidationError('Only completed DAR records can be linked to a revision');
+      }
+    }
 
     // Step 1: Upload file to SharePoint FIRST.
     // DB changes only happen after upload succeeds so we never mark revisions
@@ -395,6 +425,7 @@ export class DocumentControlService {
         revision: string;
         effectiveDate?: Date | string | null;
         status: DocControlStatus;
+        spItemId?: string | null;
         spWebUrl: string | null;
         spDownloadUrl: string | null;
         spFolderPath: string | null;
@@ -405,6 +436,14 @@ export class DocumentControlService {
         createdByAuthUserId?: string | null;
         createdByName?: string | null;
         createdAt: Date | string;
+        darMasterId?: string | null;
+        darMaster?: {
+          id: string;
+          darNo: string | null;
+          objective: string;
+          requesterName?: string | null;
+          requestDate?: Date | string | null;
+        } | null;
       }>;
     };
 

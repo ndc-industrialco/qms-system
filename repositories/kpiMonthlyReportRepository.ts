@@ -50,7 +50,7 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
         kpi: { select: { department: true, yearly: true } },
         details: {
           include: {
-            kpiObjective: { select: { objective: true, target: true, unit: true } },
+            kpiObjective: { select: { objective: true, target: true, unit: true, isRevised: true } },
             correctiveActions: true,
           },
         },
@@ -103,8 +103,23 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
       where: { id },
       data: {
         remark: dto.remark ?? null,
+        ...(dto.documentName !== undefined ? { documentName: dto.documentName } : {}),
       },
     });
+  }
+
+  async deleteByKpiIdFromMonth(kpiId: string, fromMonth: string, tx?: Prisma.TransactionClient) {
+    const MONTH_ORDER = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const fromIdx = MONTH_ORDER.indexOf(fromMonth);
+    if (fromIdx < 0) return 0;
+    const monthsToDelete = MONTH_ORDER.slice(fromIdx);
+    const result = await this.delegate(tx).deleteMany({
+      where: {
+        kpiId,
+        month: { in: monthsToDelete },
+      },
+    });
+    return result.count;
   }
 
   async updateAttachment(id: string, dto: MonthlyReportAttachmentDTO, tx?: Prisma.TransactionClient) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import type { DarDetail } from "@/types/dar";
 import type { SignatureType } from "@/types/dar";
 import { OBJECTIVE_LABELS, DOC_TYPE_LABELS } from "@/types/dar";
@@ -39,6 +40,16 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
   const t = useT();
   const locale = useLocale();
   const isDraft = dar.status === "DRAFT";
+
+  const { data: footerConfigData } = useQuery({
+    queryKey: ["qms-footer-config-single", "DAR"],
+    queryFn: async () => {
+      const res = await fetch("/api/qms/footer-config");
+      if (!res.ok) throw new Error("Failed to load footer config");
+      const json = await res.json();
+      return (json.data ?? []).find((c: { moduleKey: string }) => c.moduleKey === "DAR") as { prefix: string; label: string } | undefined;
+    },
+  });
 
   const darLocale = locale === "en" ? "en-GB" : "th-TH";
 
@@ -315,6 +326,11 @@ export default function DarReadOnlyDetail({ dar, currentUserId, savedSignatureUr
           savedSignatureType={savedSignatureType}
         />
       )}
+
+      {/* Footer document name */}
+      <div className="flex justify-end text-xs text-slate-400 font-mono mt-4 select-none">
+        {footerConfigData?.prefix || "FM-DC-01"}
+      </div>
     </div>
   );
 }

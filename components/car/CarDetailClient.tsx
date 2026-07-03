@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
-import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck, ChevronRight } from "lucide-react";
+import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck, ChevronRight, Printer } from "lucide-react";
 import CarStatusBadge from "./CarStatusBadge";
 import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
@@ -213,6 +213,12 @@ export default function CarDetailClient({
               {reCarMutation.isPending ? t("car.detail.btnCreatingReCar") : t("car.detail.btnCreateReCar")}
             </Button>
           )}
+          <Link href={`/print/qms/car/${car.id}`} target="_blank" rel="noreferrer" passHref legacyBehavior>
+            <Button variant="outline">
+              <Printer className="w-3.5 h-3.5 mr-1.5" />
+              พิมพ์เอกสาร CAR
+            </Button>
+          </Link>
         </div>
       </div>
 

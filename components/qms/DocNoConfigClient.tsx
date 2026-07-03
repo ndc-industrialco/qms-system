@@ -13,7 +13,7 @@ type ModuleItem = {
   format: string;
 };
 
-const YEAR = new Date().getFullYear();
+const YEAR = new Date().getFullYear() + 543;
 
 function preview(format: string): string {
   return format
@@ -87,8 +87,8 @@ function ModuleCard({ item, onSaved }: { item: ModuleItem; onSaved: (f: string) 
 const TOKENS = [
   { token: "{PREFIX}",      color: "text-primary",      desc: "ค่า prefix คงที่ (เขียนตรงๆ ใน format ก็ได้)" },
   { token: "{DEPT}",        color: "text-amber-600",     desc: "ตัวย่อแผนก (มีเฉพาะ DAR)" },
-  { token: "{YEAR:YY}",     color: "text-emerald-600",   desc: `ปี 2 หลัก (${String(YEAR).slice(-2)})` },
-  { token: "{YEAR:YYYY}",   color: "text-emerald-700",   desc: `ปี 4 หลัก (${YEAR})` },
+  { token: "{YEAR:YY}",     color: "text-emerald-600",   desc: `ปี พ.ศ. 2 หลัก (${String(YEAR).slice(-2)})` },
+  { token: "{YEAR:YYYY}",   color: "text-emerald-700",   desc: `ปี พ.ศ. 4 หลัก (${YEAR})` },
   { token: "{SEQ:N}",       color: "text-slate-700",     desc: "running number pad N หลัก เช่น {SEQ:4} → 0001" },
 ];
 
@@ -118,8 +118,8 @@ export default function DocNoConfigClient({ initial }: { initial: ModuleItem[] }
         </div>
         <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5 text-xs text-slate-500">
           <span>ตัวอย่าง: <span className="font-mono text-slate-700">DAR-{"{DEPT}"}-{"{SEQ:4}"}</span> → DAR-PD-0001</span>
-          <span>ตัวอย่าง: <span className="font-mono text-slate-700">C{"{YEAR:YY}"}-{"{SEQ:3}"}</span> → C26-001</span>
-          <span>ตัวอย่าง: <span className="font-mono text-slate-700">APPT-{"{YEAR:YY}"}-{"{SEQ:3}"}</span> → APPT-26-001</span>
+          <span>ตัวอย่าง: <span className="font-mono text-slate-700">C{"{YEAR:YY}"}-{"{SEQ:3}"}</span> → C{String(YEAR).slice(-2)}-001</span>
+          <span>ตัวอย่าง: <span className="font-mono text-slate-700">APPT-{"{YEAR:YY}"}-{"{SEQ:3}"}</span> → APPT-{String(YEAR).slice(-2)}-001</span>
           <span>ข้อความตรงๆ ระหว่าง token ถูก render ตามที่กรอก (เช่น - , / , ช่องว่าง)</span>
         </div>
       </div>

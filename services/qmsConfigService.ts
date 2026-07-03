@@ -7,6 +7,14 @@ export interface FooterConfig {
   label: string;
 }
 
+export interface ExportNamingMeta {
+  moduleKey: string;
+  prefix: string;
+  label: string;
+  worksheetName: string;
+  fileBaseName: string;
+}
+
 export class QmsConfigService {
   private configRepo = new SystemConfigRepository();
 
@@ -47,6 +55,39 @@ export class QmsConfigService {
       prefix: prefix ?? "",
       label: label ?? "",
     };
+  }
+
+  async getExportNamingMeta(
+    moduleKey: string,
+    fallback: { label: string; fileBaseName: string; worksheetName?: string },
+  ): Promise<ExportNamingMeta> {
+    const config = await this.getSingleFooterConfig(moduleKey);
+    const label = (config.label || fallback.label).trim();
+    const prefix = config.prefix.trim();
+    const worksheetSeed = (fallback.worksheetName || label || fallback.label).trim();
+    const filenameSeed = [prefix, label || fallback.fileBaseName].filter(Boolean).join(" ").trim() || fallback.fileBaseName;
+
+    return {
+      moduleKey,
+      prefix,
+      label,
+      worksheetName: this.toWorksheetName(worksheetSeed),
+      fileBaseName: this.toFileBaseName(filenameSeed || fallback.fileBaseName),
+    };
+  }
+
+  private toWorksheetName(value: string): string {
+    const cleaned = value.replace(/[\\/*?:[\]]/g, " ").replace(/\s+/g, " ").trim();
+    return (cleaned || "Export").slice(0, 31);
+  }
+
+  private toFileBaseName(value: string): string {
+    const cleaned = value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-{2,}/g, "-");
+    return cleaned || "qms-export";
   }
 
   async updateFooterConfigs(configs: FooterConfig[]) {

@@ -6,10 +6,10 @@ import { ValidationError } from "@/lib/errors";
 import { z } from "zod";
 import { type NextRequest } from "next/server";
 
-const MODULES = ["DAR", "CAR", "AUDIT_APPT", "AUDIT_PLAN"] as const;
+const MODULES = ["DAR", "CAR", "AUDIT_APPT", "AUDIT_PLAN", "DOC_CONTROL"] as const;
 
 const schema = z.object({
-  module: z.enum(["DAR", "CAR", "AUDIT_APPT", "AUDIT_PLAN"]),
+  module: z.enum(["DAR", "CAR", "AUDIT_APPT", "AUDIT_PLAN", "DOC_CONTROL"]),
   format: z.string().min(1).max(100),
 });
 

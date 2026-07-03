@@ -4,6 +4,7 @@ import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth, requireRole } from '@/lib/auth';
 import { createMonthlyReportSchema, monthlyQuerySchema } from '@/schemas/kpiSchema';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
+import { MonthlyStatus } from '@/generated/prisma/client';
 
 const service = new KpiMonthlyService();
 
@@ -12,7 +13,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     await requireAuth();
     const { id } = await params;
     const query = monthlyQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
-    const result = await service.listReports({ page: query.page ?? 1, limit: query.limit ?? 20, year: query.year, month: query.month, status: query.status, kpiId: id });
+    const status = (query.status && ['DRAFT', 'PENDING_REVIEW', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED'].includes(query.status))
+      ? (query.status as MonthlyStatus)
+      : undefined;
+    const result = await service.listReports({ page: query.page ?? 1, limit: query.limit ?? 20, year: query.year, month: query.month, status, kpiId: id });
     return sendSuccess(result.data, 'Monthly reports retrieved successfully', 200, result.meta);
   } catch (error) {
     return handleApiError(error);

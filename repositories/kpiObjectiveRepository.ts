@@ -2,7 +2,7 @@ import { KPIObjective, Prisma } from '@/generated/prisma/client';
 import { BaseRepository } from '@/repositories/baseRepository';
 import { CreateKpiObjectiveDTO, UpdateKpiObjectiveDTO } from '@/types/kpi';
 
-export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateKpiObjectiveDTO, UpdateKpiObjectiveDTO> {
+export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateKpiObjectiveDTO & { isRevised?: boolean }, UpdateKpiObjectiveDTO & { isRevised?: boolean }> {
   constructor() {
     super('kPIObjective');
   }
@@ -30,7 +30,7 @@ export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateK
     });
   }
 
-  async createObjective(data: CreateKpiObjectiveDTO, tx?: Prisma.TransactionClient) {
+  async createObjective(data: CreateKpiObjectiveDTO & { isRevised?: boolean }, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).create({
       data: {
         kpi: { connect: { id: data.kpiId } },
@@ -41,6 +41,7 @@ export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateK
         calculationFormula: data.calculationFormula,
         actionPlanGuidelines: data.actionPlanGuidelines,
         referenceDocuments: data.referenceDocuments,
+        isRevised: data.isRevised ?? false,
       },
     });
   }

@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import ExcelJS from "exceljs";
 import { KpiExportService } from "@/services/kpiExportService";
+import { QmsConfigService } from "@/services/qmsConfigService";
 
 const filterSchema = z.object({
   department: z.string().optional(),
@@ -24,23 +25,30 @@ export async function GET(req: NextRequest) {
       status:     sp.get("status")     ?? undefined,
     });
 
-    const reports = await exportService.listMonthlyReports({
+    const [reports, naming] = await Promise.all([
+      exportService.listMonthlyReports({
       ...(filter.year && { year: filter.year }),
       ...(filter.month && { month: filter.month }),
       ...(filter.status && { status: filter.status as never }),
       ...(filter.department ? { kpi: { department: { contains: filter.department } } } : {}),
-    });
+      }),
+      qmsConfigService.getExportNamingMeta("KPI_MONTHLY", {
+        label: "KPI Monthly Report",
+        fileBaseName: "kpi-monthly-export",
+      }),
+    ]);
 
     const wb = new ExcelJS.Workbook();
     wb.creator = "QMS System";
     wb.created = new Date();
 
-    const ws = wb.addWorksheet("KPI Monthly");
+    const ws = wb.addWorksheet(naming.worksheetName);
 
     const headerFill: ExcelJS.Fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F1059" } };
     const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
     const border: Partial<ExcelJS.Border> = { style: "thin", color: { argb: "FFCCCCCC" } };
     const allBorders: Partial<ExcelJS.Borders> = { top: border, left: border, bottom: border, right: border };
+    const revisedFill: ExcelJS.Fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC6EFCE" } };
 
     ws.columns = [
       { header: "Year",           key: "year",          width: 8  },
@@ -99,6 +107,8 @@ export async function GET(req: NextRequest) {
             .map((ca: { times: number; rootCause: string; guidelines: string; responsiblePerson: string; dueDate: Date }) => `[${ca.times}x] ${ca.rootCause} → ${ca.guidelines} (${ca.responsiblePerson}, due ${fmt(ca.dueDate)})`)
             .join(" | ");
 
+          const isRevised = (d.kpiObjective as Record<string, unknown>)?.isRevised as boolean | undefined;
+
           const added = ws.addRow({
             year:       r.year,
             month:      r.month,
@@ -116,6 +126,10 @@ export async function GET(req: NextRequest) {
             corrective: corrective,
           });
           added.eachCell((cell) => {
+            if (isRevised) {
+              cell.fill = revisedFill;
+              cell.font = { ...cell.font, color: { argb: 'FF000000' }, underline: true, italic: true };
+            }
             cell.border = allBorders;
             cell.alignment = { vertical: "top", wrapText: false };
           });
@@ -132,7 +146,7 @@ export async function GET(req: NextRequest) {
     return new Response(buffer as BodyInit, {
       headers: {
         "Content-Type":        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="kpi-monthly-export-${date}.xlsx"`,
+        "Content-Disposition": `attachment; filename="${naming.fileBaseName}-${date}.xlsx"`,
         "Cache-Control":       "no-store",
       },
     });
@@ -142,3 +156,4 @@ export async function GET(req: NextRequest) {
 }
 
 const exportService = new KpiExportService();
+const qmsConfigService = new QmsConfigService();

@@ -1,5 +1,203 @@
 [
   {
+    "id": "29",
+    "titleTh": "ปรับ Footer PDF KPI ประจำปีให้ใช้ชื่อเอกสารกลางจากหน้า Footer Config",
+    "titleEn": "Aligned annual KPI PDF footer naming with the central Footer Config form label",
+    "date": "2026-07-03",
+    "type": "fix",
+    "commit": "fix/kpi-annual-pdf-footer-config-label",
+    "detailsTh": [
+      "ปรับส่วนชื่อเอกสารมุมล่างขวาของแบบพิมพ์และ PDF KPI ประจำปีให้ใช้ค่า Document Label จากการตั้งค่า `KPI_ANNUAL` ในหน้า `qms/footer-config` เป็นหลัก",
+      "คงการใช้ชื่อเอกสารรายฉบับ (`documentName`) ไว้สำหรับหัวเอกสารตามเดิม เพื่อไม่ให้กระทบการตั้งชื่อภายในเอกสารของแต่ละแผนกเกินความจำเป็น"
+    ],
+    "detailsEn": [
+      "Updated the annual KPI print/PDF footer so the bottom-right document label now prioritizes the shared `KPI_ANNUAL` Document Label configured in `qms/footer-config`.",
+      "Kept per-record `documentName` behavior for the main document heading to avoid unnecessary changes to department-specific document titles."
+    ]
+  },
+  {
+    "id": "28",
+    "titleTh": "อัปเดตการส่งออก Master List ของ Document Control ตามเทมเพลตมาตรฐาน FM-DC-04 Rev.02",
+    "titleEn": "Upgraded Document Control Master List Export to standard FM-DC-04 Rev.02 Template",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/document-control-master-list-template-export",
+    "detailsTh": [
+      "ปรับปรุงการทำงานของระบบส่งออก Master List ของฝ่ายควบคุมเอกสารให้โหลดเทมเพลตมาตรฐานจากไฟล์ FM-DC-04 Rev.02",
+      "ดึงข้อมูลการแจกจ่ายเอกสาร (Distributions) จากใบคำขอ DAR ล่าสุดมาทำเครื่องหมายถูก (✓) ลงในคอลัมน์ MD, QMS, SM, PU, HR, SHE, PD, QA, QC, QC Lab, WH, MO, EN, IT, MN, GA, PN อัตโนมัติ",
+      "ผสานเซลล์ชื่อเอกสาร (B และ C) ในทุก ๆ แถวข้อมูล พร้อมปรับความสูงของแถว จัดแต่งฟอนต์เป็น Tahoma 9pt และเขียนวันอัปเดต พ.ศ. ลงบนหัวชีต C4",
+      "เพิ่มระบบพรีวิวรายละเอียดก่อนยืนยันการส่งออกข้อมูล (Export Preview Modal) ในหน้าจอแสดงรายการเอกสารควบคุมเพื่อความสอดคล้องกับหน้า DAR",
+      "เพิ่มปุ่ม Export Master List ในหน้าจอแสดงรายการแผนกหลัก (Level-1 Summary) เพื่อรองรับการส่งออกข้อมูลทะเบียนเอกสารควบคุมของทุกแผนกพร้อมกัน โดยแสดงหน้าพรีวิวก่อนดาวน์โหลดเหมือนกัน",
+      "เพิ่มมุมมอง 'เอกสารทั้งหมด' (All Documents) ในหน้าจอหลัก of Document Control เพื่อแสดงตารางเอกสารทั้งหมดในระบบพร้อมช่องค้นหา ตัวกรองสถานะ และตารางแสดงข้อมูล รหัส, ชื่อ, แผนก, หมวดหมู่ และคอลัมน์ 'จำนวนครั้งที่แก้ไข' (Revision Count) ที่คำนวณจากประวัติเวอร์ชันจริง",
+      "ล้างการตั้งค่า Conditional Formatting แบบเดิมของเทมเพลตก่อนทำการบันทึกและส่งออก เพื่อแก้ปัญหาการแจ้งเตือนไฟล์เสียหาย (Removed Records: Conditional formatting) บน MS Excel โดยเปลี่ยนไปใช้การลงสีพื้นหลังสีแดงอ่อนบนเซลล์สถานะยกเลิกด้วยโค้ดโดยตรงแทน",
+      "ปรับปรุงให้ระบบส่งออกข้อมูลทะเบียนเอกสารควบคุมแสดงทุกรายการประวัติการแก้ไข (All Revisions) ของแต่ละเอกสารแยกเป็นแต่ละแถวในไฟล์ Excel แม้ว่าเวอร์ชันนั้นจะไม่ได้ใช้งานแล้วก็ตาม"
+    ],
+    "detailsEn": [
+      "Upgraded Document Control Master List export endpoint to read and write directly into the FM-DC-04 Rev.02 Excel template.",
+      "Mapped approved DAR distributions to dynamically print checkmarks (✓) in J-Z distribution columns (MD, QMS, SM, PU, HR, SHE, PD, QA, QC, QC Lab, WH, MO, EN, IT, MN, GA, PN).",
+      "Merged cells B and C for Document Name on each data row, standardized cell fonts to Tahoma 9pt, and formatted cell C4 as Thai Buddhist date.",
+      "Implemented an Export Preview Modal for Document Control master list downloads across category-level and department-level summaries to align with the DAR workflow.",
+      "Added an Export Master List button to the main department grid view (Level-1 Summary) for exporting all departments' documents at once, equipped with the Export Preview Modal.",
+      "Added an 'All Documents' tab to the Document Control landing page, providing a unified list of all system documents with search, status filters, and a dedicated 'Revision Count' column computed from revision history.",
+      "Cleared the template's conditional formatting configurations before writing buffer to resolve Microsoft Excel's recovery warning ('Removed Records: Conditional formatting'), falling back to programmatically styling Cancelled and Obsolete status cells with light red fill and dark red font.",
+      "Modified the Document Control Master List Excel export to list every historical revision of each document as a separate row in the sheet, including obsolete and inactive versions."
+    ]
+  },
+  {
+    "id": "27",
+    "titleTh": "ผูกเลขที่เอกสาร Document Control กับรหัสย่อแผนกจาก Department Codes",
+    "titleEn": "Bound Document Control numbering to department abbreviations from Department Codes",
+    "date": "2026-07-03",
+    "type": "improvement",
+    "commit": "fix/document-control-department-code-numbering",
+    "detailsTh": [
+      "ปรับการสร้างเลขที่เอกสารของ Document Control ให้ใช้รูปแบบ {หมวดหมู่}-{ตัวย่อแผนกจาก qms/department-codes}-{ลำดับ}",
+      "เพิ่มการ resolve รหัสย่อผ่าน DepartmentCodeRepository ก่อน fallback ไปใช้ค่าดั้งเดิมของแผนก เพื่อให้เลขเอกสารถูกต้องตามหน้าตั้งค่า Department Codes"
+    ],
+    "detailsEn": [
+      "Updated Document Control number generation to follow {category}-{department abbreviation from qms/department-codes}-{running number}.",
+      "Resolved department abbreviations through DepartmentCodeRepository before falling back to legacy department values so numbering now follows the configured Department Codes screen."
+    ]
+  },
+  {
+    "id": "26",
+    "titleTh": "แปลภาษารายงาน Excel เป็นภาษาไทย และเพิ่มตัวกรองข้อมูล DAR แบบครอบคลุม",
+    "titleEn": "Thai Translation for DAR Export Excel and Comprehensive Filtering Parameters",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/dar-export-thai-translation-and-advanced-filters",
+    "detailsTh": [
+      "แปลภาษาของหัวคอลัมน์และค่าข้อมูลประเภทเอกสาร วัตถุประสงค์ และสถานะในรายงาน Excel ของ DAR ให้เป็นภาษาไทย",
+      "ขยายความสามารถในการกรองข้อมูลใน endpoint /api/dar/export ให้รองรับการกรองตาม วัน เดือน ปี แผนก ผู้ใช้งานยื่นคำขอ ประเภทเอกสาร และวัตถุประสงค์",
+      "ปรับปรุงให้ปุ่มส่งออกพรีวิวในหน้า /dar และ /qms/dar ดึงค่าตัวกรองแผนก ปี เดือน และผู้ใช้งานปัจจุบันส่งไปยัง API ได้ถูกต้อง",
+      "เพิ่มกล่องตัวเลือก ปี และ เดือน พร้อมช่องระบุช่วงวันที่เริ่มต้น-สิ้นสุด (Date Range Pickers) บนตัวกรองหน้าจอของ /dar และ /qms/dar เพื่อให้กรองข้อมูลบนเว็บและพรีวิวก่อนส่งออกได้อย่างสะดวก"
+    ],
+    "detailsEn": [
+      "Translated Excel columns, headers, status, objective, and document type values to Thai for DAR exports.",
+      "Expanded filtering capabilities in the `/api/dar/export` endpoint to support day, month, year, department, user, docType, and objective.",
+      "Updated export hooks in user and QMS list pages to parse and forward date, department, and user filter criteria to the preview modal.",
+      "Added Year and Month dropdown selects plus Start/End Date Range Pickers directly to the filter panel of /dar and /qms/dar UI screens."
+    ]
+  },
+  {
+    "id": "25",
+    "titleTh": "ปรับปรุงระบบ KPI อย่างครอบคลุม: QMS Check, ประกาศ KPI, แก้ไขระหว่างปี, ชื่อเอกสาร Footer, Excel highlighting, อัปโหลดไฟล์ผู้ตรวจ/ผู้อนุมัติ",
+    "titleEn": "Comprehensive KPI System Upgrade: QMS Check, Announcement, Mid-Year Revision, Document Name Footer, Excel Revision Highlighting, Reviewer/Approver File Uploads",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/kpi-annual-monthly-enhancement",
+    "detailsTh": [
+      "เพิ่มฟิลด์ documentName ให้ KPI และ KPIMonthlyReport สำหรับชื่อเอกสารใน Footer (QMS แก้ไขได้)",
+      "เพิ่มสถานะ QMS_CHECK และ ANNOUNCED ใน KPI Workflow: DRAFT → PENDING_REVIEW → PENDING_APPROVAL → APPROVED → QMS_CHECK → ANNOUNCED",
+      "QMS Check: QMS ตรวจสอบ KPI ทั้งหมด ลงชื่อ และส่งต่อไปยังผู้ตรวจ (Reviewer) และผู้อนุมัติ (Approver) เพื่อลงนาม",
+      "ประกาศ KPI: ส่งอีเมลถึงสมาชิกทุกคนในแผนกตาม System User List พร้อมแนบไฟล์ Excel KPI Objectives",
+      "เพิ่มฟังก์ชันคัดลอก KPI จากปีก่อนหน้า (Copy from Previous Year) เพื่อใช้เป็นฐานสำหรับปีใหม่",
+      "เพิ่มฟังก์ชันแก้ไข KPI ระหว่างปี (Revise): รีเซ็ตสถานะเป็น DRAFT, สร้าง Monthly Reports เฉพาะเดือนที่เหลือ",
+      "เพิ่มฟิลด์ isRevised ใน KPIObjective และ isRevision ใน KPI เพื่อติดตามการแก้ไขใน Excel Export",
+      "Excel Export: บันทึกที่ถูกแก้ไขแสดงด้วยพื้นหลังสีเขียว (green), ตัวอักษรสีดำ (black), ขีดเส้นใต้ (underline), ตัวเอียง (italic)",
+      "ผู้อนุมัติและผู้ตรวจสามารถอัปโหลดไฟล์แนบเมื่อ Approve หรือ Reject ทั้ง KPI Annual และ KPI Monthly",
+      "เพิ่ม documentName ใน KPIMonthlyReport Form Footer (QMS แก้ไขได้) พร้อมใช้ชื่อเอกสารเดียวกันใน PDF Export",
+      "เพิ่ม endpoint /api/kpi/[id]/qms-check, /api/kpi/[id]/announce, /api/kpi/copy, /api/kpi/[id]/revise",
+      "KPI Print Template และ metadata ใช้ documentName แทนค่า default จาก Footer Config"
+    ],
+    "detailsEn": [
+      "Added documentName field to KPI and KPIMonthlyReport models for editable document footer name (QMS editable)",
+      "Added QMS_CHECK and ANNOUNCED statuses to KPI Workflow: DRAFT → PENDING_REVIEW → PENDING_APPROVAL → APPROVED → QMS_CHECK → ANNOUNCED",
+      "QMS Check: QMS reviews all KPI records, signs them, and forwards to Reviewers/Approvers for signatures before announcement",
+      "KPI Announcement: Sends email to all department members via System User List with KPI Objectives Excel attachment",
+      "Added Copy from Previous Year feature to use last year's KPIs as base for new year planning",
+      "Added Mid-Year Revision: Resets KPI to DRAFT, regenerates only remaining monthly reports after revision month",
+      "Added isRevised field to KPIObjective and isRevision to KPI for tracking changes in Excel exports",
+      "Excel export revision highlighting: green background (#C6EFCE), black text, underline, italic formatting for revised records",
+      "Reviewers and MR approvers can now upload file attachments when approving or rejecting (both Annual and Monthly)",
+      "Added documentName field to KPIMonthlyReport for monthly form footer (QMS editable), used consistently in PDF exports",
+      "New API endpoints: /api/kpi/[id]/qms-check, /api/kpi/[id]/announce, /api/kpi/copy, /api/kpi/[id]/revise",
+      "KPI Print Template now uses per-KPI documentName instead of global footer config default"
+    ]
+  },
+  {
+    "id": "24",
+    "titleTh": "เพิ่มสถานะยกเลิกและปรับ Master List ของ Document Control",
+    "titleEn": "Added cancelled-document controls and expanded the Document Control master list",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/document-control-cancelled-master-list",
+    "detailsTh": [
+      "เพิ่มสถานะ CANCELLED ให้ Document Control พร้อมบังคับให้เอกสารที่ยกเลิกแล้วยังมองเห็นได้แต่ไม่สามารถ preview หรือ download ได้",
+      "บังคับฟอร์มสร้างเอกสารใหม่ให้กรอก Document Number, Document Name, Description และ Status โดยใช้สถานะ Active หรือ Cancelled",
+      "ปรับ Export Master List ให้รองรับทั้งทุกแผนกหรือรายแผนก พร้อมคอลัมน์มาตรฐาน เช่น Document Name, Document Number, Revision, DAR No., Type, Requested By, วันที่ และ Effective Date",
+      "เชื่อม revision กับ DAR ให้แสดงและส่งออกข้อมูลผู้ขอ/เลข DAR ได้ครบ พร้อมปรับ DAR selector ให้ค้นหาและเรียงลำดับได้",
+      "แสดง Download Audit Log ถัดจาก Revision History ในหน้ารายละเอียดเอกสารและ modal รายละเอียด"
+    ],
+    "detailsEn": [
+      "Added a CANCELLED status for Document Control so cancelled documents remain visible but cannot be previewed or downloaded.",
+      "Required Document Number, Document Name, Description, and Status when creating a new document, with Active and Cancelled as the supported statuses.",
+      "Expanded the Master List export for all departments and per-department views with standard columns including document identity, DAR linkage, requester, dates, and effective date.",
+      "Kept revision-to-DAR linkage visible in both export and detail views, and upgraded the DAR picker with search and sorting support.",
+      "Displayed the document download audit log immediately after revision history in the main detail surfaces."
+    ]
+  },
+  {
+    "id": "23",
+    "titleTh": "เพิ่มการส่งออกข้อมูล DAR แบบกรองสถิติ เพิ่มตัวกรองสถิติภาพรวม และปรับปรุงรหัสท้ายเอกสาร DAR",
+    "titleEn": "Enhanced DAR Export, Interactive Filtering on Summary, and Document Footer Naming",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/dar-export-filter-and-footer-config",
+    "detailsTh": [
+      "เพิ่มตัวกรองตามประเภทเอกสาร (Form) และวัตถุประสงค์ (Purpose) ในแท็บ DAR ของหน้าสรุปผลภาพรวม QMS",
+      "พัฒนา endpoint /api/dar/export ให้รองรับการค้นหาและกรองสถิติตามแผนก ประเภทเอกสาร และวัตถุประสงค์",
+      "เพิ่มปุ่มส่งออก Excel ในหน้าจัดการคำขอ DAR สำหรับเจ้าหน้าที่ QMS พร้อมสืบทอดค่าตัวกรองปัจจุบัน",
+      "แสดงรหัสเอกสาร (Document Prefix) ที่ดึงจากการตั้งค่าส่วนกลางของ QMS ไว้ที่มุมล่างขวาในหน้าจอฟอร์มและหน้าต่างแสดงรายละเอียดคำขอ DAR ทั้งหมด",
+      "ปรับรหัสสิทธิ์ของ GET /api/qms/footer-config ให้รองรับสิทธิ์ผู้ใช้งานทั่วไปเพื่อดึงรหัสท้ายฟอร์มได้ถูกต้อง",
+      "ปรับแต่ง metadata title ในหน้า /print/dar/[id] ให้ใช้รหัสรหัสเอกสาร (Prefix) เพื่อให้สอดคล้องกับฟอร์มเมื่อพิมพ์หรือดาวน์โหลดเป็น PDF",
+      "พัฒนา Modal แสดงตัวอย่างข้อมูลก่อนการดาวน์โหลดรายงาน (Export Preview Modal) ในหน้า /dar และ /qms/dar เพื่อให้ผู้ใช้ตรวจสอบความถูกต้องก่อนการดาวน์โหลดจริง",
+      "ปรับปรุงสิทธิ์การดาวน์โหลดรายงานผ่าน API /api/dar/export ให้รองรับผู้ใช้งานทั่วไปให้สามารถดาวน์โหลดข้อมูลประวัติเฉพาะคำขอของตัวเองได้",
+      "แก้ไขข้อผิดพลาดประเภท TypeScript ใน DocumentControlModal และ KPI Monthly API endpoint"
+    ],
+    "detailsEn": [
+      "Added Document Type (Form) and Objective (Purpose) interactive filters inside the DAR Summary tab of the QMS Summary Dashboard.",
+      "Upgraded `/api/dar/export` API route to support filtering by department, docType, objective, and search query.",
+      "Added an Excel export button to the QMS DAR management page that forwards active search and filter criteria.",
+      "Rendered the central QMS-configured document prefix at the bottom-right of DAR create/edit forms and detail views.",
+      "Changed GET authorization level on the footer config API to allow regular logged-in users to display document prefixes.",
+      "Aligned the page title of the print view to match the document prefix (e.g. `DAR-2026-0001 - FM-DC-01`) for default PDF filenames.",
+      "Implemented an Export Preview Modal for both `/dar` and `/qms/dar` list pages to display a preview table of filtered DAR records and count before download.",
+      "Updated `/api/dar/export` API endpoint authorization to allow standard users to download Excel exports of their own requests.",
+      "Resolved TypeScript compiler errors in `DocumentControlModal` and KPI Monthly API endpoint."
+    ]
+  },
+  {
+    "id": "22",
+    "titleTh": "เพิ่มเอกสารพิมพ์ผู้ตรวจ (Auditor Doc) และรายงานส่งออกข้อมูลแผนการตรวจ/ผู้ตรวจแบบ Standalone พร้อมอัปเดตระบบตารางเวลา",
+    "titleEn": "Added Standalone Auditor Print Document, Standalone Exports, and Calendar/Schedule Enhancements",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/auditor-standalone-doc-and-plan-export",
+    "detailsTh": [
+      "สร้าง print route และ template อิสระสำหรับพิมพ์รายชื่อผู้ตรวจ (Auditor Doc) ที่ /print/audit/auditor/[id] และ components/audit/AuditorPrintTemplate.tsx โดยอิง central QMS configuration",
+      "เพิ่ม endpoint ส่งออกข้อมูลรายคนของผู้ตรวจติดตาม (Auditor List Export) ที่ /api/audit/auditors/export ตาม naming config ของโมดูล AUDITOR",
+      "เพิ่ม endpoint ส่งออกสรุปข้อมูลแผนการตรวจสอบ (Audit Plan Export) ที่ /api/audit/plans/export ตาม naming config ของโมดูล AUDIT_PLAN",
+      "เพิ่มปุ่ม พิมพ์เอกสารผู้ตรวจ (Auditor Doc) ในหน้ารายละเอียดประกาศแต่งตั้ง และหน้ารายละเอียดแผนการตรวจ (ถ้ามี reference)",
+      "เพิ่มปุ่ม ส่งออกรายงาน ในหน้าตารางรายชื่อประกาศแต่งตั้ง และหน้าตารางสรุปแผนการตรวจพร้อมส่งต่อ filter parameter",
+      "ปรับปรุงสิทธิ์การกดยืนยัน Availability ของตารางตรวจสอบใน AuditPlan ให้รองรับ Lead Auditor และ Assigned Auditors",
+      "พัฒนาหน้าต่างแจ้งไม่ว่าง (Unavailable Dialog) ให้ผู้กดยืนยันสามารถ 'เสนอวันเวลาใหม่ที่สะดวก' แล้วจัดรูปแบบบันทึกร่วมกับเหตุผลที่ไม่ว่างอัตโนมัติ",
+      "เพิ่มปุ่มสลับมุมมอง 'รายการตาราง' และ 'ปฏิทิน' (Calendar View) ในแท็บตารางเวลาของหน้าแผนการตรวจ เพื่อแสดงตารางตรวจรายแผนกบนปฏิทินรายเดือน",
+      "แนบไฟล์ Excel ของ Auditor Standalone Document ที่สร้างขึ้นอัตโนมัติจาก backend แนบไปพร้อมกับอีเมลประกาศแต่งตั้งผู้ตรวจตอนเผยแพร่ (PUBLISHED)"
+    ],
+    "detailsEn": [
+      "Created a standalone print route and template for internal/external auditors (Auditor Doc) at /print/audit/auditor/[id] and components/audit/AuditorPrintTemplate.tsx linked to the central config.",
+      "Implemented the Auditor Standalone Export API at /api/audit/auditors/export using the AUDITOR naming metadata config.",
+      "Implemented the Audit Plan Standalone Export API at /api/audit/plans/export using the AUDIT_PLAN naming metadata config.",
+      "Integrated direct Auditor Doc print entry points in both the Audit Appointment and Audit Plan detail views.",
+      "Added dedicated export action buttons in both the Audit Appointment list view (for letters & auditor list) and the Audit Plan summary table with query filtering.",
+      "Enhanced the schedule availability confirmation permission checks to allow Lead Auditor and Assigned Auditors of the plan.",
+      "Upgraded the Unavailable Dialog to allow users to propose alternative dates, formatting and saving them automatically with the unavailability reason.",
+      "Implemented a monthly Calendar View tab inside the Audit Plan detail schedule tab to display department schedules on calendar cells.",
+      "Integrated backend generation of the Auditor Standalone Excel file to be sent automatically as an email attachment when the appointment is PUBLISHED."
+    ]
+  },
+  {
     "id": "21",
     "titleTh": "เพิ่มเส้นทางพิมพ์กลางสำหรับ Audit Appointment และ Audit Plan พร้อม shared print actions",
     "titleEn": "Added central print routes for Audit Appointment and Audit Plan with shared print actions",

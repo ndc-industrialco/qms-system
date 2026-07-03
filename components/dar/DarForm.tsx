@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useDarForm } from "@/hooks/use-dar-form";
 import { toast } from "sonner";
 import DarRequesterSection from "./DarRequesterSection";
@@ -35,6 +36,16 @@ type Props = {
 
 export default function DarForm({ mode, initialData, departments, requesterInfo, tempId, hideSubmit = false, savedSignatureUrl, savedSignatureType, onClose }: Props) {
   const t = useT();
+
+  const { data: footerConfigData } = useQuery({
+    queryKey: ["qms-footer-config-single", "DAR"],
+    queryFn: async () => {
+      const res = await fetch("/api/qms/footer-config");
+      if (!res.ok) throw new Error("Failed to load footer config");
+      const json = await res.json();
+      return (json.data ?? []).find((c: { moduleKey: string }) => c.moduleKey === "DAR") as { prefix: string; label: string } | undefined;
+    },
+  });
 
   const {
     state, errors, isSaving, isSubmitting,
@@ -184,6 +195,11 @@ export default function DarForm({ mode, initialData, departments, requesterInfo,
         onBack={handleReviewerBack}
         onSend={handleSend}
       />
+
+      {/* Footer document name */}
+      <div className="flex justify-end text-xs text-slate-400 font-mono mt-4 select-none">
+        {footerConfigData?.prefix || "FM-DC-01"}
+      </div>
 
     </div>
   );

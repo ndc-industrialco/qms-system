@@ -31,6 +31,9 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (!revision) {
       throw new NotFoundError('Revision not found');
     }
+    if (revision.status !== 'ACTIVE') {
+      throw new ValidationError('Only active revisions can be downloaded');
+    }
 
     // Log the download action in AuditLog
     await AuditService.record({
