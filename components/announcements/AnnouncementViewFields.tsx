@@ -1,11 +1,114 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useT } from "@/lib/i18n";
 import type { AnnouncementRow } from "@/services/announcementService";
 
 function formatDate(date: Date | null): string {
   if (!date) return "—";
   return new Date(date).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" });
+}
+
+function AttachmentPreview({ itemId, fileName }: { itemId: string; fileName: string }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [previewData, setPreviewData] = useState<{ downloadUrl: string; officeEmbedUrl?: string | null; mimeType?: string } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    async function loadPreview() {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(`/api/sharepoint/get-file?itemId=${encodeURIComponent(itemId)}`);
+        if (!res.ok) throw new Error("โหลดข้อมูลตัวอย่างไฟล์ล้มเหลว");
+        const json = await res.json();
+        if (json.error) throw new Error(json.error);
+        if (active) {
+          setPreviewData(json.data);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการโหลดไฟล์");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+    loadPreview();
+    return () => { active = false; };
+  }, [itemId]);
+
+  if (loading) {
+    return (
+      <div className="mt-2 w-full h-48 bg-slate-50 rounded-lg flex items-center justify-center border border-dashed border-slate-200 animate-pulse">
+        <span className="text-xs text-slate-400">กำลังโหลดตัวอย่างไฟล์...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-2 w-full p-3 bg-red-50 text-red-600 rounded-lg text-xs border border-red-100">
+        {error}
+      </div>
+    );
+  }
+
+  if (!previewData) return null;
+
+  const { downloadUrl, officeEmbedUrl, mimeType } = previewData;
+  const lowerName = fileName.toLowerCase();
+  const isImage = mimeType?.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp)$/i.test(lowerName);
+  const isPdf = mimeType === "application/pdf" || lowerName.endsWith(".pdf");
+
+  if (isImage) {
+    return (
+      <div className="mt-2 max-w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={downloadUrl}
+          alt={fileName}
+          className="max-h-[300px] w-auto object-contain rounded"
+        />
+      </div>
+    );
+  }
+
+  if (isPdf) {
+    return (
+      <div className="mt-2 w-full h-[350px] rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+        <iframe
+          src={`${downloadUrl}#toolbar=0`}
+          className="w-full h-full border-none"
+          title={fileName}
+        />
+      </div>
+    );
+  }
+
+  if (officeEmbedUrl) {
+    return (
+      <div className="mt-2 w-full h-[350px] rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+        <iframe
+          src={officeEmbedUrl}
+          className="w-full h-full border-none"
+          title={fileName}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-2 text-xs text-slate-500">
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <span>ไม่สามารถแสดงตัวอย่างของไฟล์ประเภทนี้ได้โดยตรง</span>
+    </div>
+  );
 }
 
 export default function AnnouncementViewFields({ item }: { item: AnnouncementRow }) {
@@ -58,17 +161,22 @@ export default function AnnouncementViewFields({ item }: { item: AnnouncementRow
       <div>
         <span className={label}>{t("announcement.fieldAttachment")}</span>
         {item.fileName && item.spWebUrl ? (
-          <a
-            href={item.spWebUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-[#1D6A8A] hover:underline text-sm"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-            </svg>
-            {item.fileName}
-          </a>
+          <div className="space-y-2">
+            <a
+              href={item.spWebUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-[#1D6A8A] hover:underline text-sm font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+              {item.fileName}
+            </a>
+            {item.spItemId && (
+              <AttachmentPreview itemId={item.spItemId} fileName={item.fileName} />
+            )}
+          </div>
         ) : (
           <p className="text-sm text-slate-400">{t("announcement.noAttachment")}</p>
         )}

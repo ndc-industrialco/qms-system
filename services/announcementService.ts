@@ -14,6 +14,9 @@ export type AnnouncementRow = {
   endDate: Date | null;
   fileName: string | null;
   spWebUrl: string | null;
+  spItemId?: string | null;
+  spDownloadUrl?: string | null;
+  mimeType?: string | null;
   bgColor: string | null;
   bgImageUrl: string | null;
   bgImageSpId: string | null;

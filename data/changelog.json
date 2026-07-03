@@ -1,5 +1,75 @@
 [
   {
+    "id": "19",
+    "titleTh": "เพิ่มระบบพรีวิวไฟล์แนบ (รูปภาพ/PDF/MS Office) ในหน้ารายละเอียดประกาศ",
+    "titleEn": "Added file attachment preview (images, PDF, MS Office) to Announcement details view",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/announcement-attachment-preview",
+    "detailsTh": [
+      "ดึงไฟล์แนบจาก SharePoint มาแสดงเป็นตัวอย่างสดๆ ในหน้ารายละเอียดประกาศโดยตรง",
+      "รองรับการแสดงตัวอย่างไฟล์รูปภาพ, ไฟล์ PDF และไฟล์กลุ่ม Microsoft Office (Word, Excel, PowerPoint) ผ่าน embed url"
+    ],
+    "detailsEn": [
+      "Fetched and displayed live file previews directly inside the Announcement details dialog view.",
+      "Supports displaying previews for images, PDF documents, and Microsoft Office documents (Word, Excel, PowerPoint) via dynamic embed frames."
+    ]
+  },
+  {
+    "id": "18",
+    "titleTh": "เชื่อม DAR export, Document Control export และหัวเอกสาร DAR print เข้ากับ naming config กลาง",
+    "titleEn": "Connected DAR export, Document Control export, and DAR print headings to the central naming config",
+    "date": "2026-07-03",
+    "type": "improvement",
+    "commit": "feat/dar-doccontrol-central-naming-integration",
+    "detailsTh": [
+      "ปรับ DAR export ให้ใช้ชื่อชีตและชื่อไฟล์จาก QMS naming config กลางแทนการ hardcode",
+      "ปรับ Document Control export ให้ใช้ worksheet name และ filename base จาก config กลางแล้วค่อยต่อ suffix ตาม scope ที่ export",
+      "ปรับ DAR print template ให้รองรับ document label แบบ bilingual จาก config กลางผ่านรูปแบบ EN | TH และใช้ fallback เดียวกันแทนการ hardcode หลายจุด"
+    ],
+    "detailsEn": [
+      "Updated DAR export to derive worksheet and filename naming from the shared QMS config instead of hardcoded route strings.",
+      "Updated Document Control export to use the central worksheet and filename base, while still appending the current export scope suffix.",
+      "Refined the DAR print template to support bilingual document labels from central config using an EN | TH pattern, replacing multiple hardcoded title strings with one shared source."
+    ]
+  },
+  {
+    "id": "17",
+    "titleTh": "เชื่อม export naming ของ CAR, KPI และ Audit Appointment เข้ากับ QMS config กลาง",
+    "titleEn": "Connected CAR, KPI, and Audit Appointment export naming to the central QMS config",
+    "date": "2026-07-03",
+    "type": "improvement",
+    "commit": "feat/export-naming-qms-config-integration",
+    "detailsTh": [
+      "เพิ่มโมดูล AUDIT_APPT ในหน้า Footer Configuration เพื่อให้ QMS ตั้งชื่อและ prefix สำหรับเอกสารแต่งตั้งผู้ตรวจได้จากหน้ากลาง",
+      "เพิ่ม helper กลางสำหรับแปลง footer config เป็น worksheet name และ export filename ที่ปลอดภัยต่อ Excel และระบบไฟล์",
+      "ปรับ export route ของ CAR, KPI, KPI Monthly และ Audit Appointment ให้ใช้ชื่อไฟล์และชื่อชีตจาก config กลางแทนการ hardcode"
+    ],
+    "detailsEn": [
+      "Added AUDIT_APPT to the footer configuration page so QMS can centrally manage appointment document labels and prefixes.",
+      "Introduced a shared helper that converts footer config into safe worksheet names and export filenames for Excel and filesystem constraints.",
+      "Updated CAR, KPI, KPI Monthly, and Audit Appointment export routes to use centrally managed sheet names and filenames instead of hardcoded values."
+    ]
+  },
+  {
+    "id": "16",
+    "titleTh": "เชื่อมการตั้งค่า footer และเลขเอกสารกลางเข้ากับ DAR print และหน้า QMS config",
+    "titleEn": "Connected central footer and document-number settings to DAR print and QMS config pages",
+    "date": "2026-07-03",
+    "type": "improvement",
+    "commit": "feat/qms-footer-config-dar-print-integration",
+    "detailsTh": [
+      "เพิ่ม Document Control เข้าไปในหน้า Document Number Configuration เพื่อให้ QMS จัดการรูปแบบเลขเอกสารจากหน้ากลางได้ครบทุกโมดูลที่รองรับ",
+      "ปรับหน้า Footer Configuration ให้ใช้ design-system component และแสดง label/preview ที่อ่านง่ายขึ้นเพื่อลดโอกาสตั้งค่าผิด",
+      "เชื่อม DAR print page ให้ดึง footer label และ footer prefix จาก QMS config กลางแทนการ hardcode ใน template"
+    ],
+    "detailsEn": [
+      "Added Document Control to the central document-number configuration page so QMS can manage all supported numbering formats in one place.",
+      "Refined the footer configuration UI with design-system components and clearer labels and previews to reduce configuration mistakes.",
+      "Connected the DAR print page to the shared QMS footer config so the print label and footer prefix no longer depend on hardcoded template text."
+    ]
+  },
+  {
     "id": "15",
     "titleTh": "เพิ่มการแนบไฟล์ในอีเมลอนุมัติของโมดูล DAR, CAR, KPI รายเดือน และ Audit",
     "titleEn": "Added email attachments for approval notifications in DAR, CAR, KPI Monthly, and Audit modules",
