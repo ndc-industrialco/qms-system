@@ -18,6 +18,9 @@ type PublicAnnouncement = {
   endDate: string | null;
   fileName: string | null;
   spWebUrl: string | null;
+  spItemId?: string | null;
+  spDownloadUrl?: string | null;
+  mimeType?: string | null;
   bgColor: string | null;
   textColor: string | null;
   createdAt: string;
@@ -41,6 +44,9 @@ export default async function AnnouncementsPage() {
       endDate: r.endDate ? r.endDate.toISOString() : null,
       fileName: r.fileName,
       spWebUrl: r.spWebUrl,
+      spItemId: r.spItemId,
+      spDownloadUrl: r.spDownloadUrl,
+      mimeType: r.mimeType,
       bgColor: r.bgColor,
       textColor: r.textColor,
       createdAt: r.createdAt.toISOString(),

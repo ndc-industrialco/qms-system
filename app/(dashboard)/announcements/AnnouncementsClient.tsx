@@ -18,6 +18,9 @@ type PublicAnnouncement = {
   endDate: string | null;
   fileName: string | null;
   spWebUrl: string | null;
+  spItemId?: string | null;
+  spDownloadUrl?: string | null;
+  mimeType?: string | null;
   bgColor: string | null;
   textColor: string | null;
   createdAt: string;
