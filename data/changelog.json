@@ -45,12 +45,14 @@
     "detailsTh": [
       "ปรับหน้ารายละเอียดประกาศให้ขยายกว้างขึ้นอัตโนมัติ (sm:max-w-5xl) และจัดรูปแบบเป็น 2 คอลัมน์เมื่อมีไฟล์แนบ",
       "ฝั่งซ้ายแสดงข้อมูลประกาศ ฝั่งขวาแสดงตัวอย่างรูปภาพ ไฟล์ PDF หรือเว็บวิวเอกสาร Word/Excel/PowerPoint สดๆ จาก SharePoint",
-      "แก้ไขบัคการดึงฟิลด์ spItemId และ mimeType ใน API และเพจหน้าประกาศฝั่งผู้ใช้ทั่วไป เพื่อเปิดใช้ระบบพรีวิวได้ครบถ้วน"
+      "แก้ไขบัคการดึงฟิลด์ spItemId และ mimeType ใน API และเพจหน้าประกาศฝั่งผู้ใช้ทั่วไป เพื่อเปิดใช้ระบบพรีวิวได้ครบถ้วน",
+      "เพิ่มระบบแคช Redis บนเซิร์ฟเวอร์ (TTL 45 นาที) สำหรับเก็บ URL ของไฟล์แนบ เพื่อให้หน้าตัวอย่างพรีวิวโหลดได้ทันใจภายในหลักมิลลิวินาที"
     ],
     "detailsEn": [
       "Automatically expanded the announcement view dialog (sm:max-w-5xl) and formatted it to a 2-column side-by-side layout when files exist.",
       "Displays announcement content/metadata on the left and the live SharePoint preview of images, PDFs, or Office docs on the right.",
-      "Fixed data mapping bug where spItemId and mimeType were omitted in public page views and caching."
+      "Fixed data mapping bug where spItemId and mimeType were omitted in public page views and caching.",
+      "Implemented server-side Redis caching (45-minute TTL) for pre-signed file URLs to speed up subsequent preview loads to milliseconds."
     ]
   },
   {

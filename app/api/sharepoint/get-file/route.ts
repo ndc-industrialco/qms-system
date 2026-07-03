@@ -6,6 +6,8 @@ import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
+import { redis } from "@/lib/redis";
+
 const OFFICE_MIMES = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/msword",
@@ -28,15 +30,39 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: null, error: "itemId is required" }, { status: 400 });
     }
 
-    const info = await getFileInfo(parsed.data.itemId);
+    const itemId = parsed.data.itemId;
+    const cacheKey = `sp:file-info:${itemId}`;
+
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return NextResponse.json({
+          data: JSON.parse(cached),
+          error: null,
+        });
+      }
+    } catch (err) {
+      logger.warn("[GET /api/sharepoint/get-file] Redis cache get failed", err instanceof Error ? { message: err.message } : undefined);
+    }
+
+    const info = await getFileInfo(itemId);
 
     let officeEmbedUrl: string | null = null;
     if (OFFICE_MIMES.has(info.mimeType)) {
-      officeEmbedUrl = await getOfficePreviewUrl(parsed.data.itemId);
+      officeEmbedUrl = await getOfficePreviewUrl(itemId);
+    }
+
+    const responseData = { ...info, officeEmbedUrl };
+
+    try {
+      // Cache for 45 minutes (2700 seconds) since pre-signed URL expires after 60 minutes
+      await redis.set(cacheKey, JSON.stringify(responseData), "EX", 2700);
+    } catch (err) {
+      logger.warn("[GET /api/sharepoint/get-file] Redis cache set failed", err instanceof Error ? { message: err.message } : undefined);
     }
 
     return NextResponse.json({
-      data: { ...info, officeEmbedUrl },
+      data: responseData,
       error: null,
     });
   } catch (err) {
