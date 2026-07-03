@@ -5,6 +5,7 @@ import type { AnnouncementRow } from "@/services/announcementService";
 import AnnouncementViewFields from "@/components/announcements/AnnouncementViewFields";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Props = {
   item: AnnouncementRow | null;
@@ -18,16 +19,21 @@ export default function AnnouncementViewModal({ item, open, onClose, onEdit }: P
 
   if (!open) return null;
 
+  const hasAttachment = !!(item?.fileName && item?.spWebUrl);
+
   return (
     <Dialog open={open} onOpenChange={(val) => { if (!val) onClose(); }}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+      <DialogContent className={cn(
+        "p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh] transition-all duration-300",
+        hasAttachment ? "sm:max-w-5xl" : "sm:max-w-lg"
+      )}>
         {/* Header */}
         <DialogHeader className="px-6 py-4 border-b border-slate-100 text-left">
           <DialogTitle className="text-lg font-semibold text-slate-800 leading-snug pr-8">
             {t("announcement.viewTitle")}
           </DialogTitle>
           {item && (
-            <DialogDescription className="text-xs text-slate-500 mt-0.5 truncate max-w-64">
+            <DialogDescription className="text-xs text-slate-500 mt-0.5 truncate max-w-lg">
               {item.title}
             </DialogDescription>
           )}

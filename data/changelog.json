@@ -1,18 +1,54 @@
 [
   {
-    "id": "19",
-    "titleTh": "เพิ่มระบบพรีวิวไฟล์แนบ (รูปภาพ/PDF/MS Office) ในหน้ารายละเอียดประกาศ",
-    "titleEn": "Added file attachment preview (images, PDF, MS Office) to Announcement details view",
+    "id": "21",
+    "titleTh": "เพิ่มเส้นทางพิมพ์กลางสำหรับ Audit Appointment และ Audit Plan พร้อม shared print actions",
+    "titleEn": "Added central print routes for Audit Appointment and Audit Plan with shared print actions",
     "date": "2026-07-03",
     "type": "feature",
-    "commit": "feat/announcement-attachment-preview",
+    "commit": "feat/audit-print-surfaces-qms-config",
     "detailsTh": [
-      "ดึงไฟล์แนบจาก SharePoint มาแสดงเป็นตัวอย่างสดๆ ในหน้ารายละเอียดประกาศโดยตรง",
-      "รองรับการแสดงตัวอย่างไฟล์รูปภาพ, ไฟล์ PDF และไฟล์กลุ่ม Microsoft Office (Word, Excel, PowerPoint) ผ่าน embed url"
+      "เพิ่ม print route ของ Audit Appointment และ Audit Plan เพื่อให้ config กลางของ AUDIT_APPT, AUDIT_PLAN และ AUDITOR ถูกใช้งานจริงในฝั่งเอกสารพิมพ์",
+      "สร้าง shared print action component สำหรับปุ่ม Print และ Download PDF แล้วนำไปใช้ซ้ำกับ DAR print เพื่อลดความซ้ำของ UI",
+      "เพิ่มปุ่มเปิดหน้าพิมพ์จากหน้า Audit Appointment และ Audit Plan detail เพื่อให้ผู้ใช้เข้าถึงเอกสารพิมพ์ได้ตรงจาก workflow หลัก"
     ],
     "detailsEn": [
-      "Fetched and displayed live file previews directly inside the Announcement details dialog view.",
-      "Supports displaying previews for images, PDF documents, and Microsoft Office documents (Word, Excel, PowerPoint) via dynamic embed frames."
+      "Added dedicated print routes for Audit Appointment and Audit Plan so the shared AUDIT_APPT, AUDIT_PLAN, and AUDITOR config is consumed by real print surfaces.",
+      "Introduced a shared print action component for Print and Download PDF, and reused it in the DAR print page to reduce UI duplication.",
+      "Added direct print entry points from the Audit Appointment and Audit Plan detail pages so users can access printable documents from the main workflow."
+    ]
+  },
+  {
+    "id": "20",
+    "titleTh": "เก็บ residual naming ของ Audit Appointment และ DAR print พร้อมอัปเดต matrix สถานะรวมทุกโมดูล",
+    "titleEn": "Closed residual naming gaps for Audit Appointment and DAR print, and refreshed the cross-module status matrix",
+    "date": "2026-07-03",
+    "type": "improvement",
+    "commit": "feat/qms-shared-features-matrix-refresh",
+    "detailsTh": [
+      "ปรับ Audit Appointment export ให้ sheet ที่เกี่ยวกับผู้ตรวจใช้ label จาก config กลางของโมดูล AUDITOR แทน suffix คงที่",
+      "ปรับ browser title ของ DAR print page ให้ดึง document label จาก config กลางของ DAR",
+      "อัปเดต docs/qms-requirements-matrix.md และ implement-status/qms-shared-features.md ให้สะท้อนสถานะจริงของ shared features ทุกโมดูลใน repo ปัจจุบัน"
+    ],
+    "detailsEn": [
+      "Updated Audit Appointment export so the related auditor worksheet uses the AUDITOR config label instead of a fixed suffix.",
+      "Updated the DAR print browser title to derive its document label from the shared DAR config.",
+      "Refreshed docs/qms-requirements-matrix.md and implement-status/qms-shared-features.md to reflect the real cross-module shared-feature status in the current repo."
+    ]
+  },
+  {
+    "id": "19",
+    "titleTh": "เพิ่มระบบพรีวิวไฟล์แนบ (รูปภาพ/PDF/MS Office) และปรับขนาด Modal แสดงรายละเอียดประกาศ",
+    "titleEn": "Added side-by-side file attachment preview (images, PDF, MS Office) and expanded Announcement modal width",
+    "date": "2026-07-03",
+    "type": "feature",
+    "commit": "feat/announcement-attachment-preview-side-by-side",
+    "detailsTh": [
+      "ปรับหน้ารายละเอียดประกาศให้ขยายกว้างขึ้นอัตโนมัติ (sm:max-w-5xl) และจัดรูปแบบเป็น 2 คอลัมน์เมื่อมีไฟล์แนบ",
+      "ฝั่งซ้ายแสดงข้อมูลประกาศ ฝั่งขวาแสดงตัวอย่างรูปภาพ ไฟล์ PDF หรือเว็บวิวเอกสาร Word/Excel/PowerPoint สดๆ จาก SharePoint"
+    ],
+    "detailsEn": [
+      "Automatically expanded the announcement view dialog (sm:max-w-5xl) and formatted it to a 2-column side-by-side layout when files exist.",
+      "Displays announcement content/metadata on the left and the live SharePoint preview of images, PDFs, or Office docs on the right."
     ]
   },
   {
