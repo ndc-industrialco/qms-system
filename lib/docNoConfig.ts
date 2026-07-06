@@ -18,7 +18,7 @@
 
 import { db } from "@/lib/db";
 
-export type DocNoModule = "DAR" | "CAR" | "AUDIT_APPT" | "AUDIT_PLAN" | "DOC_CONTROL" | "KPI_MONTHLY_FORM";
+export type DocNoModule = "DAR" | "CAR" | "AUDIT_APPT" | "AUDIT_PLAN" | "DOC_CONTROL";
 
 const DEFAULTS: Record<DocNoModule, string> = {
   DAR:        "DAR-{DEPT}-{SEQ:4}",
@@ -26,7 +26,6 @@ const DEFAULTS: Record<DocNoModule, string> = {
   AUDIT_APPT: "APPT-{YEAR:YY}-{SEQ:3}",
   AUDIT_PLAN: "AUD-{YEAR:YY}-{SEQ:3}",
   DOC_CONTROL:"{PREFIX}-{DEPT}-{SEQ:2}",
-  KPI_MONTHLY_FORM: "FM-KPI-01 Rev.00",
 };
 
 export async function getDocNoFormat(module: DocNoModule): Promise<string> {
