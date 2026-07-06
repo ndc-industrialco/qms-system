@@ -187,6 +187,153 @@ export class CarRepository extends BaseRepository<CarMaster> {
     });
   }
 
+  async findSummaryReport(year?: number, department?: string, status?: CarStatus) {
+    const where: Prisma.CarMasterWhereInput = {};
+
+    if (year) {
+      where.carYear = year;
+    }
+    if (department) {
+      where.OR = [
+        { targetDepartmentId: department },
+        { targetDepartmentName: { contains: department, mode: "insensitive" } },
+      ];
+    }
+    if (status) {
+      where.status = status;
+    }
+
+    const cars = await this.delegate().findMany({
+      where,
+      select: {
+        id: true,
+        status: true,
+        targetDepartmentId: true,
+        targetDepartmentName: true,
+      },
+    });
+
+    const allUniqueDepts = await this.delegate().findMany({
+      select: {
+        targetDepartmentId: true,
+        targetDepartmentName: true,
+      },
+      distinct: ["targetDepartmentId"],
+    });
+
+    const deptMap = new Map<string, string>();
+    allUniqueDepts.forEach((d) => {
+      deptMap.set(d.targetDepartmentId, d.targetDepartmentName ?? "Unknown");
+    });
+
+    const counts = new Map<string, { newCount: number; closedCount: number; totalCount: number }>();
+    deptMap.forEach((name, id) => {
+      counts.set(id, { newCount: 0, closedCount: 0, totalCount: 0 });
+    });
+
+    cars.forEach((car) => {
+      const deptId = car.targetDepartmentId;
+      if (!counts.has(deptId)) {
+        counts.set(deptId, { newCount: 0, closedCount: 0, totalCount: 0 });
+        deptMap.set(deptId, car.targetDepartmentName ?? "Unknown");
+      }
+
+      const val = counts.get(deptId)!;
+      val.totalCount += 1;
+      if (car.status === "CLOSED") {
+        val.closedCount += 1;
+      } else if (car.status === "ISSUED") {
+        val.newCount += 1;
+      }
+    });
+
+    const data = Array.from(counts.entries()).map(([deptId, val]) => ({
+      departmentId: deptId,
+      departmentName: deptMap.get(deptId) ?? "Unknown",
+      ...val,
+    }));
+
+    let filteredData = data;
+    if (department) {
+      filteredData = data.filter(
+        (row) =>
+          row.departmentId === department ||
+          row.departmentName.toLowerCase().includes(department.toLowerCase())
+      );
+    }
+    return filteredData;
+  }
+
+  async findStatusReport(dueFilter?: string, status?: CarStatus | "all") {
+    const where: Prisma.CarMasterWhereInput = {};
+    const now = new Date();
+
+    if (dueFilter === "near-due") {
+      const sevenDaysLater = new Date();
+      sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+      where.responseDueAt = {
+        gte: now,
+        lte: sevenDaysLater,
+      };
+      where.status = {
+        notIn: ["CLOSED", "CANCELLED", "DRAFT"],
+      };
+    } else if (dueFilter === "overdue") {
+      where.responseDueAt = {
+        lt: now,
+      };
+      where.status = {
+        notIn: ["CLOSED", "CANCELLED", "DRAFT"],
+      };
+    }
+
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    const cars = await this.delegate().findMany({
+      where,
+      include: {
+        verifications: {
+          orderBy: { round: "asc" },
+          select: {
+            round: true,
+            result: true,
+            verifiedAt: true,
+            findings: true,
+          },
+        },
+        mrSignature: {
+          select: {
+            signedAt: true,
+            comment: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return cars.map((car) => {
+      const latestVerification = car.verifications[car.verifications.length - 1];
+      const followUp = latestVerification
+        ? `Round ${latestVerification.round}: ${latestVerification.result} (${latestVerification.findings})`
+        : "Pending Response";
+
+      return {
+        id: car.id,
+        carNo: car.carNo,
+        issuedAt: car.issuedAt,
+        defectDetail: car.defectDetail,
+        targetDepartmentName: car.targetDepartmentName ?? "Unknown",
+        responseDueAt: car.responseDueAt,
+        followUp,
+        closingDate: car.mrSignature?.signedAt ?? null,
+        status: car.status,
+        remark: car.mrSignature?.comment ?? latestVerification?.findings ?? "",
+      };
+    });
+  }
+
   async paginateSummaries(
     query: CarListQuery,
     scope: { scope: CarListScope; issuerAuthUserId?: string; authDepartmentId?: string | null },

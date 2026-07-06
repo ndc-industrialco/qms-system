@@ -1,5 +1,25 @@
 [
   {
+    "id": "43",
+    "titleTh": "QMS CAR: เพิ่มรายงานสรุปผลและรายงานสถานะการแก้ไขพร้อมปุ่มส่งออก Excel/PDF",
+    "titleEn": "QMS CAR: Add summary and status reports with Excel/PDF export buttons",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/qms-car-summary-status-reports",
+    "detailsTh": [
+      "เพิ่มหน้าประมวลผลสรุป (Summary) และติดตามสถานะ (Status) ของโมดูล CAR สำหรับหน้าเจ้าหน้าที่ QMS (/qms/car)",
+      "พัฒนา API endpoints และ repositories สำหรับดึงข้อมูลรายงานโดยไม่เชื่อมต่อกับฐานข้อมูลโดยตรงใน route handlers",
+      "พัฒนาหน้าพิมพ์และส่งออก PDF เอกสารสรุปผลและติดตามความก้าวหน้าตามกำหนด",
+      "เพิ่มความสามารถในการดาวน์โหลดข้อมูลเป็นไฟล์ Excel ผ่าน central QMS configuration"
+    ],
+    "detailsEn": [
+      "Added Summary and Status reports inside the QMS CAR landing dashboard (/qms/car).",
+      "Created non-direct database API endpoints and repository queries to load filtered report data.",
+      "Implemented landscape and portrait print templates for PDF export.",
+      "Integrated excel spreadsheet downloads for both CAR Summary and Status views."
+    ]
+  },
+  {
     "id": "42",
     "titleTh": "ปรับเปลี่ยนเอกสารคำแนะนำสกิลทั้งหมดเป็นภาษาอังกฤษ",
     "titleEn": "Translate all agent skill instruction files to English",

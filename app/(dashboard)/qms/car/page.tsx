@@ -1,7 +1,8 @@
 import { requireRole } from "@/lib/auth";
 import { getAuthCenterMe, getAuthCenterUserProfile } from "@/lib/auth-center-admin-client";
 import { CarService } from "@/services/carService";
-import CarListTable from "@/components/car/CarListTable";
+import { QmsConfigService } from "@/services/qmsConfigService";
+import QmsCarPageClient from "@/components/car/QmsCarPageClient";
 import CarFormModalTrigger from "@/components/car/CarFormModalTrigger";
 import PageHeader from "@/components/common/PageHeader";
 import { carListQuerySchema } from "@/lib/validations/car";
@@ -10,6 +11,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "CAR - QMS" };
 
 const carService = new CarService();
+const qmsConfigService = new QmsConfigService();
 
 export default async function QmsCarListPage({
   searchParams,
@@ -32,7 +34,7 @@ export default async function QmsCarListPage({
   });
   const scope = query.scope ?? "all";
 
-  const [cars, authProfile] = await Promise.all([
+  const [cars, authProfile, footerConfig] = await Promise.all([
     carService.listCars(query, {
       scope,
       issuerAuthUserId: session.user.id,
@@ -43,6 +45,7 @@ export default async function QmsCarListPage({
           ? getAuthCenterMe(session.user.accessToken)
           : getAuthCenterUserProfile(authUserId))
       : Promise.resolve(null),
+    qmsConfigService.getSingleFooterConfig("CAR"),
   ]);
 
   const issuerName = authProfile?.displayName ?? session.user.name ?? null;
@@ -53,15 +56,13 @@ export default async function QmsCarListPage({
       <PageHeader
         title="CAR - คำร้องขอแก้ไข"
         subtitle="Corrective Action Requests"
-        actions={role === "QMS" || role === "IT" ? <CarFormModalTrigger issuerName={issuerName} defaultIssuerPosition={issuerPosition} /> : undefined}
+        actions={role === "QMS" || role === "IT" ? <CarFormModalTrigger issuerName={issuerName} defaultIssuerPosition={issuerPosition} footerConfig={footerConfig} /> : undefined}
       />
-      <CarListTable
+      <QmsCarPageClient
         initialData={cars}
-        isPrivileged
-        canEditDelete={role === "QMS" || role === "IT"}
-        initialScope={scope}
-        allowAllScope
-        myAuthDeptId={authDepartmentId}
+        authDepartmentId={authDepartmentId}
+        role={role}
+        scope={scope}
       />
     </div>
   );
