@@ -223,29 +223,27 @@ export class CarRepository extends BaseRepository<CarMaster> {
       },
     });
 
-    const allUniqueDepts = await this.delegate().findMany({
-      select: {
-        targetDepartmentId: true,
-        targetDepartmentName: true,
-      },
-      distinct: ["targetDepartmentId"],
-    });
+    // Group only from the filtered cars, using targetDepartmentName directly from each record
+    const counts = new Map<
+      string,
+      { departmentName: string; newCount: number; closedCount: number; totalCount: number }
+    >();
 
-    const deptMap = new Map<string, string>();
-    allUniqueDepts.forEach((d) => {
-      deptMap.set(d.targetDepartmentId, d.targetDepartmentName ?? "Unknown");
-    });
-
-    const counts = new Map<string, { newCount: number; closedCount: number; totalCount: number }>();
-    deptMap.forEach((name, id) => {
-      counts.set(id, { newCount: 0, closedCount: 0, totalCount: 0 });
-    });
-
-    cars.forEach((car) => {
+    for (const car of cars) {
       const deptId = car.targetDepartmentId;
+      // Resolve name: prefer targetDepartmentName stored on the record
+      const deptName = car.targetDepartmentName?.trim()
+        ? car.targetDepartmentName.trim()
+        : deptId; // fall back to ID, not "Unknown"
+
       if (!counts.has(deptId)) {
-        counts.set(deptId, { newCount: 0, closedCount: 0, totalCount: 0 });
-        deptMap.set(deptId, car.targetDepartmentName ?? "Unknown");
+        counts.set(deptId, { departmentName: deptName, newCount: 0, closedCount: 0, totalCount: 0 });
+      } else {
+        // If a better name was found later, prefer it
+        const existing = counts.get(deptId)!;
+        if (!existing.departmentName || existing.departmentName === deptId) {
+          existing.departmentName = deptName;
+        }
       }
 
       const val = counts.get(deptId)!;
@@ -255,23 +253,14 @@ export class CarRepository extends BaseRepository<CarMaster> {
       } else if (car.status === "ISSUED") {
         val.newCount += 1;
       }
-    });
-
-    const data = Array.from(counts.entries()).map(([deptId, val]) => ({
-      departmentId: deptId,
-      departmentName: deptMap.get(deptId) ?? "Unknown",
-      ...val,
-    }));
-
-    let filteredData = data;
-    if (department) {
-      filteredData = data.filter(
-        (row) =>
-          row.departmentId === department ||
-          row.departmentName.toLowerCase().includes(department.toLowerCase())
-      );
     }
-    return filteredData;
+
+    return Array.from(counts.entries())
+      .map(([deptId, val]) => ({
+        departmentId: deptId,
+        ...val,
+      }))
+      .sort((a, b) => a.departmentName.localeCompare(b.departmentName, "th"));
   }
 
   async findStatusReport(dueFilter?: string, status?: CarStatus | "all") {
