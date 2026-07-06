@@ -887,7 +887,7 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                   <Printer className="w-3.5 h-3.5 mr-1.5" />
                   Print / Export PDF
                 </Button>
-                <div className="font-medium text-[10px] uppercase text-right opacity-60">
+                <div className="font-medium text-[10px] text-right opacity-60">
                   {report?.kpi?.documentName || monthlyFormDocName || "FM-KPI-01 Rev.00"}
                 </div>
               </div>

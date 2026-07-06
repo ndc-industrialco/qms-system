@@ -15,7 +15,16 @@ import { UserRepository } from '@/repositories/userRepository';
 import { UserPreferenceRepository } from '@/repositories/userPreferenceRepository';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { listAuthCenterAppMembers } from '@/lib/auth-center-admin-client';
-import { CreateKpiDTO, UpdateKpiDTO, CreateKpiObjectiveDTO, UpdateKpiObjectiveDTO, ListKpiQuery, SubmitKpiObjectivesDTO } from '@/types/kpi';
+import {
+  CreateKpiDTO,
+  UpdateKpiDTO,
+  CreateKpiObjectiveDTO,
+  UpdateKpiObjectiveDTO,
+  ListKpiQuery,
+  SubmitKpiObjectivesDTO,
+  KpiObjectiveRevisionSnapshot,
+  KpiRemovedObjectiveComparison,
+} from '@/types/kpi';
 import type { ActorContext } from '@/types/kpi';
 import type { Prisma, SignatureType } from '@/generated/prisma/client';
 import ExcelJS from 'exceljs';
@@ -30,6 +39,102 @@ export class KpiService {
   private approvalSignatureRepo = new ApprovalSignatureRepository();
   private userRepo = new UserRepository();
   private userPrefRepo = new UserPreferenceRepository();
+
+  private buildObjectiveSnapshot(
+    objective: {
+      id: string;
+      target: number;
+      unit: string | null;
+      objective: string;
+      frequency: string;
+      calculationFormula: string;
+      actionPlanGuidelines: string;
+      referenceDocuments: string | null;
+    },
+  ): KpiObjectiveRevisionSnapshot {
+    return {
+      objectiveId: objective.id,
+      target: objective.target,
+      unit: objective.unit,
+      objective: objective.objective,
+      frequency: objective.frequency,
+      calculationFormula: objective.calculationFormula,
+      actionPlanGuidelines: objective.actionPlanGuidelines,
+      referenceDocuments: objective.referenceDocuments,
+    };
+  }
+
+  private hasObjectiveChanged(
+    current: {
+      target: number;
+      unit: string | null;
+      objective: string;
+      frequency: string;
+      calculationFormula: string;
+      actionPlanGuidelines: string;
+      referenceDocuments: string | null;
+    },
+    original: KpiObjectiveRevisionSnapshot,
+  ): boolean {
+    return current.target !== original.target
+      || current.unit !== original.unit
+      || current.objective !== original.objective
+      || current.frequency !== original.frequency
+      || current.calculationFormula !== original.calculationFormula
+      || current.actionPlanGuidelines !== original.actionPlanGuidelines
+      || current.referenceDocuments !== original.referenceDocuments;
+  }
+
+  private async getLatestRevisionSnapshots(kpiId: string): Promise<KpiObjectiveRevisionSnapshot[]> {
+    const latestRevisionLog = await db.auditLog.findFirst({
+      where: {
+        resourceType: 'KPI',
+        resourceId: kpiId,
+        action: 'REVISE',
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { metadata: true },
+    });
+
+    const metadata = latestRevisionLog?.metadata;
+    if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+      return [];
+    }
+
+    const snapshots = (metadata as Record<string, unknown>).objectiveSnapshots;
+    if (!Array.isArray(snapshots)) {
+      return [];
+    }
+
+    return snapshots.flatMap((snapshot) => {
+      if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
+        return [];
+      }
+
+      const row = snapshot as Record<string, unknown>;
+      if (
+        typeof row.objectiveId !== 'string'
+        || typeof row.target !== 'number'
+        || typeof row.objective !== 'string'
+        || typeof row.frequency !== 'string'
+        || typeof row.calculationFormula !== 'string'
+        || typeof row.actionPlanGuidelines !== 'string'
+      ) {
+        return [];
+      }
+
+      return [{
+        objectiveId: row.objectiveId,
+        target: row.target,
+        unit: typeof row.unit === 'string' ? row.unit : null,
+        objective: row.objective,
+        frequency: row.frequency,
+        calculationFormula: row.calculationFormula,
+        actionPlanGuidelines: row.actionPlanGuidelines,
+        referenceDocuments: typeof row.referenceDocuments === 'string' ? row.referenceDocuments : null,
+      }];
+    });
+  }
 
   async listKpis(query: ListKpiQuery) {
     const result = await this.kpiRepo.paginateKpis(query);
@@ -63,6 +168,9 @@ export class KpiService {
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
 
     const signatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
+    const revisionSnapshots = kpi.isRevision ? await this.getLatestRevisionSnapshots(id) : [];
+    const snapshotMap = new Map(revisionSnapshots.map((snapshot) => [snapshot.objectiveId, snapshot]));
+    const currentObjectiveIds = new Set(kpi.objectives.map((objective) => objective.id));
 
     const preparerSig = signatures.find(s => s.step === 'PREPARER');
     const userIds = [kpi.reviewerUserId, kpi.approverUserId, preparerSig?.signerUserId ?? null]
@@ -75,6 +183,33 @@ export class KpiService {
 
     return {
       ...kpi,
+      objectives: kpi.objectives.map((objective) => {
+        const originalObjective = snapshotMap.get(objective.id) ?? null;
+        const revisionChangeType = originalObjective
+          ? (this.hasObjectiveChanged({
+            target: objective.target,
+            unit: objective.unit,
+            objective: objective.objective,
+            frequency: objective.frequency,
+            calculationFormula: objective.calculationFormula,
+            actionPlanGuidelines: objective.actionPlanGuidelines,
+            referenceDocuments: objective.referenceDocuments,
+          }, originalObjective) ? 'UPDATED' : null)
+          : (kpi.isRevision ? 'ADDED' : null);
+
+        return {
+          ...objective,
+          originalObjective: revisionChangeType === 'UPDATED' ? originalObjective : null,
+          revisionChangeType,
+        };
+      }),
+      removedObjectives: revisionSnapshots
+        .filter((snapshot) => !currentObjectiveIds.has(snapshot.objectiveId))
+        .map((snapshot): KpiRemovedObjectiveComparison => ({
+          id: `removed-${snapshot.objectiveId}`,
+          revisionChangeType: 'REMOVED',
+          originalObjective: snapshot,
+        })),
       prepare: resolvedPrepare,
       reviewerUser: kpi.reviewerUserId
         ? (userMap.get(kpi.reviewerUserId) ?? (kpi.reviewerEmail ? { id: kpi.reviewerUserId, name: kpi.reviewer || null, email: kpi.reviewerEmail } : null))
@@ -958,7 +1093,11 @@ export class KpiService {
         resourceId: id,
         before: { status: kpi.status },
         after: { status: 'DRAFT', reason },
-        metadata: { revisedObjectives: targetObjIds.length },
+        metadata: {
+          revisedObjectives: targetObjIds.length,
+          revisedObjectiveIds: targetObjIds,
+          objectiveSnapshots: kpi.objectives.map((objective) => this.buildObjectiveSnapshot(objective)),
+        },
       }, tx);
 
       return result;

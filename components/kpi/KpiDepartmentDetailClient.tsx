@@ -32,6 +32,8 @@ import {
   useAnnounceKpi,
   useReviseKpi,
   useUpdateKpi,
+  type KpiDetailResponse,
+  type KpiObjectiveWithRevision,
 } from "@/hooks/api/use-kpi";
 import KpiApprovalTimeline from "@/components/kpi/KpiApprovalTimeline";
 import type { KPIObjective } from "@/generated/prisma/client";
@@ -48,6 +50,34 @@ interface Props {
   role: UserRole;
   userId: string | null;
   userDepartmentName: string | null;
+}
+
+function formatObjectiveTarget(
+  objective: { target: number; unit: string | null | undefined },
+  t: ReturnType<typeof useT>,
+) {
+  const unitLabelKey = KPI_UNITS.find((unit) => unit.value === objective.unit)?.labelKey;
+  return {
+    value: objective.target,
+    unitLabel: unitLabelKey ? t(unitLabelKey as Parameters<typeof t>[0]) : null,
+  };
+}
+
+function ObjectiveField({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "original";
+}) {
+  return (
+    <div className={cn("rounded-xl border px-3 py-2", tone === "original" ? "border-amber-200 bg-amber-50/70" : "border-slate-200 bg-slate-50/80")}>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-700">{value}</p>
+    </div>
+  );
 }
 
 const STATUS_CONFIG = {
@@ -219,7 +249,9 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
     </div>
   );
 
-  const objectives: KPIObjective[] = kpi.objectives ?? [];
+  const detail = kpi as KpiDetailResponse;
+  const objectives = detail.objectives ?? [];
+  const removedObjectives = detail.removedObjectives ?? [];
   const kpiStatus = kpi.status as keyof typeof STATUS_CONFIG;
   const statusCfg = STATUS_CONFIG[kpiStatus] ?? STATUS_CONFIG.DRAFT;
   const StatusIcon = statusCfg.icon;
@@ -486,15 +518,34 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
         </div>
       ) : (
         <div className="space-y-3">
-          {objectives.map(obj => (
-            <div key={obj.id} className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5">
+          {objectives.map((obj: KpiObjectiveWithRevision) => {
+            const currentTarget = formatObjectiveTarget(obj, t);
+            const originalTarget = obj.originalObjective ? formatObjectiveTarget(obj.originalObjective, t) : null;
+            const changeBadge = obj.revisionChangeType === "UPDATED"
+              ? { label: "Revised", className: "border-amber-200 bg-amber-50 text-amber-700" }
+              : obj.revisionChangeType === "ADDED"
+                ? { label: "Added", className: "border-emerald-200 bg-emerald-50 text-emerald-700" }
+                : null;
+
+            return (
+              <div key={obj.id} className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-slate-800 leading-snug">{obj.objective}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-slate-800 leading-snug">{obj.objective}</p>
+                    {changeBadge && (
+                      <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold", changeBadge.className)}>
+                        {changeBadge.label}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-4 mt-2 text-xs text-slate-500">
                     <span>
                       {t("kpi.objective.table.target")}:{" "}
-                      <strong className="text-primary">{obj.target}{obj.unit ? <span className="ml-0.5 text-slate-400 font-normal">{t(KPI_UNITS.find(u => u.value === obj.unit)?.labelKey as Parameters<typeof t>[0] ?? '')}</span> : ''}</strong>
+                      <strong className="text-primary">
+                        {currentTarget.value}
+                        {currentTarget.unitLabel ? <span className="ml-0.5 text-slate-400 font-normal">{currentTarget.unitLabel}</span> : ""}
+                      </strong>
                     </span>
                     <span>
                       {t("kpi.objective.table.frequency")}:{" "}
@@ -503,6 +554,34 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                   </div>
                   {obj.calculationFormula && (
                     <p className="mt-2 text-xs text-slate-400 line-clamp-1">{obj.calculationFormula}</p>
+                  )}
+                  {obj.originalObjective && (
+                    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4 text-amber-600" />
+                        <p className="text-sm font-semibold text-amber-800">Original before revise</p>
+                      </div>
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        <ObjectiveField label="Objective" value={obj.originalObjective.objective} tone="original" />
+                        <ObjectiveField
+                          label="Target"
+                          value={`${originalTarget?.value ?? obj.originalObjective.target}${originalTarget?.unitLabel ? ` ${originalTarget.unitLabel}` : ""}`}
+                          tone="original"
+                        />
+                        <ObjectiveField label="Frequency" value={obj.originalObjective.frequency} tone="original" />
+                        <ObjectiveField label="Formula" value={obj.originalObjective.calculationFormula} tone="original" />
+                        <ObjectiveField
+                          label="Guidelines"
+                          value={obj.originalObjective.actionPlanGuidelines}
+                          tone="original"
+                        />
+                        <ObjectiveField
+                          label="Reference"
+                          value={obj.originalObjective.referenceDocuments || "-"}
+                          tone="original"
+                        />
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -522,8 +601,50 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                   </div>
                 )}
               </div>
-            </div>
-          ))}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {removedObjectives.length > 0 && (
+        <div className="space-y-3">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50/70 px-4 py-3">
+            <p className="text-sm font-semibold text-rose-700">Removed from original KPI</p>
+            <p className="text-xs text-rose-600">These objectives existed before revise but were deleted in the current revision.</p>
+          </div>
+          {removedObjectives.map((removed) => {
+            const removedTarget = formatObjectiveTarget(removed.originalObjective, t);
+            return (
+              <div key={removed.id} className="rounded-2xl border border-rose-200 bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold text-slate-800">{removed.originalObjective.objective}</p>
+                  <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                    Removed
+                  </span>
+                </div>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <ObjectiveField
+                    label="Target"
+                    value={`${removedTarget.value}${removedTarget.unitLabel ? ` ${removedTarget.unitLabel}` : ""}`}
+                    tone="original"
+                  />
+                  <ObjectiveField label="Frequency" value={removed.originalObjective.frequency} tone="original" />
+                  <ObjectiveField label="Formula" value={removed.originalObjective.calculationFormula} tone="original" />
+                  <ObjectiveField
+                    label="Guidelines"
+                    value={removed.originalObjective.actionPlanGuidelines}
+                    tone="original"
+                  />
+                  <ObjectiveField
+                    label="Reference"
+                    value={removed.originalObjective.referenceDocuments || "-"}
+                    tone="original"
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

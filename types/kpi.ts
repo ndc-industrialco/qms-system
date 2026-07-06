@@ -39,6 +39,25 @@ export interface UpdateKpiObjectiveDTO {
   referenceDocuments?: string;
 }
 
+export interface KpiObjectiveRevisionSnapshot {
+  objectiveId: string;
+  target: number;
+  unit: string | null;
+  objective: string;
+  frequency: string;
+  calculationFormula: string;
+  actionPlanGuidelines: string;
+  referenceDocuments: string | null;
+}
+
+export type KpiRevisionChangeType = 'ADDED' | 'UPDATED' | 'REMOVED';
+
+export interface KpiRemovedObjectiveComparison {
+  id: string;
+  revisionChangeType: 'REMOVED';
+  originalObjective: KpiObjectiveRevisionSnapshot;
+}
+
 export interface CreateMonthlyReportDTO {
   kpiId: string;
   month: string;

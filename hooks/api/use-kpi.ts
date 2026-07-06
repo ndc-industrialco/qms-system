@@ -1,11 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { KPI } from "@/generated/prisma/client";
+import type { KPI, KPIObjective } from "@/generated/prisma/client";
+import type {
+  KpiObjectiveRevisionSnapshot,
+  KpiRemovedObjectiveComparison,
+  KpiRevisionChangeType,
+} from "@/types/kpi";
 
 export interface ResolvedUser { id: string; name: string | null; email: string }
 export type KpiWithUsers = KPI & {
   reviewerUser: ResolvedUser | null;
   approverUser: ResolvedUser | null;
 }
+
+export type KpiObjectiveWithRevision = KPIObjective & {
+  originalObjective?: KpiObjectiveRevisionSnapshot | null;
+  revisionChangeType?: Exclude<KpiRevisionChangeType, "REMOVED"> | null;
+};
+
+export type KpiDetailResponse = KpiWithUsers & {
+  objectives: KpiObjectiveWithRevision[];
+  removedObjectives?: KpiRemovedObjectiveComparison[];
+  approvalSignatures?: Array<{
+    step: string;
+    signerUserId: string | null;
+    action?: string | null;
+  }>;
+};
 
 interface KpiListResponse {
   data: KpiWithUsers[];
@@ -82,7 +102,7 @@ export function useKpiList(query: KpiQuery) {
 }
 
 export function useKpiById(id: string | null) {
-  return useQuery({
+  return useQuery<{ data: KpiDetailResponse }>({
     queryKey: ["kpi", id],
     queryFn: async () => {
       const res = await fetch(`/api/kpi/${id}`);

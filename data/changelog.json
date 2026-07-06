@@ -1,5 +1,35 @@
 [
   {
+    "id": "35",
+    "titleTh": "แก้ไขการแสดงผล Footer บน Form/PDF ให้ตรงตามที่ตั้งค่า",
+    "titleEn": "Remove uppercase transform from footer on forms/PDF",
+    "date": "2026-07-06",
+    "type": "fix",
+    "commit": "fix: remove uppercase from kpi monthly footer display",
+    "detailsTh": [
+      "นำคลาส uppercase ออกจากส่วน Footer ของแบบฟอร์ม KPI Monthly เพื่อให้แสดงผลพิมพ์เล็ก-พิมพ์ใหญ่ตรงตามที่ผู้ใช้กรอกไว้ใน Footer Config"
+    ],
+    "detailsEn": [
+      "Removed the uppercase CSS class from the KPI Monthly form footer so that the casing exactly matches what is configured in Footer Config."
+    ]
+  },
+  {
+    "id": "35",
+    "titleTh": "KPI: แสดง Original เทียบกับรายการที่แก้ไขในหน้า revise",
+    "titleEn": "KPI: Show original objectives alongside revised items",
+    "date": "2026-07-06",
+    "type": "improvement",
+    "commit": "improve/kpi-revision-comparison-view",
+    "detailsTh": [
+      "บันทึก snapshot ของ KPI objectives เดิมไว้ตอนกด Revise เพื่อใช้เปรียบเทียบภายหลัง",
+      "หน้า KPI detail จะแสดงรายการที่แก้ไขพร้อม Original เดิม และแยกรายการที่ถูกลบออกจาก revision เพื่อให้ตรวจสอบการเพิ่ม ลบ และแก้ไขได้ชัดเจน"
+    ],
+    "detailsEn": [
+      "Captured the original KPI objective snapshot at revise time so the system can compare later changes against the pre-revision state.",
+      "Updated the KPI detail page to show revised objectives with their original values and list objectives removed during the revision for easier review."
+    ]
+  },
+  {
     "id": "34",
     "titleTh": "เพิ่มระบบสองภาษา (TH/EN) ในหน้า Footer Config",
     "titleEn": "Add i18n TH/EN support to Footer Config page",
