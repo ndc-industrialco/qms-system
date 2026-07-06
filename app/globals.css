@@ -298,3 +298,13 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(15, 16, 89, 0.09), 0 2px 6px rgba(15, 16, 89, 0.05) !important;
 }
+
+/* ── Rich text view (Tiptap rendered HTML) ───────────────── */
+.rich-view p          { margin: 0 0 0.35em; line-height: 1.6; }
+.rich-view p:last-child { margin-bottom: 0; }
+.rich-view ul,
+.rich-view ol         { padding-left: 1.4em; margin: 0.3em 0; }
+.rich-view li          { margin: 0.1em 0; }
+.rich-view strong      { font-weight: 700; }
+.rich-view em          { font-style: italic; }
+.rich-view hr          { border: none; border-top: 1px solid #e2e8f0; margin: 0.5em 0; }

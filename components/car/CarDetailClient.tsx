@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
+import RichTextView from "@/components/shared/RichTextView";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
 import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck, ChevronRight, Printer } from "lucide-react";
@@ -213,7 +214,7 @@ export default function CarDetailClient({
               {reCarMutation.isPending ? t("car.detail.btnCreatingReCar") : t("car.detail.btnCreateReCar")}
             </Button>
           )}
-          <Link href={`/print/qms/car/${car.id}`} target="_blank" rel="noreferrer" passHref legacyBehavior>
+          <Link href={`/print/qms/car/${car.id}`} target="_blank" rel="noreferrer">
             <Button variant="outline">
               <Printer className="w-3.5 h-3.5 mr-1.5" />
               พิมพ์เอกสาร CAR
@@ -259,11 +260,11 @@ export default function CarDetailClient({
             </div>
             <div className="sm:col-span-2">
               <p className="text-xs text-slate-500">{t("car.detail.labelDefect")}</p>
-              <p className="text-sm text-slate-800 whitespace-pre-wrap">{car.defectDetail}</p>
+              <RichTextView content={car.defectDetail} />
             </div>
             <div className="sm:col-span-2">
               <p className="text-xs text-slate-500">{t("car.detail.labelNonConformance")}</p>
-              <p className="text-sm text-slate-800 whitespace-pre-wrap">{car.nonConformanceRef}</p>
+              <RichTextView content={car.nonConformanceRef} />
             </div>
           </div>
 

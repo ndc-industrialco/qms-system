@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDepartments } from "@/hooks/api/use-departments";
 import { useEmailGroups } from "@/hooks/api/use-email-groups";
+import { useAuditStandards } from "@/hooks/api/use-audit-standards";
 import { toast } from "sonner";
 import { Mail, MailX, Send } from "lucide-react";
 import { useT } from "@/lib/i18n";
@@ -15,10 +16,12 @@ import { INPUT_CLASS } from "@/lib/styles";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { carCreateSchema, type CarCreateInput } from "@/lib/validations/car";
-import { ISO_STANDARDS, CAR_SOURCE_LABELS } from "@/types/car";
+import { CAR_SOURCE_LABELS } from "@/types/car";
 import type { CarDetail, CarSourceType } from "@/types/car";
+import type { FooterConfig } from "@/services/qmsConfigService";
 import SignaturePad from "@/components/shared/SignaturePad";
 import type { SignatureType } from "@/types/dar";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 
 interface Props {
   open: boolean;
@@ -27,6 +30,7 @@ interface Props {
   onSuccess?: (car: CarDetail) => void;
   issuerName?: string | null;
   defaultIssuerPosition?: string | null;
+  footerConfig?: FooterConfig;
 }
 
 async function saveCar(data: CarCreateInput, editId?: string): Promise<CarDetail> {
@@ -107,6 +111,7 @@ export default function CarFormModal({
   onSuccess,
   issuerName,
   defaultIssuerPosition,
+  footerConfig,
 }: Props) {
   const t = useT();
   const qc = useQueryClient();
@@ -121,9 +126,13 @@ export default function CarFormModal({
     refetch: refetchDepartments,
   } = useDepartments();
   const { data: emailGroupsData } = useEmailGroups();
+  const { data: standardsData, isLoading: standardsLoading } = useAuditStandards();
   const departments = Array.isArray(departmentsData) ? departmentsData : [];
   const emailGroups = (Array.isArray(emailGroupsData) ? emailGroupsData : []).filter(
     (g) => g.mail
+  );
+  const auditStandards = (Array.isArray(standardsData) ? standardsData : []).filter(
+    (s) => s.active
   );
 
   const {
@@ -331,38 +340,48 @@ export default function CarFormModal({
           )}
         </section>
 
-        <section className="space-y-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {t("car.form.section2")}
-          </h3>
-          {errors.isoStandards && (
-            <p className="text-xs text-rose-500">{errors.isoStandards.message}</p>
-          )}
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-            {ISO_STANDARDS.map((std) => (
-              <label
-                key={std}
-                className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2"
-              >
-                <input
-                  type="checkbox"
-                  value={std}
-                  checked={selectedIso.includes(std)}
-                  onChange={(e) => {
-                    setValue(
-                      "isoStandards",
-                      e.target.checked
-                        ? [...selectedIso, std]
-                        : selectedIso.filter((s) => s !== std)
-                    );
-                  }}
-                  className="h-4 w-4 rounded border-slate-300 text-primary"
-                />
-                <span className="text-sm text-slate-700">{std}</span>
-              </label>
-            ))}
-          </div>
-        </section>
+            <section className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {t("car.form.section2")}
+              </h3>
+              {errors.isoStandards && (
+                <p className="text-xs text-rose-500">{errors.isoStandards.message}</p>
+              )}
+              {standardsLoading ? (
+                <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="h-10 rounded-xl border border-slate-200 bg-white" />
+                  ))}
+                </div>
+              ) : auditStandards.length > 0 ? (
+                <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                  {auditStandards.map((std) => (
+                    <label
+                      key={std.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2"
+                    >
+                      <input
+                        type="checkbox"
+                        value={std.name}
+                        checked={selectedIso.includes(std.name)}
+                        onChange={(e) => {
+                          setValue(
+                            "isoStandards",
+                            e.target.checked
+                              ? [...selectedIso, std.name]
+                              : selectedIso.filter((s) => s !== std.name)
+                          );
+                        }}
+                        className="h-4 w-4 rounded border-slate-300 text-primary"
+                      />
+                      <span className="text-sm text-slate-700">{std.name}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">ไม่มีมาตรฐาน ISO ในระบบ</p>
+              )}
+            </section>
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <section className="space-y-4">
@@ -373,10 +392,12 @@ export default function CarFormModal({
               <label className="mb-1 block text-sm font-medium text-slate-700">
                 {t("car.form.defectLabel")}
               </label>
-              <textarea
-                {...register("defectDetail")}
-                rows={6}
-                className={cn(INPUT_CLASS, "resize-none")}
+              <RichTextEditor
+                value={watch("defectDetail") ?? ""}
+                onChange={(html) => setValue("defectDetail", html, { shouldValidate: true, shouldDirty: true })}
+                placeholder="ระบุรายละเอียดข้อบกพร่อง / Describe the defect detail..."
+                minHeight={140}
+                error={!!errors.defectDetail}
               />
               {errors.defectDetail && (
                 <p className="mt-1 text-xs text-rose-500">{errors.defectDetail.message}</p>
@@ -386,10 +407,12 @@ export default function CarFormModal({
               <label className="mb-1 block text-sm font-medium text-slate-700">
                 {t("car.form.nonConformanceLabel")}
               </label>
-              <textarea
-                {...register("nonConformanceRef")}
-                rows={5}
-                className={cn(INPUT_CLASS, "resize-none")}
+              <RichTextEditor
+                value={watch("nonConformanceRef") ?? ""}
+                onChange={(html) => setValue("nonConformanceRef", html, { shouldValidate: true, shouldDirty: true })}
+                placeholder="อ้างอิงข้อกำหนดที่ไม่เป็นไปตาม / Reference the non-conformance clause..."
+                minHeight={120}
+                error={!!errors.nonConformanceRef}
               />
               {errors.nonConformanceRef && (
                 <p className="mt-1 text-xs text-rose-500">
@@ -562,49 +585,63 @@ export default function CarFormModal({
 
       {isMobile ? (
         <SheetFooter className="border-t border-slate-100 bg-white px-4 py-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={mutation.isPending}
-          >
-            {t("common.cancel")}
-          </Button>
-          <Button type="submit" form="car-form" disabled={mutation.isPending}>
-            {mutation.isPending && (
-              <span className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            )}
-            {mutation.isPending ? (
-              editCar ? t("car.form.btnSaving") : "กำลังออก CAR..."
-            ) : editCar ? (
-              t("car.form.btnSave")
-            ) : (
-              <><Send className="mr-1.5 h-3.5 w-3.5" />ออก CAR</>
-            )}
-          </Button>
+          <div className="flex w-full items-center justify-between">
+            <span className="text-[10px] leading-tight text-slate-400">
+              {footerConfig?.prefix ? `${footerConfig.prefix} / ${footerConfig.label || ""}` : ""}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={mutation.isPending}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" form="car-form" disabled={mutation.isPending}>
+                {mutation.isPending && (
+                  <span className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                {mutation.isPending ? (
+                  editCar ? t("car.form.btnSaving") : "กำลังออก CAR..."
+                ) : editCar ? (
+                  t("car.form.btnSave")
+                ) : (
+                  <><Send className="mr-1.5 h-3.5 w-3.5" />ออก CAR</>
+                )}
+              </Button>
+            </div>
+          </div>
         </SheetFooter>
       ) : (
         <DialogFooter className="border-t border-slate-100 bg-white px-6 py-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={mutation.isPending}
-          >
-            {t("common.cancel")}
-          </Button>
-          <Button type="submit" form="car-form" disabled={mutation.isPending}>
-            {mutation.isPending && (
-              <span className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            )}
-            {mutation.isPending ? (
-              editCar ? t("car.form.btnSaving") : "กำลังออก CAR..."
-            ) : editCar ? (
-              t("car.form.btnSave")
-            ) : (
-              <><Send className="mr-1.5 h-3.5 w-3.5" />ออก CAR</>
-            )}
-          </Button>
+          <div className="flex w-full items-center justify-between">
+            <span className="text-[10px] leading-tight text-slate-400">
+              {footerConfig?.prefix ? `${footerConfig.prefix}  ${footerConfig.label || ""}` : ""}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={mutation.isPending}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" form="car-form" disabled={mutation.isPending}>
+                {mutation.isPending && (
+                  <span className="mr-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                {mutation.isPending ? (
+                  editCar ? t("car.form.btnSaving") : "กำลังออก CAR..."
+                ) : editCar ? (
+                  t("car.form.btnSave")
+                ) : (
+                  <><Send className="mr-1.5 h-3.5 w-3.5" />ออก CAR</>
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogFooter>
       )}
     </>
