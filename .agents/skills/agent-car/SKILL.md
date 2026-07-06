@@ -1,15 +1,15 @@
 ---
 name: agent-car
 description: >
-  ผู้เชี่ยวชาญ Module CAR (Corrective Action Request) รู้ Business Logic,
-  Status Flow, Permission, Repository, และ Service ของ CAR อย่างลึกซึ้ง
+  Expert in the CAR (Corrective Action Request) Module, with deep knowledge of CAR Business Logic,
+  Status Flow, Permissions, Repositories, and Services.
 ---
 
 # Agent-CAR — Corrective Action Request Module
 
-คุณคือผู้เชี่ยวชาญ Module CAR ของโปรเจกต์ `qms-system`
-คุณรับผิดชอบ Backend Logic, API Routes, และ Frontend Components ของ CAR เท่านั้น
-**ด้าน UI/UX ต้องปฏิบัติตาม Design System Agent เสมอ**
+You are the CAR Module expert for the `qms-system` project.
+You are responsible for CAR Backend Logic, API Routes, and Frontend Components only.
+**Regarding UI/UX, you must always adhere to the Design System Agent.**
 
 ---
 
@@ -19,19 +19,19 @@ description: >
 DRAFT → ISSUED → RESPONDED → VERIFY_1 → VERIFY_2 → CLOSED
                                 ↓ (FAILED)
                               RE_CAR
-CANCELLED (ยกเลิกได้จาก DRAFT หรือ ISSUED)
+CANCELLED (Can be cancelled from DRAFT or ISSUED status)
 ```
 
-| Status | ความหมาย | ใครทำได้ |
-|--------|----------|----------|
-| DRAFT | สร้างแล้วยังไม่ออก | QMS, IT |
-| ISSUED | ออก CAR ให้แผนกแล้ว | QMS, IT |
-| RESPONDED | แผนกตอบกลับแล้ว | ผู้รับ CAR |
-| VERIFY_1 | QMS ตรวจสอบครั้งที่ 1 | QMS, MR |
-| VERIFY_2 | QMS ตรวจสอบครั้งที่ 2 | QMS, MR |
-| CLOSED | ปิด CAR | QMS, MR |
-| RE_CAR | ต้องทำ CAR ใหม่ | QMS, MR |
-| CANCELLED | ยกเลิก | QMS, IT |
+| Status | Meaning | Authorized Roles |
+|--------|---------|------------------|
+| DRAFT | Created, not yet issued | QMS, IT |
+| ISSUED | CAR issued to department | QMS, IT |
+| RESPONDED | Department has responded | CAR Recipient |
+| VERIFY_1 | QMS 1st Stage Verification | QMS, MR |
+| VERIFY_2 | QMS 2nd Stage Verification | QMS, MR |
+| CLOSED | CAR Closed | QMS, MR |
+| RE_CAR | New CAR required | QMS, MR |
+| CANCELLED | Cancelled | QMS, IT |
 
 ---
 
@@ -39,18 +39,18 @@ CANCELLED (ยกเลิกได้จาก DRAFT หรือ ISSUED)
 
 | Action | USER | QMS | MR | IT |
 |--------|------|-----|----|----|
-| สร้าง CAR | ❌ | ✅ | ❌ | ✅ |
-| ออก CAR (ISSUE) | ❌ | ✅ | ❌ | ✅ |
-| ตอบ CAR | ✅ (เฉพาะแผนกตัวเอง) | ✅ | ✅ | ✅ |
+| Create CAR | ❌ | ✅ | ❌ | ✅ |
+| Issue CAR | ❌ | ✅ | ❌ | ✅ |
+| Respond to CAR | ✅ (Own department only) | ✅ | ✅ | ✅ |
 | Verify | ❌ | ✅ | ✅ | ✅ |
-| ปิด CAR | ❌ | ✅ | ✅ | ✅ |
-| ยกเลิก CAR | ❌ | ✅ | ❌ | ✅ |
+| Close CAR | ❌ | ✅ | ✅ | ✅ |
+| Cancel CAR | ❌ | ✅ | ❌ | ✅ |
 
 ---
 
 ## 3. Source Types
-| Code | ความหมาย |
-|------|----------|
+| Code | Meaning |
+|------|---------|
 | I | Internal Audit |
 | C | Customer Complaint |
 | N | Non-conformance |
@@ -58,10 +58,10 @@ CANCELLED (ยกเลิกได้จาก DRAFT หรือ ISSUED)
 
 ---
 
-## 4. Files ที่รับผิดชอบ
+## 4. Responsible Files
 
 ### Backend
-- `services/carService.ts` — Business Logic หลัก (60KB)
+- `services/carService.ts` — Core Business Logic (60KB)
 - `services/carEmailService.ts` — Email notifications
 - `services/carNotificationService.ts` — In-app notifications
 - `services/carReminderService.ts` — Reminder scheduler
@@ -70,26 +70,26 @@ CANCELLED (ยกเลิกได้จาก DRAFT หรือ ISSUED)
 
 ### API Routes
 - `app/api/car/` — CRUD endpoints
-- `app/api/car/[id]/issue/` — ออก CAR
-- `app/api/car/[id]/respond/` — ตอบ CAR
-- `app/api/car/[id]/verify/` — Verify
-- `app/api/car/response/[responseId]/attachments/` — อัปโหลดไฟล์
+- `app/api/car/[id]/issue/` — Issue CAR
+- `app/api/car/[id]/respond/` — Respond to CAR
+- `app/api/car/[id]/verify/` — Verify CAR
+- `app/api/car/response/[responseId]/attachments/` — Upload attachment
 
 ### Frontend Components
-- `components/car/` — Components ทั้งหมด
+- `components/car/` — All CAR components
 - `app/(dashboard)/car/` — Pages
 
 ---
 
-## 5. Schema ที่เกี่ยวข้อง
+## 5. Related Schemas
 
 ```prisma
-model CarMaster       // ข้อมูลหลัก CAR
-model CarResponse     // คำตอบจากแผนก
-model CarVerification // ผลการ Verify
-model CarAttachment   // ไฟล์แนบ (ผ่าน CarResponse)
-model CarMrSignature  // ลายเซ็น MR
-model CarMrResponseReview // MR Review คำตอบ
+model CarMaster       // CAR Master Info
+model CarResponse     // Response from Department
+model CarVerification // Verification Result
+model CarAttachment   // Attachment (linked via CarResponse)
+model CarMrSignature  // MR Signature
+model CarMrResponseReview // MR Review of the Response
 
 enum CarStatus { DRAFT ISSUED RESPONDED VERIFY_1 VERIFY_2 CLOSED RE_CAR CANCELLED }
 enum CarSourceType { I C N O }
@@ -99,10 +99,10 @@ enum VerificationResult { PASSED FAILED }
 
 ---
 
-## 6. กฎสำคัญของ Module นี้
+## 6. Important Rules for this Module
 
-1. ไฟล์แนบอัปโหลดผ่าน SharePoint เท่านั้น — ใช้ `requireAuthEdge` + `req.formData()`
-2. Notification ส่งผ่าน `carNotificationService` และ `carEmailService` เสมอ
-3. เมื่อ VERIFY_1 FAILED → สร้าง RE_CAR อัตโนมัติ
-4. ดาวน์โหลดไฟล์แนบต้องผ่าน `/api/sharepoint/get-file?itemId=` (ห้ามใช้ spDownloadUrl โดยตรง)
-5. CarNo format: `CAR-{YYYY}-{SEQ:04d}` เช่น `CAR-2026-0001`
+1. File attachments must be uploaded to SharePoint only — use `requireAuthEdge` + `req.formData()`.
+2. Notifications must always be sent via `carNotificationService` and `carEmailService`.
+3. When VERIFY_1 FAILED → a RE_CAR is automatically generated.
+4. Downloading attachments must go through `/api/sharepoint/get-file?itemId=` (never use spDownloadUrl directly).
+5. CarNo format: `CAR-{YYYY}-{SEQ:04d}` e.g., `CAR-2026-0001`.

@@ -1,15 +1,15 @@
 ---
 name: agent-dar
 description: >
-  ผู้เชี่ยวชาญ Module DAR (Document Action Request) รู้ Business Logic,
-  Status Flow, Permission, Approval Steps, และ QMS Processing ของ DAR อย่างลึกซึ้ง
+  Expert in the DAR (Document Action Request) Module, with deep knowledge of DAR Business Logic,
+  Status Flow, Permissions, Approval Steps, and QMS Processing.
 ---
 
 # Agent-DAR — Document Action Request Module
 
-คุณคือผู้เชี่ยวชาญ Module DAR ของโปรเจกต์ `qms-system`
-คุณรับผิดชอบ Backend Logic, API Routes, และ Frontend Components ของ DAR เท่านั้น
-**ด้าน UI/UX ต้องปฏิบัติตาม Design System Agent เสมอ**
+You are the DAR Module expert for the `qms-system` project.
+You are responsible for DAR Backend Logic, API Routes, and Frontend Components only.
+**Regarding UI/UX, you must always adhere to the Design System Agent.**
 
 ---
 
@@ -17,37 +17,37 @@ description: >
 
 ```
 DRAFT → PENDING_REVIEW → PENDING_APPROVE → QMS_PROCESSING → COMPLETED
-                                              ↓ (ถูก Reject)
+                                              ↓ (Rejected)
                                            CANCELLED
 ```
 
-| Status | ความหมาย | ใครทำได้ |
-|--------|----------|----------|
-| DRAFT | สร้างแล้วรอส่ง | ผู้ขอ (ทุก Role) |
-| PENDING_REVIEW | รอ Reviewer อนุมัติ | Reviewer |
-| PENDING_APPROVE | รอ Approver อนุมัติ | Approver |
-| QMS_PROCESSING | QMS กำลังประมวลผล | QMS, IT |
-| COMPLETED | เสร็จสิ้น | QMS, IT |
-| CANCELLED | ยกเลิก | QMS, IT |
+| Status | Meaning | Authorized Roles |
+|--------|---------|------------------|
+| DRAFT | Created, waiting to be sent | Requester (Any Role) |
+| PENDING_REVIEW | Awaiting Reviewer approval | Reviewer |
+| PENDING_APPROVE | Awaiting Approver approval | Approver |
+| QMS_PROCESSING | QMS is processing | QMS, IT |
+| COMPLETED | Completed | QMS, IT |
+| CANCELLED | Cancelled | QMS, IT |
 
 ---
 
 ## 2. Approval Steps (ApprovalStep enum)
 
-DAR ใช้ Steps: `REQUESTER → REVIEWER → APPROVER → QMS_PROCESSOR`
+DAR Uses Steps: `REQUESTER → REVIEWER → APPROVER → QMS_PROCESSOR`
 
 ---
 
 ## 3. QMS Processing Checklist
 
-เมื่อสถานะ `QMS_PROCESSING` → QMS ต้องทำ checklist ใน `QmsProcessing`:
-- `chkHasAttachment` — มีเอกสารแนบ
-- `chkPrintAndValidate` — พิมพ์และตรวจสอบ
-- `chkRenumber` — เปลี่ยนเลขเอกสาร
-- `chkImpactInvestigated` — วิเคราะห์ผลกระทบ
-- `chkSubmitVerification` — ส่งตรวจสอบ
-- `chkGetBackProcess` — คืนกระบวนการ
-- `chkCopyDistribute` — สำเนาและแจกจ่าย
+When status is `QMS_PROCESSING` → QMS must complete the checklist in `QmsProcessing`:
+- `chkHasAttachment` — Attachment exists
+- `chkPrintAndValidate` — Print and validate
+- `chkRenumber` — Renumber document
+- `chkImpactInvestigated` — Impact investigated
+- `chkSubmitVerification` — Submit verification
+- `chkGetBackProcess` — Get back process
+- `chkCopyDistribute` — Copy and distribute
 
 ---
 
@@ -59,35 +59,35 @@ const DOC_TYPES = ["ISO", "Work Instruction", "Form", "Procedure", "Other"];
 
 ---
 
-## 5. Files ที่รับผิดชอบ
+## 5. Responsible Files
 
 ### Backend
-- `services/darService.ts` — Business Logic หลัก (45KB)
+- `services/darService.ts` — Core Business Logic (45KB)
 - `repositories/darRepository.ts` — DB queries
 - `repositories/qmsProcessingRepository.ts` — QMS Processing
 
 ### API Routes
 - `app/api/dar/` — CRUD endpoints
-- `app/api/dar/[id]/attachments/` — อัปโหลดไฟล์
-- `app/api/dar/attachments/temp/` — Temp upload ก่อนสร้าง DAR
+- `app/api/dar/[id]/attachments/` — Upload file
+- `app/api/dar/attachments/temp/` — Temp upload before DAR creation
 
 ### Frontend Components
-- `components/dar/` — Components ทั้งหมด
+- `components/dar/` — All DAR components
 - `app/(dashboard)/dar/` — Pages
 - `app/(dashboard)/qms/dar/` — QMS view
 
 ---
 
-## 6. Schema ที่เกี่ยวข้อง
+## 6. Related Schemas
 
 ```prisma
-model DarMaster         // ข้อมูลหลัก DAR
-model DarItem           // รายการเอกสารที่ขอ
-model DarApproval       // ผลการอนุมัติแต่ละ Step
-model DarAttachment     // ไฟล์แนบ
-model DarDistribution   // แผนกที่รับเอกสาร
-model QmsProcessing     // Checklist ของ QMS
-model PublicDocument    // เอกสารที่ Publish แล้ว
+model DarMaster         // DAR Master Info
+model DarItem           // Requested Document Item
+model DarApproval       // Approval Result for each Step
+model DarAttachment     // Attachment
+model DarDistribution   // Document Recipient Department
+model QmsProcessing     // QMS Checklist
+model PublicDocument    // Published Document
 
 enum DarStatus { DRAFT PENDING_REVIEW PENDING_APPROVE QMS_PROCESSING COMPLETED CANCELLED }
 enum ApprovalAction { PENDING APPROVED REJECTED }
@@ -95,10 +95,10 @@ enum ApprovalAction { PENDING APPROVED REJECTED }
 
 ---
 
-## 7. กฎสำคัญของ Module นี้
+## 7. Important Rules for this Module
 
-1. Temp Attachment อัปโหลดก่อนสร้าง DAR — ใช้ `tempId` (UUID) เป็น reference
-2. เมื่อสร้าง DAR จริง → ย้าย Temp files ไปยัง folder ถาวร
-3. DAR No format: `DAR-{YYYY}-{SEQ:04d}` เช่น `DAR-2026-0001`
-4. Distribution → แต่ละแผนกได้รับสำเนา
-5. ดาวน์โหลดไฟล์แนบต้องผ่าน `/api/sharepoint/get-file?itemId=` เสมอ
+1. Temp Attachment is uploaded before DAR creation — use `tempId` (UUID) as reference.
+2. When actual DAR is created → move Temp files to permanent folder.
+3. DAR No format: `DAR-{YYYY}-{SEQ:04d}` e.g., `DAR-2026-0001`.
+4. Distribution → each department receives a copy.
+5. Downloading attachments must always go through `/api/sharepoint/get-file?itemId=`.

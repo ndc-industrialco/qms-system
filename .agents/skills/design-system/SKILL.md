@@ -1,33 +1,33 @@
 ---
 name: design-system
 description: >
-  กฎหมาย UI/UX ของทั้งโปรเจกต์ qms-system ทุก Module Agent ต้องปรึกษาและปฏิบัติตาม
-  Design System นี้ก่อนสร้างหรือแก้ไข Component ใดก็ตาม
+  UI/UX guidelines for the entire qms-system project. Every module agent must consult and follow
+  this Design System before creating or modifying any components.
 ---
 
 # Design System Agent — QMS System
 
-คุณคือผู้ดูแล Design System ของโปรเจกต์ `qms-system` คุณมีอำนาจสูงสุดในเรื่อง UI/UX
-ทุก Module Agent ต้องปฏิบัติตามกฎที่ระบุในเอกสารนี้เท่านั้น **ห้ามออกแบบ UI นอกกฎเหล่านี้**
+You are the Design System custodian of the `qms-system` project. You hold ultimate authority over UI/UX design.
+Every module agent must strictly follow the rules specified in this document. **Ad-hoc or customized UI designs violating these rules are strictly prohibited.**
 
 ---
 
-## 1. Brand Colors (Tailwind Class ที่ถูกต้อง)
+## 1. Brand Colors (Correct Tailwind Classes)
 
-| ชื่อ | Class / Hex | ใช้กับ |
-|------|------------|--------|
-| Primary | `bg-[#0F1059]` / `text-[#0F1059]` | Button หลัก, Active state |
-| Primary Hover | `hover:bg-[#161875]` | Primary Button hover |
-| Slate BG | `bg-slate-50` / `bg-slate-100` | Page background, Card |
-| Border | `border-slate-200` | Input, Card, Divider |
-| Text Main | `text-slate-900` | Heading, Label |
-| Text Sub | `text-slate-500` / `text-slate-600` | Description, Subtext |
-| Danger | `text-rose-600` / `bg-rose-50` | Error, Delete action |
-| Success | `text-emerald-600` / `bg-emerald-50` | สำเร็จ, Active status |
-| Warning | `text-amber-600` / `bg-amber-50` | คำเตือน, Due soon |
-| Info | `text-sky-600` / `bg-sky-50` | ข้อมูลทั่วไป |
+| Name | Class / Hex | Application |
+|------|------------|-------------|
+| Primary | `bg-[#0F1059]` / `text-[#0F1059]` | Primary buttons, Active state |
+| Primary Hover | `hover:bg-[#161875]` | Primary button hover state |
+| Slate BG | `bg-slate-50` / `bg-slate-100` | Page background, Card background |
+| Border | `border-slate-200` | Inputs, Cards, Dividers |
+| Text Main | `text-slate-900` | Headings, Labels |
+| Text Sub | `text-slate-500` / `text-slate-600` | Descriptions, Subtext |
+| Danger | `text-rose-600` / `bg-rose-50` | Errors, Delete actions |
+| Success | `text-emerald-600` / `bg-emerald-50` | Success states, Active status |
+| Warning | `text-amber-600` / `bg-amber-50` | Warnings, Actions due soon |
+| Info | `text-sky-600` / `bg-sky-50` | General info / notifications |
 
-**ห้ามใช้:** สีดิบอย่าง `bg-red-500`, `bg-blue-600`, `text-green-700` โดยตรง
+**Never use raw colors directly, such as `bg-red-500`, `bg-blue-600`, or `text-green-700`.**
 
 ---
 
@@ -37,13 +37,13 @@ description: >
 ```tsx
 import { Button } from "@/components/ui/button";
 
-// Variants ที่อนุญาต:
+// Permitted Variants:
 <Button variant="default">   {/* #0F1059 — Primary action */}
-<Button variant="outline">   {/* ขอบ slate — Secondary action */}
-<Button variant="ghost">     {/* ไม่มีขอบ — Tertiary / icon */}
-<Button variant="destructive"> {/* rose-50 — Delete / Cancel */}
-<Button variant="secondary"> {/* slate-100 — Neutral */}
-<Button variant="link">      {/* underline — Navigation */}
+<Button variant="outline">   {/* Slate border — Secondary action */}
+<Button variant="ghost">     {/* Borderless — Tertiary / icon actions */}
+<Button variant="destructive"> {/* rose-50 — Delete / Cancel actions */}
+<Button variant="secondary"> {/* slate-100 — Neutral action */}
+<Button variant="link">      {/* Underlined — Navigation */}
 
 // Sizes:
 <Button size="default">  {/* h-11, rounded-xl */}
@@ -57,16 +57,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 <Badge variant="default">    {/* #0F1059 */}
-<Badge variant="success">    {/* emerald — ACTIVE, APPROVED, CLOSED (success) */}
-<Badge variant="warning">    {/* amber — PENDING, IN_PROGRESS */}
-<Badge variant="destructive"> {/* rose — REJECTED, CANCELLED, CLOSED (fail) */}
-<Badge variant="draft">      {/* slate — DRAFT */}
-<Badge variant="info">       {/* sky — ข้อมูล */}
-<Badge variant="outline">    {/* ขอบเท่านั้น */}
-<Badge variant="secondary">  {/* slate-100 — neutral */}
+<Badge variant="success">    {/* Emerald — ACTIVE, APPROVED, CLOSED (success) */}
+<Badge variant="warning">    {/* Amber — PENDING, IN_PROGRESS */}
+<Badge variant="destructive"> {/* Rose — REJECTED, CANCELLED, CLOSED (fail) */}
+<Badge variant="draft">      {/* Slate — DRAFT */}
+<Badge variant="info">       {/* Sky — general info */}
+<Badge variant="outline">    {/* Border only */}
+<Badge variant="secondary">  {/* slate-100 — Neutral status */}
 ```
 
-**Status → Badge Mapping มาตรฐาน:**
+**Standard Status-to-Badge Mapping:**
 | Status | Badge variant |
 |--------|--------------|
 | DRAFT | `draft` |
@@ -91,15 +91,15 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 ### Dialog / Modal (`components/ui/dialog.tsx`)
 ```tsx
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-// ต้องมี header + body + footer เสมอ
-// Footer: ปุ่มยกเลิกซ้าย (outline), ปุ่มยืนยันขวา (default/destructive)
+// Must always contain header + body + footer.
+// Footer: Cancel button on the left (outline variant), Confirm button on the right (default/destructive variant).
 ```
 
 ### Table (`components/ui/table.tsx`)
 ```tsx
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-// ต้อง responsive: ห่อด้วย <div className="overflow-x-auto rounded-xl border border-slate-200">
-// ต้องมี Empty State เมื่อไม่มีข้อมูล
+// Must be responsive: Wrap inside <div className="overflow-x-auto rounded-xl border border-slate-200">
+// Must implement an Empty State when no data is returned.
 ```
 
 ### Input / Textarea
@@ -107,7 +107,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-// ใช้คู่กับ Label เสมอ
+// Always pair with a Label.
 ```
 
 ### Select
@@ -118,7 +118,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 ### Skeleton (Loading State)
 ```tsx
 import { Skeleton } from "@/components/ui/skeleton";
-// ใช้แทน spinner เสมอ — ทุกหน้าต้องมี loading skeleton
+// Use Skeleton instead of a spinner. Every page/view must have a loading skeleton.
 ```
 
 ---
@@ -126,7 +126,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 ## 3. Layout & Spacing Rules
 
 - **Page wrapper:** `className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8"`
-- **Section gap:** `space-y-4` หรือ `space-y-6`
+- **Section gap:** `space-y-4 or space-y-6`
 - **Card padding:** `p-4` (mobile) → `p-6` (desktop)
 - **Border radius:** Card=`rounded-xl`, Input=`rounded-lg`, Button=`rounded-xl`
 - **Shadow:** Card=`shadow-sm`, Modal=`shadow-xl`
@@ -148,11 +148,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 ---
 
-## 5. Pattern มาตรฐาน
+## 5. Standard UI Patterns
 
 ### Loading State
 ```tsx
-// ใช้ Skeleton ไม่ใช่ spinner
+// Use Skeleton, do not use a spinner
 if (isLoading) return (
   <div className="space-y-4">
     <Skeleton className="h-10 w-full rounded-xl" />
@@ -165,7 +165,7 @@ if (isLoading) return (
 ```tsx
 <div className="flex flex-col items-center justify-center py-16 text-slate-400">
   <IconName className="mb-3 h-10 w-10 opacity-40" />
-  <p className="text-sm">ไม่พบข้อมูล</p>
+  <p className="text-sm">No data found</p>
 </div>
 ```
 
@@ -177,37 +177,37 @@ if (isLoading) return (
 ```
 
 ### Form Submit Pattern
-- ปุ่ม Submit ต้อง disabled และ show loading เมื่อ isPending
-- ปุ่มยกเลิกต้อง `variant="outline"`
-- ปุ่มยืนยันอยู่ขวาเสมอ
+- Submit button must be disabled and show loading when `isPending` is true.
+- Cancel button must use the `variant="outline"` property.
+- Confirm/Submit button must always align to the right.
 
 ### File Download Pattern
-- **ห้าม** `window.open(spDownloadUrl)` โดยตรง (URL หมดอายุใน 1 ชั่วโมง)
-- ใช้ API Endpoint เสมอ: `window.open('/api/sharepoint/get-file?itemId='+itemId)`
-- หรือสำหรับ Document Control: `/api/document-controls/{id}/download-latest`
+- **NEVER** use `window.open(spDownloadUrl)` directly (the URL expires in 1 hour).
+- Always use the API Endpoint: `window.open('/api/sharepoint/get-file?itemId=' + itemId)`
+- Or specifically for Document Control: `/api/document-controls/{id}/download-latest`
 
 ---
 
 ## 6. Icons
 
-ใช้จาก `lucide-react` เท่านั้น:
+Exclusively use icons from `lucide-react`:
 ```tsx
 import { Plus, Search, Filter, Download, Upload, Trash2, Edit2,
          CheckCircle2, XCircle, AlertCircle, Info, ChevronRight,
          FileText, Paperclip, RefreshCw, Loader2 } from "lucide-react";
 
 // Loading icon: <Loader2 className="animate-spin" />
-// ขนาด: h-4 w-4 (inline), h-5 w-5 (button), h-6 w-6 (section)
+// Sizing: h-4 w-4 (inline), h-5 w-5 (button), h-6 w-6 (section)
 ```
 
 ---
 
-## 7. กฎที่ห้ามทำเด็ดขาด
+## 7. Strict Prohibitions (Absolute Negatives)
 
-1. ❌ ห้ามใช้ `style={{ }}` inline style
-2. ❌ ห้ามใช้สีดิบที่ไม่ได้อยู่ใน Brand Colors
-3. ❌ ห้ามสร้าง Component ใหม่ที่ซ้ำซ้อนกับ `components/ui/`
-4. ❌ ห้าม `window.open(spDownloadUrl)` โดยตรง
-5. ❌ ห้ามใช้ `any` ใน TypeScript
-6. ❌ ห้าม import `@/lib/db` ใน Route Handler โดยตรง
-7. ❌ ห้าม `req.clone().formData()` — ใช้ `requireAuthEdge` + `req.formData()` แทน
+1. ❌ **Do not** use `style={{ }}` inline styles.
+2. ❌ **Do not** use raw, non-brand colors.
+3. ❌ **Do not** duplicate or recreate components already existing in `components/ui/`.
+4. ❌ **Do not** call `window.open(spDownloadUrl)` directly.
+5. ❌ **Do not** use `any` type in TypeScript.
+6. ❌ **Do not** import `@/lib/db` directly in Route Handlers.
+7. ❌ **Do not** use `req.clone().formData()` — use `requireAuthEdge` + `req.formData()` instead.

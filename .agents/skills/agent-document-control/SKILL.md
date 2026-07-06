@@ -1,14 +1,14 @@
 ---
 name: agent-document-control
 description: >
-  ผู้เชี่ยวชาญ Module Document Control รู้ Status Flow, Revision Management,
-  Download Logic (Fresh URL), Category/Department Tree, และ SharePoint integration
+  Expert in the Document Control Module, with deep knowledge of Status Flow, Revision Management,
+  Download Logic (Fresh URL), Category/Department Tree, and SharePoint integration.
 ---
 
 # Agent-DocumentControl — Document Control Module
 
-คุณคือผู้เชี่ยวชาญ Module Document Control ของโปรเจกต์ `qms-system`
-**ด้าน UI/UX ต้องปฏิบัติตาม Design System Agent เสมอ**
+You are the Document Control Module expert for the `qms-system` project.
+**Regarding UI/UX, you must always adhere to the Design System Agent.**
 
 ---
 
@@ -18,16 +18,16 @@ description: >
 DRAFT → ACTIVE → OBSOLETE
 ```
 
-| Status | ความหมาย |
-|--------|----------|
-| DRAFT | กำลังร่าง ยังไม่ใช้งาน |
-| ACTIVE | ใช้งานอยู่ (Revision ล่าสุดจะเป็น ACTIVE) |
-| OBSOLETE | เวอร์ชันเก่า ไม่ใช้แล้ว |
+| Status | Meaning |
+|--------|---------|
+| DRAFT | Draft, not yet active |
+| ACTIVE | Currently active (latest Revision is always ACTIVE) |
+| OBSOLETE | Obsolete version, no longer used |
 
-**กฎ Revision:** เมื่อ upload revision ใหม่:
-- Revision ใหม่ → ACTIVE
-- Revision เก่าทั้งหมด → OBSOLETE
-- มี ACTIVE revision ได้แค่ 1 ตัวเสมอ
+**Revision Rules:** When uploading a new revision:
+- New Revision → ACTIVE
+- All older Revisions → OBSOLETE
+- There must always be exactly one ACTIVE revision.
 
 ---
 
@@ -35,50 +35,50 @@ DRAFT → ACTIVE → OBSOLETE
 
 | Action | USER | QMS | MR | IT |
 |--------|------|-----|----|----|
-| ดูรายการ | ✅ | ✅ | ✅ | ✅ |
-| สร้าง Document | ❌ | ✅ | ✅ | ✅ |
+| View List | ✅ | ✅ | ✅ | ✅ |
+| Create Document | ❌ | ✅ | ✅ | ✅ |
 | Upload Revision | ❌ | ✅ | ✅ | ✅ |
-| ลบ Document | ❌ | ✅ | ❌ | ✅ |
-| จัดการ Category | ❌ | ✅ | ❌ | ✅ |
+| Delete Document | ❌ | ✅ | ❌ | ✅ |
+| Manage Category | ❌ | ✅ | ❌ | ✅ |
 
 ---
 
 ## 3. Structure — Department → Category → Document
 
 ```
-DocControlDept (แผนก)
-  └── DocumentCategory (หมวดหมู่)
-        └── DocumentControl (เอกสาร)
-              └── DocumentControlRevision (เวอร์ชัน)
+DocControlDept (Department)
+  └── DocumentCategory (Category)
+        └── DocumentControl (Document)
+              └── DocumentControlRevision (Revision)
 ```
 
 ---
 
-## 4. ⚠️ Download Rule — สำคัญมาก
+## 4. ⚠️ Download Rule — Extremely Important
 
-**ห้าม** ใช้ `spDownloadUrl` จากฐานข้อมูลโดยตรง เพราะหมดอายุใน 1 ชั่วโมง
+**DO NOT** use `spDownloadUrl` directly from the database because it expires in 1 hour.
 
 ```typescript
-// ✅ ถูกต้อง — ใช้ API เพื่อรับ Fresh URL
+// ✅ Correct — Use API to get a Fresh URL
 window.open(`/api/document-controls/${doc.id}/download-latest`, '_blank');
 
-// ✅ สำหรับ Revision ที่มี spItemId:
+// ✅ For Revision with spItemId:
 const res = await fetch(`/api/sharepoint/get-file?itemId=${spItemId}`);
 const { data } = await res.json();
 window.open(data.downloadUrl, '_blank');
 
-// ❌ ห้าม:
+// ❌ Avoid:
 window.open(doc.spDownloadUrl!, '_blank');
 ```
 
 ---
 
-## 5. Files ที่รับผิดชอบ
+## 5. Responsible Files
 
 ### Backend
-- `services/documentControlService.ts` — Business Logic หลัก
-- `services/documentCategoryService.ts` — จัดการ Category
-- `services/docControlDeptService.ts` — จัดการ Department
+- `services/documentControlService.ts` — Core Business Logic
+- `services/documentCategoryService.ts` — Category Management
+- `services/docControlDeptService.ts` — Department Management
 - `repositories/documentControlRepository.ts` — DB queries
 - `repositories/documentCategoryRepository.ts`
 
@@ -86,31 +86,31 @@ window.open(doc.spDownloadUrl!, '_blank');
 - `app/api/document-controls/` — CRUD
 - `app/api/document-controls/[id]/upload/` — Upload revision
 - `app/api/document-controls/[id]/download-latest/` — Download fresh URL
-- `app/api/document-controls/[id]/revisions/` — รายการ Revision
+- `app/api/document-controls/[id]/revisions/` — Revision list
 
 ### Frontend Components
-- `components/document-control/` — Components ทั้งหมด
+- `components/document-control/` — All Document Control components
 - `app/(dashboard)/qms/document-controls/` — Pages
 
 ---
 
-## 6. Schema ที่เกี่ยวข้อง
+## 6. Related Schemas
 
 ```prisma
-model DocumentControl          // เอกสารหลัก
-model DocumentControlRevision  // เวอร์ชันของเอกสาร (spItemId สำคัญ)
-model DocumentCategory         // หมวดหมู่ (อยู่ใต้ DocControlDept)
-model DocControlDept           // แผนกของ Document Control
+model DocumentControl          // Main Document
+model DocumentControlRevision  // Document Revision (spItemId is critical)
+model DocumentCategory         // Category (under DocControlDept)
+model DocControlDept           // Document Control Department
 
 enum DocControlStatus { DRAFT ACTIVE OBSOLETE }
 ```
 
 ---
 
-## 7. กฎสำคัญของ Module นี้
+## 7. Important Rules for this Module
 
-1. `spItemId` ใน `DocumentControlRevision` คือ key สำหรับขอ Fresh URL
-2. `download-latest` route ต้องเรียก `getFileInfo(spItemId)` ก่อน redirect เสมอ
-3. DocNumber ต้องไม่ซ้ำกันในระบบ
+1. `spItemId` in `DocumentControlRevision` is the key for requesting a Fresh URL.
+2. `download-latest` route must always call `getFileInfo(spItemId)` before redirecting.
+3. DocNumber must be unique across the entire system.
 4. Folder path format: `{DeptName}/{CategoryName}/{DocNumber}/`
-5. File types ที่รับ: PDF, DOCX, XLSX, PNG, JPG (max 20MB)
+5. Supported file types: PDF, DOCX, XLSX, PNG, JPG (max 20MB)

@@ -1,5 +1,123 @@
 [
   {
+    "id": "42",
+    "titleTh": "ปรับเปลี่ยนเอกสารคำแนะนำสกิลทั้งหมดเป็นภาษาอังกฤษ",
+    "titleEn": "Translate all agent skill instruction files to English",
+    "date": "2026-07-06",
+    "type": "improvement",
+    "commit": "improve/translate-agent-skills-to-english",
+    "detailsTh": [
+      "ปรับปรุงไฟล์ SKILL.md ในโมดูล agent-audit, agent-car, agent-dar, agent-document-control, agent-kpi และ design-system เป็นภาษาอังกฤษทั้งหมด"
+    ],
+    "detailsEn": [
+      "Translated SKILL.md in agent-audit, agent-car, agent-dar, agent-document-control, agent-kpi, and design-system modules entirely to English."
+    ]
+  },
+  {
+    "id": "41",
+    "titleTh": "KPI: เก็บประวัติ objective เดิมตอน revise และแสดงใน PDF พื้นเขียวตัวอักษรดำ",
+    "titleEn": "KPI: Preserve revised objective history and show it in PDF with green background",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/kpi-revision-history-pdf-highlight",
+    "detailsTh": [
+      "ดึงประวัติการ revise KPI Annual Objective จาก audit log ทุกครั้ง เพื่อให้ objective ชุดเดิมยังย้อนดูได้หลังแก้ไขหลายรอบ",
+      "เพิ่มส่วน Revision history ในหน้า KPI detail เพื่อแสดง snapshot เดิม เหตุผล และรายการ objective ที่ถูก revise ในแต่ละรอบ",
+      "ปรับหน้า Print / Export PDF ของ KPI Annual ให้แสดงประวัติเก่าด้วยพื้นสีเขียวและตัวอักษรสีดำ รวมถึง highlight objective ที่ถูก revise"
+    ],
+    "detailsEn": [
+      "Loaded every KPI annual revision snapshot from audit logs so older objective sets remain visible after multiple revise rounds.",
+      "Added a revision history section on the KPI detail page showing prior snapshots, revision reasons, and the objectives revised in each round.",
+      "Updated the KPI annual print/PDF page to render old history with a green background and black text, and to highlight revised objectives."
+    ]
+  },
+  {
+    "id": "40",
+    "titleTh": "CAR: เปลี่ยนส่วน ISO Standards ให้ดึงข้อมูลจาก audit-standards แทน hard code",
+    "titleEn": "CAR: Replaced hardcoded ISO_STANDARDS with dynamic audit-standards data",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/car-audit-standards-ref",
+    "detailsTh": [
+      "เปลี่ยนส่วนเลือก ISO Standards ในฟอร์มสร้าง CAR จาก hard code (ISO_STANDARDS ใน types/car.ts) เป็นการเรียกข้อมูลจาก API /api/audit/standards ผ่าน useAuditStandards hook",
+      "ลบ ISO_STANDARDS constant และ IsoStandard type ที่ไม่ได้ใช้งานแล้วออกจาก types/car.ts",
+      "เพิ่ม loading skeleton และ empty state สำหรับกรณีไม่มีมาตรฐานในระบบ"
+    ],
+    "detailsEn": [
+      "Changed ISO Standards selection in CAR create form from hardcoded ISO_STANDARDS to fetching from /api/audit/standards via useAuditStandards hook",
+      "Removed unused ISO_STANDARDS constant and IsoStandard type from types/car.ts",
+      "Added loading skeleton and empty state when no standards exist"
+    ]
+  },
+  {
+    "id": "39",
+    "titleTh": "สร้างหน้าพิมพ์รายงาน KPI Master FM-MR-01",
+    "titleEn": "Create KPI Master Print page for FM-MR-01",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/kpi-fm-mr-01-master-print",
+    "detailsTh": [
+      "เพิ่มหน้า Print / Export KPI Master รายปีที่ดึงข้อมูลวัตถุประสงค์คุณภาพทั้งหมด (FM-MR-01)",
+      "แสดงข้อมูลแยกตามแผนก พร้อมแสดงเป้าหมาย สูตรคำนวณ แนวทางปฏิบัติ และความถี่",
+      "เพิ่มปุ่มพิมพ์ FM-MR-01 ในหน้าจัดการ KPI Dashboard ของแต่ละปีเพื่อความสะดวก"
+    ],
+    "detailsEn": [
+      "Added Annual KPI Master Print page displaying all quality objectives across departments (FM-MR-01).",
+      "Grouped objectives by department, showing targets, calculation formulas, operational plans, and frequencies.",
+      "Added an FM-MR-01 print button in the KPI Dashboard for the selected year."
+    ]
+  },
+  {
+    "id": "38",
+    "titleTh": "KPI: เพิ่มผู้รับผิดชอบของ Objective โดยเลือกจาก Auth Center",
+    "titleEn": "KPI: Add objective owner assignment from Auth Center",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/kpi-objective-responsible-auth-center",
+    "detailsTh": [
+      "เพิ่ม field ผู้รับผิดชอบใน KPI Objective และเก็บ auth user id พร้อม snapshot ชื่อ อีเมล และรหัสพนักงาน",
+      "ฟอร์มสร้างและแก้ไข Objective เปลี่ยนเป็นเลือกผู้รับผิดชอบจาก Auth Center ตามมาตรฐาน user picker ของระบบ",
+      "หน้า KPI detail, revise comparison และหน้า print/export จะแสดงข้อมูลผู้รับผิดชอบของแต่ละ objective"
+    ],
+    "detailsEn": [
+      "Added responsible-owner fields to KPI objectives, storing the Auth Center user id plus name, email, and employee id snapshots.",
+      "Updated the objective create/edit form to assign the responsible person from Auth Center using the system-standard user picker.",
+      "Displayed the assigned responsible person in KPI detail, revision comparison, and print/export views."
+    ]
+  },
+  {
+    "id": "37",
+    "titleTh": "KPI: เพิ่มปุ่ม Export PDF กลับในหน้า detail",
+    "titleEn": "KPI: Restore the Export PDF button on the detail page",
+    "date": "2026-07-06",
+    "type": "fix",
+    "commit": "fix/kpi-detail-restore-export-pdf-button",
+    "detailsTh": [
+      "เพิ่มปุ่ม Export PDF กลับเข้า action bar ของหน้า KPI detail (kpi/[id])",
+      "เชื่อมปุ่มไปยังหน้า print ของ KPI เพื่อให้เปิดหน้าเอกสารและสั่ง Save as PDF ได้ทันที"
+    ],
+    "detailsEn": [
+      "Restored the Export PDF button in the KPI detail page action bar.",
+      "Linked the button to the KPI print page so users can open the document and save it as PDF immediately."
+    ]
+  },
+  {
+    "id": "36",
+    "titleTh": "KPI: ลบปุ่ม QMS Check ออกจากหน้า detail",
+    "titleEn": "KPI: Remove the QMS Check button from the detail page",
+    "date": "2026-07-06",
+    "type": "improvement",
+    "commit": "improve/kpi-detail-remove-qms-check-button",
+    "detailsTh": [
+      "ลบปุ่ม QMS Check และ signature flow ที่ผูกกับปุ่มดังกล่าวออกจากหน้า KPI detail (kpi/[id])",
+      "คง action อื่นของหน้าไว้ตามเดิมเพื่อไม่ให้กระทบ flow submit, review, approve, announce และ revise"
+    ],
+    "detailsEn": [
+      "Removed the QMS Check button and its signature flow from the KPI detail page at kpi/[id].",
+      "Left the remaining actions intact so submit, review, approve, announce, and revise continue to work as before."
+    ]
+  },
+  {
     "id": "35",
     "titleTh": "แก้ไขการแสดงผล Footer บน Form/PDF ให้ตรงตามที่ตั้งค่า",
     "titleEn": "Remove uppercase transform from footer on forms/PDF",

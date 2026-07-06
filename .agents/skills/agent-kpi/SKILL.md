@@ -1,53 +1,53 @@
 ---
 name: agent-kpi
 description: >
-  ผู้เชี่ยวชาญ Module KPI รู้ Objective Status Flow, Monthly Report Flow,
-  Achieved Status Logic, Corrective Action, และ Approval Workflow ของ KPI อย่างลึกซึ้ง
+  Expert in the KPI Module, with deep knowledge of Objective Status Flow, Monthly Report Flow,
+  Achieved Status Logic, Corrective Action, and KPI Approval Workflow.
 ---
 
 # Agent-KPI — KPI Module
 
-คุณคือผู้เชี่ยวชาญ Module KPI ของโปรเจกต์ `qms-system`
-**ด้าน UI/UX ต้องปฏิบัติตาม Design System Agent เสมอ**
+You are the KPI Module expert for the `qms-system` project.
+**Regarding UI/UX, you must always adhere to the Design System Agent.**
 
 ---
 
 ## 1. Business Logic — 2 Level Flow
 
-### Level 1: KPI Objectives (ประจำปี)
+### Level 1: KPI Objectives (Annual)
 ```
 DRAFT → PENDING_REVIEW → PENDING_APPROVAL → APPROVED
-                                           → REJECTED (กลับไป DRAFT)
+                                           → REJECTED (returns to DRAFT)
 ```
 
-### Level 2: Monthly Report (รายเดือน)
+### Level 2: Monthly Report (Monthly)
 ```
 DRAFT → PENDING_REVIEW → PENDING_APPROVAL → APPROVED
-                                           → REJECTED (กลับไป DRAFT)
+                                           → REJECTED (returns to DRAFT)
 ```
 
 ---
 
-## 2. Achieved Status (ผลลัพธ์แต่ละ Objective)
+## 2. Achieved Status (Result for each Objective)
 
-| Status | ความหมาย | เงื่อนไข |
-|--------|----------|----------|
-| PENDING | ยังไม่กรอก | actualResult = null |
-| OK | ผ่านเกณฑ์ | actualResult >= target |
-| NOT_OK | ไม่ผ่านเกณฑ์ | actualResult < target → ต้องมี Corrective Action |
+| Status | Meaning | Condition |
+|--------|---------|-----------|
+| PENDING | Not yet filled | actualResult = null |
+| OK | Passed criteria | actualResult >= target |
+| NOT_OK | Failed criteria | actualResult < target → Requires Corrective Action |
 
 ---
 
 ## 3. Structure
 
 ```
-KPI (รายปี + รายแผนก)
-  └── KPIObjective (เป้าหมายแต่ละข้อ)
-        └── KPIMonthlyDetail (ผลงานรายเดือน)
-              └── KPICorrectiveAction (แผนแก้ไข หากไม่ผ่าน)
+KPI (Annual + Departmental)
+  └── KPIObjective (Objective item)
+        └── KPIMonthlyDetail (Monthly performance)
+              └── KPICorrectiveAction (Corrective Action Plan, if failed)
 KPI
-  └── KPIMonthlyReport (รายงานรายเดือน รวม Attachment)
-        └── KPIMonthlyDetail (ผลงานแต่ละ Objective ของเดือนนั้น)
+  └── KPIMonthlyReport (Monthly Report, including Attachment)
+        └── KPIMonthlyDetail (Performance of each Objective for that month)
 ```
 
 ---
@@ -56,15 +56,15 @@ KPI
 
 | Action | USER | QMS | MR | IT |
 |--------|------|-----|----|----|
-| ดู KPI ตัวเอง | ✅ | ✅ | ✅ | ✅ |
-| สร้าง KPI | ❌ | ✅ | ❌ | ✅ |
-| กรอกผลรายเดือน | ✅ (แผนกตัวเอง) | ✅ | ✅ | ✅ |
-| Review / Approve | ✅ (ถ้าได้รับมอบหมาย) | ✅ | ✅ | ✅ |
-| จัดการ KpiDept | ❌ | ✅ | ❌ | ✅ |
+| View own KPI | ✅ | ✅ | ✅ | ✅ |
+| Create KPI | ❌ | ✅ | ❌ | ✅ |
+| Fill monthly results | ✅ (Own department) | ✅ | ✅ | ✅ |
+| Review / Approve | ✅ (If assigned) | ✅ | ✅ | ✅ |
+| Manage KpiDept | ❌ | ✅ | ❌ | ✅ |
 
 ---
 
-## 5. Files ที่รับผิดชอบ
+## 5. Responsible Files
 
 ### Backend
 - `services/kpiService.ts` — KPI Objectives Logic (31KB)
@@ -80,23 +80,23 @@ KPI
 ### API Routes
 - `app/api/kpi/` — CRUD KPI
 - `app/api/kpi/[id]/monthly/` — Monthly Reports
-- `app/api/kpi/[id]/monthly/[reportId]/attachment/` — อัปโหลด Attachment
+- `app/api/kpi/[id]/monthly/[reportId]/attachment/` — Upload Attachment
 
 ### Frontend Components
-- `components/kpi/` — Components ทั้งหมด
+- `components/kpi/` — All KPI components
 - `app/(dashboard)/qms/kpi/` — Pages
 
 ---
 
-## 6. Schema ที่เกี่ยวข้อง
+## 6. Related Schemas
 
 ```prisma
-model KPI                  // KPI ประจำปี-แผนก
-model KPIObjective         // เป้าหมายแต่ละข้อ
-model KPIMonthlyReport     // รายงานรายเดือน (มี Attachment)
-model KPIMonthlyDetail     // ผลของแต่ละ Objective ในเดือนนั้น
-model KPICorrectiveAction  // แผนแก้ไขเมื่อ NOT_OK
-model KpiDept              // แผนกของ KPI System
+model KPI                  // Annual-Departmental KPI
+model KPIObjective         // Individual target objective
+model KPIMonthlyReport     // Monthly report (with Attachment)
+model KPIMonthlyDetail     // Performance detail for each objective in that month
+model KPICorrectiveAction  // Corrective action plan when NOT_OK
+model KpiDept              // KPI System Department
 
 enum KpiObjectiveStatus { DRAFT PENDING_REVIEW PENDING_APPROVAL APPROVED REJECTED }
 enum MonthlyStatus      { DRAFT PENDING_REVIEW PENDING_APPROVAL APPROVED REJECTED }
@@ -105,11 +105,11 @@ enum AchievedStatus     { PENDING OK NOT_OK }
 
 ---
 
-## 7. กฎสำคัญของ Module นี้
+## 7. Important Rules for this Module
 
-1. KPI ต้อง unique ต่อ `(department, yearly)` — 1 แผนกมีได้ 1 KPI ต่อปี
-2. Monthly Report ต้อง unique ต่อ `(kpiId, month, year)`
-3. เมื่อ `AchievedStatus = NOT_OK` ต้องมี `KPICorrectiveAction` อย่างน้อย 1 รายการ
-4. Attachment ของ Monthly Report ใช้ `attachmentSpItemId` สำหรับ Fresh URL
-5. ดาวน์โหลด Attachment ต้องผ่าน `/api/sharepoint/get-file?itemId=attachmentSpItemId`
+1. KPI must be unique per `(department, yearly)` — 1 department can have only 1 KPI per year.
+2. Monthly Report must be unique per `(kpiId, month, year)`.
+3. When `AchievedStatus = NOT_OK`, there must be at least 1 `KPICorrectiveAction` item.
+4. Attachment for Monthly Report uses `attachmentSpItemId` for the Fresh URL.
+5. Downloading attachments must go through `/api/sharepoint/get-file?itemId=attachmentSpItemId`.
 6. Frequency: MONTHLY, QUARTERLY, SEMI_ANNUALLY, ANNUALLY
