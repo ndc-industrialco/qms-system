@@ -5,6 +5,7 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import ExcelJS from "exceljs";
 import { CarExportService } from "@/services/carExportService";
 import { QmsConfigService } from "@/services/qmsConfigService";
+import { CAR_STATUS_LABELS, type CarStatus } from "@/types/car";
 
 const filterSchema = z.object({
   status:     z.string().optional(),
@@ -14,12 +15,8 @@ const filterSchema = z.object({
   to:         z.string().optional().transform((v) => (v ? new Date(v) : undefined)),
 });
 
-const SOURCE_LABEL: Record<string, string> = {
-  I: "Internal Audit",
-  C: "Customer Complaint",
-  N: "NCR",
-  O: "Other",
-};
+const exportService = new CarExportService();
+const qmsConfigService = new QmsConfigService();
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,113 +33,99 @@ export async function GET(req: NextRequest) {
 
     const [rows, naming] = await Promise.all([
       exportService.listCars({
-      ...(filter.status && { status: filter.status as never }),
-      ...(filter.sourceType && { sourceType: filter.sourceType as never }),
-      ...(filter.department && { targetDepartmentName: { contains: filter.department } }),
-      ...(filter.from || filter.to ? { createdAt: { gte: filter.from, lte: filter.to } } : {}),
+        ...(filter.status && { status: filter.status as never }),
+        ...(filter.sourceType && { sourceType: filter.sourceType as never }),
+        ...(filter.department && { targetDepartmentName: { contains: filter.department } }),
+        ...(filter.from || filter.to ? { createdAt: { gte: filter.from, lte: filter.to } } : {}),
       }),
       qmsConfigService.getExportNamingMeta("CAR", {
-        label: "Corrective Action Request",
-        fileBaseName: "car-export",
+        label: "Corrective Action Register",
+        fileBaseName: "car-register",
       }),
     ]);
 
+    // Load template
     const wb = new ExcelJS.Workbook();
-    wb.creator = "QMS System";
-    wb.created = new Date();
+    const templatePath = "docs/template/FM-MR-11 Rev.02  ทะเบียนใบแจ้งดำเนินการแก้ไข.xlsx";
+    await wb.xlsx.readFile(templatePath);
 
-    const ws = wb.addWorksheet(naming.worksheetName);
+    const ws = wb.worksheets[0];
+    ws.name = naming.worksheetName;
 
-    const headerFill: ExcelJS.Fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F1059" } };
-    const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
-    const border: Partial<ExcelJS.Border> = { style: "thin", color: { argb: "FFCCCCCC" } };
-    const allBorders: Partial<ExcelJS.Borders> = { top: border, left: border, bottom: border, right: border };
+    // Fill Year in Cell R2
+    const filterYearStr = filter.from ? filter.from.getFullYear().toString() : new Date().getFullYear().toString();
+    ws.getCell("R2").value = filterYearStr;
 
-    ws.columns = [
-      { header: "CAR No.",               key: "carNo",             width: 18 },
-      { header: "Issued Date",            key: "issuedAt",          width: 16 },
-      { header: "Status",                 key: "status",            width: 18 },
-      { header: "Source",                 key: "source",            width: 20 },
-      { header: "ISO Standards",          key: "isoStandards",      width: 24 },
-      { header: "Defect Detail",          key: "defect",            width: 40 },
-      { header: "NC Ref",                 key: "ncRef",             width: 20 },
-      { header: "Issuer",                 key: "issuer",            width: 22 },
-      { header: "Target Dept.",           key: "targetDept",        width: 24 },
-      { header: "Response Due",           key: "responseDue",       width: 16 },
-      { header: "Responded At",           key: "respondedAt",       width: 16 },
-      { header: "Root Cause",             key: "rootCause",         width: 40 },
-      { header: "Immediate Action",       key: "immediateAction",   width: 40 },
-      { header: "Preventive Action",      key: "preventiveAction",  width: 40 },
-      { header: "Planned Completion",     key: "plannedCompletion", width: 18 },
-      { header: "Verify 1 Result",        key: "v1result",          width: 14 },
-      { header: "Verify 1 Date",          key: "v1date",            width: 16 },
-      { header: "Verify 2 Result",        key: "v2result",          width: 14 },
-      { header: "Verify 2 Date",          key: "v2date",            width: 16 },
-      { header: "MR Signed By",           key: "mrSigner",          width: 22 },
-      { header: "MR Signed Date",         key: "mrSignedAt",        width: 16 },
-    ];
-
-    ws.getRow(1).eachCell((cell) => {
-      cell.fill = headerFill;
-      cell.font = headerFont;
-      cell.border = allBorders;
-      cell.alignment = { vertical: "middle", horizontal: "center" };
+    // Reference Row 8 styles for cloning formatting
+    const refRow = ws.getRow(8);
+    const rowStyles = Array.from({ length: 18 }).map((_, c) => {
+      const cell = refRow.getCell(c + 1);
+      return {
+        font: cell.font,
+        border: cell.border,
+        fill: cell.fill,
+        alignment: cell.alignment,
+        numFmt: cell.numFmt,
+      };
     });
-    ws.getRow(1).height = 22;
 
     const fmt = (d: Date | null | undefined) =>
       d ? d.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" }) : "";
 
-    for (const r of rows) {
-      const v1 = r.verifications.find((v: { round: number }) => v.round === 1);
-      const v2 = r.verifications.find((v: { round: number }) => v.round === 2);
+    const startRow = 8;
+    for (let idx = 0; idx < rows.length; idx++) {
+      const r = rows[idx];
+      const v1 = r.verifications.find((v) => v.round === 1);
+      const v2 = r.verifications.find((v) => v.round === 2);
 
-      const added = ws.addRow({
-        carNo:             r.carNo,
-        issuedAt:          fmt(r.issuedAt),
-        status:            r.status,
-        source:            SOURCE_LABEL[r.sourceType] ?? r.sourceType,
-        isoStandards:      r.isoStandards.join(", "),
-        defect:            r.defectDetail,
-        ncRef:             r.nonConformanceRef,
-        issuer:            r.issuerName ?? r.issuerId,
-        targetDept:        r.targetDepartmentName ?? "",
-        responseDue:       fmt(r.responseDueAt),
-        respondedAt:       fmt(r.response?.respondedAt),
-        rootCause:         r.response?.rootCauseSummary ?? "",
-        immediateAction:   r.response?.immediateAction ?? "",
-        preventiveAction:  r.response?.preventiveAction ?? "",
-        plannedCompletion: fmt(r.response?.plannedCompletionDate),
-        v1result:          v1?.result ?? "",
-        v1date:            fmt(v1?.verifiedAt),
-        v2result:          v2?.result ?? "",
-        v2date:            fmt(v2?.verifiedAt),
-        mrSigner:          r.mrSignature?.mrUserName ?? "",
-        mrSignedAt:        fmt(r.mrSignature?.signedAt),
-      });
-      added.eachCell((cell) => {
-        cell.border = allBorders;
-        cell.alignment = { vertical: "top", wrapText: false };
-      });
+      const currentRowNum = startRow + idx;
+      const currentRow = ws.getRow(currentRowNum);
+
+      // Map data columns
+      currentRow.getCell(1).value = idx + 1; // ลำดับ
+      currentRow.getCell(2).value = r.carNo; // CAR Number
+      currentRow.getCell(3).value = fmt(r.issuedAt); // วันที่ออก CAR
+      currentRow.getCell(4).value = r.defectDetail; // รายละเอียด CAR (Defect detail)
+      currentRow.getCell(5).value = r.targetDepartmentName ?? ""; // หน่วยงานที่เกิดประเด็นปัญหา
+      currentRow.getCell(6).value = r.response?.responderName ?? ""; // ผู้แก้ไข (Editor)
+      currentRow.getCell(7).value = r.targetDepartmentName ?? ""; // หน่วยงาน (Section)
+      currentRow.getCell(8).value = v1?.verifierName ?? ""; // ผู้ติดตาม (Follower)
+      currentRow.getCell(9).value = v1?.verifierPosition ?? "QMS"; // หน่วยงาน (Section of Follower)
+      currentRow.getCell(10).value = fmt(r.responseDueAt); // ครบกำหนดตอบกลับ (Due Date)
+      currentRow.getCell(11).value = fmt(r.response?.respondedAt); // วันที่ตอบกลับ (Reply Date)
+      currentRow.getCell(12).value = fmt(r.response?.plannedCompletionDate); // กำหนดแก้ไขแล้วเสร็จ (Due Date finish)
+      currentRow.getCell(13).value = fmt(v1?.verifiedAt); // ติดตามครั้งที่ 1 (Follow 1st time)
+      currentRow.getCell(14).value = fmt(v1?.nextDueDate); // กำหนดแก้ไขแล้วเสร็จครั้งที่ 2 (Due Date 2nd finish)
+      currentRow.getCell(15).value = fmt(v2?.verifiedAt); // ติดตามครั้งที่ 2 (Follow the 2nd time)
+      currentRow.getCell(16).value = fmt(r.mrSignature?.signedAt); // วันที่ปิด CAR (CAR Closing Date)
+      currentRow.getCell(17).value = CAR_STATUS_LABELS[r.status as CarStatus] ?? r.status; // สถานะ CAR
+      currentRow.getCell(18).value = r.mrSignature?.comment ?? v1?.findings ?? ""; // หมายเหตุ
+
+      // Apply cloned styles
+      for (let c = 1; c <= 18; c++) {
+        const targetCell = currentRow.getCell(c);
+        const style = rowStyles[c - 1];
+        if (style) {
+          if (style.font) targetCell.font = style.font;
+          if (style.border) targetCell.border = style.border;
+          if (style.fill) targetCell.fill = style.fill;
+          if (style.alignment) targetCell.alignment = style.alignment;
+          if (style.numFmt) targetCell.numFmt = style.numFmt;
+        }
+      }
     }
 
-    ws.autoFilter = { from: "A1", to: "U1" };
-    ws.views = [{ state: "frozen", ySplit: 1 }];
-
     const buffer = await wb.xlsx.writeBuffer();
-    const date   = new Date().toISOString().slice(0, 10);
+    const date = new Date().toISOString().slice(0, 10);
 
     return new Response(buffer as BodyInit, {
       headers: {
-        "Content-Type":        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename="${naming.fileBaseName}-${date}.xlsx"`,
-        "Cache-Control":       "no-store",
+        "Cache-Control": "no-store",
       },
     });
   } catch (err) {
     return handleApiError(err);
   }
 }
-
-const exportService = new CarExportService();
-const qmsConfigService = new QmsConfigService();

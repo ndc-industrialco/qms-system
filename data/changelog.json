@@ -1,5 +1,25 @@
 [
   {
+    "id": "44",
+    "titleTh": "QMS CAR Export: ส่งออก Excel ตามแบบฟอร์ม FM-MR-11 Rev.02 ทะเบียนใบแจ้งดำเนินการแก้ไข",
+    "titleEn": "QMS CAR Export: Generate Excel based on FM-MR-11 Rev.02 Corrective Action Register template",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/qms-car-export-fm-mr-11-template",
+    "detailsTh": [
+      "ปรับปรุง API endpoint /api/car/export ให้โหลดแบบฟอร์มมาตรฐาน FM-MR-11 Rev.02 แล้วเติมข้อมูล CAR ทุกรายการลงในตาราง",
+      "แมปคอลัมน์ครบถ้วน: ลำดับ, เลขที่ CAR, วันที่ออก, รายละเอียด, หน่วยงาน, Editor, Section, Follower, Due Date, Reply Date, กำหนดแล้วเสร็จ, ติดตามครั้งที่ 1-2, วันที่ปิด, สถานะ, หมายเหตุ",
+      "ขยาย findForExport() ใน CarRepository ให้ดึง responderName, verifierName, nextDueDate และ comment ของ mrSignature",
+      "รักษา border, font และ style ของแถวต้นแบบใน template ไว้สำหรับแถวข้อมูลทุกแถว"
+    ],
+    "detailsEn": [
+      "Refactored /api/car/export to load the standard FM-MR-11 Rev.02 Excel template and fill all CAR rows into the table.",
+      "Mapped all required columns: No., CAR Number, Issue Date, Detail, Department, Editor, Section, Follower, Due Date, Reply Date, Due Date Finish, Follow 1st/2nd time, Closing Date, Status, Remark.",
+      "Expanded findForExport() in CarRepository to retrieve responderName, verifierName, nextDueDate, and mrSignature.comment.",
+      "Preserved border, font, and fill styles from the template reference row for all output data rows."
+    ]
+  },
+  {
     "id": "43",
     "titleTh": "QMS CAR: เพิ่มรายงานสรุปผลและรายงานสถานะการแก้ไขพร้อมปุ่มส่งออก Excel/PDF",
     "titleEn": "QMS CAR: Add summary and status reports with Excel/PDF export buttons",
