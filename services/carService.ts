@@ -43,6 +43,7 @@ export type CarDetail = {
   targetAuthDepartmentId?: string | null;
   issuer: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null; department: { id: string; name: string } | null };
   targetDepartment: { id: string; name: string; emailGroup: string | null };
+  relatedDepartmentIds: string[];
   targetEmailGroups: string[];
   targetEmailGroupsCc: string[];
   response: CarResponseDetail | null;
@@ -137,6 +138,7 @@ export type CarSummary = {
   targetAuthDepartmentId?: string | null;
   issuer: { id: string; name: string | null };
   targetDepartment: { id: string; name: string };
+  relatedDepartmentIds: string[];
   verificationCount: number;
 };
 
@@ -245,6 +247,7 @@ export class CarService {
         name: raw.targetDepartmentName ?? "-",
         emailGroup: raw.targetEmailGroups?.[0] ?? null,
       },
+      relatedDepartmentIds: raw.relatedDepartmentIds ?? [],
       targetEmailGroups: raw.targetEmailGroups ?? [],
       targetEmailGroupsCc: raw.targetEmailGroupsCc ?? [],
       response: raw.response
@@ -394,6 +397,7 @@ export class CarService {
       targetAuthDepartmentId: (r as { targetAuthDepartmentId?: string | null }).targetAuthDepartmentId ?? null,
       issuer: { id: r.issuerId, name: r.issuerName ?? null },
       targetDepartment: { id: r.targetDepartmentId, name: r.targetDepartmentName ?? "-" },
+      relatedDepartmentIds: r.relatedDepartmentIds ?? [],
       verificationCount: r._count.verifications,
     }));
   }

@@ -5009,6 +5009,7 @@ export const CarMasterScalarFieldEnum = {
   targetDepartmentId: 'targetDepartmentId',
   targetAuthDepartmentId: 'targetAuthDepartmentId',
   targetDepartmentName: 'targetDepartmentName',
+  relatedDepartmentIds: 'relatedDepartmentIds',
   targetEmailGroups: 'targetEmailGroups',
   targetEmailGroupsCc: 'targetEmailGroupsCc',
   responseDueAt: 'responseDueAt',

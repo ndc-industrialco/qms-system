@@ -140,6 +140,7 @@ export type CarDetail = {
   updatedAt: string;
   issuer: { id: string; name: string | null; employeeId: string | null; department: { id: string; name: string } | null };
   targetDepartment: { id: string; name: string; emailGroup: string | null };
+  relatedDepartmentIds: string[];
   targetEmailGroups: string[];
   targetEmailGroupsCc: string[];
   response: CarResponseDetail | null;
@@ -161,6 +162,7 @@ export type CarSummary = {
   targetAuthDepartmentId?: string | null;
   issuer: { id: string; name: string | null };
   targetDepartment: { id: string; name: string };
+  relatedDepartmentIds: string[];
   verificationCount: number;
 };
 

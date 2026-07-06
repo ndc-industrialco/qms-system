@@ -45,11 +45,12 @@ interface KpiPrintTemplateProps {
     approvalSignatures?: ApprovalSignature[];
   };
   footerConfig?: FooterConfig | null;
+  formDocName?: string | null;
 }
 
-export default function KpiPrintTemplate({ kpi, footerConfig }: KpiPrintTemplateProps) {
+export default function KpiPrintTemplate({ kpi, footerConfig, formDocName }: KpiPrintTemplateProps) {
   const formLabel = kpi.documentName?.trim() || footerConfig?.label?.trim() || "KPI Annual Objective | ดัชนีชี้วัดผลงานประจำปี";
-  const footerLabel = formLabel;
+  const footerLabel = footerConfig?.label?.trim() || formLabel;
   const footerPrefix = footerConfig?.prefix?.trim() || "FM-KPI-01";
   const [primaryTitle, secondaryTitle] = splitBilingualLabel(formLabel);
 

@@ -135,7 +135,7 @@ export default function CarFormModal({
     formState: { errors },
   } = useForm<CarCreateInput>({
     resolver: zodResolver(carCreateSchema) as Resolver<CarCreateInput>,
-    defaultValues: { sourceType: "I", isoStandards: [], reCar: false },
+    defaultValues: { sourceType: "I", isoStandards: [], reCar: false, relatedDepartmentIds: [] },
   });
 
   useEffect(() => {
@@ -162,6 +162,7 @@ export default function CarFormModal({
         nonConformanceRef: editCar.nonConformanceRef,
         issuerPosition: editCar.issuerPosition,
         targetDepartmentId: editCar.targetDepartment.id,
+        relatedDepartmentIds: editCar.relatedDepartmentIds ?? [],
         targetEmailGroups: editCar.targetEmailGroups ?? [],
         targetEmailGroupsCc: editCar.targetEmailGroupsCc ?? [],
         reCar: editCar.reCar,
@@ -175,6 +176,7 @@ export default function CarFormModal({
         issuerPosition: defaultIssuerPosition ?? undefined,
         targetEmailGroups: [],
         targetEmailGroupsCc: [],
+        relatedDepartmentIds: [],
       });
     }
   }, [defaultIssuerPosition, editCar, open, reset]);
@@ -183,12 +185,22 @@ export default function CarFormModal({
   const isReCar = watch("reCar");
   const selectedTo = watch("targetEmailGroups") ?? [];
   const selectedCc = watch("targetEmailGroupsCc") ?? [];
+  const selectedRelatedDepts = watch("relatedDepartmentIds") ?? [];
 
   function toggleGroup(field: "targetEmailGroups" | "targetEmailGroupsCc", mail: string) {
     const current = field === "targetEmailGroups" ? selectedTo : selectedCc;
     setValue(
       field,
       current.includes(mail) ? current.filter((m) => m !== mail) : [...current, mail]
+    );
+  }
+
+  function toggleRelatedDept(deptId: string) {
+    setValue(
+      "relatedDepartmentIds",
+      selectedRelatedDepts.includes(deptId)
+        ? selectedRelatedDepts.filter((id) => id !== deptId)
+        : [...selectedRelatedDepts, deptId]
     );
   }
 
@@ -480,6 +492,46 @@ export default function CarFormModal({
                 {errors.targetDepartmentId && (
                   <p className="mt-1 text-xs text-rose-500">
                     {errors.targetDepartmentId.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm font-medium text-slate-700">
+                  {t("car.form.relatedDeptLabel")}
+                </p>
+                {!departmentsLoading && !departmentsError && departments.length > 0 ? (
+                  <div className="max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
+                    {departments.map((d) => {
+                      const checked = selectedRelatedDepts.includes(d.id);
+                      return (
+                        <label
+                          key={d.id}
+                          className={cn(
+                            "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm transition-colors",
+                            checked
+                              ? "bg-primary/5 font-medium text-primary"
+                              : "text-slate-700 hover:bg-slate-50"
+                          )}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleRelatedDept(d.id)}
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-primary"
+                          />
+                          <span className="truncate">{d.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : departmentsLoading ? (
+                  <div className={cn(INPUT_CLASS, "bg-slate-50 text-slate-400")}>
+                    {t("common.loading")}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    {t("car.form.relatedDeptPlaceholder")}
                   </p>
                 )}
               </div>

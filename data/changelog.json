@@ -1,5 +1,25 @@
 [
   {
+    "id": "32",
+    "titleTh": "CAR: เพิ่มการเลือกแผนกที่รับผิดชอบแก้ไขและแผนกที่เกี่ยวข้อง",
+    "titleEn": "CAR: Added responsible department and related departments selection to creation form",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/car-related-departments",
+    "detailsTh": [
+      "เพิ่ม field relatedDepartmentIds (String[]) ในตาราง CarMaster",
+      "ปรับชื่อ field targetDepartmentId เป็น 'แผนกที่รับผิดชอบแก้ไข' ให้ชัดเจนยิ่งขึ้น",
+      "เพิ่ม multi-select checkbox สำหรับเลือกแผนกที่เกี่ยวข้องในฟอร์มสร้าง CAR",
+      "อัปเดต validation schema (carBaseSchema), types (CarDetail, CarSummary), repository (createDraft, updateDraft, findDetailById, findManySummary, paginateSummaries), service (mapDetail, mapSummaries), และ i18n (th/en)"
+    ],
+    "detailsEn": [
+      "Added relatedDepartmentIds (String[]) field to CarMaster table",
+      "Renamed targetDepartmentId label to 'Responsible Department' for clarity",
+      "Added multi-select checkbox list for selecting related departments in CAR create form",
+      "Updated validation schema (carBaseSchema), types (CarDetail, CarSummary), repository (createDraft, updateDraft, findDetailById, findManySummary, paginateSummaries), service (mapDetail, mapSummaries), and i18n (th/en)"
+    ]
+  },
+  {
     "id": "31",
     "titleTh": "เพิ่มชื่อเอกสารและปุ่มพิมพ์ (PDF Export) ในฟอร์ม KPI Monthly",
     "titleEn": "Added document name and Print/PDF Export button to KPI Monthly Form",
@@ -19,18 +39,18 @@
   },
   {
     "id": "30",
-    "titleTh": "ปรับชื่อเอกสารท้าย PDF KPI รายแผนกให้ตรงกับฟอร์ม KPI",
-    "titleEn": "Aligned department KPI PDF footer label with the KPI form document name",
+    "titleTh": "ปรับชื่อเอกสารท้าย PDF KPI ให้ใช้ Footer Config กลาง",
+    "titleEn": "Aligned annual KPI PDF footer naming with the central Footer Config",
     "date": "2026-07-06",
     "type": "fix",
-    "commit": "fix/kpi-pdf-footer-document-name",
+    "commit": "fix/kpi-pdf-footer-config-label",
     "detailsTh": [
-      "ปรับ annual KPI print/PDF template ให้ข้อความชื่อเอกสารมุมล่างขวาใช้ค่า `documentName` จากฟอร์ม KPI รายแผนกก่อนเสมอ เพื่อให้หัวเอกสารและท้ายเอกสารตรงกัน",
-      "คงการใช้ค่า Document Prefix จาก `qms/footer-config` ไว้เหมือนเดิม เพื่อให้เลขหรือรหัสแบบฟอร์มส่วนท้ายยังจัดการจากศูนย์กลางได้"
+      "ปรับ annual KPI print/PDF footer ให้ชื่อเอกสารมุมล่างขวาอ้างอิงค่า Document Label จากหน้า `qms/footer-config` ของ `KPI_ANNUAL`",
+      "คงการใช้ `documentName` รายแผนกไว้สำหรับหัวเอกสาร แต่ footer จะใช้ค่ากลางเดียวกันทุกแผนกตามที่ QMS กำหนด"
     ],
     "detailsEn": [
-      "Updated the annual KPI print/PDF template so the bottom-right document label always follows the department KPI form `documentName`, matching the main document heading.",
-      "Kept the shared `qms/footer-config` Document Prefix behavior unchanged so the footer code remains centrally managed."
+      "Updated the annual KPI print/PDF footer so the bottom-right document label reads from the shared `KPI_ANNUAL` Document Label configured in `qms/footer-config`.",
+      "Kept per-department `documentName` behavior for the main document heading while standardizing the footer label from the central QMS configuration."
     ]
   },
   {

@@ -54,68 +54,68 @@ function getSections(
       labelTh: "หน้าหลัก",
       labelEn: "Dashboard",
       href: "/",
-      icon: <House className="h-4.5 w-[18px] shrink-0" />,
+      icon: <House className="h-4.5 w-4.5 shrink-0" />,
     },
         {
       labelTh: "ประกาศทั้งหมด",
       labelEn: "Announcements",
       href: "/announcements",
-      icon: <Megaphone className="h-4.5 w-[18px] shrink-0" />,
+      icon: <Megaphone className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "DAR",
       labelEn: "DAR Requests",
       href: "/dar",
-      icon: <FileText className="h-4.5 w-[18px] shrink-0" />,
+      icon: <FileText className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "เอกสารทั้งหมด",
       labelEn: "Document Control",
       href: "/qms/document-controls",
-      icon: <FolderOpen className="h-4.5 w-[18px] shrink-0" />,
+      icon: <FolderOpen className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "วัตถุประสงค์ KPI",
       labelEn: "KPI Objectives",
       href: "/qms/kpi",
-      icon: <BarChart3 className="h-4.5 w-[18px] shrink-0" />,
+      icon: <BarChart3 className="h-4.5 w-4.5 shrink-0" />,
       exact: true,
     },
     {
       labelTh: "รายงาน KPI รายเดือน",
       labelEn: "Monthly KPI",
       href: "/qms/kpi/monthly",
-      icon: <CalendarDays className="h-4.5 w-[18px] shrink-0" />,
+      icon: <CalendarDays className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "CAR ของแผนก",
       labelEn: "CAR (My Dept)",
       href: "/car",
-      icon: <ClipboardCheck className="h-4.5 w-[18px] shrink-0" />,
+      icon: <ClipboardCheck className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "แผนการตรวจสอบ",
       labelEn: "Audit Plans",
       href: "/audit/plans",
-      icon: <Search className="h-4.5 w-[18px] shrink-0" />,
+      icon: <Search className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "ประกาศแต่งตั้งผู้ตรวจ",
       labelEn: "Audit Appointments",
       href: "/audit/appointments",
-      icon: <FileText className="h-4.5 w-[18px] shrink-0" />,
+      icon: <FileText className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "งานรออนุมัติ",
       labelEn: "Approve Queue",
       href: "/approve",
-      icon: <ShieldCheck className="h-4.5 w-[18px] shrink-0" />,
+      icon: <ShieldCheck className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "โปรไฟล์ของฉัน",
       labelEn: "My Profile",
       href: "/profile",
-      icon: <User className="h-4.5 w-[18px] shrink-0" />,
+      icon: <User className="h-4.5 w-4.5 shrink-0" />,
     },
   ];
 
@@ -124,37 +124,37 @@ function getSections(
       labelTh: "หน้าสรุปผลภาพรวม",
       labelEn: "QMS Summary Dashboard",
       href: "/qms/summary",
-      icon: <BarChart3 className="h-4.5 w-[18px] shrink-0" />,
+      icon: <BarChart3 className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "มาตรฐาน Audit",
       labelEn: "Audit Standards",
       href: "/qms/audit-standards",
-      icon: <ClipboardCheck className="h-4.5 w-[18px] shrink-0" />,
+      icon: <ClipboardCheck className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "จัดการข่าวสาร",
       labelEn: "Manage Announcements",
       href: "/qms/announcements",
-      icon: <Megaphone className="h-4.5 w-[18px] shrink-0" />,
+      icon: <Megaphone className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "จัดการ DAR",
       labelEn: "Manage DAR",
       href: "/qms/dar",
-      icon: <ShieldCheck className="h-4.5 w-[18px] shrink-0" />,
+      icon: <ShieldCheck className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "CAR (คำร้องขอแก้ไข)",
       labelEn: "CAR Management",
       href: "/qms/car",
-      icon: <ClipboardList className="h-4.5 w-[18px] shrink-0" />,
+      icon: <ClipboardList className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "SharePoint Files",
       labelEn: "SharePoint Files",
       href: "/qms/sharepoint",
-      icon: <FolderOpen className="h-4.5 w-[18px] shrink-0" />,
+      icon: <FolderOpen className="h-4.5 w-4.5 shrink-0" />,
     },
   ];
 
@@ -162,13 +162,13 @@ function getSections(
     labelTh: "ข้อมูลระบบและการทำงาน",
     labelEn: "System Info & Status",
     href: "/qms/system-info",
-    icon: <Cpu className="h-4.5 w-[18px] shrink-0" />,
+    icon: <Cpu className="h-4.5 w-4.5 shrink-0" />,
   };
   const developmentLogItem: NavItem = {
     labelTh: "บันทึกการพัฒนา",
     labelEn: "Development Logs",
     href: "/qms/development",
-    icon: <ClipboardList className="h-4.5 w-[18px] shrink-0" />,
+    icon: <ClipboardList className="h-4.5 w-4.5 shrink-0" />,
   };
 
   const itItems: NavItem[] = [
@@ -176,7 +176,7 @@ function getSections(
       labelTh: "จัดการผู้ใช้",
       labelEn: "Manage Users",
       href: "/it/users",
-      icon: <Users className="h-4.5 w-[18px] shrink-0" />,
+      icon: <Users className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "จัดการแผนก",
@@ -188,7 +188,7 @@ function getSections(
       labelTh: "Audit Log",
       labelEn: "Audit Log",
       href: "/it/audit-logs",
-      icon: <ClipboardList className="h-4.5 w-[18px] shrink-0" />,
+      icon: <ClipboardList className="h-4.5 w-4.5 shrink-0" />,
     },
     systemInfoItem,
     developmentLogItem,
@@ -202,7 +202,7 @@ function getSections(
     labelTh: "กำหนด MR",
     labelEn: "Set MR",
     href: "/qms/mr",
-    icon: <UserCog className="h-4.5 w-[18px] shrink-0" />,
+    icon: <UserCog className="h-4.5 w-4.5 shrink-0" />,
   };
   const deptCodeItem: NavItem = {
     labelTh: "ตัวย่อแผนก",
@@ -220,7 +220,7 @@ function getSections(
     labelTh: "ตั้งค่าผู้อนุมัติอัตโนมัติ",
     labelEn: "Auto Approval Config",
     href: "/qms/approval-config",
-    icon: <UserCog className="h-4.5 w-[18px] shrink-0" />,
+    icon: <UserCog className="h-4.5 w-4.5 shrink-0" />,
   };
   const footerConfigItem: NavItem = {
     labelTh: "ตั้งค่าหัว/ท้ายเอกสาร",
