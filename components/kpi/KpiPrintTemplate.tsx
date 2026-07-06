@@ -49,7 +49,7 @@ interface KpiPrintTemplateProps {
 
 export default function KpiPrintTemplate({ kpi, footerConfig }: KpiPrintTemplateProps) {
   const formLabel = kpi.documentName?.trim() || footerConfig?.label?.trim() || "KPI Annual Objective | ดัชนีชี้วัดผลงานประจำปี";
-  const footerLabel = footerConfig?.label?.trim() || formLabel;
+  const footerLabel = formLabel;
   const footerPrefix = footerConfig?.prefix?.trim() || "FM-KPI-01";
   const [primaryTitle, secondaryTitle] = splitBilingualLabel(formLabel);
 

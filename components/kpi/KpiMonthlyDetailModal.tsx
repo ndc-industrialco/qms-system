@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertTriangle, CheckCircle2, ExternalLink, FileText,
-  ShieldCheck, Upload, X, XCircle,
+  ShieldCheck, Upload, X, XCircle, Printer,
 } from "lucide-react";
 import {
   useKpiMonthlyById,
@@ -39,6 +39,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   userRole: UserRole;
   userId?: string;
+  monthlyFormDocName?: string;
 }
 
 const STATUS_CONFIG: Record<MonthlyStatus, { style: string; label?: string }> = {
@@ -211,7 +212,7 @@ function ModalSkeleton() {
   );
 }
 
-export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenChange, userRole, userId }: Props) {
+export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenChange, userRole, userId, monthlyFormDocName }: Props) {
   const t = useT();
   const privileged = isPrivileged(userRole);
 
@@ -881,6 +882,15 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                   )}
                 </div>
               )}
+              <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <Button type="button" variant="ghost" size="sm" onClick={() => window.print()} className="h-7 text-xs text-slate-500 hover:text-slate-700">
+                  <Printer className="w-3.5 h-3.5 mr-1.5" />
+                  Print / Export PDF
+                </Button>
+                <div className="font-medium text-[10px] uppercase text-right opacity-60">
+                  {report?.kpi?.documentName || monthlyFormDocName || "FM-KPI-01 Rev.00"}
+                </div>
+              </div>
             </div>
           </>
         )}

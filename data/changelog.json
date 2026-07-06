@@ -1,5 +1,39 @@
 [
   {
+    "id": "31",
+    "titleTh": "เพิ่มชื่อเอกสารและปุ่มพิมพ์ (PDF Export) ในฟอร์ม KPI Monthly",
+    "titleEn": "Added document name and Print/PDF Export button to KPI Monthly Form",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/kpi-monthly-pdf-doc-name",
+    "detailsTh": [
+      "เพิ่มชื่อเอกสารกำกับมุมล่างขวาของ Modal รายงาน KPI Monthly โดยอ้างอิงจาก Document Name ของ Form KPI เป็นหลัก",
+      "หากไม่ได้ตั้งค่าไว้ จะใช้ค่าเริ่มต้นตามที่ QMS กำหนดในระบบ Doc No Config (KPI_MONTHLY_FORM)",
+      "เพิ่มปุ่ม Print / Export PDF ภายใน Form KPI Monthly เพื่อให้สามารถพิมพ์หรือบันทึกเป็น PDF ที่มีชื่อฟอร์มแสดงตรงตามที่กำหนด"
+    ],
+    "detailsEn": [
+      "Added a document name label at the bottom right of the KPI Monthly modal, referencing the master KPI document name.",
+      "If not set, falls back to the default QMS-configured Doc No Config setting (KPI_MONTHLY_FORM).",
+      "Added a Print / Export PDF button to the KPI Monthly Form to seamlessly generate PDFs containing the correct form name footer."
+    ]
+  },
+  {
+    "id": "30",
+    "titleTh": "ปรับชื่อเอกสารท้าย PDF KPI รายแผนกให้ตรงกับฟอร์ม KPI",
+    "titleEn": "Aligned department KPI PDF footer label with the KPI form document name",
+    "date": "2026-07-06",
+    "type": "fix",
+    "commit": "fix/kpi-pdf-footer-document-name",
+    "detailsTh": [
+      "ปรับ annual KPI print/PDF template ให้ข้อความชื่อเอกสารมุมล่างขวาใช้ค่า `documentName` จากฟอร์ม KPI รายแผนกก่อนเสมอ เพื่อให้หัวเอกสารและท้ายเอกสารตรงกัน",
+      "คงการใช้ค่า Document Prefix จาก `qms/footer-config` ไว้เหมือนเดิม เพื่อให้เลขหรือรหัสแบบฟอร์มส่วนท้ายยังจัดการจากศูนย์กลางได้"
+    ],
+    "detailsEn": [
+      "Updated the annual KPI print/PDF template so the bottom-right document label always follows the department KPI form `documentName`, matching the main document heading.",
+      "Kept the shared `qms/footer-config` Document Prefix behavior unchanged so the footer code remains centrally managed."
+    ]
+  },
+  {
     "id": "29",
     "titleTh": "ปรับ Footer PDF KPI ประจำปีให้ใช้ชื่อเอกสารกลางจากหน้า Footer Config",
     "titleEn": "Aligned annual KPI PDF footer naming with the central Footer Config form label",

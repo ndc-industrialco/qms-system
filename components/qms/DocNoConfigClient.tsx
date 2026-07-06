@@ -11,6 +11,7 @@ type ModuleItem = {
   module: string;
   label: string;
   format: string;
+  requireSeq?: boolean;
 };
 
 const YEAR = new Date().getFullYear() + 543;
@@ -29,7 +30,7 @@ function ModuleCard({ item, onSaved }: { item: ModuleItem; onSaved: (f: string) 
   const [saving, setSaving] = useState(false);
   const dirty = format !== item.format;
 
-  const err = /\{SEQ:\d+\}/.test(format) ? null : "ต้องมี {SEQ:N} เช่น {SEQ:4}";
+  const err = (item.requireSeq !== false && !/\{SEQ:\d+\}/.test(format)) ? "ต้องมี {SEQ:N} เช่น {SEQ:4}" : null;
 
   async function save() {
     if (err) { toast.error(err); return; }

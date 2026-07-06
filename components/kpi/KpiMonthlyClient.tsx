@@ -66,6 +66,7 @@ function useKpiMonthlySummary(year: number) {
 interface Props {
   userRole: UserRole;
   userId?: string;
+  monthlyFormDocName?: string;
 }
 
 function RoleBanner({ role }: { role: UserRole }) {
@@ -218,7 +219,7 @@ function DeptDashboard({
   );
 }
 
-export default function KpiMonthlyClient({ userRole, userId }: Props) {
+export default function KpiMonthlyClient({ userRole, userId, monthlyFormDocName }: Props) {
   const t = useT();
   const currentYear = new Date().getFullYear();
 
@@ -374,6 +375,7 @@ export default function KpiMonthlyClient({ userRole, userId }: Props) {
         onOpenChange={setModalOpen}
         userRole={userRole}
         userId={userId}
+        monthlyFormDocName={monthlyFormDocName}
       />
     </div>
   );
