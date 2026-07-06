@@ -1157,8 +1157,62 @@
       "labelResult": "ผล:",
       "labelPassed": "ผ่าน",
       "labelFailed": "ไม่ผ่าน",
-      "labelNextDue": "ติดตามรอบ 2:",
+      "labelNextDue": "กำหนดรอบ 2:",
       "reCarTitle": "Re-CAR ที่เกี่ยวข้อง:"
+    }
+  },
+  "FooterConfig": {
+    "pageTitle": "ตั้งค่า Footer (ชื่อเอกสาร)",
+    "pageSubtitle": "แก้ไข Prefix และข้อความ Label ของเอกสารเมื่อพิมพ์ PDF",
+    "save": "บันทึก",
+    "saving": "กำลังบันทึก...",
+    "prefixLabel": "Prefix (รหัสนำหน้า)",
+    "preview": "ตัวอย่างการแสดงผล",
+    "labelLabel": "Label (ชื่อเอกสาร)",
+    "loadError": "ไม่สามารถโหลดการตั้งค่าได้",
+    "saveSuccess": "บันทึก {module} เรียบร้อย",
+    "saveError": "บันทึกการตั้งค่าล้มเหลว",
+    "modules": {
+      "DAR": {
+        "title": "ใบคำร้องเกี่ยวกับเอกสาร (DAR)",
+        "prefixPlaceholder": "เช่น FM-DC-01",
+        "labelPlaceholder": "เช่น ใบคำร้องเกี่ยวกับเอกสาร (DAR)"
+      },
+      "CAR": {
+        "title": "ใบคำร้องให้แก้ไขข้อบกพร่อง (CAR)",
+        "prefixPlaceholder": "เช่น FM-QMS-02",
+        "labelPlaceholder": "เช่น ใบคำร้องให้แก้ไขข้อบกพร่อง (CAR)"
+      },
+      "KPI_ANNUAL": {
+        "title": "KPI ประจำปี",
+        "prefixPlaceholder": "เช่น FM-KPI-01",
+        "labelPlaceholder": "เช่น ดัชนีชี้วัดผลงานประจำปี"
+      },
+      "KPI_MONTHLY": {
+        "title": "รายงาน KPI รายเดือน",
+        "prefixPlaceholder": "เช่น FM-KPI-02",
+        "labelPlaceholder": "เช่น รายงาน KPI รายเดือน"
+      },
+      "DOC_CONTROL": {
+        "title": "ทะเบียนควบคุมเอกสาร (Master List)",
+        "prefixPlaceholder": "เช่น FM-DC-03",
+        "labelPlaceholder": "เช่น ทะเบียนควบคุมเอกสาร (Master List)"
+      },
+      "AUDIT_APPT": {
+        "title": "หนังสือแต่งตั้งผู้ตรวจติดตาม",
+        "prefixPlaceholder": "เช่น FM-IA-00",
+        "labelPlaceholder": "เช่น หนังสือแต่งตั้งผู้ตรวจติดตามภายใน"
+      },
+      "AUDIT_PLAN": {
+        "title": "แผนการตรวจติดตาม",
+        "prefixPlaceholder": "เช่น FM-IA-01",
+        "labelPlaceholder": "เช่น แผนการตรวจติดตามคุณภาพภายใน"
+      },
+      "AUDITOR": {
+        "title": "ทะเบียนผู้ตรวจติดตาม",
+        "prefixPlaceholder": "เช่น FM-IA-02",
+        "labelPlaceholder": "เช่น ทะเบียนรายชื่อผู้ตรวจติดตามภายใน"
+      }
     }
   }
 }

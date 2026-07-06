@@ -256,7 +256,7 @@ export default function CarPrintTemplate({ car, footerConfig }: CarPrintTemplate
                 <td colSpan={2}>
                   <strong>ISO Standard Requirements (ข้อกำหนดมาตรฐาน):</strong>{" "}
                   {car.isoStandards.length > 0 ? (
-                    car.isoStandards.map((std, idx) => (
+                    car.isoStandards.map((std) => (
                       <span key={std} className="mr-2">
                         <span className="checkbox-box checked" style={{ verticalAlign: "middle" }}></span>
                         <span style={{ marginLeft: "2px", verticalAlign: "middle" }}>{std}</span>

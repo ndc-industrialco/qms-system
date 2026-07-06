@@ -1,5 +1,37 @@
 [
   {
+    "id": "34",
+    "titleTh": "เพิ่มระบบสองภาษา (TH/EN) ในหน้า Footer Config",
+    "titleEn": "Add i18n TH/EN support to Footer Config page",
+    "date": "2026-07-06",
+    "type": "improvement",
+    "commit": "feat: add i18n to footer config",
+    "detailsTh": [
+      "เพิ่มการรองรับ 2 ภาษาในหน้า Footer Config ตามมาตรฐานของระบบ",
+      "เปลี่ยนข้อความในหน้าจอให้ดึงคำแปลจากไฟล์ messages/th.json และ en.json"
+    ],
+    "detailsEn": [
+      "Added dual-language (TH/EN) support to the Footer Config page.",
+      "Updated the UI component to fetch translations from messages/th.json and en.json."
+    ]
+  },
+  {
+    "id": "33",
+    "titleTh": "ปรับหน้า Footer Config ให้สั้นลงและบันทึกแยกรายการ",
+    "titleEn": "Simplified Footer Config copy and added per-card save actions",
+    "date": "2026-07-06",
+    "type": "improvement",
+    "commit": "improve/footer-config-per-card-save",
+    "detailsTh": [
+      "ลดข้อความอธิบายบนหน้า Footer Config ให้เหลือเฉพาะข้อมูลจำเป็นเพื่อลดความรกของหน้าจอ",
+      "ย้ายจากปุ่มบันทึกรวมทั้งหน้าเป็นปุ่ม Save แยกในแต่ละ config card เพื่อให้แก้และบันทึกเฉพาะรายการที่ต้องการได้ทันที"
+    ],
+    "detailsEn": [
+      "Reduced the Footer Config page copy to the essentials so the screen is less verbose.",
+      "Replaced the single page-level save action with per-card Save buttons so each config can be updated independently."
+    ]
+  },
+  {
     "id": "32",
     "titleTh": "CAR: เพิ่มการเลือกแผนกที่รับผิดชอบแก้ไขและแผนกที่เกี่ยวข้อง",
     "titleEn": "CAR: Added responsible department and related departments selection to creation form",

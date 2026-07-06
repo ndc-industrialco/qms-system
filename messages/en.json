@@ -1160,5 +1160,59 @@
       "labelNextDue": "Round 2 due:",
       "reCarTitle": "Related Re-CARs:"
     }
+  },
+  "FooterConfig": {
+    "pageTitle": "Footer Config",
+    "pageSubtitle": "Edit prefix and label",
+    "save": "Save",
+    "saving": "Saving...",
+    "prefixLabel": "Prefix",
+    "preview": "Preview",
+    "labelLabel": "Label",
+    "loadError": "Unable to load footer configuration",
+    "saveSuccess": "Saved {module}",
+    "saveError": "Failed to save footer configuration",
+    "modules": {
+      "DAR": {
+        "title": "DAR",
+        "prefixPlaceholder": "e.g. FM-DC-01",
+        "labelPlaceholder": "e.g. Document Action Request (DAR)"
+      },
+      "CAR": {
+        "title": "CAR",
+        "prefixPlaceholder": "e.g. FM-QMS-02",
+        "labelPlaceholder": "e.g. Corrective Action Request (CAR)"
+      },
+      "KPI_ANNUAL": {
+        "title": "KPI Annual",
+        "prefixPlaceholder": "e.g. FM-KPI-01",
+        "labelPlaceholder": "e.g. KPI Annual Objective"
+      },
+      "KPI_MONTHLY": {
+        "title": "KPI Monthly",
+        "prefixPlaceholder": "e.g. FM-KPI-02",
+        "labelPlaceholder": "e.g. KPI Monthly Report"
+      },
+      "DOC_CONTROL": {
+        "title": "Document Control",
+        "prefixPlaceholder": "e.g. FM-DC-03",
+        "labelPlaceholder": "e.g. Document Control Master List"
+      },
+      "AUDIT_APPT": {
+        "title": "Audit Appointment",
+        "prefixPlaceholder": "e.g. FM-IA-00",
+        "labelPlaceholder": "e.g. Audit Appointment Letter"
+      },
+      "AUDIT_PLAN": {
+        "title": "Audit Plan",
+        "prefixPlaceholder": "e.g. FM-IA-01",
+        "labelPlaceholder": "e.g. Internal Audit Plan"
+      },
+      "AUDITOR": {
+        "title": "Auditor",
+        "prefixPlaceholder": "e.g. FM-IA-02",
+        "labelPlaceholder": "e.g. Auditor Approval Form"
+      }
+    }
   }
 }
