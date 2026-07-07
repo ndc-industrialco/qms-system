@@ -416,16 +416,6 @@ export type EnumDocControlStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumDocControlStatusFilter<$PrismaModel> | $Enums.DocControlStatus
 }
 
-export type EnumDocControlStatusWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.DocControlStatus | Prisma.EnumDocControlStatusFieldRefInput<$PrismaModel>
-  in?: $Enums.DocControlStatus[] | Prisma.ListEnumDocControlStatusFieldRefInput<$PrismaModel>
-  notIn?: $Enums.DocControlStatus[] | Prisma.ListEnumDocControlStatusFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumDocControlStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocControlStatus
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumDocControlStatusFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumDocControlStatusFilter<$PrismaModel>
-}
-
 export type JsonNullableFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -448,6 +438,16 @@ export type JsonNullableFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type EnumDocControlStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DocControlStatus | Prisma.EnumDocControlStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DocControlStatus[] | Prisma.ListEnumDocControlStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DocControlStatus[] | Prisma.ListEnumDocControlStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDocControlStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocControlStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDocControlStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDocControlStatusFilter<$PrismaModel>
 }
 
 export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =

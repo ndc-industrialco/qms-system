@@ -551,6 +551,7 @@ model DocumentControl {
   departmentId         String?
   authDepartmentId     String?           @map("auth_department_id")
   departmentName       String?           @map("department_name")
+  distributions Json?
   categoryId   String?
   category     DocumentCategory?         @relation(fields: [categoryId], references: [id])
   revisions    DocumentControlRevision[]

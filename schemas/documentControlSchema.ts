@@ -9,6 +9,11 @@ const requiredDescriptionSchema = z
   .min(1, 'Description is required')
   .max(500);
 
+const distributionSchema = z.object({
+  departmentName: z.string(),
+  authDepartmentId: z.string().nullable(),
+});
+
 export const createDocumentControlSchema = z.object({
   categoryId: z.string().min(1, 'Category is required'),
   departmentId: z.string().min(1, 'Department is required'),
@@ -16,6 +21,7 @@ export const createDocumentControlSchema = z.object({
   docName: z.string().min(1, 'Document name is required').max(255),
   description: requiredDescriptionSchema,
   status: z.enum(CREATE_DOC_STATUSES).default('ACTIVE'),
+  distributions: z.array(distributionSchema).default([]),
 });
 
 export const updateDocumentControlSchema = z.object({
@@ -24,6 +30,7 @@ export const updateDocumentControlSchema = z.object({
   docName: z.string().trim().min(1, 'Document name is required').max(255).optional(),
   description: z.string().trim().min(1, 'Description is required').max(500).optional().nullable(),
   status: z.enum(CREATE_DOC_STATUSES).optional(),
+  distributions: z.array(distributionSchema).optional(),
 });
 
 export const uploadRevisionSchema = z.object({

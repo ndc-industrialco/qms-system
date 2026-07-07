@@ -121,6 +121,7 @@ export type DocumentControlCountAggregateOutputType = {
   departmentId: number
   authDepartmentId: number
   departmentName: number
+  distributions: number
   categoryId: number
   _all: number
 }
@@ -221,6 +222,7 @@ export type DocumentControlCountAggregateInputType = {
   departmentId?: true
   authDepartmentId?: true
   departmentName?: true
+  distributions?: true
   categoryId?: true
   _all?: true
 }
@@ -338,6 +340,7 @@ export type DocumentControlGroupByOutputType = {
   departmentId: string | null
   authDepartmentId: string | null
   departmentName: string | null
+  distributions: runtime.JsonValue | null
   categoryId: string | null
   _count: DocumentControlCountAggregateOutputType | null
   _avg: DocumentControlAvgAggregateOutputType | null
@@ -391,6 +394,7 @@ export type DocumentControlWhereInput = {
   departmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   authDepartmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   departmentName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  distributions?: Prisma.JsonNullableFilter<"DocumentControl">
   categoryId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   category?: Prisma.XOR<Prisma.DocumentCategoryNullableScalarRelationFilter, Prisma.DocumentCategoryWhereInput> | null
   revisions?: Prisma.DocumentControlRevisionListRelationFilter
@@ -423,6 +427,7 @@ export type DocumentControlOrderByWithRelationInput = {
   departmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   authDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   departmentName?: Prisma.SortOrderInput | Prisma.SortOrder
+  distributions?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.DocumentCategoryOrderByWithRelationInput
   revisions?: Prisma.DocumentControlRevisionOrderByRelationAggregateInput
@@ -458,6 +463,7 @@ export type DocumentControlWhereUniqueInput = Prisma.AtLeast<{
   departmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   authDepartmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   departmentName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  distributions?: Prisma.JsonNullableFilter<"DocumentControl">
   categoryId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   category?: Prisma.XOR<Prisma.DocumentCategoryNullableScalarRelationFilter, Prisma.DocumentCategoryWhereInput> | null
   revisions?: Prisma.DocumentControlRevisionListRelationFilter
@@ -490,6 +496,7 @@ export type DocumentControlOrderByWithAggregationInput = {
   departmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   authDepartmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   departmentName?: Prisma.SortOrderInput | Prisma.SortOrder
+  distributions?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DocumentControlCountOrderByAggregateInput
   _avg?: Prisma.DocumentControlAvgOrderByAggregateInput
@@ -528,6 +535,7 @@ export type DocumentControlScalarWhereWithAggregatesInput = {
   departmentId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
   authDepartmentId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
   departmentName?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
+  distributions?: Prisma.JsonNullableWithAggregatesFilter<"DocumentControl">
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"DocumentControl"> | string | null
 }
 
@@ -558,6 +566,7 @@ export type DocumentControlCreateInput = {
   departmentId?: string | null
   authDepartmentId?: string | null
   departmentName?: string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   category?: Prisma.DocumentCategoryCreateNestedOneWithoutDocumentsInput
   revisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDocumentControlInput
 }
@@ -589,6 +598,7 @@ export type DocumentControlUncheckedCreateInput = {
   departmentId?: string | null
   authDepartmentId?: string | null
   departmentName?: string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   categoryId?: string | null
   revisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDocumentControlInput
 }
@@ -620,6 +630,7 @@ export type DocumentControlUpdateInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   category?: Prisma.DocumentCategoryUpdateOneWithoutDocumentsNestedInput
   revisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDocumentControlNestedInput
 }
@@ -651,6 +662,7 @@ export type DocumentControlUncheckedUpdateInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   revisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNestedInput
 }
@@ -682,6 +694,7 @@ export type DocumentControlCreateManyInput = {
   departmentId?: string | null
   authDepartmentId?: string | null
   departmentName?: string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   categoryId?: string | null
 }
 
@@ -712,6 +725,7 @@ export type DocumentControlUpdateManyMutationInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DocumentControlUncheckedUpdateManyInput = {
@@ -741,6 +755,7 @@ export type DocumentControlUncheckedUpdateManyInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -771,6 +786,7 @@ export type DocumentControlCountOrderByAggregateInput = {
   departmentId?: Prisma.SortOrder
   authDepartmentId?: Prisma.SortOrder
   departmentName?: Prisma.SortOrder
+  distributions?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
 }
 
@@ -944,6 +960,7 @@ export type DocumentControlCreateWithoutCategoryInput = {
   departmentId?: string | null
   authDepartmentId?: string | null
   departmentName?: string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   revisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDocumentControlInput
 }
 
@@ -974,6 +991,7 @@ export type DocumentControlUncheckedCreateWithoutCategoryInput = {
   departmentId?: string | null
   authDepartmentId?: string | null
   departmentName?: string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   revisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDocumentControlInput
 }
 
@@ -1033,6 +1051,7 @@ export type DocumentControlScalarWhereInput = {
   departmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   authDepartmentId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
   departmentName?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
+  distributions?: Prisma.JsonNullableFilter<"DocumentControl">
   categoryId?: Prisma.StringNullableFilter<"DocumentControl"> | string | null
 }
 
@@ -1063,6 +1082,7 @@ export type DocumentControlCreateWithoutRevisionsInput = {
   departmentId?: string | null
   authDepartmentId?: string | null
   departmentName?: string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   category?: Prisma.DocumentCategoryCreateNestedOneWithoutDocumentsInput
 }
 
@@ -1093,6 +1113,7 @@ export type DocumentControlUncheckedCreateWithoutRevisionsInput = {
   departmentId?: string | null
   authDepartmentId?: string | null
   departmentName?: string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   categoryId?: string | null
 }
 
@@ -1139,6 +1160,7 @@ export type DocumentControlUpdateWithoutRevisionsInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   category?: Prisma.DocumentCategoryUpdateOneWithoutDocumentsNestedInput
 }
 
@@ -1169,6 +1191,7 @@ export type DocumentControlUncheckedUpdateWithoutRevisionsInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -1199,6 +1222,7 @@ export type DocumentControlCreateManyCategoryInput = {
   departmentId?: string | null
   authDepartmentId?: string | null
   departmentName?: string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type DocumentControlUpdateWithoutCategoryInput = {
@@ -1228,6 +1252,7 @@ export type DocumentControlUpdateWithoutCategoryInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   revisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDocumentControlNestedInput
 }
 
@@ -1258,6 +1283,7 @@ export type DocumentControlUncheckedUpdateWithoutCategoryInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   revisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNestedInput
 }
 
@@ -1288,6 +1314,7 @@ export type DocumentControlUncheckedUpdateManyWithoutCategoryInput = {
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   departmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distributions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 
@@ -1348,6 +1375,7 @@ export type DocumentControlSelect<ExtArgs extends runtime.Types.Extensions.Inter
   departmentId?: boolean
   authDepartmentId?: boolean
   departmentName?: boolean
+  distributions?: boolean
   categoryId?: boolean
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
   revisions?: boolean | Prisma.DocumentControl$revisionsArgs<ExtArgs>
@@ -1381,6 +1409,7 @@ export type DocumentControlSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   departmentId?: boolean
   authDepartmentId?: boolean
   departmentName?: boolean
+  distributions?: boolean
   categoryId?: boolean
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
 }, ExtArgs["result"]["documentControl"]>
@@ -1412,6 +1441,7 @@ export type DocumentControlSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   departmentId?: boolean
   authDepartmentId?: boolean
   departmentName?: boolean
+  distributions?: boolean
   categoryId?: boolean
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
 }, ExtArgs["result"]["documentControl"]>
@@ -1443,10 +1473,11 @@ export type DocumentControlSelectScalar = {
   departmentId?: boolean
   authDepartmentId?: boolean
   departmentName?: boolean
+  distributions?: boolean
   categoryId?: boolean
 }
 
-export type DocumentControlOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "docNumber" | "docName" | "revision" | "description" | "status" | "effectiveDate" | "spDriveId" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "spFolderPath" | "fileName" | "fileSize" | "mimeType" | "createdById" | "createdByAuthUserId" | "createdByName" | "updatedById" | "updatedByAuthUserId" | "updatedByName" | "createdAt" | "updatedAt" | "departmentId" | "authDepartmentId" | "departmentName" | "categoryId", ExtArgs["result"]["documentControl"]>
+export type DocumentControlOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "docNumber" | "docName" | "revision" | "description" | "status" | "effectiveDate" | "spDriveId" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "spFolderPath" | "fileName" | "fileSize" | "mimeType" | "createdById" | "createdByAuthUserId" | "createdByName" | "updatedById" | "updatedByAuthUserId" | "updatedByName" | "createdAt" | "updatedAt" | "departmentId" | "authDepartmentId" | "departmentName" | "distributions" | "categoryId", ExtArgs["result"]["documentControl"]>
 export type DocumentControlInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.DocumentControl$categoryArgs<ExtArgs>
   revisions?: boolean | Prisma.DocumentControl$revisionsArgs<ExtArgs>
@@ -1492,6 +1523,7 @@ export type $DocumentControlPayload<ExtArgs extends runtime.Types.Extensions.Int
     departmentId: string | null
     authDepartmentId: string | null
     departmentName: string | null
+    distributions: runtime.JsonValue | null
     categoryId: string | null
   }, ExtArgs["result"]["documentControl"]>
   composites: {}
@@ -1944,6 +1976,7 @@ export interface DocumentControlFieldRefs {
   readonly departmentId: Prisma.FieldRef<"DocumentControl", 'String'>
   readonly authDepartmentId: Prisma.FieldRef<"DocumentControl", 'String'>
   readonly departmentName: Prisma.FieldRef<"DocumentControl", 'String'>
+  readonly distributions: Prisma.FieldRef<"DocumentControl", 'Json'>
   readonly categoryId: Prisma.FieldRef<"DocumentControl", 'String'>
 }
     

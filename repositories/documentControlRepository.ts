@@ -28,6 +28,7 @@ const DOC_SELECT = {
   departmentId: true,
   authDepartmentId: true,
   departmentName: true,
+  distributions: true,
   categoryId: true,
   category: { select: { id: true, name: true, departmentId: true } },
   revisions: {
@@ -196,6 +197,7 @@ export class DocumentControlRepository extends BaseRepository<DocumentControl> {
         createdByName: true,
         createdAt: true,
         departmentName: true,
+        distributions: true,
         category: { select: { name: true } },
         revisions: {
           orderBy: { createdAt: 'desc' },

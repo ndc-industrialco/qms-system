@@ -25,16 +25,14 @@ ws.getColumn(4).width = 20;  // D: Doc No
 ws.getColumn(5).width = 8;   // E: Revision
 ws.getColumn(6).width = 14;  // F: Effective Date
 ws.getColumn(7).width = 12;  // G: Status
-ws.getColumn(8).width = 6;   // H: 1st
-ws.getColumn(9).width = 6;   // I: 2nd
 
-// Columns J-Z for departments
-for (let col = 10; col <= 26; col++) {
+// Columns H-X for departments
+for (let col = 8; col <= 24; col++) {
   ws.getColumn(col).width = 6;
 }
 
 // Row 1: Title
-ws.mergeCells("A1:Z1");
+ws.mergeCells("A1:X1");
 const titleCell = ws.getCell("A1");
 titleCell.value = "ทะเบียนรายชื่อเอกสารควบคุม (Master List)";
 titleCell.font = { name: "Tahoma", size: 16, bold: true, color: { argb: "FF0F1059" } };
@@ -42,7 +40,7 @@ titleCell.alignment = { vertical: "middle", horizontal: "center" };
 ws.getRow(1).height = 30;
 
 // Row 2: Document number
-ws.mergeCells("A2:Z2");
+ws.mergeCells("A2:X2");
 const docNoCell = ws.getCell("A2");
 docNoCell.value = "FM-DC-04 Rev.02";
 docNoCell.font = { name: "Tahoma", size: 10, color: { argb: "FF666666" } };
@@ -67,8 +65,6 @@ const headerLabels = [
   "Rev.",        // E
   "วันที่มีผล",  // F
   "สถานะ",       // G
-  "1st",         // H
-  "2nd",         // I
   "MD", "QMS", "SM", "PU", "HR", "SHE", "PD", "QA", "QC",
   "QC\nLab", "WH", "MO", "EN", "IT", "MN", "GA", "PN"
 ];

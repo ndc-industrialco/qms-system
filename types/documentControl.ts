@@ -68,6 +68,7 @@ export interface DocumentControlDetail extends DocumentControlSummary {
   updatedBy: { id: string; authUserId?: string | null; name: string | null } | null;
   updatedAt: string;
   revisions: DocumentControlRevisionDetail[];
+  distributions?: DocumentDistribution[];
 }
 
 export interface CreateDocumentCategoryInput {
@@ -83,6 +84,11 @@ export interface UpdateDocumentCategoryInput {
   order?: number;
 }
 
+export interface DocumentDistribution {
+  departmentName: string;
+  authDepartmentId: string | null;
+}
+
 export interface CreateDocumentControlInput {
   categoryId: string;
   departmentId: string;
@@ -90,6 +96,7 @@ export interface CreateDocumentControlInput {
   docName: string;
   description?: string | null;
   status?: DocControlStatus;
+  distributions?: DocumentDistribution[];
 }
 
 export interface UpdateDocumentControlInput {
@@ -98,6 +105,7 @@ export interface UpdateDocumentControlInput {
   docName?: string;
   description?: string | null;
   status?: DocControlStatus;
+  distributions?: DocumentDistribution[];
 }
 
 export interface UploadRevisionInput {

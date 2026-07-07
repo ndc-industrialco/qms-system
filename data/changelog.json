@@ -1,5 +1,37 @@
 [
   {
+    "id": "59",
+    "titleTh": "Document Control: ลบคอลัมน์ 1st/2nd และเพิ่มการเลือกแผนกกระจายเอกสารตั้งแต่สร้างชื่อ",
+    "titleEn": "Document Control: Remove 1st/2nd columns and add distribution department selection at creation",
+    "date": "2026-07-07",
+    "type": "feat",
+    "commit": "feat/doc-control-distribution-and-clean-export",
+    "detailsTh": [
+      "scripts/create-master-list-template.mjs: ลบคอลัมน์ H(1st) และ I(2nd) ออกจากเทมเพลต สรุปเป็น 17 คอลัมน์แผนก (H-X)",
+      "docs/export-format/FM-DC-04 Rev.02...xlsx: รีเจนเทมเพลตใหม่ (64 คอลัมน์ A-X)",
+      "app/api/document-controls/export/route.ts: ลบค่า H/I และเลื่อนการเขียนข้อมูลแผนกกระจาย (MD→H ถึง PN→X)",
+      "prisma/schema.prisma: เพิ่มฟิลด์ distributions JSON บน DocumentControl",
+      "schemas/documentControlSchema.ts: เพิ่มฟิลด์ distributions ใน create/update schema",
+      "types/documentControl.ts: เพิ่ม DocumentDistribution interface กับ distributions ใน Create/Update/Detail",
+      "services/documentControlService.ts: บันทึก/อัปเดต distributions บน DocumentControl ตอน create/update",
+      "repositories/documentControlRepository.ts: เพิ่ม distributions ใน select ของ findForExport และ DOC_SELECT",
+      "services/documentControlExportService.ts: ผสาน document-level distributions กับ DAR distributions",
+      "components/document-control/DocumentControlModal.tsx: เพิ่ม grid checkbox สำหรับเลือกแผนกกระจาย (17 แผนก)"
+    ],
+    "detailsEn": [
+      "scripts/create-master-list-template.mjs: Removed H(1st) and I(2nd) columns from template, kept 17 department columns only (H-X)",
+      "docs/export-format/FM-DC-04 Rev.02...xlsx: Regenerated new template (64 columns A-X)",
+      "app/api/document-controls/export/route.ts: Removed H/I values and shifted department distribution data (MD→H through PN→X)",
+      "prisma/schema.prisma: Added distributions JSON field to DocumentControl",
+      "schemas/documentControlSchema.ts: Added distributions field to create/update schemas",
+      "types/documentControl.ts: Added DocumentDistribution interface and distributions to Create/Update/Detail types",
+      "services/documentControlService.ts: Persist distributions on create/update",
+      "repositories/documentControlRepository.ts: Included distributions in findForExport select and DOC_SELECT",
+      "services/documentControlExportService.ts: Merged document-level distributions with DAR distributions",
+      "components/document-control/DocumentControlModal.tsx: Added checkbox grid for distribution departments (17 depts)"
+    ]
+  },
+  {
     "id": "58",
     "titleTh": "KPI: ซ่อนปุ่มส่งตรวจสอบหลังสถานะออกจาก Draft/Rejected",
     "titleEn": "KPI: Hide submit button after leaving Draft/Rejected",

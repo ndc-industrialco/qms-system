@@ -530,6 +530,7 @@ export const DocumentControlScalarFieldEnum = {
   departmentId: 'departmentId',
   authDepartmentId: 'authDepartmentId',
   departmentName: 'departmentName',
+  distributions: 'distributions',
   categoryId: 'categoryId'
 } as const
 

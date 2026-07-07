@@ -147,25 +147,23 @@ export async function GET(req: NextRequest) {
         row.revision ?? "00", // E: Revision (col 5)
         row.effectiveDate ? formatDate(row.effectiveDate) : "", // F: Effective Date (col 6)
         row.status === "ACTIVE" ? "ใช้งาน" : row.status === "CANCELLED" ? "ยกเลิก" : row.status, // G: Status (col 7)
-        "", // H: 1st (col 8)
-        "", // I: 2nd (col 9)
-        distValues["MD"], // J
-        distValues["QMS"], // K
-        distValues["SM"], // L
-        distValues["PU"], // M
-        distValues["HR"], // N
-        distValues["SHE"], // O
-        distValues["PD"], // P
-        distValues["QA"], // Q
-        distValues["QC"], // R
-        distValues["QC Lab"], // S
-        distValues["WH"], // T
-        distValues["MO"], // U
-        distValues["EN"], // V
-        distValues["IT"], // W
-        distValues["MN"], // X
-        distValues["GA"], // Y
-        distValues["PN"], // Z
+        distValues["MD"], // H
+        distValues["QMS"], // I
+        distValues["SM"], // J
+        distValues["PU"], // K
+        distValues["HR"], // L
+        distValues["SHE"], // M
+        distValues["PD"], // N
+        distValues["QA"], // O
+        distValues["QC"], // P
+        distValues["QC Lab"], // Q
+        distValues["WH"], // R
+        distValues["MO"], // S
+        distValues["EN"], // T
+        distValues["IT"], // U
+        distValues["MN"], // V
+        distValues["GA"], // W
+        distValues["PN"], // X
       ];
 
       try {

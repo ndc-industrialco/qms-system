@@ -153,6 +153,7 @@ export class DocumentControlService {
       createdByName: creator?.name ?? null,
       revision: null,
       spFolderPath: docFolderPath,
+      distributions: (data.distributions ?? Prisma.DbNull) as unknown as Prisma.InputJsonValue,
     });
 
     await AuditService.record({
@@ -253,6 +254,7 @@ export class DocumentControlService {
       updates.departmentName = nextDept.name;
     }
     if (data.categoryId !== undefined) updates.categoryId = data.categoryId;
+    if (data.distributions !== undefined) updates.distributions = data.distributions as unknown as Prisma.InputJsonValue;
 
     const updated = await this.repo.update(id, updates);
     return this._formatDocDetail(updated);
@@ -419,6 +421,7 @@ export class DocumentControlService {
       departmentId?: string | null;
       authDepartmentId?: string | null;
       departmentName?: string | null;
+      distributions?: unknown;
       revisions?: Array<{
         id: string;
         documentControlId: string;
@@ -467,6 +470,7 @@ export class DocumentControlService {
       createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : doc.createdAt,
       updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : doc.updatedAt,
       effectiveDate: doc.effectiveDate instanceof Date ? doc.effectiveDate.toISOString() : doc.effectiveDate,
+      distributions: raw.distributions ?? undefined,
     };
   }
 }

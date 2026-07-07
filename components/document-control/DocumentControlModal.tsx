@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useT } from '@/lib/i18n';
@@ -21,9 +21,14 @@ import { Label } from '@/components/ui/label';
 import type {
   CreateDocumentControlInput,
   DocumentControlDetail,
+  DocumentDistribution,
   DocControlStatus,
   UpdateDocumentControlInput,
 } from '@/types/documentControl';
+
+const DEPT_COLUMN_CODES = [
+  "MD", "QMS", "SM", "PU", "HR", "SHE", "PD", "QA", "QC", "QC Lab", "WH", "MO", "EN", "IT", "MN", "GA", "PN"
+];
 
 interface DocumentControlModalProps {
   open: boolean;
@@ -47,6 +52,8 @@ export function DocumentControlModal({
 }: DocumentControlModalProps) {
   const t = useT();
 
+  const [selectedDepts, setSelectedDepts] = useState<string[]>([]);
+
   const {
     register,
     handleSubmit,
@@ -68,9 +75,16 @@ export function DocumentControlModal({
 
   const status = watch('status') || 'DRAFT';
 
+  function toggleDept(code: string) {
+    setSelectedDepts((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code],
+    );
+  }
+
   useEffect(() => {
     if (open) {
       if (document) {
+        setSelectedDepts((document.distributions ?? []).map((d) => d.departmentName));
         reset({
           categoryId: document.categoryId || '',
           departmentId: document.departmentId || '',
@@ -80,6 +94,7 @@ export function DocumentControlModal({
           status: document.status === 'CANCELLED' ? 'CANCELLED' : 'ACTIVE',
         });
       } else {
+        setSelectedDepts([]);
         reset({
           categoryId: categoryId || '',
           departmentId: departmentId || '',
@@ -147,10 +162,15 @@ export function DocumentControlModal({
   });
 
   const onSubmit = async (data: CreateDocumentControlInput | UpdateDocumentControlInput) => {
+    const distributions: DocumentDistribution[] = selectedDepts.map((code) => ({
+      departmentName: code,
+      authDepartmentId: null,
+    }));
+    const payload = { ...data, distributions };
     if (document) {
-      await updateMutation.mutateAsync(data as UpdateDocumentControlInput);
+      await updateMutation.mutateAsync(payload as UpdateDocumentControlInput);
     } else {
-      await createMutation.mutateAsync(data as CreateDocumentControlInput);
+      await createMutation.mutateAsync(payload as CreateDocumentControlInput);
     }
   };
 
@@ -256,6 +276,27 @@ export function DocumentControlModal({
               {errors.status && (
                 <p className="text-rose-500 text-xs">{String(errors.status.message)}</p>
               )}
+            </div>
+
+            {/* Distribution Departments */}
+            <div className="space-y-2">
+              <Label className="text-slate-800 text-sm font-semibold">
+                {t('documentControl.field.distribution') || 'Distribution'}
+              </Label>
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 p-3 border border-slate-200 rounded-xl bg-slate-50/30">
+                {DEPT_COLUMN_CODES.map((code) => (
+                  <label key={code} className="flex items-center gap-1.5 cursor-pointer text-xs md:text-sm">
+                    <input
+                      type="checkbox"
+                      className="w-3.5 h-3.5 text-primary bg-white border-slate-300 rounded focus:ring-primary"
+                      checked={selectedDepts.includes(code)}
+                      onChange={() => toggleDept(code)}
+                      disabled={isLoading}
+                    />
+                    <span className="text-slate-700">{code}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </form>
     </ResponsiveFormOverlay>
