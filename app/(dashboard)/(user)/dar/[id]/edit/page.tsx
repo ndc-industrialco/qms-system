@@ -6,6 +6,8 @@ import { DepartmentService } from "@/services/departmentService";
 import DarForm from "@/components/dar/DarForm";
 import DarEditHeader from "@/components/dar/DarEditHeader";
 import { db } from "@/lib/db";
+import { ForbiddenError } from "@/errors/customErrors";
+import { isPrivilegedQmsRole } from "@/lib/qms-roles";
 
 const darService = new DarService();
 const deptService = new DepartmentService();
@@ -20,12 +22,17 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function DarEditPage({ params }: Props) {
   const [session, { id }] = await Promise.all([requireAuth(), params]);
-  const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
+  const isPrivileged = isPrivilegedQmsRole(session.user.role);
 
   let dar;
   try {
-    dar = await darService.getDarById(id, session.user.id, isPrivileged);
-  } catch {
+    dar = await darService.getDarById(
+      id,
+      { userId: session.user.id, authUserId: session.user.authUserId ?? null },
+      isPrivileged,
+    );
+  } catch (error) {
+    if (error instanceof ForbiddenError) redirect("/dar");
     notFound();
   }
 

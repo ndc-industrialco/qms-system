@@ -38,6 +38,10 @@ export const createKpiObjectiveSchema = z.object({
   calculationFormula: z.string().min(1, 'Calculation formula is required'),
   actionPlanGuidelines: z.string().min(1, 'Action plan guidelines are required'),
   referenceDocuments: z.string().optional(),
+  responsibleAuthUserId: z.string().min(1, 'Responsible person is required'),
+  responsibleNameSnapshot: z.string().min(1, 'Responsible person is required'),
+  responsibleEmailSnapshot: z.string().email('Responsible email is required'),
+  responsibleEmployeeId: z.string().optional(),
 });
 
 export const updateKpiObjectiveSchema = createKpiObjectiveSchema.omit({ kpiId: true }).partial();

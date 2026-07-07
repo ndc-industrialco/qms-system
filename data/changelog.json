@@ -1,5 +1,299 @@
 [
   {
+    "id": "58",
+    "titleTh": "KPI: ซ่อนปุ่มส่งตรวจสอบหลังสถานะออกจาก Draft/Rejected",
+    "titleEn": "KPI: Hide submit button after leaving Draft/Rejected",
+    "date": "2026-07-07",
+    "type": "fix",
+    "commit": "fix/kpi-submit-button-status-gate",
+    "detailsTh": [
+      "components/kpi/KpiDepartmentDetailClient.tsx: แยกเงื่อนไขปุ่มส่งตรวจสอบออกจากสิทธิ์แก้ไข และให้แสดงเฉพาะตอน KPI อยู่ในสถานะ DRAFT หรือ REJECTED เท่านั้น",
+      "ทำให้เมื่อกดส่งตรวจสอบแล้ว ปุ่มส่งตรวจสอบจะหายไปทันทีหลังข้อมูลสถานะอัปเดต"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiDepartmentDetailClient.tsx: Separated submit-button visibility from edit permission and now show it only while KPI is in DRAFT or REJECTED",
+      "After submission, the button disappears once the status updates"
+    ]
+  },
+  {
+    "id": "57",
+    "titleTh": "KPI: เปิด Preview ไฟล์แนบตอนปฏิเสธจาก Approval Timeline",
+    "titleEn": "KPI: Preview rejection attachments from approval timeline",
+    "date": "2026-07-07",
+    "type": "fix",
+    "commit": "fix/kpi-rejection-attachment-preview",
+    "detailsTh": [
+      "components/kpi/KpiApprovalTimeline.tsx: เปลี่ยนไฟล์แนบใน comment การปฏิเสธจากลิงก์เปิดแท็บใหม่เป็น FilePreviewModal เหมือนหน้า DAR/[id]",
+      "ใช้ SharePoint itemId ผ่าน preview proxy และ infer MIME type จากนามสกุลไฟล์ เพื่อรองรับ PDF, รูปภาพ, Office และไฟล์ข้อความ"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiApprovalTimeline.tsx: Changed rejection comment attachments from new-tab links to the shared FilePreviewModal used by DAR/[id]",
+      "Uses the SharePoint itemId preview proxy and infers MIME type by file extension for PDF, image, Office, and text previews"
+    ]
+  },
+  {
+    "id": "56",
+    "titleTh": "KPI: ลบ Notification รอบที่ 2 (Preparer) ออกเมื่อ KPI ถูกปฏิเสธ",
+    "titleEn": "KPI: Remove duplicate preparer notification on KPI rejection",
+    "date": "2026-07-07",
+    "type": "fix",
+    "commit": "fix/kpi-reject-duplicate-notification",
+    "detailsTh": [
+      "app/api/kpi/[id]/reject/route.ts: ลบ block notification รอบที่ 2 (sendKpiRejectedPreparerEmail ถึง preparer) ออก เหลือเฉพาะ template แรก (sendKpiResultEmail ถึง reviewer/approver)",
+      "ลบ import ApprovalSignatureRepository และ sendKpiRejectedPreparerEmail ที่ไม่ใช้งานแล้วออก"
+    ],
+    "detailsEn": [
+      "app/api/kpi/[id]/reject/route.ts: Removed the second notification block (sendKpiRejectedPreparerEmail to preparer), keeping only the first template (sendKpiResultEmail to reviewer/approver)",
+      "Removed unused imports: ApprovalSignatureRepository and sendKpiRejectedPreparerEmail"
+    ]
+  },
+  {
+    "id": "55",
+    "titleTh": "DAR: standardize attachment preview on detail page",
+    "titleEn": "DAR: standardize attachment preview on detail page",
+    "date": "2026-07-07",
+    "type": "fix",
+    "commit": "fix/dar-detail-attachment-preview-standard",
+    "detailsTh": [
+      "DarAttachmentUpload: replaced the module-specific preview modal on DAR detail attachments with the shared FilePreviewModal.",
+      "Preview now uses the standard SharePoint itemId preview-proxy / office-embed path used by other QMS detail pages.",
+      "Fixed Office MIME detection so .xlsx files do not also render as raw text because their MIME contains 'xml'.",
+      "Added persistent DAR rejection history so reviewers can see previous reject comments and attachments after the DAR is corrected and resubmitted.",
+      "Fixed DAR Reviewer approval notification/email routing to notify the actual pending MR approver step instead of relying on MR config lookup only.",
+      "Kept the previous reviewer on rejected DAR resubmission so users can send review again without selecting the same reviewer.",
+      "Allowed QMS_QMS, QMS_MR, and QMS_IT users on qms/dar to edit DAR details and attachments across all statuses for correction scenarios."
+    ],
+    "detailsEn": [
+      "DarAttachmentUpload: replaced the module-specific preview modal on DAR detail attachments with the shared FilePreviewModal.",
+      "Preview now uses the standard SharePoint itemId preview-proxy / office-embed path used by other QMS detail pages.",
+      "Fixed Office MIME detection so .xlsx files do not also render as raw text because their MIME contains 'xml'.",
+      "Added persistent DAR rejection history so reviewers can see previous reject comments and attachments after the DAR is corrected and resubmitted.",
+      "Fixed DAR Reviewer approval notification/email routing to notify the actual pending MR approver step instead of relying on MR config lookup only.",
+      "Kept the previous reviewer on rejected DAR resubmission so users can send review again without selecting the same reviewer.",
+      "Allowed QMS_QMS, QMS_MR, and QMS_IT users on qms/dar to edit DAR details and attachments across all statuses for correction scenarios."
+    ]
+  },
+  {
+    "id": "54",
+    "titleTh": "DAR: เปลี่ยนการ submit หลังจากถูกปฏิเสธเป็น popup signature + เลือก reviewer",
+    "titleEn": "DAR: change submit-after-reject to popup signature + reviewer selection",
+    "date": "2026-07-07",
+    "type": "feat",
+    "commit": "feat/dar-reject-resubmit-popup",
+    "detailsTh": [
+      "DarDraftActions: แทนที่การ submit แบบตรง (POST /submit) ด้วย popup signature (DarSignSubmitModal) แล้วตามด้วยเลือก reviewer (DarReviewerSelectModal)",
+      "เมื่อกดส่งรีวิว: submit → approve (signature) → assign-reviewer (ส่งเมล + notification) ครบ流程เหมือนสร้างใหม่จากหน้า /dar",
+      "ลบ submitDar mutation ที่ไม่ใช้แล้วออก",
+      "darService.ts rejectDar: อัปเดต in-app notification reject ให้มีข้อมูลครบถ้วนเหมือน email template (DAR No., ผู้ร้องขอ, ผู้ปฏิเสธ, เหตุผล)",
+      "page.tsx: เพิ่ม key={dar.status} ที่ DarReadOnlyDetail เพื่อ force remount ตอน status เปลี่ยนหลัง submit (แก้ปัญหา approval panel โชว์ข้อมูลเก่า)",
+      "fix lint: moved useEffect ก่อน early return ใน KpiDepartmentDetailClient, rename module→mod และ escape ' ใน ApprovalConfigClient, eslint-disable template",
+      "fix check:api: เพิ่ม Zod paramSchema ใน kpi revise/export routes",
+      "fix test: exclude .kilo/ ใน vitest.config.ts ป้องกัน vitest เก็บ test ของ zod v4"
+    ],
+    "detailsEn": [
+      "DarDraftActions: replaced direct submit (POST /submit) with signature popup (DarSignSubmitModal) followed by reviewer selection (DarReviewerSelectModal)",
+      "On submit review: submit → approve (signature) → assign-reviewer (sends email + notification) same flow as creating from /dar",
+      "Removed unused submitDar mutation",
+      "darService.ts rejectDar: enriched in-app rejection notification with full email template data (DAR No., requester, rejector, reason)",
+      "page.tsx: added key={dar.status} to DarReadOnlyDetail to force re-mount on status change after submit (fixes approval panel showing stale data)",
+      "fix lint: moved useEffect before early return in KpiDepartmentDetailClient, renamed module→mod and escaped ' in ApprovalConfigClient, eslint-disable template",
+      "fix check:api: added Zod paramSchema to kpi revise/export routes",
+      "fix test: exclude .kilo/ in vitest.config.ts to prevent picking up zod v4 tests"
+    ]
+  },
+  {
+    "id": "53",
+    "titleTh": "แก้ไข mojibake ใน email template และ dashboard icon mapping",
+    "titleEn": "Fix mojibake in email templates and dashboard icon matching",
+    "date": "2026-07-07",
+    "type": "fix",
+    "commit": "fix/mojibake-thai-encoding",
+    "detailsTh": [
+      "services/carEmailService.ts: แก้ actionLabel \"à¸”à¸¹à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”\" → \"ดูรายละเอียด\" ใน sendCarMrReviewRequestEmail",
+      "components/dashboard/DashboardClientView.tsx: แก้ string เปรียบเทียบชื่อแผนก 4 จุดที่เป็น mojibake → ตรวจสอบ, จัดซื้อ, ความปลอดภัย, บุคคล"
+    ],
+    "detailsEn": [
+      "services/carEmailService.ts: Fixed mojibake actionLabel \"à¸”à¸¹à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”\" → \"ดูรายละเอียด\" in sendCarMrReviewRequestEmail",
+      "components/dashboard/DashboardClientView.tsx: Fixed 4 department-name matching strings from mojibake to Thai: ตรวจสอบ, จัดซื้อ, ความปลอดภัย, บุคคล"
+    ]
+  },
+  {
+    "id": "52",
+    "titleTh": "DAR: พรีวิวไฟล์แนบการปฏิเสธบนหน้าอ่านรายละเอียด",
+    "titleEn": "DAR: preview rejection attachments in read-only detail view",
+    "date": "2026-07-07",
+    "type": "fix",
+    "commit": "fix/dar-rejection-attachment-preview",
+    "detailsTh": [
+      "ย้ายการ์ด Rejected ให้อยู่บนสุดของหน้า dar/[id] เพื่อให้เห็นสถานะที่ถูกปฏิเสธทันที",
+      "เปลี่ยนไฟล์แนบในเหตุผลการปฏิเสธจากลิงก์ /api/sharepoint/get-file ที่โชว์ JSON เป็นปุ่มเปิด preview modal",
+      "เพิ่มการพรีวิวไฟล์ข้อความ เช่น .md และ .txt ใน FilePreviewModal เพื่อให้อ่านไฟล์ประกอบการปฏิเสธได้ทันทีโดยไม่ต้องดาวน์โหลด"
+    ],
+    "detailsEn": [
+      "Moved the Rejected card to the top of dar/[id] so the rejection state is immediately visible.",
+      "Changed rejection attachments from /api/sharepoint/get-file links that opened JSON into preview modal triggers.",
+      "Added text file preview support for formats such as .md and .txt in FilePreviewModal so users can read rejection evidence without downloading."
+    ]
+  },
+  {
+    "id": "51",
+    "titleTh": "แก้ไข Export Master List: สร้างเทมเพลต Excel ที่หายไป",
+    "titleEn": "Fix Export Master List: create missing Excel template file",
+    "date": "2026-07-07",
+    "type": "fix",
+    "commit": "fix/missing-export-template",
+    "detailsTh": [
+      "สร้างไฟล์เทมเพลต FM-DC-04 Rev.02 ทะเบียนรายชื่อเอกสารควบคุม Master List.xlsx ที่หายไปใน docs/export-format/",
+      "เพิ่มสคริปต์ scripts/create-master-list-template.mjs สำหรับสร้างเทมเพลต",
+      "แก้ไข API /api/document-controls/export ที่ไม่สามารถทำงานได้เนื่องจากไม่พบไฟล์เทมเพลต"
+    ],
+    "detailsEn": [
+      "Created missing template file FM-DC-04 Rev.02 Master List.xlsx in docs/export-format/",
+      "Added scripts/create-master-list-template.mjs to generate the template",
+      "Fixed /api/document-controls/export returning 500 due to missing template file"
+    ]
+  },
+  {
+    "id": "50",
+    "titleTh": "Approval Config: เพิ่มป้ายชื่อ TH/EN และปุ่มบันทึกแยกรายโมดูล",
+    "titleEn": "Approval Config: bilingual TH/EN labels and per-module save buttons",
+    "date": "2026-07-07",
+    "type": "feat",
+    "commit": "feat/approval-config-bilingual-per-module-save",
+    "detailsTh": [
+      "เพิ่มป้ายชื่อภาษาไทยควบคู่ภาษาอังกฤษสำหรับหัวข้อหน้า คำอธิบายโมดูล และ label ของ QMS Reviewer / MR Approver",
+      "เปลี่ยนจากปุ่มบันทึกปุ่มเดียวทั้งหน้า เป็นปุ่ม 'บันทึก (Save)' แยกรายการ์ดแต่ละโมดูล",
+      "แต่ละโมดูลส่ง payload เฉพาะโมดูลนั้นไปที่ POST /api/qms/approval-config ไม่กระทบโมดูลอื่น",
+      "เพิ่ม loading state แยกรายโมดูล พร้อม toast สำเร็จ/ล้มเหลวระบุชื่อโมดูลเป็นภาษาไทย",
+      "เพิ่ม approvalConfig keys ใน messages/en.json และ messages/th.json ให้ครบและ synchronized"
+    ],
+    "detailsEn": [
+      "Added bilingual Thai/English labels for page title, module descriptions, and QMS Reviewer / MR Approver field labels.",
+      "Replaced the single global Save button with individual per-module 'บันทึก (Save)' buttons inside each card.",
+      "Each module sends only its own payload to POST /api/qms/approval-config without affecting other modules.",
+      "Added per-module loading state and Thai-language toast notifications on success/failure.",
+      "Added approvalConfig keys to messages/en.json and messages/th.json in sync."
+    ]
+  },
+  {
+    "id": "49",
+    "titleTh": "Approval Config: บันทึกผู้อนุมัติแยกราย Module และเพิ่ม KPI/Audit modules",
+    "titleEn": "Approval config: store defaults per module and add KPI/Audit modules",
+    "date": "2026-07-07",
+    "type": "feat",
+    "commit": "feat/approval-config-per-module",
+    "detailsTh": [
+      "ปรับหน้า approval-config ให้บันทึกค่า reviewer/approver แยกตามแต่ละ module แทนการแสดงเฉพาะ DAR/CAR กับ global default",
+      "เพิ่ม module ใหม่ในหน้า config ได้แก่ KPI, KPI-Monthly, Auditor(Appointment) และ Audit",
+      "เพิ่ม helper กลางสำหรับ config key ของ approval และขยาย role-users/default lookup ให้รองรับ module ใหม่ทั้งหมด",
+      "ผูกค่า default จาก approval-config ไปยัง KPI และ Audit surfaces เพื่อ prefill reviewer/approver จาก module config อัตโนมัติ"
+    ],
+    "detailsEn": [
+      "Reworked the approval-config page to store reviewer and approver defaults per module instead of only DAR/CAR plus global defaults.",
+      "Added KPI, KPI-Monthly, Auditor(Appointment), and Audit modules to the approval-config screen.",
+      "Added shared approval-config key helpers and extended default assignee lookup to support all configured modules.",
+      "Connected KPI and Audit reviewer/approver selection surfaces to prefill from the module approval config."
+    ]
+  },
+  {
+    "id": "48",
+    "titleTh": "DAR Detail: แก้ปัญหาเปิดหน้า dar/[id] แล้วขึ้น 404 ผิดกรณี",
+    "titleEn": "DAR detail: fix false 404 on dar/[id] caused by identity permission mismatch",
+    "date": "2026-07-07",
+    "type": "fix",
+    "commit": "fix/dar-detail-auth-id-404",
+    "detailsTh": [
+      "ปรับ DarService.getDarById ให้ตรวจ owner และ approver ได้ทั้ง local userId และ authUserId ตาม session model ปัจจุบัน",
+      "แก้หน้า dar/[id], dar/[id]/edit และ print/dar/[id] ให้ส่ง actor identity แบบครบถ้วนเข้า service",
+      "แยกกรณี Forbidden ออกจาก NotFound ในหน้า DAR detail/edit เพื่อไม่แสดง 404 หลอกเมื่อข้อมูลมีอยู่แต่ identity ไม่ match"
+    ],
+    "detailsEn": [
+      "Updated DarService.getDarById to authorize requester and approver access against both local userId and authUserId.",
+      "Updated dar/[id], dar/[id]/edit, and print/dar/[id] pages to pass the full actor identity into the DAR service.",
+      "Separated Forbidden from NotFound handling on DAR detail/edit pages so valid records do not surface as false 404s when identity mapping differs."
+    ]
+  },
+  {
+    "id": "47",
+    "titleTh": "DAR: เพิ่มวันกำหนดใช้หลัง Revision ในรายการเอกสาร",
+    "titleEn": "DAR: add effective date after revision for document items",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/dar-effective-date-per-item",
+    "detailsTh": [
+      "เพิ่มฟิลด์ effectiveDate ใน DarItem เพื่อเก็บวันกำหนดใช้แยกระดับรายการเอกสาร",
+      "อัปเดต DAR schema, form state และ service mapping ให้รับค่า effectiveDate แบบ optional",
+      "เพิ่มคอลัมน์วันกำหนดใช้ถัดจาก Revision ใน DarItemsSection และ DarItemsTable",
+      "อัปเดตแบบพิมพ์ DAR และไฟล์ส่งออก Excel ให้แสดง effective date ของแต่ละรายการเอกสาร"
+    ],
+    "detailsEn": [
+      "Added an effectiveDate field to DarItem so each requested document can store its own effective date.",
+      "Updated DAR schema, form state, and service mappings to accept optional effectiveDate values.",
+      "Added an effective date column after Revision in DarItemsSection and DarItemsTable.",
+      "Updated the DAR print template and Excel export to show each item's effective date."
+    ]
+  },
+  {
+    "id": "46",
+    "titleTh": "CAR Verify/MR Close: เปลี่ยนจัดเก็บไฟล์แนบจาก Inline JSON สู่ CarAttachment Table",
+    "titleEn": "CAR Verify/MR Close: Migrate file attachments from inline JSON to CarAttachment table",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/qms-car-verify-attachment-table",
+    "detailsTh": [
+      "เพิ่มฟิลด์ carVerificationId และ carMrSignatureId ใน Prisma model CarAttachment (carResponseId เปลี่ยนเป็น optional)",
+      "เพิ่ม relation attachments ไปยัง CarVerification และ CarMrSignature",
+      "แก้ไข createVerificationAndSetStatus, createMrSignatureAndUseToken, createMrSignature ให้ return ID",
+      "อัปเดต verifyCar: แทนที่จะ JSON.stringify ไฟล์แนบลงใน findings → สร้าง CarAttachment records ใน transaction",
+      "อัปเดต closeCar/closeCarAuthenticated: แทนที่จะ JSON.stringify ลงใน comment → สร้าง CarAttachment records",
+      "เพิ่ม attachments select ใน findDetailById สำหรับ CarVerification และ CarMrSignature",
+      "อัปเดต CarVerificationDetail, CarMrSignatureDetail types ให้มี attachments array",
+      "อัปเดต mapDetail mapping รวม attachments สำหรับ verification และ mrSignature"
+    ],
+    "detailsEn": [
+      "Added carVerificationId and carMrSignatureId fields to CarAttachment Prisma model (carResponseId made optional).",
+      "Added attachments relation to CarVerification and CarMrSignature models.",
+      "Modified createVerificationAndSetStatus, createMrSignatureAndUseToken, createMrSignature to return ID.",
+      "Updated verifyCar: creates CarAttachment records instead of JSON.stringify into findings.",
+      "Updated closeCar/closeCarAuthenticated: creates CarAttachment records instead of JSON.stringify into comment.",
+      "Added attachments select in findDetailById for CarVerification and CarMrSignature.",
+      "Updated CarVerificationDetail and CarMrSignatureDetail types with attachments array.",
+      "Updated mapDetail mapping for verification and mrSignature attachments."
+    ]
+  },
+  {
+    "id": "45",
+    "titleTh": "ปรับปรุง CAR Export: ตรวจสอบความถูกต้อง, Preview ก่อนส่งออก, เพิ่ม responderDepartment",
+    "titleEn": "CAR Export enhancement: template alignment, preview dialog, responderDepartment schema",
+    "date": "2026-07-06",
+    "type": "feat",
+    "commit": "feat/qms-car-export-preview-and-fix-mapping",
+    "detailsTh": [
+      "วิเคราะห์ความสอดคล้องของข้อมูล CAR กับแบบฟอร์ม FM-MR-11 Rev.02 พบปัญหา 2 จุด: Column G (หน่วยงาน Editor) และ Column I (หน่วยงาน Follower)",
+      "เพิ่มฟิลด์ responderDepartment ลงใน Prisma schema (CarResponse) และ db push เพื่อเก็บแผนกของผู้ตอบ CAR",
+      "แก้ไข Column G: ใช้ responderDepartment แทน targetDepartmentName (แผนกผู้ตอบ ไม่ใช่แผนกที่เกิดปัญหา)",
+      "แก้ไข Column I: ใช้ 'QMS/MR' เป็นชื่อแผนกผู้ติดตามแทนการใช้ตำแหน่งงาน (verifierPosition)",
+      "เพิ่มแถวสรุปท้ายตาราง: Total CAR, Closed, In Process (Row 24-26 ของ template)",
+      "ปรับ startRow จาก 8 เป็น 9 ให้ตรงกับตำแหน่งข้อมูลใน template",
+      "เพิ่ม API endpoint /api/car/export/preview สำหรับดูตัวอย่างข้อมูลในรูปแบบ JSON",
+      "สร้าง CarPreviewExportDialog component สำหรับ Preview ข้อมูลก่อน Export (เปิดจากปุ่ม Preview ใน CarListTable)",
+      "เพิ่มปุ่ม Preview และ ส่งออก Excel ใน CarListTable ถัดจาก FilterBar",
+      "เพิ่ม filter search ใน export/preview routes เพื่อให้กรองข้อมูลตาม FilterBar ได้"
+    ],
+    "detailsEn": [
+      "Analyzed CAR data mapping against FM-MR-11 Rev.02 template; found 2 issues: Column G (Editor Section) and Column I (Follower Section) were mapped incorrectly.",
+      "Added responderDepartment field to CarResponse Prisma schema and pushed to database.",
+      "Fixed Column G: now uses responderDepartment instead of targetDepartmentName (editor's department, not the problem department).",
+      "Fixed Column I: uses 'QMS/MR' as follower section name instead of job title (verifierPosition).",
+      "Added summary rows at bottom: Total CAR, Closed, In Process (template rows 24-26).",
+      "Changed startRow from 8 to 9 to align with the template's actual data area.",
+      "Added /api/car/export/preview JSON endpoint for export preview data.",
+      "Created CarPreviewExportDialog component for data preview before export (triggered from Preview button in CarListTable).",
+      "Added Preview and Export Excel buttons in CarListTable adjacent to the FilterBar.",
+      "Added search filter support in export/preview routes for consistent filtering with the list FilterBar."
+    ]
+  },
+  {
     "id": "44",
     "titleTh": "QMS CAR Export: ส่งออก Excel ตามแบบฟอร์ม FM-MR-11 Rev.02 ทะเบียนใบแจ้งดำเนินการแก้ไข",
     "titleEn": "QMS CAR Export: Generate Excel based on FM-MR-11 Rev.02 Corrective Action Register template",

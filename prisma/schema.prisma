@@ -144,6 +144,7 @@ model DarMaster {
   items         DarItem[]
   qmsProcessing           QmsProcessing?
   documentRevisions       DocumentControlRevision[]
+  rejectionHistory        DarRejectionHistory[]
 
   @@index([status])
   @@index([requesterId])
@@ -157,6 +158,7 @@ model DarItem {
   docNumber   String
   docName     String
   revision    String
+  effectiveDate DateTime? @map("effective_date")
   darMasterId String
   darMaster   DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
 
@@ -215,6 +217,25 @@ model DarApproval {
   @@index([darMasterId])
   @@index([assignedUserId])
   @@map("DarApproval")
+}
+
+model DarRejectionHistory {
+  id                       String       @id @default(uuid())
+  darMasterId              String
+  stepRole                 ApprovalStep
+  rejectedByUserId         String
+  rejectedByAuthUserId     String?      @map("rejected_by_auth_user_id")
+  rejectedByName           String?      @map("rejected_by_name")
+  rejectedByEmployeeId     String?      @map("rejected_by_employee_id")
+  rejectedByDepartmentName String?      @map("rejected_by_department_name")
+  comment                  String       @db.Text
+  actionDate               DateTime
+  createdAt                DateTime     @default(now())
+  darMaster                DarMaster    @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+
+  @@index([darMasterId])
+  @@index([actionDate])
+  @@map("DarRejectionHistory")
 }
 
 model ApprovalSignature {
@@ -320,6 +341,10 @@ model KPIObjective {
   calculationFormula   String             @map("calculation_formula") @db.Text
   actionPlanGuidelines String             @map("action_plan_guidelines") @db.Text
   referenceDocuments   String?            @map("reference_documents") @db.Text
+  responsibleAuthUserId String?           @map("responsible_auth_user_id")
+  responsibleNameSnapshot String?         @map("responsible_name_snapshot")
+  responsibleEmailSnapshot String?        @map("responsible_email_snapshot")
+  responsibleEmployeeId String?           @map("responsible_employee_id")
   isRevised            Boolean            @default(false) @map("is_revised")
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
@@ -722,6 +747,7 @@ model CarResponse {
   responderName         String?         @map("responder_name")
   responderEmployeeId   String?         @map("responder_employee_id")
   responderPosition     String
+  responderDepartment   String?         @map("responder_department")
   respondedAt          DateTime        @default(now())
   responseType         CarResponseType @default(FIVE_WHY) @map("response_type")
   fiveWhys             Json?           @map("five_whys")
@@ -761,6 +787,7 @@ model CarVerification {
   verifierSignaturePath String?        @map("verifier_signature_path") @db.Text
 
   carMaster        CarMaster          @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
+  attachments      CarAttachment[]
 
   @@unique([carMasterId, round])
   @@map("CarVerification")
@@ -778,13 +805,16 @@ model CarMrSignature {
   signaturePath     String?   @map("signature_path") @db.Text
 
   carMaster   CarMaster @relation(fields: [carMasterId], references: [id], onDelete: Cascade)
+  attachments CarAttachment[]
 
   @@map("CarMrSignature")
 }
 
 model CarAttachment {
   id            String      @id @default(uuid())
-  carResponseId String
+  carResponseId String?
+  carVerificationId String?
+  carMrSignatureId String?
   fileName      String
   fileSize      Int
   mimeType      String
@@ -797,9 +827,13 @@ model CarAttachment {
   uploadedByName       String?     @map("uploaded_by_name")
   createdAt            DateTime    @default(now())
 
-  carResponse   CarResponse @relation(fields: [carResponseId], references: [id], onDelete: Cascade)
+  carResponse      CarResponse?      @relation(fields: [carResponseId], references: [id], onDelete: Cascade)
+  carVerification  CarVerification?  @relation(fields: [carVerificationId], references: [id], onDelete: Cascade)
+  carMrSignature   CarMrSignature?   @relation(fields: [carMrSignatureId], references: [id], onDelete: Cascade)
 
   @@index([carResponseId])
+  @@index([carVerificationId])
+  @@index([carMrSignatureId])
   @@map("CarAttachment")
 }
 

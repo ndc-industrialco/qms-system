@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -9,6 +9,7 @@ import {
   MapPin, Mail, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { fetchApprovalConfigDefaultUser } from "@/lib/approval-config-client";
 import { cn } from "@/lib/utils";
 import SignaturePad from "@/components/shared/SignaturePad";
 import { useReviewerCandidates, type ReviewerCandidate } from "@/hooks/api/use-reviewer-candidates";
@@ -558,6 +559,41 @@ export function AuditPlanCreatePage({ appointments, dbStandards }: Props) {
   function patch(updates: Partial<FormData>) {
     setForm((prev) => ({ ...prev, ...updates }));
   }
+
+  useEffect(() => {
+    if (form.reviewerAuthUserId && form.approverAuthUserId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadDefaults() {
+      const [reviewerDefault, approverDefault] = await Promise.all([
+        form.reviewerAuthUserId ? Promise.resolve(null) : fetchApprovalConfigDefaultUser("AUDIT", "QMS"),
+        form.approverAuthUserId ? Promise.resolve(null) : fetchApprovalConfigDefaultUser("AUDIT", "MR"),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        reviewerAuthUserId: prev.reviewerAuthUserId || reviewerDefault?.id || "",
+        reviewerEmail: prev.reviewerEmail || reviewerDefault?.email || "",
+        reviewerName: prev.reviewerName || reviewerDefault?.name || "",
+        approverAuthUserId: prev.approverAuthUserId || approverDefault?.id || "",
+        approverEmail: prev.approverEmail || approverDefault?.email || "",
+        approverName: prev.approverName || approverDefault?.name || "",
+      }));
+    }
+
+    void loadDefaults();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [form.approverAuthUserId, form.reviewerAuthUserId]);
 
   const filteredAppointments = appointments.filter((a) => a.year === form.selectedYear);
 

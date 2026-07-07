@@ -1,6 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart as RechartsBarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import type { Props as LegendProps } from "recharts/types/component/DefaultLegendContent";
 
 // ---------------------------------------------------------
 // Types
@@ -8,8 +22,21 @@ import React, { useState } from "react";
 export interface ChartDataItem {
   label: string;
   value: number;
-  secondaryValue?: number; // Used for target vs actual comparison
+  secondaryValue?: number;
   color?: string;
+}
+
+interface TooltipPayload {
+  name?: string;
+  value?: number;
+  color?: string;
+  payload?: Record<string, unknown>;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
 }
 
 interface BarChartProps {
@@ -29,50 +56,53 @@ interface DonutChartProps {
   isExportMode?: boolean;
 }
 
+type BarShapeType = {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  fill?: string;
+  index?: number;
+};
+
 // ---------------------------------------------------------
-// Donut / Pie Chart Component
+// Color Palette (Design System)
 // ---------------------------------------------------------
-export function DonutChart({ data, title, selected = true, onToggleSelect, isExportMode }: DonutChartProps) {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+const COLORS = [
+  "#0F1059",
+  "#0284c7",
+  "#10b981",
+  "#f59e0b",
+  "#f43f5e",
+  "#8b5cf6",
+  "#64748b",
+  "#14b8a6",
+  "#f97316",
+  "#6366f1",
+];
 
-  const total = data.reduce((acc, curr) => acc + curr.value, 0);
-
-  // Pre-defined slate/emerald/amber/rose color palette that matches design system
-  const defaultColors = [
-    "#0F1059", // Primary
-    "#0284c7", // Info / Sky-600
-    "#10b981", // Success / Emerald-500
-    "#f59e0b", // Warning / Amber-500
-    "#f43f5e", // Danger / Rose-500
-    "#8b5cf6", // Violet-500
-    "#64748b", // Slate-500
-  ];
-
-  // Prepare chart segments
-  let accumulatedPercent = 0;
-  const segments = data.map((item, idx) => {
-    const value = item.value;
-    const percent = total > 0 ? value / total : 0;
-    const strokeLength = percent * 314.159;
-    const strokeOffset = 314.159 - accumulatedPercent * 314.159;
-    accumulatedPercent += percent;
-
-    return {
-      ...item,
-      percent,
-      strokeLength,
-      strokeOffset,
-      color: item.color || defaultColors[idx % defaultColors.length],
-    };
-  });
-
+// ---------------------------------------------------------
+// Shared Chart Card Wrapper
+// ---------------------------------------------------------
+function ChartCard({
+  title,
+  selected,
+  onToggleSelect,
+  isExportMode,
+  children,
+}: {
+  title: string;
+  selected?: boolean;
+  onToggleSelect?: () => void;
+  isExportMode?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div
       className={`relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 ${
         selected ? "ring-2 ring-[#0F1059]/20" : ""
       } ${isExportMode && !selected ? "opacity-40 print:hidden" : ""}`}
     >
-      {/* Selection Overlay (only in export mode) */}
       {isExportMode && onToggleSelect && (
         <div className="absolute top-4 right-4 z-10 no-print">
           <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-500 font-medium select-none">
@@ -87,222 +117,193 @@ export function DonutChart({ data, title, selected = true, onToggleSelect, isExp
         </div>
       )}
 
-      <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">{title}</h3>
-        {total === 0 ? (
-          <div className="flex h-[180px] flex-col items-center justify-center text-slate-400">
-            <p className="text-xs">ไม่มีข้อมูลสำหรับแสดงผล</p>
-          </div>
-        ) : (
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            {/* SVG Donut */}
-            <div className="relative w-[150px] h-[150px] shrink-0">
-              <svg viewBox="0 0 120 120" className="w-full h-full transform -rotate-90">
-                {segments.map((seg, idx) => (
-                  <circle
-                    key={seg.label}
-                    cx="60"
-                    cy="60"
-                    r="50"
-                    fill="transparent"
-                    stroke={seg.color}
-                    strokeWidth={hoveredIdx === idx ? "16" : "12"}
-                    strokeDasharray={`${seg.strokeLength} 314.159`}
-                    strokeDashoffset={seg.strokeOffset}
-                    strokeLinecap="round"
-                    className="transition-all duration-200 cursor-pointer"
-                    onMouseEnter={() => setHoveredIdx(idx)}
-                    onMouseLeave={() => setHoveredIdx(null)}
-                  />
-                ))}
-              </svg>
-
-              {/* Tooltip in the center */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                {hoveredIdx !== null ? (
-                  <>
-                    <span className="text-[10px] text-slate-500 font-medium truncate max-w-[90px]">
-                      {segments[hoveredIdx].label}
-                    </span>
-                    <span className="text-sm font-bold text-slate-900">
-                      {segments[hoveredIdx].value} ({Math.round(segments[hoveredIdx].percent * 100)}%)
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-[10px] text-slate-500 font-medium">ทั้งหมด</span>
-                    <span className="text-lg font-bold text-slate-900">{total}</span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Legends */}
-            <div className="flex-1 w-full space-y-2">
-              {segments.map((seg, idx) => (
-                <div
-                  key={seg.label}
-                  className={`flex items-center justify-between text-xs p-1 rounded transition-colors duration-150 ${
-                    hoveredIdx === idx ? "bg-slate-50 font-semibold" : ""
-                  }`}
-                  onMouseEnter={() => setHoveredIdx(idx)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                >
-                  <div className="flex items-center gap-2 truncate pr-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: seg.color }}
-                    />
-                    <span className="text-slate-700 truncate">{seg.label}</span>
-                  </div>
-                  <span className="text-slate-950 font-medium shrink-0">
-                    {seg.value} ({Math.round(seg.percent * 100)}%)
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      <h3 className="text-sm font-semibold text-slate-900 mb-4">{title}</h3>
+      {children}
     </div>
   );
 }
 
 // ---------------------------------------------------------
-// Bar Chart Component (Responsive, supports values)
+// Donut / Pie Chart Component (Recharts)
 // ---------------------------------------------------------
-export function BarChart({ data, title, valueLabel = "จำนวน", selected = true, onToggleSelect, isExportMode }: BarChartProps) {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-
-  const maxValue = Math.max(1, ...data.map((d) => d.value));
+export function DonutChart({ data, title, selected = true, onToggleSelect, isExportMode }: DonutChartProps) {
   const total = data.reduce((acc, curr) => acc + curr.value, 0);
 
-  const chartHeight = 160;
-  const barPadding = 12;
-  const totalWidth = 400;
-  const colWidth = data.length > 0 ? (totalWidth - 30) / data.length : totalWidth;
+  const chartData = data.map((item, idx) => ({
+    name: item.label,
+    value: item.value,
+    color: item.color || COLORS[idx % COLORS.length],
+  }));
+
+  const CustomTooltipContent = ({ active, payload }: CustomTooltipProps) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const entry = payload[0];
+    const percent = total > 0 ? ((Number(entry.value) / total) * 100).toFixed(1) : "0.0";
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-md">
+        <p className="text-xs font-medium text-slate-700">{entry.name}</p>
+        <p className="text-sm font-bold text-slate-900">
+          {entry.value} <span className="text-xs font-normal text-slate-500">({percent}%)</span>
+        </p>
+      </div>
+    );
+  };
+
+  const renderLegend = (props: LegendProps) => {
+    const { payload } = props;
+    if (!payload) return null;
+    const items = [...payload];
+    return (
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3">
+        {items.map((entry, idx) => {
+          const item = chartData[idx];
+          const pct = total > 0 ? ((item.value / total) * 100).toFixed(1) : "0.0";
+          return (
+            <div key={`legend-${idx}`} className="flex items-center gap-1.5 text-xs">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+              <span className="text-slate-600 truncate max-w-[120px]">{entry.value}</span>
+              <span className="font-semibold text-slate-800">{item.value} ({pct}%)</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
-    <div
-      className={`relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 ${
-        selected ? "ring-2 ring-primary/20" : ""
-      } ${isExportMode && !selected ? "opacity-40 print:hidden" : ""}`}
-    >
-      {/* Selection Overlay (only in export mode) */}
-      {isExportMode && onToggleSelect && (
-        <div className="absolute top-4 right-4 z-10 no-print">
-          <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-500 font-medium select-none">
-            <input
-              type="checkbox"
-              checked={selected}
-              onChange={onToggleSelect}
-              className="rounded text-[#0F1059] focus:ring-[#0F1059] border-slate-300 h-4 w-4"
-            />
-            เลือกพิมพ์
-          </label>
+    <ChartCard title={title} selected={selected} onToggleSelect={onToggleSelect} isExportMode={isExportMode}>
+      {total === 0 ? (
+        <div className="flex h-[220px] flex-col items-center justify-center text-slate-400">
+          <p className="text-xs">ไม่มีข้อมูลสำหรับแสดงผล</p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center">
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={55}
+                outerRadius={85}
+                paddingAngle={3}
+                dataKey="value"
+                animationBegin={100}
+                animationDuration={800}
+                animationEasing="ease-out"
+              >
+                {chartData.map((entry, idx) => (
+                  <Cell key={`cell-${idx}`} fill={entry.color} stroke="none" />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltipContent />} />
+              <Legend content={renderLegend} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       )}
-
-      <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">{title}</h3>
-        {total === 0 ? (
-          <div className="flex h-[180px] flex-col items-center justify-center text-slate-400">
-            <p className="text-xs">ไม่มีข้อมูลสำหรับแสดงผล</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* SVG Bar Chart */}
-            <div className="w-full">
-              <svg viewBox={`0 0 ${totalWidth} 200`} className="w-full h-auto overflow-visible">
-                {/* Horizontal Grid lines */}
-                {Array.from({ length: 5 }).map((_, idx) => {
-                  const val = Math.round((maxValue / 4) * idx);
-                  const y = chartHeight - (val / maxValue) * chartHeight;
-                  return (
-                    <g key={idx} className="opacity-10">
-                      <line x1="25" y1={y} x2={totalWidth} y2={y} stroke="#000" strokeWidth="1" />
-                      <text x="0" y={y + 3} fontSize="8" textAnchor="start">
-                        {val}
-                      </text>
-                    </g>
-                  );
-                })}
-
-                {/* Bars */}
-                {data.map((item, idx) => {
-                  const barHeight = (item.value / maxValue) * chartHeight;
-                  const x = 30 + idx * colWidth;
-                  const y = chartHeight - barHeight;
-                  const width = Math.max(4, colWidth - barPadding);
-
-                  return (
-                    <g key={item.label}>
-                      {/* Bar Rectangle */}
-                      <rect
-                        x={x}
-                        y={y}
-                        width={width}
-                        height={Math.max(2, barHeight)}
-                        fill={hoveredIdx === idx ? "#161875" : "#0F1059"}
-                        rx="3"
-                        className="transition-all duration-150 cursor-pointer"
-                        onMouseEnter={() => setHoveredIdx(idx)}
-                        onMouseLeave={() => setHoveredIdx(null)}
-                      />
-
-                      {/* Value above bar */}
-                      <text
-                        x={x + width / 2}
-                        y={y - 5}
-                        fontSize="9"
-                        fontWeight="bold"
-                        textAnchor="middle"
-                        fill={hoveredIdx === idx ? "#0F1059" : "#475569"}
-                        className="pointer-events-none"
-                      >
-                        {item.value > 0 ? item.value : ""}
-                      </text>
-
-                      {/* X Axis Label */}
-                      <text
-                        x={x + width / 2}
-                        y={chartHeight + 15}
-                        fontSize="8"
-                        textAnchor="middle"
-                        fill="#475569"
-                        className="pointer-events-none"
-                        style={{ textOverflow: "ellipsis", width: `${width}px` }}
-                      >
-                        {item.label.length > 10 ? item.label.slice(0, 8) + ".." : item.label}
-                      </text>
-                    </g>
-                  );
-                })}
-
-                {/* Axis line */}
-                <line x1="25" y1={chartHeight} x2={totalWidth} y2={chartHeight} stroke="#475569" strokeWidth="1.5" />
-              </svg>
-            </div>
-
-            {/* Legend / Stats Details */}
-            {hoveredIdx !== null && (
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-center text-xs animate-in fade-in duration-150">
-                <span className="font-semibold text-slate-800">{data[hoveredIdx].label}:</span>{" "}
-                <span className="font-bold text-[#0F1059]">
-                  {data[hoveredIdx].value} {valueLabel}
-                </span>{" "}
-                ({Math.round((data[hoveredIdx].value / total) * 100)}%)
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+    </ChartCard>
   );
 }
 
 // ---------------------------------------------------------
-// Target vs Actual Comparison Performance Chart (KPIs)
+// Custom Rounded Bar Shape
+// ---------------------------------------------------------
+function RoundedBar(props: BarShapeType) {
+  const { x = 0, y = 0, width = 0, height = 0, fill } = props;
+  const barHeight = Math.max(height, 2);
+
+  return (
+    <rect
+      x={x}
+      y={y + (height - barHeight)}
+      width={width}
+      height={barHeight}
+      fill={fill}
+      rx={4}
+      ry={4}
+      className="transition-all duration-200"
+      opacity={0.85}
+    />
+  );
+}
+
+// ---------------------------------------------------------
+// Bar Chart Component (Recharts Horizontal)
+// ---------------------------------------------------------
+export function BarChart({ data, title, valueLabel = "จำนวน", selected = true, onToggleSelect, isExportMode }: BarChartProps) {
+  const total = data.reduce((acc, curr) => acc + curr.value, 0);
+
+  const chartData = data.map((item) => ({
+    name: item.label,
+    value: item.value,
+    fill: item.color || "#0F1059",
+  }));
+
+  const CustomTooltipContent = ({ active, payload }: CustomTooltipProps) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const entry = payload[0];
+    const pct = total > 0 ? ((Number(entry.value) / total) * 100).toFixed(1) : "0.0";
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-md">
+        <p className="text-xs font-medium text-slate-700">{entry.name}</p>
+        <p className="text-sm font-bold text-slate-900">
+          {entry.value} {valueLabel}
+        </p>
+        <p className="text-[11px] text-slate-500">{pct}% ของทั้งหมด</p>
+      </div>
+    );
+  };
+
+  return (
+    <ChartCard title={title} selected={selected} onToggleSelect={onToggleSelect} isExportMode={isExportMode}>
+      {total === 0 ? (
+        <div className="flex h-[220px] flex-col items-center justify-center text-slate-400">
+          <p className="text-xs">ไม่มีข้อมูลสำหรับแสดงผล</p>
+        </div>
+      ) : (
+        <div>
+          <ResponsiveContainer width="100%" height={Math.max(200, data.length * 36)}>
+            <RechartsBarChart
+              data={chartData}
+              layout="vertical"
+              margin={{ left: 0, right: 0, top: 4, bottom: 4 }}
+              barCategoryGap="20%"
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+              <XAxis
+                type="number"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#94a3b8" }}
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#475569" }}
+                width={120}
+                tickFormatter={(val: string) => (val.length > 14 ? `${val.slice(0, 12)}..` : val)}
+              />
+              <Tooltip content={<CustomTooltipContent />} cursor={false} />
+              <Bar
+                dataKey="value"
+                shape={RoundedBar}
+                animationBegin={100}
+                animationDuration={700}
+                animationEasing="ease-out"
+              />
+            </RechartsBarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </ChartCard>
+  );
+}
+
+// ---------------------------------------------------------
+// KPI Performance Chart (Recharts Grouped Bar)
 // ---------------------------------------------------------
 export function KpiPerformanceChart({
   data,
@@ -317,161 +318,109 @@ export function KpiPerformanceChart({
   onToggleSelect?: () => void;
   isExportMode?: boolean;
 }) {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const chartData = data.map((item) => ({
+    name: item.label,
+    Actual: item.value,
+    Target: item.secondaryValue ?? 0,
+  }));
 
-  // Calculate scales
-  const maxVal = Math.max(
-    1,
-    ...data.map((d) => Math.max(d.value, d.secondaryValue ?? 0))
-  );
+  const hasData = data.some((d) => d.value > 0 || (d.secondaryValue ?? 0) > 0);
 
-  const chartHeight = 160;
-  const barPadding = 16;
-  const totalWidth = 500;
-  const colWidth = data.length > 0 ? (totalWidth - 40) / data.length : totalWidth;
+  const CustomTooltipContent = ({ active, payload }: CustomTooltipProps) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const actualEntry = payload.find((p) => p.name === "Actual");
+    const targetEntry = payload.find((p) => p.name === "Target");
+    const label = payload[0]?.payload?.name as string | undefined;
+    const actualVal = actualEntry?.value ?? 0;
+    const targetVal = targetEntry?.value ?? 0;
+    const pct = Number(targetVal) > 0 ? ((Number(actualVal) / Number(targetVal)) * 100).toFixed(1) : "N/A";
+
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-md text-xs space-y-1">
+        <p className="font-semibold text-slate-800">{label}</p>
+        <p>
+          <span className="text-slate-500">ผลจริง: </span>
+          <span className="font-bold text-[#0F1059]">{actualVal}</span>
+        </p>
+        <p>
+          <span className="text-slate-500">เป้าหมาย: </span>
+          <span className="font-bold text-amber-600">{targetVal}</span>
+        </p>
+        <p>
+          <span className="text-slate-500">อัตราสำเร็จ: </span>
+          <span className="font-bold text-slate-800">{pct}{pct !== "N/A" ? "%" : ""}</span>
+        </p>
+      </div>
+    );
+  };
+
+  const renderLegend = (props: LegendProps) => {
+    const { payload } = props;
+    if (!payload) return null;
+    const items = [...payload];
+    return (
+      <div className="flex items-center justify-center gap-6 mt-2 text-xs">
+        {items.map((entry, idx) => (
+          <div key={`legend-${idx}`} className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded" style={{ backgroundColor: entry.color }} />
+            <span className="text-slate-600 font-medium">
+              {entry.value === "Actual" ? "ผลการดำเนินงาน" : "เป้าหมาย"}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <div
-      className={`relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 ${
-        selected ? "ring-2 ring-primary/20" : ""
-      } ${isExportMode && !selected ? "opacity-40 print:hidden" : ""}`}
-    >
-      {/* Selection Overlay (only in export mode) */}
-      {isExportMode && onToggleSelect && (
-        <div className="absolute top-4 right-4 z-10 no-print">
-          <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-500 font-medium select-none">
-            <input
-              type="checkbox"
-              checked={selected}
-              onChange={onToggleSelect}
-              className="rounded text-[#0F1059] focus:ring-[#0F1059] border-slate-300 h-4 w-4"
-            />
-            เลือกพิมพ์
-          </label>
+    <ChartCard title={title} selected={selected} onToggleSelect={onToggleSelect} isExportMode={isExportMode}>
+      {!hasData ? (
+        <div className="flex h-[220px] flex-col items-center justify-center text-slate-400">
+          <p className="text-xs">ไม่มีข้อมูลสำหรับแสดงผล</p>
+        </div>
+      ) : (
+        <div>
+          <ResponsiveContainer width="100%" height={260}>
+            <RechartsBarChart
+              data={chartData}
+              margin={{ left: 0, right: 0, top: 8, bottom: 8 }}
+              barCategoryGap="30%"
+              barGap={4}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#475569" }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#94a3b8" }}
+              />
+              <Tooltip content={<CustomTooltipContent />} cursor={{ fill: "#f8fafc" }} />
+              <Legend content={renderLegend} />
+              <Bar
+                dataKey="Actual"
+                fill="#0F1059"
+                radius={[4, 4, 0, 0]}
+                animationBegin={100}
+                animationDuration={700}
+                animationEasing="ease-out"
+              />
+              <Bar
+                dataKey="Target"
+                fill="#f59e0b"
+                radius={[4, 4, 0, 0]}
+                animationBegin={300}
+                animationDuration={700}
+                animationEasing="ease-out"
+              />
+            </RechartsBarChart>
+          </ResponsiveContainer>
         </div>
       )}
-
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-          {/* Chart Legends */}
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 bg-[#0F1059] rounded" />
-              <span className="text-slate-600 font-medium">ผลการดำเนินงาน (Actual)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 bg-amber-500 rounded" />
-              <span className="text-slate-600 font-medium">เป้าหมาย (Target)</span>
-            </div>
-          </div>
-        </div>
-
-        {data.length === 0 ? (
-          <div className="flex h-[180px] flex-col items-center justify-center text-slate-400">
-            <p className="text-xs">ไม่มีข้อมูลสำหรับแสดงผล</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="w-full">
-              <svg viewBox={`0 0 ${totalWidth} 200`} className="w-full h-auto overflow-visible">
-                {/* Horizontal Grid lines */}
-                {Array.from({ length: 5 }).map((_, idx) => {
-                  const val = Math.round((maxVal / 4) * idx * 10) / 10;
-                  const y = chartHeight - (val / maxVal) * chartHeight;
-                  return (
-                    <g key={idx} className="opacity-10">
-                      <line x1="30" y1={y} x2={totalWidth} y2={y} stroke="#000" strokeWidth="1" />
-                      <text x="0" y={y + 3} fontSize="8" textAnchor="start">
-                        {val}
-                      </text>
-                    </g>
-                  );
-                })}
-
-                {/* Draw Groups of Bars */}
-                {data.map((item, idx) => {
-                  const actualHeight = (item.value / maxVal) * chartHeight;
-                  const targetHeight = ((item.secondaryValue ?? 0) / maxVal) * chartHeight;
-
-                  const xGroup = 35 + idx * colWidth;
-                  const width = (colWidth - barPadding) / 2;
-
-                  const xActual = xGroup;
-                  const yActual = chartHeight - actualHeight;
-
-                  const xTarget = xGroup + width + 2;
-                  const yTarget = chartHeight - targetHeight;
-
-                  return (
-                    <g key={item.label}>
-                      {/* Actual Performance Bar (Primary Color) */}
-                      <rect
-                        x={xActual}
-                        y={yActual}
-                        width={width}
-                        height={Math.max(2, actualHeight)}
-                        fill="#0F1059"
-                        rx="2"
-                        className="transition-all duration-150 cursor-pointer"
-                        onMouseEnter={() => setHoveredIdx(idx)}
-                        onMouseLeave={() => setHoveredIdx(null)}
-                      />
-
-                      {/* Target Performance Bar (Amber Color) */}
-                      <rect
-                        x={xTarget}
-                        y={yTarget}
-                        width={width}
-                        height={Math.max(2, targetHeight)}
-                        fill="#f59e0b"
-                        rx="2"
-                        className="transition-all duration-150 cursor-pointer"
-                        onMouseEnter={() => setHoveredIdx(idx)}
-                        onMouseLeave={() => setHoveredIdx(null)}
-                      />
-
-                      {/* X Axis Label */}
-                      <text
-                        x={xGroup + width}
-                        y={chartHeight + 15}
-                        fontSize="8"
-                        textAnchor="middle"
-                        fill="#475569"
-                        className="pointer-events-none"
-                      >
-                        {item.label}
-                      </text>
-                    </g>
-                  );
-                })}
-
-                {/* Axis line */}
-                <line x1="30" y1={chartHeight} x2={totalWidth} y2={chartHeight} stroke="#475569" strokeWidth="1.5" />
-              </svg>
-            </div>
-
-            {/* Hover details */}
-            {hoveredIdx !== null && (
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-2.5 text-center text-xs animate-in fade-in duration-150">
-                <span className="font-semibold text-slate-800">{data[hoveredIdx].label}:</span>{" "}
-                <span>ผลจริง: </span>
-                <span className="font-bold text-[#0F1059]">{data[hoveredIdx].value}</span>
-                <span className="mx-2">|</span>
-                <span>เป้าหมาย: </span>
-                <span className="font-bold text-amber-600">{data[hoveredIdx].secondaryValue ?? 0}</span>
-                <span className="ml-2 font-semibold">
-                  (อัตราสำเร็จ:{" "}
-                  {data[hoveredIdx].secondaryValue
-                    ? Math.round((data[hoveredIdx].value / data[hoveredIdx].secondaryValue) * 100)
-                    : 0}
-                  %)
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+    </ChartCard>
   );
 }

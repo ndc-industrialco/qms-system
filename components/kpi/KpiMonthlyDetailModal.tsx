@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
+import { fetchApprovalConfigDefaultUser } from "@/lib/approval-config-client";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -230,6 +231,7 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatureMode, setSignatureMode] = useState<"submit" | "approve">("submit");
   const [assignOpen, setAssignOpen] = useState(false);
+  const [defaultReviewerId, setDefaultReviewerId] = useState("");
 
   const updateDetailMutation    = useUpdateMonthlyDetail();
   const updateReportMutation    = useUpdateMonthlyReport();
@@ -270,6 +272,27 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
       setSavedInputs(init);
     }
   }, [report?.id, report?.remark, report?.details]);
+
+  useEffect(() => {
+    if (!assignOpen || report?.kpi?.reviewerUserId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadDefaultReviewer() {
+      const reviewer = await fetchApprovalConfigDefaultUser("KPI_MONTHLY", "QMS");
+      if (!cancelled) {
+        setDefaultReviewerId(reviewer?.id ?? "");
+      }
+    }
+
+    void loadDefaultReviewer();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [assignOpen, report?.kpi?.reviewerUserId]);
 
   const detailsDirty = details.some((d) => (actualInputs[d.id] ?? "") !== (savedInputs[d.id] ?? ""));
 
@@ -913,7 +936,7 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
     <KpiObjectiveAssignDialog
       open={assignOpen}
       onOpenChange={setAssignOpen}
-      initialReviewerId={report?.kpi?.reviewerUserId || ""}
+      initialReviewerId={report?.kpi?.reviewerUserId || defaultReviewerId}
       hideApprover={true}
       onConfirm={handleAssignConfirm}
     />

@@ -1,4 +1,5 @@
 import { requireAuth } from "@/lib/auth";
+import { isApprovalConfigModuleKey, type ApprovalConfigRole, getApprovalConfigLookupKeys } from "@/lib/approval-config";
 import { db } from "@/lib/db";
 import { getUserSnapshot } from "@/lib/userSnapshotCache";
 import { sendSuccess } from "@/lib/apiResponse";
@@ -34,26 +35,14 @@ export async function GET(req: NextRequest) {
     const { SystemConfigRepository } = await import("@/repositories/systemConfigRepository");
     const configRepo = new SystemConfigRepository();
 
-    if (role === "MR") {
-      if (moduleParam === "DAR") {
-        defaultAuthUserId = await configRepo.findValueByKey("DAR_MR_AUTH_USER_ID")
-          ?? await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
-      } else if (moduleParam === "CAR") {
-        defaultAuthUserId = await configRepo.findValueByKey("CAR_MR_AUTH_USER_ID")
-          ?? await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
-      } else {
-        defaultAuthUserId = await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID");
+    const approvalRole = role as ApprovalConfigRole;
+    if (moduleParam && isApprovalConfigModuleKey(moduleParam)) {
+      for (const key of getApprovalConfigLookupKeys(moduleParam, approvalRole, "AUTH_USER_ID")) {
+        defaultAuthUserId = await configRepo.findValueByKey(key);
+        if (defaultAuthUserId) break;
       }
     } else {
-      if (moduleParam === "DAR") {
-        defaultAuthUserId = await configRepo.findValueByKey("DAR_QMS_AUTH_USER_ID")
-          ?? await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID");
-      } else if (moduleParam === "CAR") {
-        defaultAuthUserId = await configRepo.findValueByKey("CAR_QMS_AUTH_USER_ID")
-          ?? await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID");
-      } else {
-        defaultAuthUserId = await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID");
-      }
+      defaultAuthUserId = await configRepo.findValueByKey(configKey);
     }
 
     const users = await Promise.all(

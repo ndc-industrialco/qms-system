@@ -19,14 +19,14 @@ export default async function DarApproverPage({
 
   try {
     const [dar, savedSig] = await Promise.all([
-      darService.getDarById(id, session.user.id),
+      darService.getDarById(id, { userId: session.user.id, authUserId: session.user.authUserId ?? null }),
       darService.getSavedSignature(session.user.id),
     ]);
 
     const isAssigned = dar.approvals.some(
       (a: DarApprovalRow) =>
         (a.stepRole === "APPROVER_MR" || a.stepRole === "QMS_PROCESSOR") &&
-        a.assignedUser.id === session.user.id &&
+        (a.assignedUser.id === session.user.id || a.assignedUser.authUserId === (session.user.authUserId ?? null)) &&
         a.action === "PENDING",
     );
 

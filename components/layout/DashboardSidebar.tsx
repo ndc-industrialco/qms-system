@@ -206,6 +206,8 @@ function getSections(
   };
   const deptCodeItem: NavItem = {
     labelTh: "ตัวย่อแผนก",
+
+    
     labelEn: "Department Codes",
     href: "/qms/department-codes",
     icon: <Building2 className="h-4.5 w-4.5 shrink-0" />,

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { fetchApprovalConfigDefaultUser } from "@/lib/approval-config-client";
 import SignaturePad from "@/components/shared/SignaturePad";
 import { useDepartments } from "@/hooks/api/use-departments";
 import { useReviewerCandidates, type ReviewerCandidate } from "@/hooks/api/use-reviewer-candidates";
@@ -216,6 +217,41 @@ export default function AuditPlanFormModal({ open, onClose, onSuccess }: Props) 
   function patch(updates: Partial<FormData>) {
     setFormData((prev) => ({ ...prev, ...updates }));
   }
+
+  useEffect(() => {
+    if (!open || (formData.reviewerAuthUserId && formData.approverAuthUserId)) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadDefaults() {
+      const [reviewerDefault, approverDefault] = await Promise.all([
+        formData.reviewerAuthUserId ? Promise.resolve(null) : fetchApprovalConfigDefaultUser("AUDIT", "QMS"),
+        formData.approverAuthUserId ? Promise.resolve(null) : fetchApprovalConfigDefaultUser("AUDIT", "MR"),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        reviewerAuthUserId: prev.reviewerAuthUserId || reviewerDefault?.id || "",
+        reviewerEmail: prev.reviewerEmail || reviewerDefault?.email || "",
+        reviewerName: prev.reviewerName || reviewerDefault?.name || "",
+        approverAuthUserId: prev.approverAuthUserId || approverDefault?.id || "",
+        approverEmail: prev.approverEmail || approverDefault?.email || "",
+        approverName: prev.approverName || approverDefault?.name || "",
+      }));
+    }
+
+    void loadDefaults();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.approverAuthUserId, formData.reviewerAuthUserId, open]);
 
   function validateStep1(): string | null {
     if (formData.selectedDeptIds.length === 0) return "กรุณาเลือกอย่างน้อย 1 แผนก";

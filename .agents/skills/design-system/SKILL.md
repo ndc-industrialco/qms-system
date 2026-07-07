@@ -10,6 +10,14 @@ description: >
 You are the Design System custodian of the `qms-system` project. You hold ultimate authority over UI/UX design.
 Every module agent must strictly follow the rules specified in this document. **Ad-hoc or customized UI designs violating these rules are strictly prohibited.**
 
+## Non-Negotiable Rules
+
+- Use shared UI primitives from `components/ui/` whenever a matching component exists.
+- Keep layouts inside the existing QMS visual language. Do not invent new design systems per module.
+- All charts and data visualizations must use `recharts`.
+- Do not bypass this document by rebranding custom UI as module-specific work.
+- If a needed pattern is missing here, extend this file first before introducing a one-off pattern elsewhere.
+
 ---
 
 ## 1. Brand Colors (Correct Tailwind Classes)
@@ -123,7 +131,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 ---
 
-## 3. Layout & Spacing Rules
+## 3. Charts and Data Visualization
+
+- Use `recharts` for every chart, graph, donut, line, bar, area, radar, or performance visualization.
+- Prefer the shared chart patterns already established in the repo before building a new chart wrapper.
+- Keep chart colors aligned with brand and semantic tokens. Do not hardcode a different palette per screen.
+- Every chart must handle loading, empty, and zero-data states.
+- Every chart must be responsive and readable on mobile and desktop.
+- Do not use `chart.js`, `apexcharts`, `echarts`, `victory`, custom canvas charts, or ad hoc SVG chart systems.
+- Do not render chart data as a screenshot or static image when a live chart is required.
+
+## 4. Layout & Spacing Rules
 
 - **Page wrapper:** `className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8"`
 - **Section gap:** `space-y-4 or space-y-6`
@@ -134,7 +152,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 ---
 
-## 4. Typography
+## 5. Typography
 
 | Element | Class |
 |---------|-------|
@@ -148,7 +166,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 ---
 
-## 5. Standard UI Patterns
+## 6. Standard UI Patterns
 
 ### Loading State
 ```tsx
@@ -188,7 +206,7 @@ if (isLoading) return (
 
 ---
 
-## 6. Icons
+## 7. Icons
 
 Exclusively use icons from `lucide-react`:
 ```tsx
@@ -202,7 +220,7 @@ import { Plus, Search, Filter, Download, Upload, Trash2, Edit2,
 
 ---
 
-## 7. Strict Prohibitions (Absolute Negatives)
+## 8. Strict Prohibitions (Absolute Negatives)
 
 1. ❌ **Do not** use `style={{ }}` inline styles.
 2. ❌ **Do not** use raw, non-brand colors.

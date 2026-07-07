@@ -332,6 +332,7 @@ export type DarMasterWhereInput = {
   items?: Prisma.DarItemListRelationFilter
   qmsProcessing?: Prisma.XOR<Prisma.QmsProcessingNullableScalarRelationFilter, Prisma.QmsProcessingWhereInput> | null
   documentRevisions?: Prisma.DocumentControlRevisionListRelationFilter
+  rejectionHistory?: Prisma.DarRejectionHistoryListRelationFilter
 }
 
 export type DarMasterOrderByWithRelationInput = {
@@ -364,6 +365,7 @@ export type DarMasterOrderByWithRelationInput = {
   items?: Prisma.DarItemOrderByRelationAggregateInput
   qmsProcessing?: Prisma.QmsProcessingOrderByWithRelationInput
   documentRevisions?: Prisma.DocumentControlRevisionOrderByRelationAggregateInput
+  rejectionHistory?: Prisma.DarRejectionHistoryOrderByRelationAggregateInput
 }
 
 export type DarMasterWhereUniqueInput = Prisma.AtLeast<{
@@ -399,6 +401,7 @@ export type DarMasterWhereUniqueInput = Prisma.AtLeast<{
   items?: Prisma.DarItemListRelationFilter
   qmsProcessing?: Prisma.XOR<Prisma.QmsProcessingNullableScalarRelationFilter, Prisma.QmsProcessingWhereInput> | null
   documentRevisions?: Prisma.DocumentControlRevisionListRelationFilter
+  rejectionHistory?: Prisma.DarRejectionHistoryListRelationFilter
 }, "id" | "darNo">
 
 export type DarMasterOrderByWithAggregationInput = {
@@ -489,6 +492,7 @@ export type DarMasterCreateInput = {
   items?: Prisma.DarItemCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterUncheckedCreateInput = {
@@ -521,6 +525,7 @@ export type DarMasterUncheckedCreateInput = {
   items?: Prisma.DarItemUncheckedCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterUpdateInput = {
@@ -553,6 +558,7 @@ export type DarMasterUpdateInput = {
   items?: Prisma.DarItemUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterUncheckedUpdateInput = {
@@ -585,6 +591,7 @@ export type DarMasterUncheckedUpdateInput = {
   items?: Prisma.DarItemUncheckedUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterCreateManyInput = {
@@ -813,6 +820,20 @@ export type DarMasterUpdateOneRequiredWithoutApprovalsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DarMasterUpdateToOneWithWhereWithoutApprovalsInput, Prisma.DarMasterUpdateWithoutApprovalsInput>, Prisma.DarMasterUncheckedUpdateWithoutApprovalsInput>
 }
 
+export type DarMasterCreateNestedOneWithoutRejectionHistoryInput = {
+  create?: Prisma.XOR<Prisma.DarMasterCreateWithoutRejectionHistoryInput, Prisma.DarMasterUncheckedCreateWithoutRejectionHistoryInput>
+  connectOrCreate?: Prisma.DarMasterCreateOrConnectWithoutRejectionHistoryInput
+  connect?: Prisma.DarMasterWhereUniqueInput
+}
+
+export type DarMasterUpdateOneRequiredWithoutRejectionHistoryNestedInput = {
+  create?: Prisma.XOR<Prisma.DarMasterCreateWithoutRejectionHistoryInput, Prisma.DarMasterUncheckedCreateWithoutRejectionHistoryInput>
+  connectOrCreate?: Prisma.DarMasterCreateOrConnectWithoutRejectionHistoryInput
+  upsert?: Prisma.DarMasterUpsertWithoutRejectionHistoryInput
+  connect?: Prisma.DarMasterWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DarMasterUpdateToOneWithWhereWithoutRejectionHistoryInput, Prisma.DarMasterUpdateWithoutRejectionHistoryInput>, Prisma.DarMasterUncheckedUpdateWithoutRejectionHistoryInput>
+}
+
 export type DarMasterCreateNestedOneWithoutQmsProcessingInput = {
   create?: Prisma.XOR<Prisma.DarMasterCreateWithoutQmsProcessingInput, Prisma.DarMasterUncheckedCreateWithoutQmsProcessingInput>
   connectOrCreate?: Prisma.DarMasterCreateOrConnectWithoutQmsProcessingInput
@@ -872,6 +893,7 @@ export type DarMasterCreateWithoutItemsInput = {
   distributions?: Prisma.DarDistributionCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterUncheckedCreateWithoutItemsInput = {
@@ -903,6 +925,7 @@ export type DarMasterUncheckedCreateWithoutItemsInput = {
   distributions?: Prisma.DarDistributionUncheckedCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterCreateOrConnectWithoutItemsInput = {
@@ -950,6 +973,7 @@ export type DarMasterUpdateWithoutItemsInput = {
   distributions?: Prisma.DarDistributionUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterUncheckedUpdateWithoutItemsInput = {
@@ -981,6 +1005,7 @@ export type DarMasterUncheckedUpdateWithoutItemsInput = {
   distributions?: Prisma.DarDistributionUncheckedUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterCreateWithoutDistributionsInput = {
@@ -1012,6 +1037,7 @@ export type DarMasterCreateWithoutDistributionsInput = {
   items?: Prisma.DarItemCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterUncheckedCreateWithoutDistributionsInput = {
@@ -1043,6 +1069,7 @@ export type DarMasterUncheckedCreateWithoutDistributionsInput = {
   items?: Prisma.DarItemUncheckedCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterCreateOrConnectWithoutDistributionsInput = {
@@ -1090,6 +1117,7 @@ export type DarMasterUpdateWithoutDistributionsInput = {
   items?: Prisma.DarItemUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterUncheckedUpdateWithoutDistributionsInput = {
@@ -1121,6 +1149,7 @@ export type DarMasterUncheckedUpdateWithoutDistributionsInput = {
   items?: Prisma.DarItemUncheckedUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterCreateWithoutAttachmentsInput = {
@@ -1152,6 +1181,7 @@ export type DarMasterCreateWithoutAttachmentsInput = {
   items?: Prisma.DarItemCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterUncheckedCreateWithoutAttachmentsInput = {
@@ -1183,6 +1213,7 @@ export type DarMasterUncheckedCreateWithoutAttachmentsInput = {
   items?: Prisma.DarItemUncheckedCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterCreateOrConnectWithoutAttachmentsInput = {
@@ -1230,6 +1261,7 @@ export type DarMasterUpdateWithoutAttachmentsInput = {
   items?: Prisma.DarItemUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterUncheckedUpdateWithoutAttachmentsInput = {
@@ -1261,6 +1293,7 @@ export type DarMasterUncheckedUpdateWithoutAttachmentsInput = {
   items?: Prisma.DarItemUncheckedUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterCreateWithoutApprovalsInput = {
@@ -1292,6 +1325,7 @@ export type DarMasterCreateWithoutApprovalsInput = {
   items?: Prisma.DarItemCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterUncheckedCreateWithoutApprovalsInput = {
@@ -1323,6 +1357,7 @@ export type DarMasterUncheckedCreateWithoutApprovalsInput = {
   items?: Prisma.DarItemUncheckedCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedCreateNestedOneWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterCreateOrConnectWithoutApprovalsInput = {
@@ -1370,6 +1405,7 @@ export type DarMasterUpdateWithoutApprovalsInput = {
   items?: Prisma.DarItemUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUpdateOneWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterUncheckedUpdateWithoutApprovalsInput = {
@@ -1396,6 +1432,151 @@ export type DarMasterUncheckedUpdateWithoutApprovalsInput = {
   authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  attachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutDarMasterNestedInput
+  distributions?: Prisma.DarDistributionUncheckedUpdateManyWithoutDarMasterNestedInput
+  items?: Prisma.DarItemUncheckedUpdateManyWithoutDarMasterNestedInput
+  qmsProcessing?: Prisma.QmsProcessingUncheckedUpdateOneWithoutDarMasterNestedInput
+  documentRevisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedUpdateManyWithoutDarMasterNestedInput
+}
+
+export type DarMasterCreateWithoutRejectionHistoryInput = {
+  id?: string
+  darNo?: string | null
+  requestDate?: Date | string
+  objective: string
+  docType: string
+  docTypeOther?: string | null
+  reason: string
+  spFolderId?: string | null
+  spFolderPath?: string | null
+  spDriveId?: string | null
+  spItemId?: string | null
+  spWebUrl?: string | null
+  status?: $Enums.DarStatus
+  requesterId: string
+  requesterAuthUserId?: string | null
+  requesterName?: string | null
+  requesterEmployeeId?: string | null
+  requesterEmail?: string | null
+  requesterDepartmentName?: string | null
+  departmentId: string
+  authDepartmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  approvals?: Prisma.DarApprovalCreateNestedManyWithoutDarMasterInput
+  attachments?: Prisma.DarAttachmentCreateNestedManyWithoutDarMasterInput
+  distributions?: Prisma.DarDistributionCreateNestedManyWithoutDarMasterInput
+  items?: Prisma.DarItemCreateNestedManyWithoutDarMasterInput
+  qmsProcessing?: Prisma.QmsProcessingCreateNestedOneWithoutDarMasterInput
+  documentRevisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDarMasterInput
+}
+
+export type DarMasterUncheckedCreateWithoutRejectionHistoryInput = {
+  id?: string
+  darNo?: string | null
+  requestDate?: Date | string
+  objective: string
+  docType: string
+  docTypeOther?: string | null
+  reason: string
+  spFolderId?: string | null
+  spFolderPath?: string | null
+  spDriveId?: string | null
+  spItemId?: string | null
+  spWebUrl?: string | null
+  status?: $Enums.DarStatus
+  requesterId: string
+  requesterAuthUserId?: string | null
+  requesterName?: string | null
+  requesterEmployeeId?: string | null
+  requesterEmail?: string | null
+  requesterDepartmentName?: string | null
+  departmentId: string
+  authDepartmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  approvals?: Prisma.DarApprovalUncheckedCreateNestedManyWithoutDarMasterInput
+  attachments?: Prisma.DarAttachmentUncheckedCreateNestedManyWithoutDarMasterInput
+  distributions?: Prisma.DarDistributionUncheckedCreateNestedManyWithoutDarMasterInput
+  items?: Prisma.DarItemUncheckedCreateNestedManyWithoutDarMasterInput
+  qmsProcessing?: Prisma.QmsProcessingUncheckedCreateNestedOneWithoutDarMasterInput
+  documentRevisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDarMasterInput
+}
+
+export type DarMasterCreateOrConnectWithoutRejectionHistoryInput = {
+  where: Prisma.DarMasterWhereUniqueInput
+  create: Prisma.XOR<Prisma.DarMasterCreateWithoutRejectionHistoryInput, Prisma.DarMasterUncheckedCreateWithoutRejectionHistoryInput>
+}
+
+export type DarMasterUpsertWithoutRejectionHistoryInput = {
+  update: Prisma.XOR<Prisma.DarMasterUpdateWithoutRejectionHistoryInput, Prisma.DarMasterUncheckedUpdateWithoutRejectionHistoryInput>
+  create: Prisma.XOR<Prisma.DarMasterCreateWithoutRejectionHistoryInput, Prisma.DarMasterUncheckedCreateWithoutRejectionHistoryInput>
+  where?: Prisma.DarMasterWhereInput
+}
+
+export type DarMasterUpdateToOneWithWhereWithoutRejectionHistoryInput = {
+  where?: Prisma.DarMasterWhereInput
+  data: Prisma.XOR<Prisma.DarMasterUpdateWithoutRejectionHistoryInput, Prisma.DarMasterUncheckedUpdateWithoutRejectionHistoryInput>
+}
+
+export type DarMasterUpdateWithoutRejectionHistoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  darNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objective?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docTypeOther?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  spFolderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDarStatusFieldUpdateOperationsInput | $Enums.DarStatus
+  requesterId?: Prisma.StringFieldUpdateOperationsInput | string
+  requesterAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvals?: Prisma.DarApprovalUpdateManyWithoutDarMasterNestedInput
+  attachments?: Prisma.DarAttachmentUpdateManyWithoutDarMasterNestedInput
+  distributions?: Prisma.DarDistributionUpdateManyWithoutDarMasterNestedInput
+  items?: Prisma.DarItemUpdateManyWithoutDarMasterNestedInput
+  qmsProcessing?: Prisma.QmsProcessingUpdateOneWithoutDarMasterNestedInput
+  documentRevisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDarMasterNestedInput
+}
+
+export type DarMasterUncheckedUpdateWithoutRejectionHistoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  darNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objective?: Prisma.StringFieldUpdateOperationsInput | string
+  docType?: Prisma.StringFieldUpdateOperationsInput | string
+  docTypeOther?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reason?: Prisma.StringFieldUpdateOperationsInput | string
+  spFolderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDarStatusFieldUpdateOperationsInput | $Enums.DarStatus
+  requesterId?: Prisma.StringFieldUpdateOperationsInput | string
+  requesterAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterDepartmentName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  authDepartmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvals?: Prisma.DarApprovalUncheckedUpdateManyWithoutDarMasterNestedInput
   attachments?: Prisma.DarAttachmentUncheckedUpdateManyWithoutDarMasterNestedInput
   distributions?: Prisma.DarDistributionUncheckedUpdateManyWithoutDarMasterNestedInput
   items?: Prisma.DarItemUncheckedUpdateManyWithoutDarMasterNestedInput
@@ -1432,6 +1613,7 @@ export type DarMasterCreateWithoutQmsProcessingInput = {
   distributions?: Prisma.DarDistributionCreateNestedManyWithoutDarMasterInput
   items?: Prisma.DarItemCreateNestedManyWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterUncheckedCreateWithoutQmsProcessingInput = {
@@ -1463,6 +1645,7 @@ export type DarMasterUncheckedCreateWithoutQmsProcessingInput = {
   distributions?: Prisma.DarDistributionUncheckedCreateNestedManyWithoutDarMasterInput
   items?: Prisma.DarItemUncheckedCreateNestedManyWithoutDarMasterInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedCreateNestedManyWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterCreateOrConnectWithoutQmsProcessingInput = {
@@ -1510,6 +1693,7 @@ export type DarMasterUpdateWithoutQmsProcessingInput = {
   distributions?: Prisma.DarDistributionUpdateManyWithoutDarMasterNestedInput
   items?: Prisma.DarItemUpdateManyWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterUncheckedUpdateWithoutQmsProcessingInput = {
@@ -1541,6 +1725,7 @@ export type DarMasterUncheckedUpdateWithoutQmsProcessingInput = {
   distributions?: Prisma.DarDistributionUncheckedUpdateManyWithoutDarMasterNestedInput
   items?: Prisma.DarItemUncheckedUpdateManyWithoutDarMasterNestedInput
   documentRevisions?: Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterCreateWithoutDocumentRevisionsInput = {
@@ -1572,6 +1757,7 @@ export type DarMasterCreateWithoutDocumentRevisionsInput = {
   distributions?: Prisma.DarDistributionCreateNestedManyWithoutDarMasterInput
   items?: Prisma.DarItemCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingCreateNestedOneWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterUncheckedCreateWithoutDocumentRevisionsInput = {
@@ -1603,6 +1789,7 @@ export type DarMasterUncheckedCreateWithoutDocumentRevisionsInput = {
   distributions?: Prisma.DarDistributionUncheckedCreateNestedManyWithoutDarMasterInput
   items?: Prisma.DarItemUncheckedCreateNestedManyWithoutDarMasterInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedCreateNestedOneWithoutDarMasterInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedCreateNestedManyWithoutDarMasterInput
 }
 
 export type DarMasterCreateOrConnectWithoutDocumentRevisionsInput = {
@@ -1650,6 +1837,7 @@ export type DarMasterUpdateWithoutDocumentRevisionsInput = {
   distributions?: Prisma.DarDistributionUpdateManyWithoutDarMasterNestedInput
   items?: Prisma.DarItemUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUpdateOneWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUpdateManyWithoutDarMasterNestedInput
 }
 
 export type DarMasterUncheckedUpdateWithoutDocumentRevisionsInput = {
@@ -1681,6 +1869,7 @@ export type DarMasterUncheckedUpdateWithoutDocumentRevisionsInput = {
   distributions?: Prisma.DarDistributionUncheckedUpdateManyWithoutDarMasterNestedInput
   items?: Prisma.DarItemUncheckedUpdateManyWithoutDarMasterNestedInput
   qmsProcessing?: Prisma.QmsProcessingUncheckedUpdateOneWithoutDarMasterNestedInput
+  rejectionHistory?: Prisma.DarRejectionHistoryUncheckedUpdateManyWithoutDarMasterNestedInput
 }
 
 
@@ -1694,6 +1883,7 @@ export type DarMasterCountOutputType = {
   distributions: number
   items: number
   documentRevisions: number
+  rejectionHistory: number
 }
 
 export type DarMasterCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1702,6 +1892,7 @@ export type DarMasterCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensi
   distributions?: boolean | DarMasterCountOutputTypeCountDistributionsArgs
   items?: boolean | DarMasterCountOutputTypeCountItemsArgs
   documentRevisions?: boolean | DarMasterCountOutputTypeCountDocumentRevisionsArgs
+  rejectionHistory?: boolean | DarMasterCountOutputTypeCountRejectionHistoryArgs
 }
 
 /**
@@ -1749,6 +1940,13 @@ export type DarMasterCountOutputTypeCountDocumentRevisionsArgs<ExtArgs extends r
   where?: Prisma.DocumentControlRevisionWhereInput
 }
 
+/**
+ * DarMasterCountOutputType without action
+ */
+export type DarMasterCountOutputTypeCountRejectionHistoryArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DarRejectionHistoryWhereInput
+}
+
 
 export type DarMasterSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1780,6 +1978,7 @@ export type DarMasterSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   items?: boolean | Prisma.DarMaster$itemsArgs<ExtArgs>
   qmsProcessing?: boolean | Prisma.DarMaster$qmsProcessingArgs<ExtArgs>
   documentRevisions?: boolean | Prisma.DarMaster$documentRevisionsArgs<ExtArgs>
+  rejectionHistory?: boolean | Prisma.DarMaster$rejectionHistoryArgs<ExtArgs>
   _count?: boolean | Prisma.DarMasterCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["darMaster"]>
 
@@ -1869,6 +2068,7 @@ export type DarMasterInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   items?: boolean | Prisma.DarMaster$itemsArgs<ExtArgs>
   qmsProcessing?: boolean | Prisma.DarMaster$qmsProcessingArgs<ExtArgs>
   documentRevisions?: boolean | Prisma.DarMaster$documentRevisionsArgs<ExtArgs>
+  rejectionHistory?: boolean | Prisma.DarMaster$rejectionHistoryArgs<ExtArgs>
   _count?: boolean | Prisma.DarMasterCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DarMasterIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1883,6 +2083,7 @@ export type $DarMasterPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     items: Prisma.$DarItemPayload<ExtArgs>[]
     qmsProcessing: Prisma.$QmsProcessingPayload<ExtArgs> | null
     documentRevisions: Prisma.$DocumentControlRevisionPayload<ExtArgs>[]
+    rejectionHistory: Prisma.$DarRejectionHistoryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2308,6 +2509,7 @@ export interface Prisma__DarMasterClient<T, Null = never, ExtArgs extends runtim
   items<T extends Prisma.DarMaster$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DarMaster$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DarItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   qmsProcessing<T extends Prisma.DarMaster$qmsProcessingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DarMaster$qmsProcessingArgs<ExtArgs>>): Prisma.Prisma__QmsProcessingClient<runtime.Types.Result.GetResult<Prisma.$QmsProcessingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   documentRevisions<T extends Prisma.DarMaster$documentRevisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DarMaster$documentRevisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentControlRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  rejectionHistory<T extends Prisma.DarMaster$rejectionHistoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DarMaster$rejectionHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DarRejectionHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2889,6 +3091,30 @@ export type DarMaster$documentRevisionsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.DocumentControlRevisionScalarFieldEnum | Prisma.DocumentControlRevisionScalarFieldEnum[]
+}
+
+/**
+ * DarMaster.rejectionHistory
+ */
+export type DarMaster$rejectionHistoryArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DarRejectionHistory
+   */
+  select?: Prisma.DarRejectionHistorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DarRejectionHistory
+   */
+  omit?: Prisma.DarRejectionHistoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DarRejectionHistoryInclude<ExtArgs> | null
+  where?: Prisma.DarRejectionHistoryWhereInput
+  orderBy?: Prisma.DarRejectionHistoryOrderByWithRelationInput | Prisma.DarRejectionHistoryOrderByWithRelationInput[]
+  cursor?: Prisma.DarRejectionHistoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DarRejectionHistoryScalarFieldEnum | Prisma.DarRejectionHistoryScalarFieldEnum[]
 }
 
 /**

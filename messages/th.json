@@ -97,6 +97,7 @@
       "docNum": "เลขที่เอกสาร",
       "docName": "ชื่อเอกสาร",
       "revision": "Revision",
+      "effectiveDate": "วันที่มีผลบังคับใช้",
       "darNo": "เลขที่คำขอ",
       "darNoDraft": "ยังไม่มีเลขที่ (ฉบับร่าง)",
       "status": "สถานะ"
@@ -108,13 +109,15 @@
       "specifyDocType": "ระบุประเภทเอกสาร",
       "docNum": "เช่น QMS-SOP-001",
       "docName": "ชื่อเอกสาร",
-      "revision": "00"
+      "revision": "00",
+      "effectiveDate": "วว/ดด/ปปปป"
     },
     "table": {
       "colNo": "ลำดับ",
       "colDocNum": "เลขที่เอกสาร",
       "colDocName": "ชื่อเอกสาร",
       "colRevision": "Revision",
+      "colEffectiveDate": "วันที่มีผลบังคับใช้",
       "emptyItems": "กดปุ่ม เพิ่มรายการ เพื่อเพิ่มเอกสาร",
       "addItem": "เพิ่มรายการ",
       "emptyItemsTable": "ไม่มีรายการเอกสาร"
@@ -1213,6 +1216,27 @@
         "prefixPlaceholder": "เช่น FM-IA-02",
         "labelPlaceholder": "เช่น ทะเบียนรายชื่อผู้ตรวจติดตามภายใน"
       }
+    }
+  }
+,
+  "approvalConfig": {
+    "pageTitle": "การตั้งค่าผู้อนุมัติรายโมดูล",
+    "pageSubtitle": "กำหนด QMS Reviewer และ MR Approver สำหรับกระบวนการอนุมัติของแต่ละโมดูล",
+    "labelQmsReviewer": "QMS Reviewer (ผู้ตรวจสอบ QMS)",
+    "labelMrApprover": "MR Approver (ผู้อนุมัติ MR)",
+    "placeholderFallback": "ใช้ค่าเริ่มต้น / Auth Center",
+    "btnSave": "บันทึก",
+    "btnSaving": "กำลังบันทึก...",
+    "successSaved": "บันทึกการตั้งค่า {module} เรียบร้อยแล้ว",
+    "errorSaveFailed": "ไม่สามารถบันทึกการตั้งค่าได้",
+    "errorLoadFailed": "ไม่สามารถโหลดการตั้งค่าการอนุมัติได้",
+    "modules": {
+      "DAR": { "label": "DAR", "description": "คำขอเอกสาร (Document Action Request)" },
+      "CAR": { "label": "CAR", "description": "คำขอปฏิบัติการแก้ไข (Corrective Action Request)" },
+      "KPI": { "label": "KPI", "description": "การอนุมัติ KPI ประจำปี" },
+      "KPI_MONTHLY": { "label": "KPI รายเดือน", "description": "การอนุมัติรายงาน KPI ประจำเดือน" },
+      "AUDIT_APPOINTMENT": { "label": "การแต่งตั้งผู้ตรวจ", "description": "การอนุมัติการแต่งตั้งผู้ตรวจสอบ" },
+      "AUDIT": { "label": "แผนการตรวจ", "description": "การอนุมัติแผนการตรวจติดตาม" }
     }
   }
 }

@@ -1,9 +1,11 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
 import { QmsConfigService } from "@/services/qmsConfigService";
 import DarPrintTemplate from "@/components/dar/DarPrintTemplate";
 import { db } from "@/lib/db";
+import { ForbiddenError } from "@/errors/customErrors";
+import { isPrivilegedQmsRole } from "@/lib/qms-roles";
 
 const darService = new DarService();
 const qmsConfigService = new QmsConfigService();
@@ -23,15 +25,20 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function PrintDarPage({ params }: Props) {
   const [session, { id }] = await Promise.all([requireAuth(), params]);
-  const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
+  const isPrivileged = isPrivilegedQmsRole(session.user.role);
 
   try {
     const [dar, footerConfig] = await Promise.all([
-      darService.getDarById(id, session.user.id, isPrivileged),
+      darService.getDarById(
+        id,
+        { userId: session.user.id, authUserId: session.user.authUserId ?? null },
+        isPrivileged,
+      ),
       qmsConfigService.getSingleFooterConfig("DAR"),
     ]);
     return <DarPrintTemplate dar={dar} footerConfig={footerConfig} />;
-  } catch {
+  } catch (error) {
+    if (error instanceof ForbiddenError) redirect("/dar");
     notFound();
   }
 }

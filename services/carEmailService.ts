@@ -417,7 +417,7 @@ export async function sendCarMrReviewRequestEmail(opts: {
     },
     closingTh: "กรุณาเข้าสู่ระบบเพื่อตรวจสอบและอนุมัติหรือปฏิเสธแผนการดำเนินการแก้ไข",
     closingEn: "Please log in to the system to review and approve or reject the corrective action plan.",
-    actionLabel: "à¸”à¸¹à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸” / View Details",
+    actionLabel: "ดูรายละเอียด / View Details",
     actionUrl: url,
   });
 

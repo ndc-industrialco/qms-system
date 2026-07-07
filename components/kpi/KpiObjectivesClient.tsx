@@ -28,6 +28,7 @@ import {
   User,
   UserCheck,
   UserCog,
+  Printer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -550,14 +551,24 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
         title={t("kpi.reference.title")}
         subtitle={String(year)}
         actions={
-          <Select value={String(year)} onValueChange={v => setYear(Number(v))}>
-            <SelectTrigger className="w-28 rounded-xl text-sm h-9 bg-white border-slate-200">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {yearOptions.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="h-9 text-sm rounded-xl gap-1.5 bg-white border-slate-200"
+              onClick={() => window.open(`/print/qms/kpi/fm-mr-01?year=${year}`, "_blank")}
+            >
+              <Printer className="w-4 h-4" />
+              FM-MR-01
+            </Button>
+            <Select value={String(year)} onValueChange={v => setYear(Number(v))}>
+              <SelectTrigger className="w-28 rounded-xl text-sm h-9 bg-white border-slate-200">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         }
       />
 

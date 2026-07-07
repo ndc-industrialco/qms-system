@@ -14,7 +14,7 @@ export default function DarPrintTemplate({ dar, footerConfig }: DarPrintTemplate
   const leftDistributions = Array.from({ length: distRowsCount }).map((_, i) => dar.distributions[i]);
   const rightDistributions = Array.from({ length: distRowsCount }).map((_, i) => dar.distributions[i + distRowsCount]);
 
-  const renderItems = dar.items.length > 0 ? dar.items : [{ docName: "", docNumber: "", revision: "" }, { docName: "", docNumber: "", revision: "" }];
+  const renderItems = dar.items.length > 0 ? dar.items : [{ docName: "", docNumber: "", revision: "", effectiveDate: null }, { docName: "", docNumber: "", revision: "", effectiveDate: null }];
   const footerLabel = footerConfig?.label?.trim() || "Document Action Request (DAR) | ใบคำขอดำเนินการเรื่องเอกสาร (DAR)";
   const footerPrefix = footerConfig?.prefix?.trim() || "FM-DC-01";
   const [primaryTitle, secondaryTitle] = splitBilingualLabel(footerLabel);
@@ -449,8 +449,7 @@ export default function DarPrintTemplate({ dar, footerConfig }: DarPrintTemplate
                   <td className="text-left" style={{ paddingLeft: "6px" }}>{item.docName}</td>
                   <td className="font-bold" style={{ fontFamily: "monospace", fontSize: "9.5px" }}>{item.docNumber}</td>
                   <td>{item.revision}</td>
-                  {/* effectiveDate is missing in DarItemInput so defaults to dash */}
-                  <td>-</td>
+                  <td>{item.effectiveDate ? new Date(item.effectiveDate).toLocaleDateString('th-TH') : "-"}</td>
                 </tr>
               ))}
               {/* Fill remaining rows to always have 5 */}

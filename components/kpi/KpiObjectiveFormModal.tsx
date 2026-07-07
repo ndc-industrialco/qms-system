@@ -8,6 +8,7 @@ import { createKpiObjectiveSchema } from "@/schemas/kpiSchema";
 import { useT } from "@/lib/i18n";
 import { KPI_UNITS, isPresetUnit } from "@/lib/kpi-units";
 import ResponsiveFormOverlay from "@/components/common/ResponsiveFormOverlay";
+import GraphUserPicker, { type GraphUserResult } from "@/components/shared/GraphUserPicker";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
   const t = useT();
   const isEdit = !!objective;
   const [customUnit, setCustomUnit] = useState("");
+  const [responsible, setResponsible] = useState<GraphUserResult | null>(null);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(bodySchema),
@@ -47,6 +49,10 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
       calculationFormula: "",
       actionPlanGuidelines: "",
       referenceDocuments: "",
+      responsibleAuthUserId: "",
+      responsibleNameSnapshot: "",
+      responsibleEmailSnapshot: "",
+      responsibleEmployeeId: "",
     },
   });
 
@@ -57,7 +63,18 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
     if (!open) return;
     const savedUnit = (objective as { unit?: string | null } | undefined)?.unit ?? undefined;
     const isCustom = !!savedUnit && !isPresetUnit(savedUnit);
+    const savedResponsible = objective?.responsibleAuthUserId
+      ? {
+          id: objective.responsibleAuthUserId,
+          name: objective.responsibleNameSnapshot ?? "",
+          email: objective.responsibleEmailSnapshot ?? "",
+          employeeId: objective.responsibleEmployeeId ?? null,
+          department: null,
+          jobTitle: null,
+        }
+      : null;
     setCustomUnit(isCustom ? savedUnit! : "");
+    setResponsible(savedResponsible);
     reset(objective
       ? {
           target: objective.target,
@@ -67,8 +84,24 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
           calculationFormula: objective.calculationFormula,
           actionPlanGuidelines: objective.actionPlanGuidelines,
           referenceDocuments: objective.referenceDocuments ?? "",
+          responsibleAuthUserId: objective.responsibleAuthUserId ?? "",
+          responsibleNameSnapshot: objective.responsibleNameSnapshot ?? "",
+          responsibleEmailSnapshot: objective.responsibleEmailSnapshot ?? "",
+          responsibleEmployeeId: objective.responsibleEmployeeId ?? "",
         }
-      : { target: 0, unit: undefined, objective: "", frequency: "Every Month", calculationFormula: "", actionPlanGuidelines: "", referenceDocuments: "" }
+      : {
+          target: 0,
+          unit: undefined,
+          objective: "",
+          frequency: "Every Month",
+          calculationFormula: "",
+          actionPlanGuidelines: "",
+          referenceDocuments: "",
+          responsibleAuthUserId: "",
+          responsibleNameSnapshot: "",
+          responsibleEmailSnapshot: "",
+          responsibleEmployeeId: "",
+        }
     );
   }, [open, objective, reset]);
 
@@ -93,7 +126,14 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
         <form id="kpi-objective-form" className="space-y-5"
           onSubmit={handleSubmit(async (values) => {
             const finalUnit = values.unit === "other" ? (customUnit.trim() || undefined) : values.unit;
-            await onSubmit({ ...values, unit: finalUnit });
+            await onSubmit({
+              ...values,
+              unit: finalUnit,
+              responsibleAuthUserId: responsible?.id ?? "",
+              responsibleNameSnapshot: responsible?.name ?? "",
+              responsibleEmailSnapshot: responsible?.email ?? "",
+              responsibleEmployeeId: responsible?.employeeId ?? "",
+            });
             onOpenChange(false);
           })}>
 
@@ -192,6 +232,27 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
               className={cn(inputBase, "resize-none", errors.actionPlanGuidelines ? inputError : inputDefault)}
               {...register("actionPlanGuidelines")} />
             <FieldError message={errors.actionPlanGuidelines?.message} />
+          </div>
+
+          <div>
+            <GraphUserPicker
+              label={t("kpi.form.responsiblePerson")}
+              value={responsible}
+              onChange={(user) => {
+                setResponsible(user);
+                setValue("responsibleAuthUserId", user?.id ?? "", { shouldValidate: true });
+                setValue("responsibleNameSnapshot", user?.name ?? "", { shouldValidate: true });
+                setValue("responsibleEmailSnapshot", user?.email ?? "", { shouldValidate: true });
+                setValue("responsibleEmployeeId", user?.employeeId ?? "", { shouldValidate: false });
+              }}
+              placeholder={t("kpi.form.responsiblePersonPlaceholder")}
+              required
+              error={
+                errors.responsibleAuthUserId?.message
+                ?? errors.responsibleNameSnapshot?.message
+                ?? errors.responsibleEmailSnapshot?.message
+              }
+            />
           </div>
 
           {/* Reference Documents */}

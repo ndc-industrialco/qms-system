@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { KPI_UNITS } from "@/lib/kpi-units";
+import { fetchApprovalConfigDefaultUser } from "@/lib/approval-config-client";
 import PageHeader from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Plus, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye, XCircle, Megaphone, Edit3, RefreshCw } from "lucide-react";
+import { Plus, Send, Undo2, CheckCircle2, Clock, ShieldCheck, Info, ShieldAlert, User, UserCheck, UserCog, CalendarClock, ChevronRight, ThumbsUp, ThumbsDown, Eye, XCircle, Megaphone, Edit3, RefreshCw, Printer, FileSpreadsheet } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,6 @@ import {
   useReviewKpiObjectives,
   useApproveKpiObjectives,
   useRejectKpiObjectives,
-  useQmsCheckKpi,
   useAnnounceKpi,
   useReviseKpi,
   useUpdateKpi,
@@ -37,6 +37,7 @@ import {
 } from "@/hooks/api/use-kpi";
 import KpiApprovalTimeline from "@/components/kpi/KpiApprovalTimeline";
 import type { KPIObjective } from "@/generated/prisma/client";
+import KpiReviseExportPreviewDialog, { type RevisePreviewData } from "@/components/kpi/KpiReviseExportPreviewDialog";
 
 type UserRole = "USER" | "IT" | "QMS" | "MR";
 
@@ -63,6 +64,20 @@ function formatObjectiveTarget(
   };
 }
 
+function formatResponsiblePerson(objective: {
+  responsibleNameSnapshot?: string | null;
+  responsibleEmployeeId?: string | null;
+  responsibleEmailSnapshot?: string | null;
+}) {
+  const primary = objective.responsibleNameSnapshot?.trim()
+    || objective.responsibleEmailSnapshot?.trim()
+    || "-";
+  const suffix = objective.responsibleEmployeeId?.trim()
+    ? ` (#${objective.responsibleEmployeeId.trim()})`
+    : "";
+  return `${primary}${suffix}`;
+}
+
 function ObjectiveField({
   label,
   value,
@@ -78,6 +93,18 @@ function ObjectiveField({
       <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-700">{value}</p>
     </div>
   );
+}
+
+function formatRevisionTimestamp(value: Date | string) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleString("th-TH", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 }
 
 const STATUS_CONFIG = {
@@ -150,7 +177,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [signatureOpen, setSignatureOpen] = useState(false);
-  const [signatureMode, setSignatureMode] = useState<"submit" | "review" | "approve" | "qmsCheck">("submit");
+  const [signatureMode, setSignatureMode] = useState<"submit" | "review" | "approve">("submit");
   const [pendingSignature, setPendingSignature] = useState<string | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
 
@@ -162,7 +189,6 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const reviewMutation = useReviewKpiObjectives();
   const approveMutation = useApproveKpiObjectives();
   const rejectMutation = useRejectKpiObjectives();
-  const qmsCheckMutation = useQmsCheckKpi();
   const announceMutation = useAnnounceKpi();
   const reviseMutation = useReviseKpi();
   const updateKpiMutation = useUpdateKpi();
@@ -171,6 +197,12 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const [docNameValue, setDocNameValue] = useState("");
   const [reviseDialogOpen, setReviseDialogOpen] = useState(false);
   const [reviseReason, setReviseReason] = useState("");
+  const [reviseExportPreviewOpen, setReviseExportPreviewOpen] = useState(false);
+  const [reviseExportData, setReviseExportData] = useState<RevisePreviewData | null>(null);
+  const [reviseExportLoading, setReviseExportLoading] = useState(false);
+  const [reviseExporting, setReviseExporting] = useState(false);
+  const [defaultReviewerId, setDefaultReviewerId] = useState<string>("");
+  const [defaultApproverId, setDefaultApproverId] = useState<string>("");
 
   async function handleSignatureConfirm(payload: { signatureDataUrl: string }) {
     setPendingSignature(payload.signatureDataUrl);
@@ -190,15 +222,6 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
       try {
         await approveMutation.mutateAsync({ kpiId, data: { signatureDataUrl: payload.signatureDataUrl } });
         toast.success(t("kpi.approve.success"));
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
-      } finally {
-        setPendingSignature(null);
-      }
-    } else if (signatureMode === "qmsCheck") {
-      try {
-        await qmsCheckMutation.mutateAsync({ kpiId, data: { signatureDataUrl: payload.signatureDataUrl } });
-        toast.success("QMS Check completed");
       } catch (err) {
         toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
       } finally {
@@ -232,6 +255,54 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
     }
   }
 
+  async function handleRevisePreviewOpen() {
+    setReviseExportLoading(true);
+    setReviseExportPreviewOpen(true);
+    try {
+      const res = await fetch(`/api/kpi/${kpiId}/revise/export/preview`);
+      const json = await res.json();
+      setReviseExportData(json.data as RevisePreviewData);
+    } catch {
+      setReviseExportData(null);
+    } finally {
+      setReviseExportLoading(false);
+    }
+  }
+
+  function handleReviseExport() {
+    setReviseExporting(true);
+    window.open(`/api/kpi/${kpiId}/revise/export`, "_blank");
+    setTimeout(() => setReviseExporting(false), 2000);
+  }
+
+  useEffect(() => {
+    if (!assignOpen || kpi?.reviewerUserId || kpi?.approverUserId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadDefaults() {
+      const [reviewer, approver] = await Promise.all([
+        fetchApprovalConfigDefaultUser("KPI", "QMS"),
+        fetchApprovalConfigDefaultUser("KPI", "MR"),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setDefaultReviewerId(reviewer?.id ?? "");
+      setDefaultApproverId(approver?.id ?? "");
+    }
+
+    void loadDefaults();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [assignOpen, kpi?.reviewerUserId, kpi?.approverUserId]);
+
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
@@ -252,6 +323,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const detail = kpi as KpiDetailResponse;
   const objectives = detail.objectives ?? [];
   const removedObjectives = detail.removedObjectives ?? [];
+  const revisionHistory = detail.revisionHistory ?? [];
   const kpiStatus = kpi.status as keyof typeof STATUS_CONFIG;
   const statusCfg = STATUS_CONFIG[kpiStatus] ?? STATUS_CONFIG.DRAFT;
   const StatusIcon = statusCfg.icon;
@@ -270,7 +342,6 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   const canReview = isReviewer && kpiStatus === "PENDING_REVIEW" && !reviewerAlreadySigned;
   const canApprove = isApprover && kpiStatus === "PENDING_REVIEW" && reviewerAlreadySigned;
   const canReject = (isReviewer || isApprover) && kpiStatus === "PENDING_REVIEW";
-  const canQmsCheck = privileged && kpiStatus === "APPROVED";
   const canAnnounce = privileged && kpiStatus === "QMS_CHECK";
   const canRevise = privileged && (kpiStatus === "APPROVED" || kpiStatus === "ANNOUNCED");
 
@@ -285,7 +356,8 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
   // - USER: only when isDraft AND department matches
   const canEdit = canAlwaysEdit || (isDraft && deptMatch);
 
-  const canShowSubmit = canEdit && objectives.length > 0;
+  // Submit must disappear once the KPI leaves Draft/Rejected, even for privileged roles.
+  const canShowSubmit = isDraft && deptMatch && objectives.length > 0;
 
   return (
     <div className="space-y-6">
@@ -366,15 +438,6 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                 <Send className="w-4 h-4 mr-2" />{t("kpi.submit.button")}
               </Button>
             )}
-            {canQmsCheck && (
-              <Button
-                onClick={() => { setSignatureMode("qmsCheck"); setSignatureOpen(true); }}
-                className="rounded-xl bg-sky-600 hover:bg-sky-700 text-white"
-                disabled={qmsCheckMutation.isPending}
-              >
-                <ShieldCheck className="w-4 h-4 mr-2" />QMS Check
-              </Button>
-            )}
             {canAnnounce && (
               <Button
                 onClick={async () => {
@@ -401,6 +464,11 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                 <RefreshCw className="w-4 h-4 mr-2" />Revise
               </Button>
             )}
+            <Button asChild variant="outline" className="rounded-xl border-slate-200">
+              <Link href={`/print/qms/kpi/${kpiId}`} target="_blank" rel="noreferrer">
+                <Printer className="w-4 h-4 mr-2" />Export PDF
+              </Link>
+            </Button>
             {privileged && (
               <Button
                 variant="ghost"
@@ -520,7 +588,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
         <div className="space-y-3">
           {objectives.map((obj: KpiObjectiveWithRevision) => {
             const currentTarget = formatObjectiveTarget(obj, t);
-            const originalTarget = obj.originalObjective ? formatObjectiveTarget(obj.originalObjective, t) : null;
+            const currentResponsible = formatResponsiblePerson(obj);
             const changeBadge = obj.revisionChangeType === "UPDATED"
               ? { label: "Revised", className: "border-amber-200 bg-amber-50 text-amber-700" }
               : obj.revisionChangeType === "ADDED"
@@ -551,38 +619,15 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                       {t("kpi.objective.table.frequency")}:{" "}
                       <strong className="text-slate-700">{obj.frequency}</strong>
                     </span>
+                    <span>
+                      {t("kpi.form.responsiblePerson")}:{" "}
+                      <strong className="text-slate-700">{currentResponsible}</strong>
+                    </span>
                   </div>
                   {obj.calculationFormula && (
                     <p className="mt-2 text-xs text-slate-400 line-clamp-1">{obj.calculationFormula}</p>
                   )}
-                  {obj.originalObjective && (
-                    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4 text-amber-600" />
-                        <p className="text-sm font-semibold text-amber-800">Original before revise</p>
-                      </div>
-                      <div className="mt-3 grid gap-3 md:grid-cols-2">
-                        <ObjectiveField label="Objective" value={obj.originalObjective.objective} tone="original" />
-                        <ObjectiveField
-                          label="Target"
-                          value={`${originalTarget?.value ?? obj.originalObjective.target}${originalTarget?.unitLabel ? ` ${originalTarget.unitLabel}` : ""}`}
-                          tone="original"
-                        />
-                        <ObjectiveField label="Frequency" value={obj.originalObjective.frequency} tone="original" />
-                        <ObjectiveField label="Formula" value={obj.originalObjective.calculationFormula} tone="original" />
-                        <ObjectiveField
-                          label="Guidelines"
-                          value={obj.originalObjective.actionPlanGuidelines}
-                          tone="original"
-                        />
-                        <ObjectiveField
-                          label="Reference"
-                          value={obj.originalObjective.referenceDocuments || "-"}
-                          tone="original"
-                        />
-                      </div>
-                    </div>
-                  )}
+
                 </div>
 
                 {/* Edit/Delete: shown for privileged always, for USER only when isDraft */}
@@ -604,6 +649,46 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
               </div>
             );
           })}
+        </div>
+      )}
+
+      {objectives.filter((o: KpiObjectiveWithRevision) => o.originalObjective).length > 0 && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Eye className="h-4 w-4 text-amber-600" />
+            <p className="text-sm font-semibold text-amber-800">Original before revise</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-amber-200">
+                  <th className="text-left py-1.5 px-2 font-semibold text-amber-900">Objective</th>
+                  <th className="text-left py-1.5 px-2 font-semibold text-amber-900">Target</th>
+                  <th className="text-left py-1.5 px-2 font-semibold text-amber-900">Frequency</th>
+                  <th className="text-left py-1.5 px-2 font-semibold text-amber-900">Responsible</th>
+                  <th className="text-left py-1.5 px-2 font-semibold text-amber-900">Formula</th>
+                  <th className="text-left py-1.5 px-2 font-semibold text-amber-900">Guidelines</th>
+                  <th className="text-left py-1.5 px-2 font-semibold text-amber-900">Reference</th>
+                </tr>
+              </thead>
+              <tbody>
+                {objectives.filter((o: KpiObjectiveWithRevision) => o.originalObjective).map((obj: KpiObjectiveWithRevision) => {
+                  const ot = formatObjectiveTarget(obj.originalObjective!, t);
+                  return (
+                    <tr key={obj.id} className="border-b border-amber-100 last:border-b-0">
+                      <td className="py-1.5 px-2 text-slate-700">{obj.originalObjective!.objective}</td>
+                      <td className="py-1.5 px-2 text-slate-700">{ot.value}{ot.unitLabel ? ` ${ot.unitLabel}` : ""}</td>
+                      <td className="py-1.5 px-2 text-slate-700">{obj.originalObjective!.frequency}</td>
+                      <td className="py-1.5 px-2 text-slate-700">{formatResponsiblePerson(obj.originalObjective!)}</td>
+                      <td className="py-1.5 px-2 text-slate-500 max-w-[160px] truncate" title={obj.originalObjective!.calculationFormula}>{obj.originalObjective!.calculationFormula}</td>
+                      <td className="py-1.5 px-2 text-slate-500 max-w-[160px] truncate" title={obj.originalObjective!.actionPlanGuidelines}>{obj.originalObjective!.actionPlanGuidelines}</td>
+                      <td className="py-1.5 px-2 text-slate-500">{obj.originalObjective!.referenceDocuments || "-"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -630,6 +715,11 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
                     tone="original"
                   />
                   <ObjectiveField label="Frequency" value={removed.originalObjective.frequency} tone="original" />
+                  <ObjectiveField
+                    label="Responsible"
+                    value={formatResponsiblePerson(removed.originalObjective)}
+                    tone="original"
+                  />
                   <ObjectiveField label="Formula" value={removed.originalObjective.calculationFormula} tone="original" />
                   <ObjectiveField
                     label="Guidelines"
@@ -645,6 +735,69 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
               </div>
             );
           })}
+        </div>
+      )}
+
+      {revisionHistory.length > 0 && (
+        <div className="space-y-3">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-emerald-800">Revision history</p>
+              <p className="text-xs text-emerald-700">Every revise keeps the previous annual objectives as a historical snapshot.</p>
+            </div>
+            <Button variant="outline" size="sm" className="shrink-0 border-emerald-200 text-emerald-700 hover:bg-emerald-100" onClick={handleRevisePreviewOpen}>
+              <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" />
+              Export Excel
+            </Button>
+          </div>
+
+          {revisionHistory.map((entry, index) => (
+            <div key={entry.auditLogId} className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Revision {revisionHistory.length - index}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {formatRevisionTimestamp(entry.revisedAt)} · {entry.revisedByRole}
+                  </p>
+                </div>
+                {entry.reason && (
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+                    {entry.reason}
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {entry.objectiveSnapshots.map((snapshot) => {
+                  const snapshotTarget = formatObjectiveTarget(snapshot, t);
+                  return (
+                    <div key={`${entry.auditLogId}-${snapshot.objectiveId}`} className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-900">{snapshot.objective}</p>
+                        {entry.revisedObjectiveIds.includes(snapshot.objectiveId) && (
+                          <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                            Revised in this round
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        <ObjectiveField
+                          label="Target"
+                          value={`${snapshotTarget.value}${snapshotTarget.unitLabel ? ` ${snapshotTarget.unitLabel}` : ""}`}
+                          tone="original"
+                        />
+                        <ObjectiveField label="Frequency" value={snapshot.frequency} tone="original" />
+                        <ObjectiveField label="Responsible" value={formatResponsiblePerson(snapshot)} tone="original" />
+                        <ObjectiveField label="Formula" value={snapshot.calculationFormula} tone="original" />
+                        <ObjectiveField label="Guidelines" value={snapshot.actionPlanGuidelines} tone="original" />
+                        <ObjectiveField label="Reference" value={snapshot.referenceDocuments || "-"} tone="original" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -761,7 +914,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
       {/* Step 1: Signature */}
       <KpiSignatureDialog
         open={signatureOpen}
-        title={signatureMode === "review" ? t("kpi.review.signatureTitle") : signatureMode === "approve" ? t("kpi.approve.signatureTitle") : signatureMode === "qmsCheck" ? "QMS Check Signature" : t("kpi.submit.signatureTitle")}
+        title={signatureMode === "review" ? t("kpi.review.signatureTitle") : signatureMode === "approve" ? t("kpi.approve.signatureTitle") : t("kpi.submit.signatureTitle")}
         onOpenChange={setSignatureOpen}
         onConfirm={handleSignatureConfirm}
       />
@@ -773,8 +926,8 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
           setAssignOpen(open);
           if (!open) setPendingSignature(null);
         }}
-        initialReviewerId={kpi.reviewerUserId ?? undefined}
-        initialApproverId={kpi.approverUserId ?? undefined}
+        initialReviewerId={(kpi.reviewerUserId ?? defaultReviewerId) || undefined}
+        initialApproverId={(kpi.approverUserId ?? defaultApproverId) || undefined}
         onConfirm={handleAssignConfirm}
       />
 
@@ -857,6 +1010,15 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <KpiReviseExportPreviewDialog
+        open={reviseExportPreviewOpen}
+        onClose={() => { setReviseExportPreviewOpen(false); }}
+        onExport={handleReviseExport}
+        data={reviseExportData}
+        loading={reviseExportLoading}
+        exporting={reviseExporting}
+      />
     </div>
   );
 }

@@ -23,6 +23,7 @@ import {
   ListKpiQuery,
   SubmitKpiObjectivesDTO,
   KpiObjectiveRevisionSnapshot,
+  KpiRevisionHistoryEntry,
   KpiRemovedObjectiveComparison,
 } from '@/types/kpi';
 import type { ActorContext } from '@/types/kpi';
@@ -50,6 +51,10 @@ export class KpiService {
       calculationFormula: string;
       actionPlanGuidelines: string;
       referenceDocuments: string | null;
+      responsibleAuthUserId: string | null;
+      responsibleNameSnapshot: string | null;
+      responsibleEmailSnapshot: string | null;
+      responsibleEmployeeId: string | null;
     },
   ): KpiObjectiveRevisionSnapshot {
     return {
@@ -61,6 +66,10 @@ export class KpiService {
       calculationFormula: objective.calculationFormula,
       actionPlanGuidelines: objective.actionPlanGuidelines,
       referenceDocuments: objective.referenceDocuments,
+      responsibleAuthUserId: objective.responsibleAuthUserId,
+      responsibleNameSnapshot: objective.responsibleNameSnapshot,
+      responsibleEmailSnapshot: objective.responsibleEmailSnapshot,
+      responsibleEmployeeId: objective.responsibleEmployeeId,
     };
   }
 
@@ -73,6 +82,10 @@ export class KpiService {
       calculationFormula: string;
       actionPlanGuidelines: string;
       referenceDocuments: string | null;
+      responsibleAuthUserId: string | null;
+      responsibleNameSnapshot: string | null;
+      responsibleEmailSnapshot: string | null;
+      responsibleEmployeeId: string | null;
     },
     original: KpiObjectiveRevisionSnapshot,
   ): boolean {
@@ -82,21 +95,14 @@ export class KpiService {
       || current.frequency !== original.frequency
       || current.calculationFormula !== original.calculationFormula
       || current.actionPlanGuidelines !== original.actionPlanGuidelines
-      || current.referenceDocuments !== original.referenceDocuments;
+      || current.referenceDocuments !== original.referenceDocuments
+      || current.responsibleAuthUserId !== original.responsibleAuthUserId
+      || current.responsibleNameSnapshot !== original.responsibleNameSnapshot
+      || current.responsibleEmailSnapshot !== original.responsibleEmailSnapshot
+      || current.responsibleEmployeeId !== original.responsibleEmployeeId;
   }
 
-  private async getLatestRevisionSnapshots(kpiId: string): Promise<KpiObjectiveRevisionSnapshot[]> {
-    const latestRevisionLog = await db.auditLog.findFirst({
-      where: {
-        resourceType: 'KPI',
-        resourceId: kpiId,
-        action: 'REVISE',
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { metadata: true },
-    });
-
-    const metadata = latestRevisionLog?.metadata;
+  private parseRevisionSnapshots(metadata: unknown): KpiObjectiveRevisionSnapshot[] {
     if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
       return [];
     }
@@ -132,8 +138,79 @@ export class KpiService {
         calculationFormula: row.calculationFormula,
         actionPlanGuidelines: row.actionPlanGuidelines,
         referenceDocuments: typeof row.referenceDocuments === 'string' ? row.referenceDocuments : null,
+        responsibleAuthUserId: typeof row.responsibleAuthUserId === 'string' ? row.responsibleAuthUserId : null,
+        responsibleNameSnapshot: typeof row.responsibleNameSnapshot === 'string' ? row.responsibleNameSnapshot : null,
+        responsibleEmailSnapshot: typeof row.responsibleEmailSnapshot === 'string' ? row.responsibleEmailSnapshot : null,
+        responsibleEmployeeId: typeof row.responsibleEmployeeId === 'string' ? row.responsibleEmployeeId : null,
       }];
     });
+  }
+
+  private parseRevisionReason(after: unknown, metadata: unknown): string | null {
+    if (after && typeof after === 'object' && !Array.isArray(after)) {
+      const reason = (after as Record<string, unknown>).reason;
+      if (typeof reason === 'string' && reason.trim()) {
+        return reason.trim();
+      }
+    }
+
+    if (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) {
+      const reason = (metadata as Record<string, unknown>).reason;
+      if (typeof reason === 'string' && reason.trim()) {
+        return reason.trim();
+      }
+    }
+
+    return null;
+  }
+
+  private parseRevisionObjectiveIds(metadata: unknown): string[] {
+    if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+      return [];
+    }
+
+    const revisedObjectiveIds = (metadata as Record<string, unknown>).revisedObjectiveIds;
+    if (!Array.isArray(revisedObjectiveIds)) {
+      return [];
+    }
+
+    return revisedObjectiveIds.filter((value): value is string => typeof value === 'string');
+  }
+
+  private async getRevisionHistory(kpiId: string): Promise<KpiRevisionHistoryEntry[]> {
+    const revisionLogs = await db.auditLog.findMany({
+      where: {
+        resourceType: 'KPI',
+        resourceId: kpiId,
+        action: 'REVISE',
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        createdAt: true,
+        actorRole: true,
+        after: true,
+        metadata: true,
+      },
+    });
+
+    const entries: Array<KpiRevisionHistoryEntry | null> = revisionLogs.map((log) => {
+        const objectiveSnapshots = this.parseRevisionSnapshots(log.metadata);
+        if (objectiveSnapshots.length === 0) {
+          return null;
+        }
+
+        return {
+          auditLogId: log.id,
+          revisedAt: log.createdAt,
+          revisedByRole: log.actorRole,
+          reason: this.parseRevisionReason(log.after, log.metadata),
+          revisedObjectiveIds: this.parseRevisionObjectiveIds(log.metadata),
+          objectiveSnapshots,
+        };
+      });
+
+    return entries.filter((entry): entry is KpiRevisionHistoryEntry => entry !== null);
   }
 
   async listKpis(query: ListKpiQuery) {
@@ -168,7 +245,8 @@ export class KpiService {
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
 
     const signatures = await this.approvalSignatureRepo.findByDocument('KPI', id);
-    const revisionSnapshots = kpi.isRevision ? await this.getLatestRevisionSnapshots(id) : [];
+    const revisionHistory = await this.getRevisionHistory(id);
+    const revisionSnapshots = revisionHistory[0]?.objectiveSnapshots ?? [];
     const snapshotMap = new Map(revisionSnapshots.map((snapshot) => [snapshot.objectiveId, snapshot]));
     const currentObjectiveIds = new Set(kpi.objectives.map((objective) => objective.id));
 
@@ -194,6 +272,10 @@ export class KpiService {
             calculationFormula: objective.calculationFormula,
             actionPlanGuidelines: objective.actionPlanGuidelines,
             referenceDocuments: objective.referenceDocuments,
+            responsibleAuthUserId: objective.responsibleAuthUserId,
+            responsibleNameSnapshot: objective.responsibleNameSnapshot,
+            responsibleEmailSnapshot: objective.responsibleEmailSnapshot,
+            responsibleEmployeeId: objective.responsibleEmployeeId,
           }, originalObjective) ? 'UPDATED' : null)
           : (kpi.isRevision ? 'ADDED' : null);
 
@@ -210,6 +292,7 @@ export class KpiService {
           revisionChangeType: 'REMOVED',
           originalObjective: snapshot,
         })),
+      revisionHistory,
       prepare: resolvedPrepare,
       reviewerUser: kpi.reviewerUserId
         ? (userMap.get(kpi.reviewerUserId) ?? (kpi.reviewerEmail ? { id: kpi.reviewerUserId, name: kpi.reviewer || null, email: kpi.reviewerEmail } : null))
@@ -1018,6 +1101,10 @@ export class KpiService {
           calculationFormula: obj.calculationFormula,
           actionPlanGuidelines: obj.actionPlanGuidelines,
           referenceDocuments: obj.referenceDocuments ?? undefined,
+          responsibleAuthUserId: obj.responsibleAuthUserId ?? undefined,
+          responsibleNameSnapshot: obj.responsibleNameSnapshot ?? undefined,
+          responsibleEmailSnapshot: obj.responsibleEmailSnapshot ?? undefined,
+          responsibleEmployeeId: obj.responsibleEmployeeId ?? undefined,
           isRevised: false,
         }, tx);
       }
@@ -1094,6 +1181,7 @@ export class KpiService {
         before: { status: kpi.status },
         after: { status: 'DRAFT', reason },
         metadata: {
+          reason,
           revisedObjectives: targetObjIds.length,
           revisedObjectiveIds: targetObjIds,
           objectiveSnapshots: kpi.objectives.map((objective) => this.buildObjectiveSnapshot(objective)),

@@ -1,11 +1,12 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
 import DarReadOnlyDetail from "@/components/dar/DarReadOnlyDetail";
+import DarDetailBreadcrumb from "@/components/dar/DarDetailBreadcrumb";
 import type { DarApprovalRow } from "@/types/dar";
 import { db } from "@/lib/db";
+import { ForbiddenError } from "@/errors/customErrors";
+import { hasQmsRole, isPrivilegedQmsRole } from "@/lib/qms-roles";
 
 const darService = new DarService();
 
@@ -19,15 +20,19 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function DarDetailPage({ params }: Props) {
   const [session, { id }] = await Promise.all([requireAuth(), params]);
-  const isPrivileged = session.user.role === "QMS" || session.user.role === "MR" || session.user.role === "IT";
+  const isPrivileged = isPrivilegedQmsRole(session.user.role);
 
   try {
     const [dar, savedSig] = await Promise.all([
-      darService.getDarById(id, session.user.id, isPrivileged),
+      darService.getDarById(
+        id,
+        { userId: session.user.id, authUserId: session.user.authUserId ?? null },
+        isPrivileged,
+      ),
       darService.getSavedSignature(session.user.id),
     ]);
 
-    const isQms = session.user.role === "QMS" || session.user.role === "MR";
+    const isQms = hasQmsRole(session.user.role, "QMS", "MR", "IT");
 
     const myPendingStep = dar.approvals.find(
       (a: DarApprovalRow) =>
@@ -44,17 +49,10 @@ export default async function DarDetailPage({ params }: Props) {
 
     return (
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
-        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6">
-          <Link href="/dar" className="hover:text-slate-600 transition-colors">
-            {isQms ? "Document Requests" : "คำขอเอกสาร"}
-          </Link>
-          <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-          <span className="text-slate-600 font-medium truncate">
-            {dar.darNo ?? (isQms ? "Draft" : "ฉบับร่าง")}
-          </span>
-        </nav>
+        <DarDetailBreadcrumb darNo={dar.darNo} isQms={isQms} />
 
         <DarReadOnlyDetail
+          key={dar.status}
           dar={dar}
           currentUserId={session.user.id}
           savedSignatureUrl={savedSig?.url ?? null}
@@ -63,7 +61,8 @@ export default async function DarDetailPage({ params }: Props) {
         />
       </div>
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof ForbiddenError) redirect("/dar");
     notFound();
   }
 }

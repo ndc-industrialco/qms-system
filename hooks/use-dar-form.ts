@@ -9,7 +9,7 @@ import type { DarObjective, DarDocType, DarDetail, TempAttachmentInput, Signatur
 import type { ReviewerUser } from "@/components/dar/DarReviewerSelectModal";
 import { getErrorMessage } from "@/lib/error-message";
 
-type ItemRow = { docNumber: string; docName: string; revision: string };
+type ItemRow = { docNumber: string; docName: string; revision: string; effectiveDate?: string };
 
 type FormState = {
   objective: DarObjective | "";
@@ -19,11 +19,14 @@ type FormState = {
   items: ItemRow[];
   distributionDepartmentIds: string[];
 };
+
 type FormKey = keyof FormState;
+
 type ItemError = {
   docNumber?: { message?: string };
   docName?: { message?: string };
   revision?: { message?: string };
+  effectiveDate?: { message?: string };
 };
 
 const formSchema = z.object({
@@ -42,6 +45,7 @@ const formSchema = z.object({
       docNumber: z.string().min(1, "กรุณาระบุเลขที่เอกสาร").max(100),
       docName: z.string().min(1, "กรุณาระบุชื่อเอกสาร").max(255),
       revision: z.string().min(1, "กรุณาระบุ Revision").max(50),
+      effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "รูปแบบวันที่ไม่ถูกต้อง").optional().or(z.literal("")),
     })
   ).min(1, "ต้องมีเอกสารอย่างน้อย 1 รายการ"),
   distributionDepartmentIds: z.array(z.string()),
@@ -68,14 +72,19 @@ export function useDarForm(
     docType: initialData.docType,
     docTypeOther: initialData.docTypeOther ?? "",
     reason: initialData.reason,
-    items: initialData.items.map(({ docNumber, docName, revision }) => ({ docNumber, docName, revision })),
+    items: initialData.items.map(({ docNumber, docName, revision, effectiveDate }) => ({
+      docNumber,
+      docName,
+      revision,
+      effectiveDate: effectiveDate ? effectiveDate.slice(0, 10) : "",
+    })),
     distributionDepartmentIds: initialData.distributions.map((d) => d.departmentId),
   } : {
     objective: "",
     docType: "",
     docTypeOther: "",
     reason: "",
-    items: [{ docNumber: "", docName: "", revision: "" }],
+    items: [{ docNumber: "", docName: "", revision: "", effectiveDate: "" }],
     distributionDepartmentIds: [],
   };
 
@@ -101,14 +110,13 @@ export function useDarForm(
     (setValue as (name: FormKey, value: FormState[FormKey], opts?: object) => void)(key, value, { shouldValidate: true });
   }, [setValue]);
 
-  // Convert RHF nested errors into flat Record<string, string> expected by UI
   const flatErrors: Record<string, string> = {};
-  
+
   if (formState.errors.objective?.message) flatErrors.objective = formState.errors.objective.message;
   if (formState.errors.docType?.message) flatErrors.docType = formState.errors.docType.message;
   if (formState.errors.docTypeOther?.message) flatErrors.docTypeOther = formState.errors.docTypeOther.message;
   if (formState.errors.reason?.message) flatErrors.reason = formState.errors.reason.message;
-  
+
   if (formState.errors.items) {
     if (Array.isArray(formState.errors.items)) {
       formState.errors.items.forEach((itemError, idx: number) => {
@@ -117,6 +125,7 @@ export function useDarForm(
           if (typedItemError.docNumber?.message) flatErrors[`items.${idx}.docNumber`] = typedItemError.docNumber.message;
           if (typedItemError.docName?.message) flatErrors[`items.${idx}.docName`] = typedItemError.docName.message;
           if (typedItemError.revision?.message) flatErrors[`items.${idx}.revision`] = typedItemError.revision.message;
+          if (typedItemError.effectiveDate?.message) flatErrors[`items.${idx}.effectiveDate`] = typedItemError.effectiveDate.message;
         }
       });
     } else if (formState.errors.items.message) {
@@ -173,7 +182,8 @@ export function useDarForm(
 
       const json = await res.json();
       if (!res.ok || json.error) {
-        onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด")); return;
+        onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด"));
+        return;
       }
 
       const darId = json.data.id as string;
@@ -220,7 +230,10 @@ export function useDarForm(
           body: JSON.stringify({ ...buildBody(values, "SUBMIT"), tempAttachments }),
         });
         const json = await res.json();
-        if (!res.ok || json.error) { onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด")); return false; }
+        if (!res.ok || json.error) {
+          onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด"));
+          return false;
+        }
         darId = json.data.id as string;
       } else {
         const id = savedDarId ?? initialData!.id;
@@ -231,7 +244,10 @@ export function useDarForm(
         });
         const res = await fetch(`/api/dar/${id}/submit`, { method: "POST" });
         const json = await res.json();
-        if (!res.ok || json.error) { onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด")); return false; }
+        if (!res.ok || json.error) {
+          onError(getErrorMessage(json.error, "เกิดข้อผิดพลาด"));
+          return false;
+        }
         darId = id;
       }
 
@@ -242,7 +258,8 @@ export function useDarForm(
       });
       const approveJson = await approveRes.json();
       if (!approveRes.ok || approveJson.error) {
-        onError(getErrorMessage(approveJson.error, "เกิดข้อผิดพลาดในการลงลายมือชื่อ")); return false;
+        onError(getErrorMessage(approveJson.error, "เกิดข้อผิดพลาดในการลงลายมือชื่อ"));
+        return false;
       }
 
       const assignRes = await fetch(`/api/dar/${darId}/assign-reviewer`, {
@@ -252,7 +269,8 @@ export function useDarForm(
       });
       const assignJson = await assignRes.json();
       if (!assignRes.ok || assignJson.error) {
-        onError(getErrorMessage(assignJson.error, "เกิดข้อผิดพลาดในการกำหนดผู้ตรวจสอบ")); return false;
+        onError(getErrorMessage(assignJson.error, "เกิดข้อผิดพลาดในการกำหนดผู้ตรวจสอบ"));
+        return false;
       }
 
       onSuccess("ส่งคำขอสำเร็จ");
@@ -282,5 +300,3 @@ export function useDarForm(
     submitWithReviewer,
   };
 }
-
-

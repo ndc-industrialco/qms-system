@@ -1,6 +1,5 @@
 "use client";
 
-import type { DarItemInput } from "@/types/dar";
 import { useT } from "@/lib/i18n";
 import { ActionIconButton } from "@/components/common/ActionButtons";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 
-type ItemRow = Omit<DarItemInput, "itemNo">;
+type ItemRow = {
+  docNumber: string;
+  docName: string;
+  revision: string;
+  effectiveDate?: string;
+};
 
 type Props = {
   items: ItemRow[];
@@ -21,7 +25,7 @@ export default function DarItemsSection({ items, onChange, errors }: Props) {
   const t = useT();
 
   function addRow() {
-    onChange([...items, { docNumber: "", docName: "", revision: "" }]);
+    onChange([...items, { docNumber: "", docName: "", revision: "", effectiveDate: "" }]);
   }
 
   function removeRow(idx: number) {
@@ -55,6 +59,7 @@ export default function DarItemsSection({ items, onChange, errors }: Props) {
                 <TableHead className="font-medium">{t("colDocNum")} <span className="text-rose-500">*</span></TableHead>
                 <TableHead className="font-medium">{t("colDocName")} <span className="text-rose-500">*</span></TableHead>
                 <TableHead className="w-28 font-medium">{t("colRevision")} <span className="text-rose-500">*</span></TableHead>
+                <TableHead className="w-40 font-medium">{t("colEffectiveDate")}</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
@@ -90,6 +95,14 @@ export default function DarItemsSection({ items, onChange, errors }: Props) {
                       onChange={(e) => updateRow(idx, "revision", e.target.value)}
                       placeholder={t("phRevision")}
                       maxLength={50}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="date"
+                      className={`h-8 ${errors?.[`items.${idx}.effectiveDate`] ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
+                      value={item.effectiveDate ?? ""}
+                      onChange={(e) => updateRow(idx, "effectiveDate", e.target.value)}
                     />
                   </TableCell>
                   <TableCell>

@@ -37,6 +37,8 @@ export type CarAttachmentSumAggregateOutputType = {
 export type CarAttachmentMinAggregateOutputType = {
   id: string | null
   carResponseId: string | null
+  carVerificationId: string | null
+  carMrSignatureId: string | null
   fileName: string | null
   fileSize: number | null
   mimeType: string | null
@@ -53,6 +55,8 @@ export type CarAttachmentMinAggregateOutputType = {
 export type CarAttachmentMaxAggregateOutputType = {
   id: string | null
   carResponseId: string | null
+  carVerificationId: string | null
+  carMrSignatureId: string | null
   fileName: string | null
   fileSize: number | null
   mimeType: string | null
@@ -69,6 +73,8 @@ export type CarAttachmentMaxAggregateOutputType = {
 export type CarAttachmentCountAggregateOutputType = {
   id: number
   carResponseId: number
+  carVerificationId: number
+  carMrSignatureId: number
   fileName: number
   fileSize: number
   mimeType: number
@@ -95,6 +101,8 @@ export type CarAttachmentSumAggregateInputType = {
 export type CarAttachmentMinAggregateInputType = {
   id?: true
   carResponseId?: true
+  carVerificationId?: true
+  carMrSignatureId?: true
   fileName?: true
   fileSize?: true
   mimeType?: true
@@ -111,6 +119,8 @@ export type CarAttachmentMinAggregateInputType = {
 export type CarAttachmentMaxAggregateInputType = {
   id?: true
   carResponseId?: true
+  carVerificationId?: true
+  carMrSignatureId?: true
   fileName?: true
   fileSize?: true
   mimeType?: true
@@ -127,6 +137,8 @@ export type CarAttachmentMaxAggregateInputType = {
 export type CarAttachmentCountAggregateInputType = {
   id?: true
   carResponseId?: true
+  carVerificationId?: true
+  carMrSignatureId?: true
   fileName?: true
   fileSize?: true
   mimeType?: true
@@ -229,7 +241,9 @@ export type CarAttachmentGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 
 export type CarAttachmentGroupByOutputType = {
   id: string
-  carResponseId: string
+  carResponseId: string | null
+  carVerificationId: string | null
+  carMrSignatureId: string | null
   fileName: string
   fileSize: number
   mimeType: string
@@ -268,7 +282,9 @@ export type CarAttachmentWhereInput = {
   OR?: Prisma.CarAttachmentWhereInput[]
   NOT?: Prisma.CarAttachmentWhereInput | Prisma.CarAttachmentWhereInput[]
   id?: Prisma.StringFilter<"CarAttachment"> | string
-  carResponseId?: Prisma.StringFilter<"CarAttachment"> | string
+  carResponseId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  carVerificationId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  carMrSignatureId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   fileName?: Prisma.StringFilter<"CarAttachment"> | string
   fileSize?: Prisma.IntFilter<"CarAttachment"> | number
   mimeType?: Prisma.StringFilter<"CarAttachment"> | string
@@ -280,12 +296,16 @@ export type CarAttachmentWhereInput = {
   uploadedByAuthUserId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   uploadedByName?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CarAttachment"> | Date | string
-  carResponse?: Prisma.XOR<Prisma.CarResponseScalarRelationFilter, Prisma.CarResponseWhereInput>
+  carResponse?: Prisma.XOR<Prisma.CarResponseNullableScalarRelationFilter, Prisma.CarResponseWhereInput> | null
+  carVerification?: Prisma.XOR<Prisma.CarVerificationNullableScalarRelationFilter, Prisma.CarVerificationWhereInput> | null
+  carMrSignature?: Prisma.XOR<Prisma.CarMrSignatureNullableScalarRelationFilter, Prisma.CarMrSignatureWhereInput> | null
 }
 
 export type CarAttachmentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  carResponseId?: Prisma.SortOrder
+  carResponseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  carVerificationId?: Prisma.SortOrderInput | Prisma.SortOrder
+  carMrSignatureId?: Prisma.SortOrderInput | Prisma.SortOrder
   fileName?: Prisma.SortOrder
   fileSize?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
@@ -298,6 +318,8 @@ export type CarAttachmentOrderByWithRelationInput = {
   uploadedByName?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   carResponse?: Prisma.CarResponseOrderByWithRelationInput
+  carVerification?: Prisma.CarVerificationOrderByWithRelationInput
+  carMrSignature?: Prisma.CarMrSignatureOrderByWithRelationInput
 }
 
 export type CarAttachmentWhereUniqueInput = Prisma.AtLeast<{
@@ -305,7 +327,9 @@ export type CarAttachmentWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.CarAttachmentWhereInput | Prisma.CarAttachmentWhereInput[]
   OR?: Prisma.CarAttachmentWhereInput[]
   NOT?: Prisma.CarAttachmentWhereInput | Prisma.CarAttachmentWhereInput[]
-  carResponseId?: Prisma.StringFilter<"CarAttachment"> | string
+  carResponseId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  carVerificationId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  carMrSignatureId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   fileName?: Prisma.StringFilter<"CarAttachment"> | string
   fileSize?: Prisma.IntFilter<"CarAttachment"> | number
   mimeType?: Prisma.StringFilter<"CarAttachment"> | string
@@ -317,12 +341,16 @@ export type CarAttachmentWhereUniqueInput = Prisma.AtLeast<{
   uploadedByAuthUserId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   uploadedByName?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CarAttachment"> | Date | string
-  carResponse?: Prisma.XOR<Prisma.CarResponseScalarRelationFilter, Prisma.CarResponseWhereInput>
+  carResponse?: Prisma.XOR<Prisma.CarResponseNullableScalarRelationFilter, Prisma.CarResponseWhereInput> | null
+  carVerification?: Prisma.XOR<Prisma.CarVerificationNullableScalarRelationFilter, Prisma.CarVerificationWhereInput> | null
+  carMrSignature?: Prisma.XOR<Prisma.CarMrSignatureNullableScalarRelationFilter, Prisma.CarMrSignatureWhereInput> | null
 }, "id">
 
 export type CarAttachmentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  carResponseId?: Prisma.SortOrder
+  carResponseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  carVerificationId?: Prisma.SortOrderInput | Prisma.SortOrder
+  carMrSignatureId?: Prisma.SortOrderInput | Prisma.SortOrder
   fileName?: Prisma.SortOrder
   fileSize?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
@@ -346,7 +374,9 @@ export type CarAttachmentScalarWhereWithAggregatesInput = {
   OR?: Prisma.CarAttachmentScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CarAttachmentScalarWhereWithAggregatesInput | Prisma.CarAttachmentScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"CarAttachment"> | string
-  carResponseId?: Prisma.StringWithAggregatesFilter<"CarAttachment"> | string
+  carResponseId?: Prisma.StringNullableWithAggregatesFilter<"CarAttachment"> | string | null
+  carVerificationId?: Prisma.StringNullableWithAggregatesFilter<"CarAttachment"> | string | null
+  carMrSignatureId?: Prisma.StringNullableWithAggregatesFilter<"CarAttachment"> | string | null
   fileName?: Prisma.StringWithAggregatesFilter<"CarAttachment"> | string
   fileSize?: Prisma.IntWithAggregatesFilter<"CarAttachment"> | number
   mimeType?: Prisma.StringWithAggregatesFilter<"CarAttachment"> | string
@@ -373,12 +403,16 @@ export type CarAttachmentCreateInput = {
   uploadedByAuthUserId?: string | null
   uploadedByName?: string | null
   createdAt?: Date | string
-  carResponse: Prisma.CarResponseCreateNestedOneWithoutAttachmentsInput
+  carResponse?: Prisma.CarResponseCreateNestedOneWithoutAttachmentsInput
+  carVerification?: Prisma.CarVerificationCreateNestedOneWithoutAttachmentsInput
+  carMrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutAttachmentsInput
 }
 
 export type CarAttachmentUncheckedCreateInput = {
   id?: string
-  carResponseId: string
+  carResponseId?: string | null
+  carVerificationId?: string | null
+  carMrSignatureId?: string | null
   fileName: string
   fileSize: number
   mimeType: string
@@ -405,12 +439,16 @@ export type CarAttachmentUpdateInput = {
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  carResponse?: Prisma.CarResponseUpdateOneRequiredWithoutAttachmentsNestedInput
+  carResponse?: Prisma.CarResponseUpdateOneWithoutAttachmentsNestedInput
+  carVerification?: Prisma.CarVerificationUpdateOneWithoutAttachmentsNestedInput
+  carMrSignature?: Prisma.CarMrSignatureUpdateOneWithoutAttachmentsNestedInput
 }
 
 export type CarAttachmentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  carResponseId?: Prisma.StringFieldUpdateOperationsInput | string
+  carResponseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carVerificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carMrSignatureId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   fileSize?: Prisma.IntFieldUpdateOperationsInput | number
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -426,7 +464,9 @@ export type CarAttachmentUncheckedUpdateInput = {
 
 export type CarAttachmentCreateManyInput = {
   id?: string
-  carResponseId: string
+  carResponseId?: string | null
+  carVerificationId?: string | null
+  carMrSignatureId?: string | null
   fileName: string
   fileSize: number
   mimeType: string
@@ -457,7 +497,9 @@ export type CarAttachmentUpdateManyMutationInput = {
 
 export type CarAttachmentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  carResponseId?: Prisma.StringFieldUpdateOperationsInput | string
+  carResponseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carVerificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carMrSignatureId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   fileSize?: Prisma.IntFieldUpdateOperationsInput | number
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -484,6 +526,8 @@ export type CarAttachmentOrderByRelationAggregateInput = {
 export type CarAttachmentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carResponseId?: Prisma.SortOrder
+  carVerificationId?: Prisma.SortOrder
+  carMrSignatureId?: Prisma.SortOrder
   fileName?: Prisma.SortOrder
   fileSize?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
@@ -504,6 +548,8 @@ export type CarAttachmentAvgOrderByAggregateInput = {
 export type CarAttachmentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carResponseId?: Prisma.SortOrder
+  carVerificationId?: Prisma.SortOrder
+  carMrSignatureId?: Prisma.SortOrder
   fileName?: Prisma.SortOrder
   fileSize?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
@@ -520,6 +566,8 @@ export type CarAttachmentMaxOrderByAggregateInput = {
 export type CarAttachmentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carResponseId?: Prisma.SortOrder
+  carVerificationId?: Prisma.SortOrder
+  carMrSignatureId?: Prisma.SortOrder
   fileName?: Prisma.SortOrder
   fileSize?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
@@ -579,6 +627,90 @@ export type CarAttachmentUncheckedUpdateManyWithoutCarResponseNestedInput = {
   deleteMany?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
 }
 
+export type CarAttachmentCreateNestedManyWithoutCarVerificationInput = {
+  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarVerificationInput, Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput> | Prisma.CarAttachmentCreateWithoutCarVerificationInput[] | Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput[]
+  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutCarVerificationInput | Prisma.CarAttachmentCreateOrConnectWithoutCarVerificationInput[]
+  createMany?: Prisma.CarAttachmentCreateManyCarVerificationInputEnvelope
+  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+}
+
+export type CarAttachmentUncheckedCreateNestedManyWithoutCarVerificationInput = {
+  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarVerificationInput, Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput> | Prisma.CarAttachmentCreateWithoutCarVerificationInput[] | Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput[]
+  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutCarVerificationInput | Prisma.CarAttachmentCreateOrConnectWithoutCarVerificationInput[]
+  createMany?: Prisma.CarAttachmentCreateManyCarVerificationInputEnvelope
+  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+}
+
+export type CarAttachmentUpdateManyWithoutCarVerificationNestedInput = {
+  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarVerificationInput, Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput> | Prisma.CarAttachmentCreateWithoutCarVerificationInput[] | Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput[]
+  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutCarVerificationInput | Prisma.CarAttachmentCreateOrConnectWithoutCarVerificationInput[]
+  upsert?: Prisma.CarAttachmentUpsertWithWhereUniqueWithoutCarVerificationInput | Prisma.CarAttachmentUpsertWithWhereUniqueWithoutCarVerificationInput[]
+  createMany?: Prisma.CarAttachmentCreateManyCarVerificationInputEnvelope
+  set?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  disconnect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  delete?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  update?: Prisma.CarAttachmentUpdateWithWhereUniqueWithoutCarVerificationInput | Prisma.CarAttachmentUpdateWithWhereUniqueWithoutCarVerificationInput[]
+  updateMany?: Prisma.CarAttachmentUpdateManyWithWhereWithoutCarVerificationInput | Prisma.CarAttachmentUpdateManyWithWhereWithoutCarVerificationInput[]
+  deleteMany?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
+}
+
+export type CarAttachmentUncheckedUpdateManyWithoutCarVerificationNestedInput = {
+  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarVerificationInput, Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput> | Prisma.CarAttachmentCreateWithoutCarVerificationInput[] | Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput[]
+  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutCarVerificationInput | Prisma.CarAttachmentCreateOrConnectWithoutCarVerificationInput[]
+  upsert?: Prisma.CarAttachmentUpsertWithWhereUniqueWithoutCarVerificationInput | Prisma.CarAttachmentUpsertWithWhereUniqueWithoutCarVerificationInput[]
+  createMany?: Prisma.CarAttachmentCreateManyCarVerificationInputEnvelope
+  set?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  disconnect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  delete?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  update?: Prisma.CarAttachmentUpdateWithWhereUniqueWithoutCarVerificationInput | Prisma.CarAttachmentUpdateWithWhereUniqueWithoutCarVerificationInput[]
+  updateMany?: Prisma.CarAttachmentUpdateManyWithWhereWithoutCarVerificationInput | Prisma.CarAttachmentUpdateManyWithWhereWithoutCarVerificationInput[]
+  deleteMany?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
+}
+
+export type CarAttachmentCreateNestedManyWithoutCarMrSignatureInput = {
+  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarMrSignatureInput, Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput> | Prisma.CarAttachmentCreateWithoutCarMrSignatureInput[] | Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput[]
+  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutCarMrSignatureInput | Prisma.CarAttachmentCreateOrConnectWithoutCarMrSignatureInput[]
+  createMany?: Prisma.CarAttachmentCreateManyCarMrSignatureInputEnvelope
+  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+}
+
+export type CarAttachmentUncheckedCreateNestedManyWithoutCarMrSignatureInput = {
+  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarMrSignatureInput, Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput> | Prisma.CarAttachmentCreateWithoutCarMrSignatureInput[] | Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput[]
+  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutCarMrSignatureInput | Prisma.CarAttachmentCreateOrConnectWithoutCarMrSignatureInput[]
+  createMany?: Prisma.CarAttachmentCreateManyCarMrSignatureInputEnvelope
+  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+}
+
+export type CarAttachmentUpdateManyWithoutCarMrSignatureNestedInput = {
+  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarMrSignatureInput, Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput> | Prisma.CarAttachmentCreateWithoutCarMrSignatureInput[] | Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput[]
+  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutCarMrSignatureInput | Prisma.CarAttachmentCreateOrConnectWithoutCarMrSignatureInput[]
+  upsert?: Prisma.CarAttachmentUpsertWithWhereUniqueWithoutCarMrSignatureInput | Prisma.CarAttachmentUpsertWithWhereUniqueWithoutCarMrSignatureInput[]
+  createMany?: Prisma.CarAttachmentCreateManyCarMrSignatureInputEnvelope
+  set?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  disconnect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  delete?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  update?: Prisma.CarAttachmentUpdateWithWhereUniqueWithoutCarMrSignatureInput | Prisma.CarAttachmentUpdateWithWhereUniqueWithoutCarMrSignatureInput[]
+  updateMany?: Prisma.CarAttachmentUpdateManyWithWhereWithoutCarMrSignatureInput | Prisma.CarAttachmentUpdateManyWithWhereWithoutCarMrSignatureInput[]
+  deleteMany?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
+}
+
+export type CarAttachmentUncheckedUpdateManyWithoutCarMrSignatureNestedInput = {
+  create?: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarMrSignatureInput, Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput> | Prisma.CarAttachmentCreateWithoutCarMrSignatureInput[] | Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput[]
+  connectOrCreate?: Prisma.CarAttachmentCreateOrConnectWithoutCarMrSignatureInput | Prisma.CarAttachmentCreateOrConnectWithoutCarMrSignatureInput[]
+  upsert?: Prisma.CarAttachmentUpsertWithWhereUniqueWithoutCarMrSignatureInput | Prisma.CarAttachmentUpsertWithWhereUniqueWithoutCarMrSignatureInput[]
+  createMany?: Prisma.CarAttachmentCreateManyCarMrSignatureInputEnvelope
+  set?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  disconnect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  delete?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  connect?: Prisma.CarAttachmentWhereUniqueInput | Prisma.CarAttachmentWhereUniqueInput[]
+  update?: Prisma.CarAttachmentUpdateWithWhereUniqueWithoutCarMrSignatureInput | Prisma.CarAttachmentUpdateWithWhereUniqueWithoutCarMrSignatureInput[]
+  updateMany?: Prisma.CarAttachmentUpdateManyWithWhereWithoutCarMrSignatureInput | Prisma.CarAttachmentUpdateManyWithWhereWithoutCarMrSignatureInput[]
+  deleteMany?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
+}
+
 export type CarAttachmentCreateWithoutCarResponseInput = {
   id?: string
   fileName: string
@@ -592,10 +724,14 @@ export type CarAttachmentCreateWithoutCarResponseInput = {
   uploadedByAuthUserId?: string | null
   uploadedByName?: string | null
   createdAt?: Date | string
+  carVerification?: Prisma.CarVerificationCreateNestedOneWithoutAttachmentsInput
+  carMrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutAttachmentsInput
 }
 
 export type CarAttachmentUncheckedCreateWithoutCarResponseInput = {
   id?: string
+  carVerificationId?: string | null
+  carMrSignatureId?: string | null
   fileName: string
   fileSize: number
   mimeType: string
@@ -640,7 +776,9 @@ export type CarAttachmentScalarWhereInput = {
   OR?: Prisma.CarAttachmentScalarWhereInput[]
   NOT?: Prisma.CarAttachmentScalarWhereInput | Prisma.CarAttachmentScalarWhereInput[]
   id?: Prisma.StringFilter<"CarAttachment"> | string
-  carResponseId?: Prisma.StringFilter<"CarAttachment"> | string
+  carResponseId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  carVerificationId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
+  carMrSignatureId?: Prisma.StringNullableFilter<"CarAttachment"> | string | null
   fileName?: Prisma.StringFilter<"CarAttachment"> | string
   fileSize?: Prisma.IntFilter<"CarAttachment"> | number
   mimeType?: Prisma.StringFilter<"CarAttachment"> | string
@@ -654,8 +792,130 @@ export type CarAttachmentScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"CarAttachment"> | Date | string
 }
 
+export type CarAttachmentCreateWithoutCarVerificationInput = {
+  id?: string
+  fileName: string
+  fileSize: number
+  mimeType: string
+  spItemId: string
+  spWebUrl: string
+  spDownloadUrl: string
+  folderPath: string
+  uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
+  createdAt?: Date | string
+  carResponse?: Prisma.CarResponseCreateNestedOneWithoutAttachmentsInput
+  carMrSignature?: Prisma.CarMrSignatureCreateNestedOneWithoutAttachmentsInput
+}
+
+export type CarAttachmentUncheckedCreateWithoutCarVerificationInput = {
+  id?: string
+  carResponseId?: string | null
+  carMrSignatureId?: string | null
+  fileName: string
+  fileSize: number
+  mimeType: string
+  spItemId: string
+  spWebUrl: string
+  spDownloadUrl: string
+  folderPath: string
+  uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
+  createdAt?: Date | string
+}
+
+export type CarAttachmentCreateOrConnectWithoutCarVerificationInput = {
+  where: Prisma.CarAttachmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarVerificationInput, Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput>
+}
+
+export type CarAttachmentCreateManyCarVerificationInputEnvelope = {
+  data: Prisma.CarAttachmentCreateManyCarVerificationInput | Prisma.CarAttachmentCreateManyCarVerificationInput[]
+  skipDuplicates?: boolean
+}
+
+export type CarAttachmentUpsertWithWhereUniqueWithoutCarVerificationInput = {
+  where: Prisma.CarAttachmentWhereUniqueInput
+  update: Prisma.XOR<Prisma.CarAttachmentUpdateWithoutCarVerificationInput, Prisma.CarAttachmentUncheckedUpdateWithoutCarVerificationInput>
+  create: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarVerificationInput, Prisma.CarAttachmentUncheckedCreateWithoutCarVerificationInput>
+}
+
+export type CarAttachmentUpdateWithWhereUniqueWithoutCarVerificationInput = {
+  where: Prisma.CarAttachmentWhereUniqueInput
+  data: Prisma.XOR<Prisma.CarAttachmentUpdateWithoutCarVerificationInput, Prisma.CarAttachmentUncheckedUpdateWithoutCarVerificationInput>
+}
+
+export type CarAttachmentUpdateManyWithWhereWithoutCarVerificationInput = {
+  where: Prisma.CarAttachmentScalarWhereInput
+  data: Prisma.XOR<Prisma.CarAttachmentUpdateManyMutationInput, Prisma.CarAttachmentUncheckedUpdateManyWithoutCarVerificationInput>
+}
+
+export type CarAttachmentCreateWithoutCarMrSignatureInput = {
+  id?: string
+  fileName: string
+  fileSize: number
+  mimeType: string
+  spItemId: string
+  spWebUrl: string
+  spDownloadUrl: string
+  folderPath: string
+  uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
+  createdAt?: Date | string
+  carResponse?: Prisma.CarResponseCreateNestedOneWithoutAttachmentsInput
+  carVerification?: Prisma.CarVerificationCreateNestedOneWithoutAttachmentsInput
+}
+
+export type CarAttachmentUncheckedCreateWithoutCarMrSignatureInput = {
+  id?: string
+  carResponseId?: string | null
+  carVerificationId?: string | null
+  fileName: string
+  fileSize: number
+  mimeType: string
+  spItemId: string
+  spWebUrl: string
+  spDownloadUrl: string
+  folderPath: string
+  uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
+  createdAt?: Date | string
+}
+
+export type CarAttachmentCreateOrConnectWithoutCarMrSignatureInput = {
+  where: Prisma.CarAttachmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarMrSignatureInput, Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput>
+}
+
+export type CarAttachmentCreateManyCarMrSignatureInputEnvelope = {
+  data: Prisma.CarAttachmentCreateManyCarMrSignatureInput | Prisma.CarAttachmentCreateManyCarMrSignatureInput[]
+  skipDuplicates?: boolean
+}
+
+export type CarAttachmentUpsertWithWhereUniqueWithoutCarMrSignatureInput = {
+  where: Prisma.CarAttachmentWhereUniqueInput
+  update: Prisma.XOR<Prisma.CarAttachmentUpdateWithoutCarMrSignatureInput, Prisma.CarAttachmentUncheckedUpdateWithoutCarMrSignatureInput>
+  create: Prisma.XOR<Prisma.CarAttachmentCreateWithoutCarMrSignatureInput, Prisma.CarAttachmentUncheckedCreateWithoutCarMrSignatureInput>
+}
+
+export type CarAttachmentUpdateWithWhereUniqueWithoutCarMrSignatureInput = {
+  where: Prisma.CarAttachmentWhereUniqueInput
+  data: Prisma.XOR<Prisma.CarAttachmentUpdateWithoutCarMrSignatureInput, Prisma.CarAttachmentUncheckedUpdateWithoutCarMrSignatureInput>
+}
+
+export type CarAttachmentUpdateManyWithWhereWithoutCarMrSignatureInput = {
+  where: Prisma.CarAttachmentScalarWhereInput
+  data: Prisma.XOR<Prisma.CarAttachmentUpdateManyMutationInput, Prisma.CarAttachmentUncheckedUpdateManyWithoutCarMrSignatureInput>
+}
+
 export type CarAttachmentCreateManyCarResponseInput = {
   id?: string
+  carVerificationId?: string | null
+  carMrSignatureId?: string | null
   fileName: string
   fileSize: number
   mimeType: string
@@ -682,10 +942,14 @@ export type CarAttachmentUpdateWithoutCarResponseInput = {
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  carVerification?: Prisma.CarVerificationUpdateOneWithoutAttachmentsNestedInput
+  carMrSignature?: Prisma.CarMrSignatureUpdateOneWithoutAttachmentsNestedInput
 }
 
 export type CarAttachmentUncheckedUpdateWithoutCarResponseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  carVerificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carMrSignatureId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   fileSize?: Prisma.IntFieldUpdateOperationsInput | number
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -701,6 +965,144 @@ export type CarAttachmentUncheckedUpdateWithoutCarResponseInput = {
 
 export type CarAttachmentUncheckedUpdateManyWithoutCarResponseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  carVerificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carMrSignatureId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CarAttachmentCreateManyCarVerificationInput = {
+  id?: string
+  carResponseId?: string | null
+  carMrSignatureId?: string | null
+  fileName: string
+  fileSize: number
+  mimeType: string
+  spItemId: string
+  spWebUrl: string
+  spDownloadUrl: string
+  folderPath: string
+  uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
+  createdAt?: Date | string
+}
+
+export type CarAttachmentUpdateWithoutCarVerificationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  carResponse?: Prisma.CarResponseUpdateOneWithoutAttachmentsNestedInput
+  carMrSignature?: Prisma.CarMrSignatureUpdateOneWithoutAttachmentsNestedInput
+}
+
+export type CarAttachmentUncheckedUpdateWithoutCarVerificationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  carResponseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carMrSignatureId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CarAttachmentUncheckedUpdateManyWithoutCarVerificationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  carResponseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carMrSignatureId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CarAttachmentCreateManyCarMrSignatureInput = {
+  id?: string
+  carResponseId?: string | null
+  carVerificationId?: string | null
+  fileName: string
+  fileSize: number
+  mimeType: string
+  spItemId: string
+  spWebUrl: string
+  spDownloadUrl: string
+  folderPath: string
+  uploadedById: string
+  uploadedByAuthUserId?: string | null
+  uploadedByName?: string | null
+  createdAt?: Date | string
+}
+
+export type CarAttachmentUpdateWithoutCarMrSignatureInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  carResponse?: Prisma.CarResponseUpdateOneWithoutAttachmentsNestedInput
+  carVerification?: Prisma.CarVerificationUpdateOneWithoutAttachmentsNestedInput
+}
+
+export type CarAttachmentUncheckedUpdateWithoutCarMrSignatureInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  carResponseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carVerificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  spItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
+  uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CarAttachmentUncheckedUpdateManyWithoutCarMrSignatureInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  carResponseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carVerificationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   fileSize?: Prisma.IntFieldUpdateOperationsInput | number
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -719,6 +1121,8 @@ export type CarAttachmentUncheckedUpdateManyWithoutCarResponseInput = {
 export type CarAttachmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   carResponseId?: boolean
+  carVerificationId?: boolean
+  carMrSignatureId?: boolean
   fileName?: boolean
   fileSize?: boolean
   mimeType?: boolean
@@ -730,12 +1134,16 @@ export type CarAttachmentSelect<ExtArgs extends runtime.Types.Extensions.Interna
   uploadedByAuthUserId?: boolean
   uploadedByName?: boolean
   createdAt?: boolean
-  carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
+  carResponse?: boolean | Prisma.CarAttachment$carResponseArgs<ExtArgs>
+  carVerification?: boolean | Prisma.CarAttachment$carVerificationArgs<ExtArgs>
+  carMrSignature?: boolean | Prisma.CarAttachment$carMrSignatureArgs<ExtArgs>
 }, ExtArgs["result"]["carAttachment"]>
 
 export type CarAttachmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   carResponseId?: boolean
+  carVerificationId?: boolean
+  carMrSignatureId?: boolean
   fileName?: boolean
   fileSize?: boolean
   mimeType?: boolean
@@ -747,12 +1155,16 @@ export type CarAttachmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   uploadedByAuthUserId?: boolean
   uploadedByName?: boolean
   createdAt?: boolean
-  carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
+  carResponse?: boolean | Prisma.CarAttachment$carResponseArgs<ExtArgs>
+  carVerification?: boolean | Prisma.CarAttachment$carVerificationArgs<ExtArgs>
+  carMrSignature?: boolean | Prisma.CarAttachment$carMrSignatureArgs<ExtArgs>
 }, ExtArgs["result"]["carAttachment"]>
 
 export type CarAttachmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   carResponseId?: boolean
+  carVerificationId?: boolean
+  carMrSignatureId?: boolean
   fileName?: boolean
   fileSize?: boolean
   mimeType?: boolean
@@ -764,12 +1176,16 @@ export type CarAttachmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   uploadedByAuthUserId?: boolean
   uploadedByName?: boolean
   createdAt?: boolean
-  carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
+  carResponse?: boolean | Prisma.CarAttachment$carResponseArgs<ExtArgs>
+  carVerification?: boolean | Prisma.CarAttachment$carVerificationArgs<ExtArgs>
+  carMrSignature?: boolean | Prisma.CarAttachment$carMrSignatureArgs<ExtArgs>
 }, ExtArgs["result"]["carAttachment"]>
 
 export type CarAttachmentSelectScalar = {
   id?: boolean
   carResponseId?: boolean
+  carVerificationId?: boolean
+  carMrSignatureId?: boolean
   fileName?: boolean
   fileSize?: boolean
   mimeType?: boolean
@@ -783,25 +1199,35 @@ export type CarAttachmentSelectScalar = {
   createdAt?: boolean
 }
 
-export type CarAttachmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carResponseId" | "fileName" | "fileSize" | "mimeType" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "folderPath" | "uploadedById" | "uploadedByAuthUserId" | "uploadedByName" | "createdAt", ExtArgs["result"]["carAttachment"]>
+export type CarAttachmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carResponseId" | "carVerificationId" | "carMrSignatureId" | "fileName" | "fileSize" | "mimeType" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "folderPath" | "uploadedById" | "uploadedByAuthUserId" | "uploadedByName" | "createdAt", ExtArgs["result"]["carAttachment"]>
 export type CarAttachmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
+  carResponse?: boolean | Prisma.CarAttachment$carResponseArgs<ExtArgs>
+  carVerification?: boolean | Prisma.CarAttachment$carVerificationArgs<ExtArgs>
+  carMrSignature?: boolean | Prisma.CarAttachment$carMrSignatureArgs<ExtArgs>
 }
 export type CarAttachmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
+  carResponse?: boolean | Prisma.CarAttachment$carResponseArgs<ExtArgs>
+  carVerification?: boolean | Prisma.CarAttachment$carVerificationArgs<ExtArgs>
+  carMrSignature?: boolean | Prisma.CarAttachment$carMrSignatureArgs<ExtArgs>
 }
 export type CarAttachmentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  carResponse?: boolean | Prisma.CarResponseDefaultArgs<ExtArgs>
+  carResponse?: boolean | Prisma.CarAttachment$carResponseArgs<ExtArgs>
+  carVerification?: boolean | Prisma.CarAttachment$carVerificationArgs<ExtArgs>
+  carMrSignature?: boolean | Prisma.CarAttachment$carMrSignatureArgs<ExtArgs>
 }
 
 export type $CarAttachmentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CarAttachment"
   objects: {
-    carResponse: Prisma.$CarResponsePayload<ExtArgs>
+    carResponse: Prisma.$CarResponsePayload<ExtArgs> | null
+    carVerification: Prisma.$CarVerificationPayload<ExtArgs> | null
+    carMrSignature: Prisma.$CarMrSignaturePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    carResponseId: string
+    carResponseId: string | null
+    carVerificationId: string | null
+    carMrSignatureId: string | null
     fileName: string
     fileSize: number
     mimeType: string
@@ -1207,7 +1633,9 @@ readonly fields: CarAttachmentFieldRefs;
  */
 export interface Prisma__CarAttachmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  carResponse<T extends Prisma.CarResponseDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarResponseDefaultArgs<ExtArgs>>): Prisma.Prisma__CarResponseClient<runtime.Types.Result.GetResult<Prisma.$CarResponsePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  carResponse<T extends Prisma.CarAttachment$carResponseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarAttachment$carResponseArgs<ExtArgs>>): Prisma.Prisma__CarResponseClient<runtime.Types.Result.GetResult<Prisma.$CarResponsePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  carVerification<T extends Prisma.CarAttachment$carVerificationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarAttachment$carVerificationArgs<ExtArgs>>): Prisma.Prisma__CarVerificationClient<runtime.Types.Result.GetResult<Prisma.$CarVerificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  carMrSignature<T extends Prisma.CarAttachment$carMrSignatureArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarAttachment$carMrSignatureArgs<ExtArgs>>): Prisma.Prisma__CarMrSignatureClient<runtime.Types.Result.GetResult<Prisma.$CarMrSignaturePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1239,6 +1667,8 @@ export interface Prisma__CarAttachmentClient<T, Null = never, ExtArgs extends ru
 export interface CarAttachmentFieldRefs {
   readonly id: Prisma.FieldRef<"CarAttachment", 'String'>
   readonly carResponseId: Prisma.FieldRef<"CarAttachment", 'String'>
+  readonly carVerificationId: Prisma.FieldRef<"CarAttachment", 'String'>
+  readonly carMrSignatureId: Prisma.FieldRef<"CarAttachment", 'String'>
   readonly fileName: Prisma.FieldRef<"CarAttachment", 'String'>
   readonly fileSize: Prisma.FieldRef<"CarAttachment", 'Int'>
   readonly mimeType: Prisma.FieldRef<"CarAttachment", 'String'>
@@ -1648,6 +2078,63 @@ export type CarAttachmentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many CarAttachments to delete.
    */
   limit?: number
+}
+
+/**
+ * CarAttachment.carResponse
+ */
+export type CarAttachment$carResponseArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarResponse
+   */
+  select?: Prisma.CarResponseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarResponse
+   */
+  omit?: Prisma.CarResponseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarResponseInclude<ExtArgs> | null
+  where?: Prisma.CarResponseWhereInput
+}
+
+/**
+ * CarAttachment.carVerification
+ */
+export type CarAttachment$carVerificationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarVerification
+   */
+  select?: Prisma.CarVerificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarVerification
+   */
+  omit?: Prisma.CarVerificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarVerificationInclude<ExtArgs> | null
+  where?: Prisma.CarVerificationWhereInput
+}
+
+/**
+ * CarAttachment.carMrSignature
+ */
+export type CarAttachment$carMrSignatureArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarMrSignature
+   */
+  select?: Prisma.CarMrSignatureSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarMrSignature
+   */
+  omit?: Prisma.CarMrSignatureOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarMrSignatureInclude<ExtArgs> | null
+  where?: Prisma.CarMrSignatureWhereInput
 }
 
 /**

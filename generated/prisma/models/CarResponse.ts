@@ -32,6 +32,7 @@ export type CarResponseMinAggregateOutputType = {
   responderName: string | null
   responderEmployeeId: string | null
   responderPosition: string | null
+  responderDepartment: string | null
   respondedAt: Date | null
   responseType: $Enums.CarResponseType | null
   whyAnalysis: string | null
@@ -57,6 +58,7 @@ export type CarResponseMaxAggregateOutputType = {
   responderName: string | null
   responderEmployeeId: string | null
   responderPosition: string | null
+  responderDepartment: string | null
   respondedAt: Date | null
   responseType: $Enums.CarResponseType | null
   whyAnalysis: string | null
@@ -82,6 +84,7 @@ export type CarResponseCountAggregateOutputType = {
   responderName: number
   responderEmployeeId: number
   responderPosition: number
+  responderDepartment: number
   respondedAt: number
   responseType: number
   fiveWhys: number
@@ -110,6 +113,7 @@ export type CarResponseMinAggregateInputType = {
   responderName?: true
   responderEmployeeId?: true
   responderPosition?: true
+  responderDepartment?: true
   respondedAt?: true
   responseType?: true
   whyAnalysis?: true
@@ -135,6 +139,7 @@ export type CarResponseMaxAggregateInputType = {
   responderName?: true
   responderEmployeeId?: true
   responderPosition?: true
+  responderDepartment?: true
   respondedAt?: true
   responseType?: true
   whyAnalysis?: true
@@ -160,6 +165,7 @@ export type CarResponseCountAggregateInputType = {
   responderName?: true
   responderEmployeeId?: true
   responderPosition?: true
+  responderDepartment?: true
   respondedAt?: true
   responseType?: true
   fiveWhys?: true
@@ -259,6 +265,7 @@ export type CarResponseGroupByOutputType = {
   responderName: string | null
   responderEmployeeId: string | null
   responderPosition: string
+  responderDepartment: string | null
   respondedAt: Date
   responseType: $Enums.CarResponseType
   fiveWhys: runtime.JsonValue | null
@@ -306,6 +313,7 @@ export type CarResponseWhereInput = {
   responderName?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   responderEmployeeId?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringFilter<"CarResponse"> | string
+  responderDepartment?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   respondedAt?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
   responseType?: Prisma.EnumCarResponseTypeFilter<"CarResponse"> | $Enums.CarResponseType
   fiveWhys?: Prisma.JsonNullableFilter<"CarResponse">
@@ -334,6 +342,7 @@ export type CarResponseOrderByWithRelationInput = {
   responderName?: Prisma.SortOrderInput | Prisma.SortOrder
   responderEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
+  responderDepartment?: Prisma.SortOrderInput | Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   responseType?: Prisma.SortOrder
   fiveWhys?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -365,6 +374,7 @@ export type CarResponseWhereUniqueInput = Prisma.AtLeast<{
   responderName?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   responderEmployeeId?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringFilter<"CarResponse"> | string
+  responderDepartment?: Prisma.StringNullableFilter<"CarResponse"> | string | null
   respondedAt?: Prisma.DateTimeFilter<"CarResponse"> | Date | string
   responseType?: Prisma.EnumCarResponseTypeFilter<"CarResponse"> | $Enums.CarResponseType
   fiveWhys?: Prisma.JsonNullableFilter<"CarResponse">
@@ -393,6 +403,7 @@ export type CarResponseOrderByWithAggregationInput = {
   responderName?: Prisma.SortOrderInput | Prisma.SortOrder
   responderEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
+  responderDepartment?: Prisma.SortOrderInput | Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   responseType?: Prisma.SortOrder
   fiveWhys?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -425,6 +436,7 @@ export type CarResponseScalarWhereWithAggregatesInput = {
   responderName?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
   responderEmployeeId?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
   responderPosition?: Prisma.StringWithAggregatesFilter<"CarResponse"> | string
+  responderDepartment?: Prisma.StringNullableWithAggregatesFilter<"CarResponse"> | string | null
   respondedAt?: Prisma.DateTimeWithAggregatesFilter<"CarResponse"> | Date | string
   responseType?: Prisma.EnumCarResponseTypeWithAggregatesFilter<"CarResponse"> | $Enums.CarResponseType
   fiveWhys?: Prisma.JsonNullableWithAggregatesFilter<"CarResponse">
@@ -450,6 +462,7 @@ export type CarResponseCreateInput = {
   responderName?: string | null
   responderEmployeeId?: string | null
   responderPosition: string
+  responderDepartment?: string | null
   respondedAt?: Date | string
   responseType?: $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -478,6 +491,7 @@ export type CarResponseUncheckedCreateInput = {
   responderName?: string | null
   responderEmployeeId?: string | null
   responderPosition: string
+  responderDepartment?: string | null
   respondedAt?: Date | string
   responseType?: $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -504,6 +518,7 @@ export type CarResponseUpdateInput = {
   responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  responderDepartment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -532,6 +547,7 @@ export type CarResponseUncheckedUpdateInput = {
   responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  responderDepartment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -559,6 +575,7 @@ export type CarResponseCreateManyInput = {
   responderName?: string | null
   responderEmployeeId?: string | null
   responderPosition: string
+  responderDepartment?: string | null
   respondedAt?: Date | string
   responseType?: $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -584,6 +601,7 @@ export type CarResponseUpdateManyMutationInput = {
   responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  responderDepartment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -610,6 +628,7 @@ export type CarResponseUncheckedUpdateManyInput = {
   responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  responderDepartment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -641,6 +660,7 @@ export type CarResponseCountOrderByAggregateInput = {
   responderName?: Prisma.SortOrder
   responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
+  responderDepartment?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   responseType?: Prisma.SortOrder
   fiveWhys?: Prisma.SortOrder
@@ -667,6 +687,7 @@ export type CarResponseMaxOrderByAggregateInput = {
   responderName?: Prisma.SortOrder
   responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
+  responderDepartment?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   responseType?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
@@ -692,6 +713,7 @@ export type CarResponseMinOrderByAggregateInput = {
   responderName?: Prisma.SortOrder
   responderEmployeeId?: Prisma.SortOrder
   responderPosition?: Prisma.SortOrder
+  responderDepartment?: Prisma.SortOrder
   respondedAt?: Prisma.SortOrder
   responseType?: Prisma.SortOrder
   whyAnalysis?: Prisma.SortOrder
@@ -707,11 +729,6 @@ export type CarResponseMinOrderByAggregateInput = {
   immediateAction?: Prisma.SortOrder
   preventiveAction?: Prisma.SortOrder
   plannedCompletionDate?: Prisma.SortOrder
-}
-
-export type CarResponseScalarRelationFilter = {
-  is?: Prisma.CarResponseWhereInput
-  isNot?: Prisma.CarResponseWhereInput
 }
 
 export type CarResponseCreateNestedOneWithoutCarMasterInput = {
@@ -756,10 +773,12 @@ export type CarResponseCreateNestedOneWithoutAttachmentsInput = {
   connect?: Prisma.CarResponseWhereUniqueInput
 }
 
-export type CarResponseUpdateOneRequiredWithoutAttachmentsNestedInput = {
+export type CarResponseUpdateOneWithoutAttachmentsNestedInput = {
   create?: Prisma.XOR<Prisma.CarResponseCreateWithoutAttachmentsInput, Prisma.CarResponseUncheckedCreateWithoutAttachmentsInput>
   connectOrCreate?: Prisma.CarResponseCreateOrConnectWithoutAttachmentsInput
   upsert?: Prisma.CarResponseUpsertWithoutAttachmentsInput
+  disconnect?: Prisma.CarResponseWhereInput | boolean
+  delete?: Prisma.CarResponseWhereInput | boolean
   connect?: Prisma.CarResponseWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.CarResponseUpdateToOneWithWhereWithoutAttachmentsInput, Prisma.CarResponseUpdateWithoutAttachmentsInput>, Prisma.CarResponseUncheckedUpdateWithoutAttachmentsInput>
 }
@@ -771,6 +790,7 @@ export type CarResponseCreateWithoutCarMasterInput = {
   responderName?: string | null
   responderEmployeeId?: string | null
   responderPosition: string
+  responderDepartment?: string | null
   respondedAt?: Date | string
   responseType?: $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -797,6 +817,7 @@ export type CarResponseUncheckedCreateWithoutCarMasterInput = {
   responderName?: string | null
   responderEmployeeId?: string | null
   responderPosition: string
+  responderDepartment?: string | null
   respondedAt?: Date | string
   responseType?: $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -839,6 +860,7 @@ export type CarResponseUpdateWithoutCarMasterInput = {
   responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  responderDepartment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -865,6 +887,7 @@ export type CarResponseUncheckedUpdateWithoutCarMasterInput = {
   responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  responderDepartment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -891,6 +914,7 @@ export type CarResponseCreateWithoutAttachmentsInput = {
   responderName?: string | null
   responderEmployeeId?: string | null
   responderPosition: string
+  responderDepartment?: string | null
   respondedAt?: Date | string
   responseType?: $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -918,6 +942,7 @@ export type CarResponseUncheckedCreateWithoutAttachmentsInput = {
   responderName?: string | null
   responderEmployeeId?: string | null
   responderPosition: string
+  responderDepartment?: string | null
   respondedAt?: Date | string
   responseType?: $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -959,6 +984,7 @@ export type CarResponseUpdateWithoutAttachmentsInput = {
   responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  responderDepartment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -986,6 +1012,7 @@ export type CarResponseUncheckedUpdateWithoutAttachmentsInput = {
   responderName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responderPosition?: Prisma.StringFieldUpdateOperationsInput | string
+  responderDepartment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   respondedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responseType?: Prisma.EnumCarResponseTypeFieldUpdateOperationsInput | $Enums.CarResponseType
   fiveWhys?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1043,6 +1070,7 @@ export type CarResponseSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   responderName?: boolean
   responderEmployeeId?: boolean
   responderPosition?: boolean
+  responderDepartment?: boolean
   respondedAt?: boolean
   responseType?: boolean
   fiveWhys?: boolean
@@ -1072,6 +1100,7 @@ export type CarResponseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   responderName?: boolean
   responderEmployeeId?: boolean
   responderPosition?: boolean
+  responderDepartment?: boolean
   respondedAt?: boolean
   responseType?: boolean
   fiveWhys?: boolean
@@ -1099,6 +1128,7 @@ export type CarResponseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   responderName?: boolean
   responderEmployeeId?: boolean
   responderPosition?: boolean
+  responderDepartment?: boolean
   respondedAt?: boolean
   responseType?: boolean
   fiveWhys?: boolean
@@ -1126,6 +1156,7 @@ export type CarResponseSelectScalar = {
   responderName?: boolean
   responderEmployeeId?: boolean
   responderPosition?: boolean
+  responderDepartment?: boolean
   respondedAt?: boolean
   responseType?: boolean
   fiveWhys?: boolean
@@ -1144,7 +1175,7 @@ export type CarResponseSelectScalar = {
   plannedCompletionDate?: boolean
 }
 
-export type CarResponseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "responderId" | "responderAuthUserId" | "responderName" | "responderEmployeeId" | "responderPosition" | "respondedAt" | "responseType" | "fiveWhys" | "whyAnalysis" | "additionalToolDetail" | "responderSignaturePath" | "rootCausePerson" | "rootCauseMaterial" | "rootCauseMachine" | "rootCauseMethod" | "rootCauseOther" | "rootCauseOtherDetail" | "rootCauseSummary" | "immediateAction" | "preventiveAction" | "plannedCompletionDate", ExtArgs["result"]["carResponse"]>
+export type CarResponseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carMasterId" | "responderId" | "responderAuthUserId" | "responderName" | "responderEmployeeId" | "responderPosition" | "responderDepartment" | "respondedAt" | "responseType" | "fiveWhys" | "whyAnalysis" | "additionalToolDetail" | "responderSignaturePath" | "rootCausePerson" | "rootCauseMaterial" | "rootCauseMachine" | "rootCauseMethod" | "rootCauseOther" | "rootCauseOtherDetail" | "rootCauseSummary" | "immediateAction" | "preventiveAction" | "plannedCompletionDate", ExtArgs["result"]["carResponse"]>
 export type CarResponseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carMaster?: boolean | Prisma.CarMasterDefaultArgs<ExtArgs>
   attachments?: boolean | Prisma.CarResponse$attachmentsArgs<ExtArgs>
@@ -1171,6 +1202,7 @@ export type $CarResponsePayload<ExtArgs extends runtime.Types.Extensions.Interna
     responderName: string | null
     responderEmployeeId: string | null
     responderPosition: string
+    responderDepartment: string | null
     respondedAt: Date
     responseType: $Enums.CarResponseType
     fiveWhys: runtime.JsonValue | null
@@ -1619,6 +1651,7 @@ export interface CarResponseFieldRefs {
   readonly responderName: Prisma.FieldRef<"CarResponse", 'String'>
   readonly responderEmployeeId: Prisma.FieldRef<"CarResponse", 'String'>
   readonly responderPosition: Prisma.FieldRef<"CarResponse", 'String'>
+  readonly responderDepartment: Prisma.FieldRef<"CarResponse", 'String'>
   readonly respondedAt: Prisma.FieldRef<"CarResponse", 'DateTime'>
   readonly responseType: Prisma.FieldRef<"CarResponse", 'CarResponseType'>
   readonly fiveWhys: Prisma.FieldRef<"CarResponse", 'Json'>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   Filter,
   Printer,
@@ -12,8 +12,16 @@ import {
   Search,
   X,
   AlertTriangle,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   BarChart,
   DonutChart,
@@ -83,6 +91,15 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
   const [selectedForm, setSelectedForm] = useState<string>("ALL");
   const [selectedPurpose, setSelectedPurpose] = useState<string>("ALL");
   const [activeTab, setActiveTab] = useState<"dar" | "car" | "kpi" | "audit">("dar");
+
+  const hasActiveFilters = selectedYear !== "2026" || selectedDept !== "ALL" || selectedForm !== "ALL" || selectedPurpose !== "ALL";
+
+  const clearAllFilters = useCallback(() => {
+    setSelectedYear("2026");
+    setSelectedDept("ALL");
+    setSelectedForm("ALL");
+    setSelectedPurpose("ALL");
+  }, []);
 
   // ---------------------------------------------------------
   // PDF Export Selection State
@@ -445,111 +462,155 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
       )}
 
       {/* 3. Interactive Filters Panel */}
-      <div className={`grid grid-cols-1 ${activeTab === "dar" ? "sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5" : "md:grid-cols-3"} gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm no-print`}>
-        {/* Year Filter */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5 text-[#0F1059]" />
-            เลือกปีประเมิน (Year)
-          </label>
-          <div className="relative">
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0F1059]"
-            >
-              <option value="ALL">ปีทั้งหมด (All Years)</option>
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  ปี ค.ศ. {y}
-                </option>
-              ))}
-            </select>
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm no-print">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-4 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+            <Filter className="h-4 w-4 text-[#0F1059]" />
+            ตัวกรองข้อมูล
           </div>
-        </div>
-
-        {/* Department Filter */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-            <Building2 className="h-3.5 w-3.5 text-[#0F1059]" />
-            กรองตามแผนก (Department)
-          </label>
-          <div className="relative">
-            <select
-              value={selectedDept}
-              onChange={(e) => setSelectedDept(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0F1059]"
-            >
-              <option value="ALL">แผนกทั้งหมด (All Departments)</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Form Filter (Doc Type) - Only for DAR */}
-        {activeTab === "dar" && (
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-              <FileText className="h-3.5 w-3.5 text-[#0F1059]" />
-              กรองตามประเภทเอกสาร (Form)
-            </label>
-            <div className="relative">
-              <select
-                value={selectedForm}
-                onChange={(e) => setSelectedForm(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0F1059]"
-              >
-                <option value="ALL">ประเภทเอกสารทั้งหมด</option>
-                {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
+          <div className="flex items-center gap-3 text-xs">
+            <div className="flex items-center gap-3 text-slate-500">
+              <span>DAR <strong className="text-slate-800">{filteredDars.length}</strong></span>
+              <span className="text-slate-300">|</span>
+              <span>CAR <strong className="text-slate-800">{filteredCars.length}</strong></span>
+              <span className="text-slate-300">|</span>
+              <span>KPI <strong className="text-slate-800">{filteredKpis.length}</strong></span>
+              <span className="text-slate-300">|</span>
+              <span>Audit <strong className="text-slate-800">{filteredAuditFindings.length}</strong></span>
             </div>
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" className="text-rose-600 h-7 text-xs gap-1" onClick={clearAllFilters}>
+                <RotateCcw className="h-3 w-3" />
+                ล้างตัวกรอง
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 px-5 py-4">
+          {/* Year Filter */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 text-[#0F1059]" />
+              ปีประเมิน
+            </label>
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger>
+                <SelectValue placeholder="เลือกปี" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">ปีทั้งหมด</SelectItem>
+                {years.map((y) => (
+                  <SelectItem key={y} value={String(y)}>ปี ค.ศ. {y}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Department Filter */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5 text-[#0F1059]" />
+              แผนก
+            </label>
+            <Select value={selectedDept} onValueChange={setSelectedDept}>
+              <SelectTrigger>
+                <SelectValue placeholder="เลือกแผนก" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">ทุกแผนก</SelectItem>
+                {departments.map((dept) => (
+                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Form Filter (Doc Type) - Only for DAR */}
+          {activeTab === "dar" ? (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5 text-[#0F1059]" />
+                ประเภทเอกสาร
+              </label>
+              <Select value={selectedForm} onValueChange={setSelectedForm}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกประเภท" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">ทุกประเภท</SelectItem>
+                  {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : <div />}
+
+          {/* Purpose Filter (Objective) - Only for DAR */}
+          {activeTab === "dar" ? (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                <Filter className="h-3.5 w-3.5 text-[#0F1059]" />
+                วัตถุประสงค์
+              </label>
+              <Select value={selectedPurpose} onValueChange={setSelectedPurpose}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกวัตถุประสงค์" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">ทุกวัตถุประสงค์</SelectItem>
+                  {Object.entries(OBJECTIVE_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : <div />}
+        </div>
+
+        {/* Active filter chips */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap items-center gap-2 px-5 pb-4">
+            <span className="text-[11px] text-slate-400 font-medium">ตัวกรองที่ใช้งาน:</span>
+            {selectedYear !== "2026" && (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#0F1059]/5 border border-[#0F1059]/10 px-2.5 py-1 text-[11px] font-medium text-[#0F1059]">
+                <Calendar className="h-3 w-3" />
+                ปี {selectedYear}
+                <button onClick={() => setSelectedYear("2026")} className="ml-0.5 hover:text-[#0F1059]/70">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {selectedDept !== "ALL" && (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#0F1059]/5 border border-[#0F1059]/10 px-2.5 py-1 text-[11px] font-medium text-[#0F1059]">
+                <Building2 className="h-3 w-3" />
+                {selectedDept}
+                <button onClick={() => setSelectedDept("ALL")} className="ml-0.5 hover:text-[#0F1059]/70">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {selectedForm !== "ALL" && (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#0F1059]/5 border border-[#0F1059]/10 px-2.5 py-1 text-[11px] font-medium text-[#0F1059]">
+                <FileText className="h-3 w-3" />
+                {DOC_TYPE_LABELS[selectedForm as keyof typeof DOC_TYPE_LABELS] || selectedForm}
+                <button onClick={() => setSelectedForm("ALL")} className="ml-0.5 hover:text-[#0F1059]/70">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {selectedPurpose !== "ALL" && (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#0F1059]/5 border border-[#0F1059]/10 px-2.5 py-1 text-[11px] font-medium text-[#0F1059]">
+                <Filter className="h-3 w-3" />
+                {OBJECTIVE_LABELS[selectedPurpose as keyof typeof OBJECTIVE_LABELS] || selectedPurpose}
+                <button onClick={() => setSelectedPurpose("ALL")} className="ml-0.5 hover:text-[#0F1059]/70">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
           </div>
         )}
-
-        {/* Purpose Filter (Objective) - Only for DAR */}
-        {activeTab === "dar" && (
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-              <Filter className="h-3.5 w-3.5 text-[#0F1059]" />
-              กรองตามวัตถุประสงค์ (Purpose)
-            </label>
-            <div className="relative">
-              <select
-                value={selectedPurpose}
-                onChange={(e) => setSelectedPurpose(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#0F1059]"
-              >
-                <option value="ALL">วัตถุประสงค์ทั้งหมด</option>
-                {Object.entries(OBJECTIVE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-
-        {/* Filter Summary */}
-        <div className="flex flex-col justify-end text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200">
-          <div>
-            <strong>สรุปข้อมูลที่กรอง:</strong>
-          </div>
-          <div className="grid grid-cols-2 gap-x-4 mt-1">
-            <div>• DAR matching: <span className="font-bold text-slate-800">{filteredDars.length}</span></div>
-            <div>• CAR matching: <span className="font-bold text-slate-800">{filteredCars.length}</span></div>
-            <div>• KPI reports: <span className="font-bold text-slate-800">{filteredKpis.length}</span></div>
-            <div>• Findings count: <span className="font-bold text-slate-800">{filteredAuditFindings.length}</span></div>
-          </div>
-        </div>
       </div>
 
       {/* 4. Tab Switcher Navigation (Hides when printing or in export print layout) */}

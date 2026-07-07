@@ -2,6 +2,7 @@
 
 import type { DarItemInput } from "@/types/dar";
 import { useT } from "@/lib/i18n";
+import { useLocale } from "@/lib/locale-context";
 import {
   Table,
   TableBody,
@@ -14,6 +15,8 @@ import { FileStack } from "lucide-react";
 
 export default function DarItemsTable({ items }: { items: DarItemInput[] }) {
   const t = useT();
+  const locale = useLocale();
+  const darLocale = locale === "en" ? "en-GB" : "th-TH";
 
   if (items.length === 0) {
     return (
@@ -22,7 +25,9 @@ export default function DarItemsTable({ items }: { items: DarItemInput[] }) {
           <FileStack className="w-6 h-6 text-slate-300" />
         </div>
         <p className="text-sm font-medium text-slate-500">{t("emptyItemsTable")}</p>
-        <p className="text-xs text-slate-400 mt-1">No documents have been added to this request.</p>
+        <p className="text-xs text-slate-400 mt-1">
+          {locale === "en" ? "No documents have been added to this request." : "ยังไม่มีเอกสารในคำขอนี้"}
+        </p>
       </div>
     );
   }
@@ -31,12 +36,13 @@ export default function DarItemsTable({ items }: { items: DarItemInput[] }) {
     <div className="w-full overflow-x-auto">
       <Table>
         <TableHeader className="!static !z-0 bg-slate-50/80">
-          <TableRow className="border-b-slate-100 hover:bg-transparent">
-            <TableHead className="w-16 text-xs font-semibold text-slate-500 uppercase tracking-wider h-10 px-6">{t("colNo")}</TableHead>
-            <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider h-10">{t("colDocNum")}</TableHead>
-            <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider h-10">{t("colDocName")}</TableHead>
-            <TableHead className="w-32 text-xs font-semibold text-slate-500 uppercase tracking-wider h-10 text-center">{t("colRevision")}</TableHead>
-          </TableRow>
+            <TableRow className="border-b-slate-100 hover:bg-transparent">
+              <TableHead className="w-16 text-xs font-semibold text-slate-500 uppercase tracking-wider h-10 px-6">{t("colNo")}</TableHead>
+              <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider h-10">{t("colDocNum")}</TableHead>
+              <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider h-10">{t("colDocName")}</TableHead>
+              <TableHead className="w-32 text-xs font-semibold text-slate-500 uppercase tracking-wider h-10 text-center">{t("colRevision")}</TableHead>
+              <TableHead className="w-40 text-xs font-semibold text-slate-500 uppercase tracking-wider h-10 text-center">{t("colEffectiveDate")}</TableHead>
+            </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
@@ -52,6 +58,15 @@ export default function DarItemsTable({ items }: { items: DarItemInput[] }) {
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-xs font-mono font-medium text-slate-600">
                   {item.revision || "-"}
                 </span>
+              </TableCell>
+              <TableCell className="text-center py-4 text-sm text-slate-700">
+                {item.effectiveDate
+                  ? new Date(item.effectiveDate).toLocaleDateString(darLocale, {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "-"}
               </TableCell>
             </TableRow>
           ))}

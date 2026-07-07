@@ -4,6 +4,7 @@ import { getAuthCenterDepartmentMembers } from "@/lib/auth-center-admin-client";
 import { AuditService } from "@/services/auditService";
 import { CarRepository } from "@/repositories/carRepository";
 import { CarSequenceRepository } from "@/repositories/carSequenceRepository";
+import { CarAttachmentRepository } from "@/repositories/carAttachmentRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 import { getDepartmentByCode, getDepartmentByName } from "@/lib/departmentCache";
 import { ActionTokenService } from "@/services/actionTokenService";
@@ -59,6 +60,7 @@ export type CarResponseDetail = {
   responderId: string;
   responderAuthUserId?: string | null;
   responderPosition: string;
+  responderDepartment: string | null;
   respondedAt: string;
   responseType: "FIVE_WHY" | "OTHER";
   fiveWhys: FiveWhyItem[] | null;
@@ -91,6 +93,7 @@ export type CarVerificationDetail = {
   nextDueDate: string | null;
   verifierSignaturePath: string | null;
   verifier: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null };
+  attachments: CarAttachmentRow[];
 };
 
 export type CarMrSignatureDetail = {
@@ -100,6 +103,7 @@ export type CarMrSignatureDetail = {
   signedAt: string;
   comment: string | null;
   mrUser: { id: string; authUserId?: string | null; name: string | null; employeeId: string | null };
+  attachments: CarAttachmentRow[];
 };
 
 export type CarMrResponseReviewDetail = {
@@ -140,6 +144,7 @@ export type CarSummary = {
   targetDepartment: { id: string; name: string };
   relatedDepartmentIds: string[];
   verificationCount: number;
+  followUpStatus: "normal" | "near-due-v1" | "overdue-v1" | "near-due-v2" | "overdue-v2";
 };
 
 type IdentitySnapshot = {
@@ -156,6 +161,7 @@ export class CarService {
   private carRepo = new CarRepository();
   private seqRepo = new CarSequenceRepository();
   private configRepo = new SystemConfigRepository();
+  private carAttachmentRepo = new CarAttachmentRepository();
 
   private normalizeReCarInput<T extends { reCar?: boolean; reCarRefId?: string | null }>(input: T): T {
     const trimmedRef = typeof input.reCarRefId === "string" ? input.reCarRefId.trim() : input.reCarRefId;
@@ -256,6 +262,7 @@ export class CarService {
             responderId: raw.response.responderId,
             responderAuthUserId: raw.response.responderAuthUserId ?? null,
             responderPosition: raw.response.responderPosition,
+            responderDepartment: raw.response.responderDepartment ?? null,
             respondedAt: raw.response.respondedAt.toISOString(),
             responseType: (raw.response as Record<string, unknown>).responseType as "FIVE_WHY" | "OTHER" ?? "FIVE_WHY",
             fiveWhys: (raw.response as Record<string, unknown>).fiveWhys as import("@/types/car").FiveWhyItem[] | null ?? null,
@@ -309,6 +316,20 @@ export class CarService {
           name: v.verifierName ?? null,
           employeeId: v.verifierEmployeeId ?? null,
         },
+        attachments: (v as Record<string, unknown>).attachments
+          ? ((v as Record<string, unknown>).attachments as Array<Record<string, unknown>>).map((a) => ({
+              id: a.id as string,
+              fileName: a.fileName as string,
+              fileSize: a.fileSize as number,
+              mimeType: a.mimeType as string,
+              spItemId: a.spItemId as string,
+              spWebUrl: a.spWebUrl as string,
+              spDownloadUrl: a.spDownloadUrl as string,
+              folderPath: a.folderPath as string ?? "",
+              createdAt: (a.createdAt as Date)?.toISOString() ?? new Date().toISOString(),
+              uploadedBy: { id: a.uploadedById as string, name: (a.uploadedByName as string | null) ?? null },
+            }))
+          : [],
       })),
       mrSignature: raw.mrSignature
         ? {
@@ -323,6 +344,20 @@ export class CarService {
               name: raw.mrSignature.mrUserName ?? null,
               employeeId: raw.mrSignature.mrEmployeeId ?? null,
             },
+            attachments: (raw.mrSignature as Record<string, unknown>).attachments
+              ? ((raw.mrSignature as Record<string, unknown>).attachments as Array<Record<string, unknown>>).map((a) => ({
+                  id: a.id as string,
+                  fileName: a.fileName as string,
+                  fileSize: a.fileSize as number,
+                  mimeType: a.mimeType as string,
+                  spItemId: a.spItemId as string,
+                  spWebUrl: a.spWebUrl as string,
+                  spDownloadUrl: a.spDownloadUrl as string,
+                  folderPath: a.folderPath as string ?? "",
+                  createdAt: (a.createdAt as Date)?.toISOString() ?? new Date().toISOString(),
+                  uploadedBy: { id: a.uploadedById as string, name: (a.uploadedByName as string | null) ?? null },
+                }))
+              : [],
           }
         : null,
       mrResponseReview: raw.mrResponseReview
@@ -384,22 +419,43 @@ export class CarService {
   private mapSummaries(
     raws: Awaited<ReturnType<CarRepository["findManySummary"]>>
   ): CarSummary[] {
-    return raws.map((r) => ({
-      id: r.id,
-      carNo: r.carNo,
-      carYear: r.carYear,
-      status: r.status,
-      sourceType: r.sourceType as CarSourceType,
-      defectDetail: r.defectDetail,
-      issuedAt: r.issuedAt?.toISOString() ?? null,
-      responseDueAt: r.responseDueAt?.toISOString() ?? null,
-      createdAt: r.createdAt.toISOString(),
-      targetAuthDepartmentId: (r as { targetAuthDepartmentId?: string | null }).targetAuthDepartmentId ?? null,
-      issuer: { id: r.issuerId, name: r.issuerName ?? null },
-      targetDepartment: { id: r.targetDepartmentId, name: r.targetDepartmentName ?? "-" },
-      relatedDepartmentIds: r.relatedDepartmentIds ?? [],
-      verificationCount: r._count.verifications,
-    }));
+    const now = new Date();
+    return raws.map((r) => {
+      let followUpStatus: CarSummary["followUpStatus"] = "normal";
+
+      if (r.status === "RESPONDED" && r._count.verifications === 0) {
+        if (r.responseDueAt) {
+          const diffDays = (r.responseDueAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+          if (diffDays < -7) followUpStatus = "overdue-v1";
+          else if (diffDays < 7) followUpStatus = "near-due-v1";
+        }
+      } else if (r.status === "VERIFY_1") {
+        const latestV = r.verifications?.[0];
+        if (latestV?.nextDueDate) {
+          const diffDays = (latestV.nextDueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+          if (diffDays < 0) followUpStatus = "overdue-v2";
+          else if (diffDays <= 7) followUpStatus = "near-due-v2";
+        }
+      }
+
+      return {
+        id: r.id,
+        carNo: r.carNo,
+        carYear: r.carYear,
+        status: r.status,
+        sourceType: r.sourceType as CarSourceType,
+        defectDetail: r.defectDetail,
+        issuedAt: r.issuedAt?.toISOString() ?? null,
+        responseDueAt: r.responseDueAt?.toISOString() ?? null,
+        createdAt: r.createdAt.toISOString(),
+        targetAuthDepartmentId: (r as { targetAuthDepartmentId?: string | null }).targetAuthDepartmentId ?? null,
+        issuer: { id: r.issuerId, name: r.issuerName ?? null },
+        targetDepartment: { id: r.targetDepartmentId, name: r.targetDepartmentName ?? "-" },
+        relatedDepartmentIds: r.relatedDepartmentIds ?? [],
+        verificationCount: r._count.verifications,
+        followUpStatus,
+      };
+    });
   }
 
   async getCarById(id: string): Promise<CarDetail> {
@@ -1090,18 +1146,12 @@ export class CarService {
     const verifierSnapshot = await this.getIdentitySnapshot(verifierId);
     if (!verifierSnapshot) throw new ValidationError("Verifier not found");
 
-    let dbFindings = input.findings;
-    if (input.attachments && input.attachments.length > 0) {
-      dbFindings = JSON.stringify({
-        text: input.findings,
-        attachments: input.attachments,
-      });
-    }
+    let verificationId: string | undefined;
 
     await db.$transaction(async (tx) => {
-      await this.carRepo.createVerificationAndSetStatus(
+      verificationId = await this.carRepo.createVerificationAndSetStatus(
         id,
-        { ...input, findings: dbFindings },
+        input,
         verifierId,
         {
           verifierAuthUserId: verifierAuthUserId ?? verifierSnapshot.authUserId,
@@ -1111,6 +1161,24 @@ export class CarService {
         nextStatus,
         tx
       );
+
+      if (input.attachments?.length && verificationId) {
+        for (const file of input.attachments) {
+          await this.carAttachmentRepo.createAttachment({
+            carVerificationId: verificationId,
+            fileName: file.fileName,
+            spItemId: file.spItemId,
+            spWebUrl: file.spWebUrl,
+            fileSize: 0,
+            mimeType: "",
+            spDownloadUrl: "",
+            folderPath: "",
+            uploadedById: verifierId,
+            uploadedByAuthUserId: verifierAuthUserId ?? verifierSnapshot.authUserId,
+            uploadedByName: verifierSnapshot.name,
+          }, tx);
+        }
+      }
 
       if (input.result === "PASSED") {
         if (mrUserForVerify) {
@@ -1204,16 +1272,10 @@ export class CarService {
     if (car.status !== "CLOSED") throw new ValidationError("CAR is not ready for MR sign-off.");
     const mrSnapshot = await this.getIdentitySnapshot(tokenData.issuedTo);
 
-    let dbComment = comment;
-    if (attachments && attachments.length > 0) {
-      dbComment = JSON.stringify({
-        text: comment ?? "",
-        attachments,
-      });
-    }
+    let mrSignatureId: string | undefined;
 
     await db.$transaction(async (tx) => {
-      await this.carRepo.createMrSignatureAndUseToken(
+      mrSignatureId = await this.carRepo.createMrSignatureAndUseToken(
         id,
         token,
         tokenData.issuedTo,
@@ -1222,7 +1284,7 @@ export class CarService {
           mrUserName: mrSnapshot?.name ?? null,
           mrEmployeeId: mrSnapshot?.employeeId ?? null,
         },
-        dbComment,
+        comment,
         tx,
         signaturePath,
       );
@@ -1235,6 +1297,23 @@ export class CarService {
         resourceId: id,
         after: { status: "CLOSED", mrSigned: true },
       }, tx);
+
+      if (attachments?.length && mrSignatureId) {
+        for (const file of attachments) {
+          await this.carAttachmentRepo.createAttachment({
+            carMrSignatureId: mrSignatureId,
+            fileName: file.fileName,
+            spItemId: file.spItemId,
+            spWebUrl: file.spWebUrl,
+            fileSize: 0,
+            mimeType: "",
+            spDownloadUrl: "",
+            folderPath: "",
+            uploadedById: tokenData.issuedTo,
+            uploadedByName: mrSnapshot?.name ?? null,
+          }, tx);
+        }
+      }
     });
 
     // In-app notification for issuer
@@ -1261,16 +1340,10 @@ export class CarService {
 
     const mrSnapshot = mrAuthUserId ? await this.getIdentitySnapshot(mrAuthUserId) : null;
 
-    let dbComment = comment;
-    if (attachments && attachments.length > 0) {
-      dbComment = JSON.stringify({
-        text: comment ?? "",
-        attachments,
-      });
-    }
+    let mrSignatureId: string | undefined;
 
     await db.$transaction(async (tx) => {
-      await this.carRepo.createMrSignature(
+      mrSignatureId = await this.carRepo.createMrSignature(
         id,
         mrUserId,
         {
@@ -1278,7 +1351,7 @@ export class CarService {
           mrUserName: mrSnapshot?.name ?? null,
           mrEmployeeId: mrSnapshot?.employeeId ?? null,
         },
-        dbComment,
+        comment,
         tx,
         signaturePath,
       );
@@ -1292,6 +1365,24 @@ export class CarService {
         resourceId: id,
         after: { status: "CLOSED", mrSigned: true },
       }, tx);
+
+      if (attachments?.length && mrSignatureId) {
+        for (const file of attachments) {
+          await this.carAttachmentRepo.createAttachment({
+            carMrSignatureId: mrSignatureId,
+            fileName: file.fileName,
+            spItemId: file.spItemId,
+            spWebUrl: file.spWebUrl,
+            fileSize: 0,
+            mimeType: "",
+            spDownloadUrl: "",
+            folderPath: "",
+            uploadedById: mrUserId,
+            uploadedByAuthUserId: mrAuthUserId,
+            uploadedByName: mrSnapshot?.name ?? null,
+          }, tx);
+        }
+      }
     });
 
     if (car.issuerAuthUserId) {

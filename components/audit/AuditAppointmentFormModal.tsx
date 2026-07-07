@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, ChevronLeft, ChevronRight, Check, Search, Users, X } from "lucide-react";
 import GraphUserPicker, { type GraphUserResult } from "@/components/shared/GraphUserPicker";
+import { fetchApprovalConfigDefaultUser } from "@/lib/approval-config-client";
 import { auditAppointmentCreateSchema, type AuditAppointmentCreateInput } from "@/lib/validations/audit";
 import { useCreateAuditAppointment, useUpdateAuditAppointment, useAuditMemberUsers } from "@/hooks/api/use-audit-appointments";
 import type { AuditAppointmentRow } from "@/types/audit";
@@ -135,6 +136,65 @@ export function AuditAppointmentFormModal({ open, onOpenChange, onCreated, onUpd
   const { replace: replaceMembers } = useFieldArray({ control: form.control, name: "members" });
 
   const standards = form.watch("standards");
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const currentReviewerId = form.getValues("reviewerAuthUserId");
+    const currentApproverId = form.getValues("approverAuthUserId");
+    if (currentReviewerId && currentApproverId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadDefaults() {
+      const [reviewerDefault, approverDefault] = await Promise.all([
+        currentReviewerId ? Promise.resolve(null) : fetchApprovalConfigDefaultUser("AUDIT_APPOINTMENT", "QMS"),
+        currentApproverId ? Promise.resolve(null) : fetchApprovalConfigDefaultUser("AUDIT_APPOINTMENT", "MR"),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      if (reviewerDefault && !form.getValues("reviewerAuthUserId")) {
+        setReviewer({
+          id: reviewerDefault.id,
+          name: reviewerDefault.name,
+          email: reviewerDefault.email ?? "",
+          department: null,
+          jobTitle: null,
+          employeeId: null,
+        });
+        form.setValue("reviewerAuthUserId", reviewerDefault.id);
+        form.setValue("reviewerEmail", reviewerDefault.email ?? "");
+        form.setValue("reviewerNameSnapshot", reviewerDefault.name);
+      }
+
+      if (approverDefault && !form.getValues("approverAuthUserId")) {
+        setApprover({
+          id: approverDefault.id,
+          name: approverDefault.name,
+          email: approverDefault.email ?? "",
+          department: null,
+          jobTitle: null,
+          employeeId: null,
+        });
+        form.setValue("approverAuthUserId", approverDefault.id);
+        form.setValue("approverEmail", approverDefault.email ?? "");
+        form.setValue("approverNameSnapshot", approverDefault.name);
+      }
+    }
+
+    void loadDefaults();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [form, open]);
 
   const filteredUsers = allUsers.filter((u) => {
     if (!memberSearch.trim()) return true;

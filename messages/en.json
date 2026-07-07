@@ -97,6 +97,7 @@
       "docNum": "Document No.",
       "docName": "Document Name",
       "revision": "Revision",
+      "effectiveDate": "Effective Date",
       "darNo": "DAR No.",
       "darNoDraft": "Not assigned yet (Draft)",
       "status": "Status"
@@ -108,14 +109,16 @@
       "specifyDocType": "Specify document type",
       "docNum": "e.g. QMS-SOP-001",
       "docName": "Document name",
-      "revision": "00"
+      "revision": "00",
+      "effectiveDate": "DD/MM/YYYY"
     },
     "table": {
       "colNo": "#",
       "colDocNum": "Doc. No.",
       "colDocName": "Doc. Name",
       "colRevision": "Revision",
-      "emptyItems": "Click Â«Add ItemÂ» to add documents.",
+      "colEffectiveDate": "Effective Date",
+      "emptyItems": "Click «Add Item» to add documents.",
       "addItem": "Add Item",
       "emptyItemsTable": "No document items."
     },
@@ -1213,6 +1216,27 @@
         "prefixPlaceholder": "e.g. FM-IA-02",
         "labelPlaceholder": "e.g. Auditor Approval Form"
       }
+    }
+  }
+,
+  "approvalConfig": {
+    "pageTitle": "Approval Configuration by Module",
+    "pageSubtitle": "Set the QMS Reviewer and MR Approver for each module's approval workflow.",
+    "labelQmsReviewer": "QMS Reviewer",
+    "labelMrApprover": "MR Approver",
+    "placeholderFallback": "Use legacy fallback / Auth Center",
+    "btnSave": "Save",
+    "btnSaving": "Saving...",
+    "successSaved": "Saved {module} configuration",
+    "errorSaveFailed": "Failed to save configuration",
+    "errorLoadFailed": "Failed to load approval configuration",
+    "modules": {
+      "DAR": { "label": "DAR", "description": "Document Action Request" },
+      "CAR": { "label": "CAR", "description": "Corrective Action Request" },
+      "KPI": { "label": "KPI", "description": "KPI Annual Approval" },
+      "KPI_MONTHLY": { "label": "KPI Monthly", "description": "KPI Monthly Report Approval" },
+      "AUDIT_APPOINTMENT": { "label": "Audit Appointment", "description": "Audit Appointment Approval" },
+      "AUDIT": { "label": "Audit Plan", "description": "Audit Plan Approval" }
     }
   }
 }

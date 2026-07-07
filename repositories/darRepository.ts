@@ -1,6 +1,20 @@
 import { BaseRepository } from "./baseRepository";
 import { DarMaster, Prisma } from "@/generated/prisma/client";
 
+export type DarRejectionHistoryRecord = {
+  id: string;
+  darMasterId: string;
+  stepRole: string;
+  rejectedByUserId: string;
+  rejectedByAuthUserId: string | null;
+  rejectedByName: string | null;
+  rejectedByEmployeeId: string | null;
+  rejectedByDepartmentName: string | null;
+  comment: string;
+  actionDate: Date;
+  createdAt: Date;
+};
+
 export class DarRepository extends BaseRepository<DarMaster> {
   constructor() {
     super("darMaster");
@@ -30,7 +44,17 @@ export class DarRepository extends BaseRepository<DarMaster> {
         requesterDepartmentName: true,
         departmentId: true,
         authDepartmentId: true,
-        items: { orderBy: { itemNo: "asc" } },
+        items: {
+          orderBy: { itemNo: "asc" },
+          select: {
+            id: true,
+            itemNo: true,
+            docNumber: true,
+            docName: true,
+            revision: true,
+            effectiveDate: true,
+          },
+        },
         distributions: {
           select: {
             departmentId: true,
@@ -228,6 +252,69 @@ export class DarRepository extends BaseRepository<DarMaster> {
     return tx.darApproval.deleteMany({
       where: { darMasterId, stepRole: { not: "PREPARER" } },
     });
+  }
+
+  async createRejectionHistory(
+    data: {
+      darMasterId: string;
+      stepRole: string;
+      rejectedByUserId: string;
+      rejectedByAuthUserId?: string | null;
+      rejectedByName?: string | null;
+      rejectedByEmployeeId?: string | null;
+      rejectedByDepartmentName?: string | null;
+      comment: string;
+      actionDate: Date;
+    },
+    tx: Prisma.TransactionClient,
+  ) {
+    return tx.$executeRaw`
+      INSERT INTO "DarRejectionHistory" (
+        "id",
+        "darMasterId",
+        "stepRole",
+        "rejectedByUserId",
+        "rejected_by_auth_user_id",
+        "rejected_by_name",
+        "rejected_by_employee_id",
+        "rejected_by_department_name",
+        "comment",
+        "actionDate",
+        "createdAt"
+      ) VALUES (
+        gen_random_uuid()::text,
+        ${data.darMasterId},
+        ${data.stepRole}::"ApprovalStep",
+        ${data.rejectedByUserId},
+        ${data.rejectedByAuthUserId ?? null},
+        ${data.rejectedByName ?? null},
+        ${data.rejectedByEmployeeId ?? null},
+        ${data.rejectedByDepartmentName ?? null},
+        ${data.comment},
+        ${data.actionDate},
+        NOW()
+      )
+    `;
+  }
+
+  async findRejectionHistoryByDarId(darMasterId: string, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).$queryRaw<DarRejectionHistoryRecord[]>`
+      SELECT
+        "id",
+        "darMasterId",
+        "stepRole",
+        "rejectedByUserId",
+        "rejected_by_auth_user_id" AS "rejectedByAuthUserId",
+        "rejected_by_name" AS "rejectedByName",
+        "rejected_by_employee_id" AS "rejectedByEmployeeId",
+        "rejected_by_department_name" AS "rejectedByDepartmentName",
+        "comment",
+        "actionDate",
+        "createdAt"
+      FROM "DarRejectionHistory"
+      WHERE "darMasterId" = ${darMasterId}
+      ORDER BY "actionDate" DESC, "createdAt" DESC
+    `;
   }
 
   // --- DarAttachment Operations ---

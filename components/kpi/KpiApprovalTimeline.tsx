@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useLocale } from "@/lib/locale-context";
 import { parseComment } from "@/lib/utils";
+import { FilePreviewModal, type FilePreviewTarget } from "@/components/common/FilePreviewModal";
 
 type ApprovalAction = "PENDING" | "APPROVED" | "REJECTED";
 type ApprovalStep = "PREPARER" | "REVIEWER" | "APPROVER";
@@ -55,6 +57,52 @@ export default function KpiApprovalTimeline({
 }: Props) {
   const t = useT();
   const locale = useLocale();
+  const [preview, setPreview] = useState<FilePreviewTarget | null>(null);
+
+  const inferMimeType = (fileName: string): string => {
+    const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+
+    switch (ext) {
+      case "pdf":
+        return "application/pdf";
+      case "png":
+        return "image/png";
+      case "jpg":
+      case "jpeg":
+        return "image/jpeg";
+      case "gif":
+        return "image/gif";
+      case "webp":
+        return "image/webp";
+      case "doc":
+        return "application/msword";
+      case "docx":
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      case "xls":
+        return "application/vnd.ms-excel";
+      case "xlsx":
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      case "ppt":
+        return "application/vnd.ms-powerpoint";
+      case "pptx":
+        return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+      case "md":
+        return "text/markdown";
+      case "txt":
+        return "text/plain";
+      case "csv":
+        return "text/csv";
+      case "tsv":
+        return "text/tab-separated-values";
+      case "xml":
+        return "text/xml";
+      case "json":
+        return "application/json";
+      default:
+        return "application/octet-stream";
+    }
+  };
+
 
   const byStep = Object.fromEntries(
     signatures.map((s) => [s.step, s])
@@ -103,7 +151,8 @@ export default function KpiApprovalTimeline({
   /* ── HORIZONTAL layout ─────────────────────────────────────── */
   if (layout === "horizontal") {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+      <>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
         {steps.map(({ step, labelKey }, idx) => {
           const sig = byStep[step];
           const label = t(labelKey as never) ?? step;
@@ -168,16 +217,15 @@ export default function KpiApprovalTimeline({
                       </div>
                       {parsed.attachments && parsed.attachments.length > 0 && (
                         <div className="border-t border-slate-200/60 pt-1.5 flex flex-col gap-1">
-                          {parsed.attachments.map((file, idx) => (
-                            <a
-                              key={idx}
-                              href={`/api/sharepoint/get-file?itemId=${file.spItemId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[11px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                          {parsed.attachments.map((file, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setPreview({ fileName: file.fileName, mimeType: inferMimeType(file.fileName), sharePointItemId: file.spItemId })}
+                              className="text-[11px] text-[#0F1059] hover:text-[#161875] underline inline-flex items-center gap-1 text-left"
                             >
                               {file.fileName}
-                            </a>
+                            </button>
                           ))}
                         </div>
                       )}
@@ -189,11 +237,13 @@ export default function KpiApprovalTimeline({
           );
         })}
       </div>
+      {preview && <FilePreviewModal target={preview} onClose={() => setPreview(null)} />}
+    </>
     );
   }
 
   /* ── VERTICAL layout (sidebar / approve panel) ─────────────── */
-  return (
+  const inner = (
     <div className="flex flex-col">
       {steps.map(({ step, labelKey }, idx) => {
         const sig = byStep[step];
@@ -270,19 +320,18 @@ export default function KpiApprovalTimeline({
                       <div className="border-t border-slate-200/60 pt-2 flex flex-col gap-1.5">
                         <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">เอกสารแนบประกอบ</p>
                         <div className="flex flex-col gap-1">
-                          {parsed.attachments.map((file, idx) => (
-                            <a
-                              key={idx}
-                              href={`/api/sharepoint/get-file?itemId=${file.spItemId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1.5"
+                          {parsed.attachments.map((file, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setPreview({ fileName: file.fileName, mimeType: inferMimeType(file.fileName), sharePointItemId: file.spItemId })}
+                              className="text-xs text-[#0F1059] hover:text-[#161875] underline inline-flex items-center gap-1.5 text-left"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                               </svg>
                               {file.fileName}
-                            </a>
+                            </button>
                           ))}
                         </div>
                       </div>
@@ -301,5 +350,12 @@ export default function KpiApprovalTimeline({
         );
       })}
     </div>
+  );
+
+  return (
+    <>
+      {inner}
+      {preview && <FilePreviewModal target={preview} onClose={() => setPreview(null)} />}
+    </>
   );
 }

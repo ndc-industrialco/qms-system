@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["**/__tests__/**/*.test.ts", "**/*.test.ts"],
-    exclude: ["node_modules", ".next", ".claude/worktrees/**"],
+    exclude: ["node_modules", ".kilo", ".next", ".claude/worktrees/**"],
     globals: true,
     coverage: {
       provider: "v8",

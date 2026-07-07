@@ -5,22 +5,36 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { Trash2, Send } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { useLocale } from "@/lib/locale-context";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import DarEditModal from "./DarEditModal";
+import DarSignSubmitModal from "./DarSignSubmitModal";
+import DarReviewerSelectModal from "./DarReviewerSelectModal";
+import type { SignatureType } from "@/types/dar";
+import type { ReviewerCandidate } from "@/hooks/api/use-reviewer-candidates";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/error-message";
 
 interface Props {
   darId: string;
+  previousReviewer?: ReviewerCandidate | null;
 }
 
-export default function DarDraftActions({ darId }: Props) {
+export default function DarDraftActions({ darId, previousReviewer = null }: Props) {
   const t = useT();
   const router = useRouter();
+  const locale = useLocale();
+  const isTh = locale === "th";
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSignModal, setShowSignModal] = useState(false);
+  const [showReviewerModal, setShowReviewerModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingSignature, setPendingSignature] = useState<{ dataUrl: string; type: SignatureType; saveToProfile: boolean } | null>(null);
 
   const { mutate: deleteDar, isPending: deleting } = useMutation({
     mutationFn: async () => {
@@ -35,19 +49,87 @@ export default function DarDraftActions({ darId }: Props) {
     onError: (err) => setError(err.message || t("errorRetry")),
   });
 
-  const { mutate: submitDar, isPending: submitting } = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(`/api/dar/${darId}/submit`, { method: "POST" });
-      const json = await res.json() as { error: string | null };
-      if (!res.ok || json.error) throw new Error(json.error || t("error"));
-    },
-    onSuccess: () => router.refresh(),
-    onError: (err) => setError(err.message || t("errorRetry")),
-  });
-
   function handleDelete() {
     setError(null);
     deleteDar();
+  }
+
+  function handleSubmitClick() {
+    setShowSignModal(true);
+  }
+
+  function handleSignConfirm(dataUrl: string, type: SignatureType, saveToProfile: boolean) {
+    const signature = { dataUrl, type, saveToProfile };
+    setPendingSignature(signature);
+    setShowSignModal(false);
+    if (previousReviewer) {
+      void submitToReviewer(previousReviewer, signature);
+      return;
+    }
+    setShowReviewerModal(true);
+  }
+
+  function handleSignCancel() {
+    setShowSignModal(false);
+  }
+
+  function handleReviewerBack() {
+    setShowReviewerModal(false);
+    setShowSignModal(true);
+  }
+
+  async function submitToReviewer(
+    reviewer: ReviewerCandidate,
+    signature: { dataUrl: string; type: SignatureType; saveToProfile: boolean },
+  ) {
+    setIsSubmitting(true);
+    try {
+      const submitRes = await fetch(`/api/dar/${darId}/submit`, { method: "POST" });
+      const submitJson = await submitRes.json() as { error: string | null };
+      if (!submitRes.ok || submitJson.error) {
+        toast.error(getErrorMessage(submitJson.error, isTh ? "เกิดข้อผิดพลาด" : "An error occurred"));
+        return;
+      }
+
+      const approveRes = await fetch(`/api/dar/${darId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          signatureDataUrl: signature.dataUrl,
+          signatureType: signature.type,
+          saveSignature: signature.saveToProfile,
+        }),
+      });
+      const approveJson = await approveRes.json() as { error: string | null };
+      if (!approveRes.ok || approveJson.error) {
+        toast.error(getErrorMessage(approveJson.error, isTh ? "เกิดข้อผิดพลาดในการลงลายมือชื่อ" : "Signature error"));
+        return;
+      }
+
+      const assignRes = await fetch(`/api/dar/${darId}/assign-reviewer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewerUserId: reviewer.id }),
+      });
+      const assignJson = await assignRes.json() as { error: string | null };
+      if (!assignRes.ok || assignJson.error) {
+        toast.error(getErrorMessage(assignJson.error, isTh ? "เกิดข้อผิดพลาดในการกำหนดผู้ตรวจสอบ" : "Reviewer assignment error"));
+        return;
+      }
+
+      toast.success(isTh ? "ส่งคำขอสำเร็จ" : "Request submitted successfully");
+      setShowReviewerModal(false);
+      router.refresh();
+    } catch {
+      toast.error(isTh ? "เกิดข้อผิดพลาด กรุณาลองใหม่" : "An error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleSend(reviewer: ReviewerCandidate) {
+    if (!pendingSignature) return;
+    await submitToReviewer(reviewer, pendingSignature);
   }
 
   return (
@@ -61,11 +143,11 @@ export default function DarDraftActions({ darId }: Props) {
         />
         <Button
           size="sm"
-          disabled={submitting}
-          onClick={() => submitDar()}
+          disabled={isSubmitting}
+          onClick={handleSubmitClick}
           className="h-11 px-4 text-sm gap-2"
         >
-          {submitting
+          {isSubmitting
             ? <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             : <Send className="w-4 h-4" />}
           {t("submitRequest")}
@@ -113,6 +195,19 @@ export default function DarDraftActions({ darId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DarSignSubmitModal
+        open={showSignModal}
+        onConfirm={handleSignConfirm}
+        onCancel={handleSignCancel}
+      />
+
+      <DarReviewerSelectModal
+        open={showReviewerModal}
+        isSending={isSubmitting}
+        onBack={handleReviewerBack}
+        onSend={handleSend}
+      />
     </>
   );
 }

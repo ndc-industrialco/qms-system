@@ -63,6 +63,7 @@ export const ModelName = {
   DarDistribution: 'DarDistribution',
   DarAttachment: 'DarAttachment',
   DarApproval: 'DarApproval',
+  DarRejectionHistory: 'DarRejectionHistory',
   ApprovalSignature: 'ApprovalSignature',
   QmsProcessing: 'QmsProcessing',
   PublicDocument: 'PublicDocument',
@@ -261,6 +262,7 @@ export const DarItemScalarFieldEnum = {
   docNumber: 'docNumber',
   docName: 'docName',
   revision: 'revision',
+  effectiveDate: 'effectiveDate',
   darMasterId: 'darMasterId'
 } as const
 
@@ -314,6 +316,23 @@ export const DarApprovalScalarFieldEnum = {
 } as const
 
 export type DarApprovalScalarFieldEnum = (typeof DarApprovalScalarFieldEnum)[keyof typeof DarApprovalScalarFieldEnum]
+
+
+export const DarRejectionHistoryScalarFieldEnum = {
+  id: 'id',
+  darMasterId: 'darMasterId',
+  stepRole: 'stepRole',
+  rejectedByUserId: 'rejectedByUserId',
+  rejectedByAuthUserId: 'rejectedByAuthUserId',
+  rejectedByName: 'rejectedByName',
+  rejectedByEmployeeId: 'rejectedByEmployeeId',
+  rejectedByDepartmentName: 'rejectedByDepartmentName',
+  comment: 'comment',
+  actionDate: 'actionDate',
+  createdAt: 'createdAt'
+} as const
+
+export type DarRejectionHistoryScalarFieldEnum = (typeof DarRejectionHistoryScalarFieldEnum)[keyof typeof DarRejectionHistoryScalarFieldEnum]
 
 
 export const ApprovalSignatureScalarFieldEnum = {
@@ -416,6 +435,10 @@ export const KPIObjectiveScalarFieldEnum = {
   calculationFormula: 'calculationFormula',
   actionPlanGuidelines: 'actionPlanGuidelines',
   referenceDocuments: 'referenceDocuments',
+  responsibleAuthUserId: 'responsibleAuthUserId',
+  responsibleNameSnapshot: 'responsibleNameSnapshot',
+  responsibleEmailSnapshot: 'responsibleEmailSnapshot',
+  responsibleEmployeeId: 'responsibleEmployeeId',
   isRevised: 'isRevised',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -661,6 +684,7 @@ export const CarResponseScalarFieldEnum = {
   responderName: 'responderName',
   responderEmployeeId: 'responderEmployeeId',
   responderPosition: 'responderPosition',
+  responderDepartment: 'responderDepartment',
   respondedAt: 'respondedAt',
   responseType: 'responseType',
   fiveWhys: 'fiveWhys',
@@ -719,6 +743,8 @@ export type CarMrSignatureScalarFieldEnum = (typeof CarMrSignatureScalarFieldEnu
 export const CarAttachmentScalarFieldEnum = {
   id: 'id',
   carResponseId: 'carResponseId',
+  carVerificationId: 'carVerificationId',
+  carMrSignatureId: 'carMrSignatureId',
   fileName: 'fileName',
   fileSize: 'fileSize',
   mimeType: 'mimeType',

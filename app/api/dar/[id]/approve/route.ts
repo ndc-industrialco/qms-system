@@ -47,6 +47,17 @@ const schema = z.object({
 const paramSchema = z.object({ id: z.string().uuid() });
 type Params = { params: Promise<{ id: string }> };
 
+function userMatchesSession(
+  user: { id: string; authUserId?: string | null },
+  sessionUser: { id: string; authUserId?: string | null },
+) {
+  const sessionIds = new Set(
+    [sessionUser.id, sessionUser.authUserId ?? null].filter((value): value is string => Boolean(value)),
+  );
+
+  return sessionIds.has(user.id) || (user.authUserId ? sessionIds.has(user.authUserId) : false);
+}
+
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const session = await requireAuth();
@@ -69,24 +80,23 @@ export async function POST(req: NextRequest, { params }: Params) {
     revalidateTag("dar-list");
 
     const reviewerApprovedThisStep = dar.approvals.some(
-      (a) => a.stepRole === "REVIEWER" && a.assignedUser.id === session.user.id && a.action === "APPROVED"
+      (a) => a.stepRole === "REVIEWER" && userMatchesSession(a.assignedUser, session.user) && a.action === "APPROVED"
     );
-    const hasPendingMrStep = dar.approvals.some(
+    const pendingMrStep = dar.approvals.find(
       (a) => a.stepRole === "APPROVER_MR" && a.action === "PENDING"
     );
     const mrApprovedThisStep = dar.approvals.some(
-      (a) => a.stepRole === "APPROVER_MR" && a.assignedUser.id === session.user.id && a.action === "APPROVED"
+      (a) => a.stepRole === "APPROVER_MR" && userMatchesSession(a.assignedUser, session.user) && a.action === "APPROVED"
     );
-    const hasPendingQmsStep = dar.approvals.some(
+    const pendingQmsStep = dar.approvals.find(
       (a) => a.stepRole === "QMS_PROCESSOR" && a.action === "PENDING"
     );
     const qmsApprovedThisStep = dar.approvals.some(
-      (a) => a.stepRole === "QMS_PROCESSOR" && a.assignedUser.id === session.user.id && a.action === "APPROVED"
+      (a) => a.stepRole === "QMS_PROCESSOR" && userMatchesSession(a.assignedUser, session.user) && a.action === "APPROVED"
     );
 
-    if (reviewerApprovedThisStep && hasPendingMrStep && dar.darNo) {
-      const mrAuthKey = await configRepo.findValueByKey("CURRENT_MR_AUTH_USER_ID")
-        ?? await configRepo.findValueByKey("CURRENT_MR_USER_ID");
+    if (reviewerApprovedThisStep && pendingMrStep && dar.darNo) {
+      const mrAuthKey = pendingMrStep.assignedUser.authUserId ?? pendingMrStep.assignedUser.id;
 
       if (mrAuthKey) {
         let mrSnapshot = await getUserSnapshot(mrAuthKey);
@@ -102,6 +112,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         });
 
         const mrEmail = mrSnapshot?.email
+          ?? await configRepo.findValueByKey("DAR_MR_EMAIL")
           ?? await configRepo.findValueByKey("CURRENT_MR_EMAIL")
           ?? null;
         NotificationService.sendEmailOnce(
@@ -155,10 +166,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
-    if (mrApprovedThisStep && hasPendingQmsStep && dar.darNo) {
-      const qmsAuthKey = await configRepo.findValueByKey("DAR_QMS_AUTH_USER_ID")
-        ?? await configRepo.findValueByKey("CURRENT_QMS_AUTH_USER_ID")
-        ?? await configRepo.findValueByKey("CURRENT_QMS_USER_ID");
+    if (mrApprovedThisStep && pendingQmsStep && dar.darNo) {
+      const qmsAuthKey = pendingQmsStep.assignedUser.authUserId ?? pendingQmsStep.assignedUser.id;
 
       if (qmsAuthKey) {
         let qmsSnapshot = await getUserSnapshot(qmsAuthKey);

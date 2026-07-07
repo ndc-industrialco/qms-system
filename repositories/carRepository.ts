@@ -55,6 +55,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
             responderName: true,
             responderEmployeeId: true,
             responderPosition: true,
+            responderDepartment: true,
             respondedAt: true,
             responseType: true,
             fiveWhys: true,
@@ -103,6 +104,21 @@ export class CarRepository extends BaseRepository<CarMaster> {
             result: true,
             nextDueDate: true,
             verifierSignaturePath: true,
+            attachments: {
+              select: {
+                id: true,
+                fileName: true,
+                fileSize: true,
+                mimeType: true,
+                spItemId: true,
+                spWebUrl: true,
+                spDownloadUrl: true,
+                folderPath: true,
+                uploadedById: true,
+                uploadedByName: true,
+                createdAt: true,
+              },
+            },
           },
         },
         mrSignature: {
@@ -114,6 +130,21 @@ export class CarRepository extends BaseRepository<CarMaster> {
             mrEmployeeId: true,
             signedAt: true,
             comment: true,
+            attachments: {
+              select: {
+                id: true,
+                fileName: true,
+                fileSize: true,
+                mimeType: true,
+                spItemId: true,
+                spWebUrl: true,
+                spDownloadUrl: true,
+                folderPath: true,
+                uploadedById: true,
+                uploadedByName: true,
+                createdAt: true,
+              },
+            },
           },
         },
         mrResponseReview: {
@@ -154,6 +185,12 @@ export class CarRepository extends BaseRepository<CarMaster> {
         targetDepartmentName: true,
         relatedDepartmentIds: true,
         _count: { select: { verifications: true } },
+        response: { select: { respondedAt: true } },
+        verifications: {
+          orderBy: { round: "desc" },
+          take: 1,
+          select: { nextDueDate: true, round: true },
+        },
       },
     });
   }
@@ -175,6 +212,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
             respondedAt: true,
             responderName: true,
             responderPosition: true,
+            responderDepartment: true,
           },
         },
         verifications: {
@@ -390,6 +428,12 @@ export class CarRepository extends BaseRepository<CarMaster> {
           targetDepartmentName: true,
           relatedDepartmentIds: true,
           _count: { select: { verifications: true } },
+          response: { select: { respondedAt: true } },
+          verifications: {
+            orderBy: { round: "desc" },
+            take: 1,
+            select: { nextDueDate: true, round: true },
+          },
         },
       }),
       this.delegate(tx).count({ where }),
@@ -736,7 +780,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
   ) {
     const client = this.getClient(tx);
 
-    await client.carVerification.create({
+    const verification = await client.carVerification.create({
       data: {
         carMasterId: id,
         round: input.round,
@@ -752,7 +796,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
       },
     });
 
-    return this.updateStatus(id, nextStatus, tx);
+    await this.updateStatus(id, nextStatus, tx);
+    return verification.id;
   }
 
   async createMrSignatureAndUseToken(
@@ -766,7 +811,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
   ) {
     const client = this.getClient(tx);
 
-    await client.carMrSignature.create({
+    const sig = await client.carMrSignature.create({
       data: {
         carMasterId: carId,
         mrUserId,
@@ -786,6 +831,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
     if (result.count === 0) {
       throw new ConflictError("This approval link has already been used by a concurrent request.");
     }
+
+    return sig.id;
   }
 
   async createMrResponseReview(
@@ -826,7 +873,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
   ) {
     const client = this.getClient(tx);
 
-    await client.carMrSignature.create({
+    const sig = await client.carMrSignature.create({
       data: {
         carMasterId: carId,
         mrUserId,
@@ -837,6 +884,8 @@ export class CarRepository extends BaseRepository<CarMaster> {
         signaturePath: signaturePath ?? null,
       },
     });
+
+    return sig.id;
   }
 
   async createReCarFromOriginal(

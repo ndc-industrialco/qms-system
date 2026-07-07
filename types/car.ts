@@ -40,14 +40,6 @@ export const CAR_SOURCE_LABELS: Record<CarSourceType, string> = {
   O: "(O) อื่นๆ",
 };
 
-export const ISO_STANDARDS = [
-  "ISO 9001:2015",
-  "ISO 14001:2015",
-  "ISO 45001:2018",
-] as const;
-
-export type IsoStandard = (typeof ISO_STANDARDS)[number];
-
 export type CarAttachmentRow = {
   id: string;
   fileName: string;
@@ -56,9 +48,11 @@ export type CarAttachmentRow = {
   spItemId: string;
   spWebUrl: string;
   spDownloadUrl: string;
-  folderPath: string;
-  createdAt: string;
-  uploadedBy: { id: string; name: string | null };
+  folderPath?: string;
+  uploadedById?: string;
+  uploadedByName?: string | null;
+  createdAt?: string;
+  uploadedBy?: { id: string; name: string | null };
 };
 
 export type FiveWhyItem = { question: string; answer: string };
@@ -67,6 +61,7 @@ export type CarResponseDetail = {
   id: string;
   responderId: string;
   responderPosition: string;
+  responderDepartment: string | null;
   respondedAt: string;
   responseType: "FIVE_WHY" | "OTHER";
   fiveWhys: FiveWhyItem[] | null;
@@ -98,6 +93,7 @@ export type CarVerificationDetail = {
   nextDueDate: string | null;
   verifierSignaturePath: string | null;
   verifier: { id: string; name: string | null; employeeId: string | null };
+  attachments: CarAttachmentRow[];
 };
 
 export type CarMrSignatureDetail = {
@@ -106,6 +102,7 @@ export type CarMrSignatureDetail = {
   signedAt: string;
   comment: string | null;
   mrUser: { id: string; name: string | null; employeeId: string | null };
+  attachments: CarAttachmentRow[];
 };
 
 export type CarMrResponseReviewDetail = {
@@ -164,6 +161,7 @@ export type CarSummary = {
   targetDepartment: { id: string; name: string };
   relatedDepartmentIds: string[];
   verificationCount: number;
+  followUpStatus: "normal" | "near-due-v1" | "overdue-v1" | "near-due-v2" | "overdue-v2";
 };
 
 export type CarListQuery = {

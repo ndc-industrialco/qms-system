@@ -1,73 +1,89 @@
-import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
-import { listAuthCenterAppMembers, listAuthCenterUsers, listAuthCenterRoleGrants } from "@/lib/auth-center-admin-client";
+import { listAuthCenterAppMembers, listAuthCenterRoleGrants, listAuthCenterUsers } from "@/lib/auth-center-admin-client";
+import {
+  APPROVAL_CONFIG_MODULES,
+  type ApprovalConfigModuleKey,
+  type ApprovalConfigRole,
+  getApprovalConfigKey,
+  getApprovalConfigLookupKeys,
+} from "@/lib/approval-config";
 import { pickRole } from "@/lib/auth-center-token";
 import { db } from "@/lib/db";
+import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 
-const MR_AUTH_CONFIG_KEY  = "CURRENT_MR_AUTH_USER_ID";
-const MR_EMAIL_CONFIG_KEY = "CURRENT_MR_EMAIL";
-const QMS_AUTH_CONFIG_KEY  = "CURRENT_QMS_AUTH_USER_ID";
-const QMS_EMAIL_CONFIG_KEY = "CURRENT_QMS_EMAIL";
+type ModuleConfigInput = {
+  moduleKey: ApprovalConfigModuleKey;
+  mrAuthUserId?: string | null;
+  qmsAuthUserId?: string | null;
+  mrEmail?: string | null;
+  qmsEmail?: string | null;
+};
 
-const DAR_QMS_AUTH_CONFIG_KEY = "DAR_QMS_AUTH_USER_ID";
-const DAR_QMS_EMAIL_CONFIG_KEY = "DAR_QMS_EMAIL";
-const CAR_QMS_AUTH_CONFIG_KEY = "CAR_QMS_AUTH_USER_ID";
-const CAR_QMS_EMAIL_CONFIG_KEY = "CAR_QMS_EMAIL";
-
-const DAR_MR_CONFIG_KEY = "DAR_MR_AUTH_USER_ID";
-const DAR_MR_EMAIL_CONFIG_KEY = "DAR_MR_EMAIL";
-const CAR_MR_CONFIG_KEY = "CAR_MR_AUTH_USER_ID";
-const CAR_MR_EMAIL_CONFIG_KEY = "CAR_MR_EMAIL";
+type ModuleConfigResponse = {
+  moduleKey: ApprovalConfigModuleKey;
+  label: string;
+  description: string;
+  mrAuthUserId: string | null;
+  qmsAuthUserId: string | null;
+  mrEmail: string | null;
+  qmsEmail: string | null;
+};
 
 export class ApprovalConfigService {
   private configRepo = new SystemConfigRepository();
 
+  private async getEffectiveConfigValue(
+    rows: Map<string, string>,
+    moduleKey: ApprovalConfigModuleKey,
+    role: ApprovalConfigRole,
+    field: "AUTH_USER_ID" | "EMAIL",
+  ) {
+    for (const key of getApprovalConfigLookupKeys(moduleKey, role, field)) {
+      const value = rows.get(key);
+      if (value) {
+        return value;
+      }
+    }
+    return null;
+  }
+
   async getConfig(accessToken?: string | null) {
-    const [
-      appMembers,
-      mrConfig,
-      qmsConfig,
-      darQmsConfig,
-      carQmsConfig,
-      darMrConfig,
-      carMrConfig,
-      mrEmail,
-      qmsEmail,
-      darQmsEmail,
-      carQmsEmail,
-      darMrEmail,
-      carMrEmail,
-    ] = await Promise.all([
-      listAuthCenterAppMembers({ accessToken }),
-      this.configRepo.findValueByKey(MR_AUTH_CONFIG_KEY),
-      this.configRepo.findValueByKey(QMS_AUTH_CONFIG_KEY),
-      this.configRepo.findValueByKey(DAR_QMS_AUTH_CONFIG_KEY),
-      this.configRepo.findValueByKey(CAR_QMS_AUTH_CONFIG_KEY),
-      this.configRepo.findValueByKey(DAR_MR_CONFIG_KEY),
-      this.configRepo.findValueByKey(CAR_MR_CONFIG_KEY),
-      this.configRepo.findValueByKey(MR_EMAIL_CONFIG_KEY),
-      this.configRepo.findValueByKey(QMS_EMAIL_CONFIG_KEY),
-      this.configRepo.findValueByKey(DAR_QMS_EMAIL_CONFIG_KEY),
-      this.configRepo.findValueByKey(CAR_QMS_EMAIL_CONFIG_KEY),
-      this.configRepo.findValueByKey(DAR_MR_EMAIL_CONFIG_KEY),
-      this.configRepo.findValueByKey(CAR_MR_EMAIL_CONFIG_KEY),
+    const configKeys = APPROVAL_CONFIG_MODULES.flatMap((module) => [
+      getApprovalConfigKey(module.key, "MR", "AUTH_USER_ID"),
+      getApprovalConfigKey(module.key, "MR", "EMAIL"),
+      getApprovalConfigKey(module.key, "QMS", "AUTH_USER_ID"),
+      getApprovalConfigKey(module.key, "QMS", "EMAIL"),
     ]);
 
-    // IT: full roles per user; QMS/MR: merge role-grants
+    const [appMembers, configRows] = await Promise.all([
+      listAuthCenterAppMembers({ accessToken }),
+      this.configRepo.findManyByKeys([
+        ...configKeys,
+        "CURRENT_MR_AUTH_USER_ID",
+        "CURRENT_MR_EMAIL",
+        "CURRENT_QMS_AUTH_USER_ID",
+        "CURRENT_QMS_EMAIL",
+      ]),
+    ]);
+
+    const configMap = new Map(configRows.map((row) => [row.configKey, row.configValue]));
+
     const rolesByUser = new Map<string, string[]>();
     try {
       const authUsers = await listAuthCenterUsers({ accessToken });
-      for (const u of authUsers) rolesByUser.set(u.id, u.roles);
+      for (const user of authUsers) {
+        rolesByUser.set(user.id, user.roles);
+      }
     } catch {
       const grants = await listAuthCenterRoleGrants({ accessToken });
-      for (const g of grants) {
-        const list = rolesByUser.get(g.userId) ?? [];
-        list.push(g.role);
-        rolesByUser.set(g.userId, list);
+      for (const grant of grants) {
+        const list = rolesByUser.get(grant.userId) ?? [];
+        list.push(grant.role);
+        rolesByUser.set(grant.userId, list);
       }
     }
 
     const users = appMembers
-      .filter((u) => Boolean(u.id))
+      .filter((member) => Boolean(member.id))
       .map((member) => ({
         id: member.id,
         authUserId: member.id,
@@ -77,97 +93,54 @@ export class ApprovalConfigService {
         department: null,
       }));
 
-    return {
-      users,
-      currentMrUserId: mrConfig,
-      currentQmsUserId: qmsConfig,
-      darQmsUserId: darQmsConfig,
-      carQmsUserId: carQmsConfig,
-      darMrUserId: darMrConfig,
-      carMrUserId: carMrConfig,
-      currentMrEmail: mrEmail,
-      currentQmsEmail: qmsEmail,
-      darQmsEmail: darQmsEmail,
-      carQmsEmail: carQmsEmail,
-      darMrEmail: darMrEmail,
-      carMrEmail: carMrEmail,
-    };
+    const moduleConfigs = await Promise.all(
+      APPROVAL_CONFIG_MODULES.map(async (module): Promise<ModuleConfigResponse> => ({
+        moduleKey: module.key,
+        label: module.label,
+        description: module.description,
+        mrAuthUserId: await this.getEffectiveConfigValue(configMap, module.key, "MR", "AUTH_USER_ID"),
+        qmsAuthUserId: await this.getEffectiveConfigValue(configMap, module.key, "QMS", "AUTH_USER_ID"),
+        mrEmail: await this.getEffectiveConfigValue(configMap, module.key, "MR", "EMAIL"),
+        qmsEmail: await this.getEffectiveConfigValue(configMap, module.key, "QMS", "EMAIL"),
+      })),
+    );
+
+    return { users, modules: moduleConfigs };
   }
 
-  async updateConfig(
-    mrAuthUserId: string | null,
-    qmsAuthUserId: string | null,
-    emails?: { mrEmail?: string | null; qmsEmail?: string | null },
-    darQmsAuthUserId?: string | null,
-    carQmsAuthUserId?: string | null,
-    moduleEmails?: {
-      darQmsEmail?: string | null;
-      carQmsEmail?: string | null;
-      darMrEmail?: string | null;
-      carMrEmail?: string | null;
-    },
-    darMrAuthUserId?: string | null,
-    carMrAuthUserId?: string | null,
-  ) {
+  async updateConfig(modules: ModuleConfigInput[]) {
     await db.$transaction(async (tx) => {
-      if (mrAuthUserId) {
-        await this.configRepo.upsertConfigWithDescription(MR_AUTH_CONFIG_KEY, mrAuthUserId, "Auth Center stable key of MR user", tx);
-      } else {
-        await this.configRepo.deleteByKey(MR_AUTH_CONFIG_KEY, tx);
-        await this.configRepo.deleteByKey(MR_EMAIL_CONFIG_KEY, tx);
-      }
-      if (emails?.mrEmail) {
-        await this.configRepo.upsertConfigWithDescription(MR_EMAIL_CONFIG_KEY, emails.mrEmail, "Email address of current MR user", tx);
-      }
+      for (const moduleConfig of modules) {
+        const entries = [
+          {
+            key: getApprovalConfigKey(moduleConfig.moduleKey, "MR", "AUTH_USER_ID"),
+            value: moduleConfig.mrAuthUserId ?? null,
+            description: `${moduleConfig.moduleKey} MR auth user id`,
+          },
+          {
+            key: getApprovalConfigKey(moduleConfig.moduleKey, "MR", "EMAIL"),
+            value: moduleConfig.mrEmail ?? null,
+            description: `${moduleConfig.moduleKey} MR email`,
+          },
+          {
+            key: getApprovalConfigKey(moduleConfig.moduleKey, "QMS", "AUTH_USER_ID"),
+            value: moduleConfig.qmsAuthUserId ?? null,
+            description: `${moduleConfig.moduleKey} QMS auth user id`,
+          },
+          {
+            key: getApprovalConfigKey(moduleConfig.moduleKey, "QMS", "EMAIL"),
+            value: moduleConfig.qmsEmail ?? null,
+            description: `${moduleConfig.moduleKey} QMS email`,
+          },
+        ];
 
-      if (qmsAuthUserId) {
-        await this.configRepo.upsertConfigWithDescription(QMS_AUTH_CONFIG_KEY, qmsAuthUserId, "Auth Center stable key of QMS user", tx);
-      } else {
-        await this.configRepo.deleteByKey(QMS_AUTH_CONFIG_KEY, tx);
-        await this.configRepo.deleteByKey(QMS_EMAIL_CONFIG_KEY, tx);
-      }
-      if (emails?.qmsEmail) {
-        await this.configRepo.upsertConfigWithDescription(QMS_EMAIL_CONFIG_KEY, emails.qmsEmail, "Email address of current QMS user", tx);
-      }
-
-      if (darQmsAuthUserId) {
-        await this.configRepo.upsertConfigWithDescription(DAR_QMS_AUTH_CONFIG_KEY, darQmsAuthUserId, "Auth Center stable key of DAR QMS user", tx);
-      } else {
-        await this.configRepo.deleteByKey(DAR_QMS_AUTH_CONFIG_KEY, tx);
-        await this.configRepo.deleteByKey(DAR_QMS_EMAIL_CONFIG_KEY, tx);
-      }
-      if (moduleEmails?.darQmsEmail) {
-        await this.configRepo.upsertConfigWithDescription(DAR_QMS_EMAIL_CONFIG_KEY, moduleEmails.darQmsEmail, "Email address of DAR QMS user", tx);
-      }
-
-      if (carQmsAuthUserId) {
-        await this.configRepo.upsertConfigWithDescription(CAR_QMS_AUTH_CONFIG_KEY, carQmsAuthUserId, "Auth Center stable key of CAR QMS user", tx);
-      } else {
-        await this.configRepo.deleteByKey(CAR_QMS_AUTH_CONFIG_KEY, tx);
-        await this.configRepo.deleteByKey(CAR_QMS_EMAIL_CONFIG_KEY, tx);
-      }
-      if (moduleEmails?.carQmsEmail) {
-        await this.configRepo.upsertConfigWithDescription(CAR_QMS_EMAIL_CONFIG_KEY, moduleEmails.carQmsEmail, "Email address of CAR QMS user", tx);
-      }
-
-      if (darMrAuthUserId) {
-        await this.configRepo.upsertConfigWithDescription(DAR_MR_CONFIG_KEY, darMrAuthUserId, "Auth Center stable key of DAR MR user", tx);
-      } else {
-        await this.configRepo.deleteByKey(DAR_MR_CONFIG_KEY, tx);
-        await this.configRepo.deleteByKey(DAR_MR_EMAIL_CONFIG_KEY, tx);
-      }
-      if (moduleEmails?.darMrEmail) {
-        await this.configRepo.upsertConfigWithDescription(DAR_MR_EMAIL_CONFIG_KEY, moduleEmails.darMrEmail, "Email address of DAR MR user", tx);
-      }
-
-      if (carMrAuthUserId) {
-        await this.configRepo.upsertConfigWithDescription(CAR_MR_CONFIG_KEY, carMrAuthUserId, "Auth Center stable key of CAR MR user", tx);
-      } else {
-        await this.configRepo.deleteByKey(CAR_MR_CONFIG_KEY, tx);
-        await this.configRepo.deleteByKey(CAR_MR_EMAIL_CONFIG_KEY, tx);
-      }
-      if (moduleEmails?.carMrEmail) {
-        await this.configRepo.upsertConfigWithDescription(CAR_MR_EMAIL_CONFIG_KEY, moduleEmails.carMrEmail, "Email address of CAR MR user", tx);
+        for (const entry of entries) {
+          if (entry.value) {
+            await this.configRepo.upsertConfigWithDescription(entry.key, entry.value, entry.description, tx);
+          } else {
+            await this.configRepo.deleteByKey(entry.key, tx);
+          }
+        }
       }
     });
   }

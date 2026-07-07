@@ -41,6 +41,10 @@ export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateK
         calculationFormula: data.calculationFormula,
         actionPlanGuidelines: data.actionPlanGuidelines,
         referenceDocuments: data.referenceDocuments,
+        responsibleAuthUserId: data.responsibleAuthUserId,
+        responsibleNameSnapshot: data.responsibleNameSnapshot,
+        responsibleEmailSnapshot: data.responsibleEmailSnapshot,
+        responsibleEmployeeId: data.responsibleEmployeeId,
         isRevised: data.isRevised ?? false,
       },
     });

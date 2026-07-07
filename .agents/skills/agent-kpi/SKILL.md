@@ -9,6 +9,7 @@ description: >
 
 You are the KPI Module expert for the `qms-system` project.
 **Regarding UI/UX, you must always adhere to the Design System Agent.**
+Any KPI chart or performance visualization must use `recharts` and follow the shared chart rules.
 
 ---
 
@@ -113,3 +114,4 @@ enum AchievedStatus     { PENDING OK NOT_OK }
 4. Attachment for Monthly Report uses `attachmentSpItemId` for the Fresh URL.
 5. Downloading attachments must go through `/api/sharepoint/get-file?itemId=attachmentSpItemId`.
 6. Frequency: MONTHLY, QUARTERLY, SEMI_ANNUALLY, ANNUALLY
+7. Any KPI chart or performance visualization must use `recharts` and follow the Design System chart rules.

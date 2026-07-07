@@ -396,6 +396,7 @@ export const ModelName = {
   DarDistribution: 'DarDistribution',
   DarAttachment: 'DarAttachment',
   DarApproval: 'DarApproval',
+  DarRejectionHistory: 'DarRejectionHistory',
   ApprovalSignature: 'ApprovalSignature',
   QmsProcessing: 'QmsProcessing',
   PublicDocument: 'PublicDocument',
@@ -453,7 +454,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "systemConfig" | "localRoleGrant" | "departmentCode" | "kpiDept" | "docControlDept" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog" | "auditAppointment" | "auditAppointmentMember" | "auditAppointmentSignoff" | "auditSessionPlan" | "auditSessionRow" | "auditSessionTeamMember" | "auditGanttRow" | "auditPlan" | "auditStandard" | "auditPlanDepartment" | "auditAuditorAssignment" | "auditSchedule" | "auditScheduleTeamMember" | "auditAttachment" | "auditAnnouncement" | "auditFinding" | "auditCorrectiveAction" | "auditVerification" | "auditSignoff" | "auditReport"
+    modelProps: "systemConfig" | "localRoleGrant" | "departmentCode" | "kpiDept" | "docControlDept" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "darRejectionHistory" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog" | "auditAppointment" | "auditAppointmentMember" | "auditAppointmentSignoff" | "auditSessionPlan" | "auditSessionRow" | "auditSessionTeamMember" | "auditGanttRow" | "auditPlan" | "auditStandard" | "auditPlanDepartment" | "auditAuditorAssignment" | "auditSchedule" | "auditScheduleTeamMember" | "auditAttachment" | "auditAnnouncement" | "auditFinding" | "auditCorrectiveAction" | "auditVerification" | "auditSignoff" | "auditReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1342,6 +1343,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DarApprovalCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DarApprovalCountAggregateOutputType> | number
+        }
+      }
+    }
+    DarRejectionHistory: {
+      payload: Prisma.$DarRejectionHistoryPayload<ExtArgs>
+      fields: Prisma.DarRejectionHistoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DarRejectionHistoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DarRejectionHistoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>
+        }
+        findFirst: {
+          args: Prisma.DarRejectionHistoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DarRejectionHistoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>
+        }
+        findMany: {
+          args: Prisma.DarRejectionHistoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>[]
+        }
+        create: {
+          args: Prisma.DarRejectionHistoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>
+        }
+        createMany: {
+          args: Prisma.DarRejectionHistoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DarRejectionHistoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>[]
+        }
+        delete: {
+          args: Prisma.DarRejectionHistoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>
+        }
+        update: {
+          args: Prisma.DarRejectionHistoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.DarRejectionHistoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DarRejectionHistoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DarRejectionHistoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.DarRejectionHistoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarRejectionHistoryPayload>
+        }
+        aggregate: {
+          args: Prisma.DarRejectionHistoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDarRejectionHistory>
+        }
+        groupBy: {
+          args: Prisma.DarRejectionHistoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DarRejectionHistoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DarRejectionHistoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DarRejectionHistoryCountAggregateOutputType> | number
         }
       }
     }
@@ -4630,6 +4705,7 @@ export const DarItemScalarFieldEnum = {
   docNumber: 'docNumber',
   docName: 'docName',
   revision: 'revision',
+  effectiveDate: 'effectiveDate',
   darMasterId: 'darMasterId'
 } as const
 
@@ -4683,6 +4759,23 @@ export const DarApprovalScalarFieldEnum = {
 } as const
 
 export type DarApprovalScalarFieldEnum = (typeof DarApprovalScalarFieldEnum)[keyof typeof DarApprovalScalarFieldEnum]
+
+
+export const DarRejectionHistoryScalarFieldEnum = {
+  id: 'id',
+  darMasterId: 'darMasterId',
+  stepRole: 'stepRole',
+  rejectedByUserId: 'rejectedByUserId',
+  rejectedByAuthUserId: 'rejectedByAuthUserId',
+  rejectedByName: 'rejectedByName',
+  rejectedByEmployeeId: 'rejectedByEmployeeId',
+  rejectedByDepartmentName: 'rejectedByDepartmentName',
+  comment: 'comment',
+  actionDate: 'actionDate',
+  createdAt: 'createdAt'
+} as const
+
+export type DarRejectionHistoryScalarFieldEnum = (typeof DarRejectionHistoryScalarFieldEnum)[keyof typeof DarRejectionHistoryScalarFieldEnum]
 
 
 export const ApprovalSignatureScalarFieldEnum = {
@@ -4785,6 +4878,10 @@ export const KPIObjectiveScalarFieldEnum = {
   calculationFormula: 'calculationFormula',
   actionPlanGuidelines: 'actionPlanGuidelines',
   referenceDocuments: 'referenceDocuments',
+  responsibleAuthUserId: 'responsibleAuthUserId',
+  responsibleNameSnapshot: 'responsibleNameSnapshot',
+  responsibleEmailSnapshot: 'responsibleEmailSnapshot',
+  responsibleEmployeeId: 'responsibleEmployeeId',
   isRevised: 'isRevised',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -5030,6 +5127,7 @@ export const CarResponseScalarFieldEnum = {
   responderName: 'responderName',
   responderEmployeeId: 'responderEmployeeId',
   responderPosition: 'responderPosition',
+  responderDepartment: 'responderDepartment',
   respondedAt: 'respondedAt',
   responseType: 'responseType',
   fiveWhys: 'fiveWhys',
@@ -5088,6 +5186,8 @@ export type CarMrSignatureScalarFieldEnum = (typeof CarMrSignatureScalarFieldEnu
 export const CarAttachmentScalarFieldEnum = {
   id: 'id',
   carResponseId: 'carResponseId',
+  carVerificationId: 'carVerificationId',
+  carMrSignatureId: 'carMrSignatureId',
   fileName: 'fileName',
   fileSize: 'fileSize',
   mimeType: 'mimeType',
@@ -6079,6 +6179,7 @@ export type GlobalOmitConfig = {
   darDistribution?: Prisma.DarDistributionOmit
   darAttachment?: Prisma.DarAttachmentOmit
   darApproval?: Prisma.DarApprovalOmit
+  darRejectionHistory?: Prisma.DarRejectionHistoryOmit
   approvalSignature?: Prisma.ApprovalSignatureOmit
   qmsProcessing?: Prisma.QmsProcessingOmit
   publicDocument?: Prisma.PublicDocumentOmit

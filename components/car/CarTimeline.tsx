@@ -2,12 +2,32 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
-import type { CarDetail } from "@/types/car";
+import type { CarDetail, CarAttachmentRow } from "@/types/car";
 
 import { parseComment } from "@/lib/utils";
+
+function Attachments({ files }: { files: CarAttachmentRow[] }) {
+  if (!files?.length) return null;
+  return (
+    <div className="flex flex-col gap-1 mt-0.5 pl-2 border-l-2 border-slate-200">
+      {files.map((file) => (
+        <a
+          key={file.id}
+          href={`/api/sharepoint/get-file?itemId=${file.spItemId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1 not-italic font-medium"
+        >
+          <Paperclip className="w-3 h-3" />
+          {file.fileName}
+        </a>
+      ))}
+    </div>
+  );
+}
 
 function Comment({ text }: { text: string }) {
   const [expanded, setExpanded] = useState(false);
@@ -153,6 +173,8 @@ export default function CarTimeline({ car }: Props) {
                   <img src={verify1.verifierSignaturePath} alt="ลายเซ็น" className="inline-block h-5 object-contain align-middle ml-1" />
                 </>
               )}
+              <Comment text={verify1.findings} />
+              <Attachments files={verify1.attachments} />
             </>
           ) : undefined
         }
@@ -177,6 +199,8 @@ export default function CarTimeline({ car }: Props) {
                     <img src={verify2.verifierSignaturePath} alt="ลายเซ็น" className="inline-block h-5 object-contain align-middle ml-1" />
                   </>
                 )}
+                <Comment text={verify2.findings} />
+                <Attachments files={verify2.attachments} />
               </>
             ) : undefined
           }
@@ -191,6 +215,7 @@ export default function CarTimeline({ car }: Props) {
               <>
                 {fmt(car.mrSignature.signedAt)} · {car.mrSignature.mrUser.name}
                 {car.mrSignature.comment ? <Comment text={car.mrSignature.comment} /> : null}
+                <Attachments files={car.mrSignature.attachments} />
               </>
             ) : undefined
           }

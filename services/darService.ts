@@ -16,6 +16,7 @@ import type { DarDetail, DarSummary, CreateDarInput, DarApprovalRow, ReviewerCan
 import { Prisma, type DarStatus, type SignatureType } from "@/generated/prisma/client";
 import { redis } from "@/lib/redis";
 import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
+import { isPrivilegedQmsRole } from "@/lib/qms-roles";
 
 type DarDetailRaw = NonNullable<Awaited<ReturnType<DarRepository["findDetailById"]>>>;
 type DarApprovalRaw = DarDetailRaw["approvals"][number];
@@ -141,6 +142,7 @@ export class DarService {
   private async fetchDarDetail(id: string, tx?: Prisma.TransactionClient): Promise<DarDetail | null> {
     const master = await this.darRepo.findDetailById(id, tx);
     if (!master) return null;
+    const rejectionHistory = await this.darRepo.findRejectionHistoryByDarId(id, tx);
 
     return {
       id: master.id,
@@ -166,6 +168,7 @@ export class DarService {
         docNumber: i.docNumber,
         docName: i.docName,
         revision: i.revision,
+        effectiveDate: i.effectiveDate?.toISOString() ?? null,
       })),
       distributions: master.distributions.map((d: DarDetailRaw["distributions"][number]) => ({
         departmentId: d.departmentId,
@@ -177,6 +180,21 @@ export class DarService {
       approvals: master.approvals.map((a: DarDetailRaw["approvals"][number]) =>
         this.mapApproval(a)
       ),
+      rejectionHistory: rejectionHistory.map((history) => ({
+        id: history.id,
+        stepRole: history.stepRole as DarDetail["rejectionHistory"][number]["stepRole"],
+        actionDate: history.actionDate.toISOString(),
+        comment: history.comment,
+        rejectedBy: {
+          id: history.rejectedByUserId,
+          authUserId: history.rejectedByAuthUserId,
+          name: history.rejectedByName,
+          employeeId: history.rejectedByEmployeeId,
+          department: history.rejectedByDepartmentName
+            ? { id: "", name: history.rejectedByDepartmentName }
+            : null,
+        },
+      })),
       attachments: master.attachments.map((a: DarDetailRaw["attachments"][number]): DarAttachmentRow => ({
         id: a.id,
         fileName: a.fileName,
@@ -263,12 +281,21 @@ export class DarService {
     };
   }
 
-  async getDarById(id: string, requesterId: string, isPrivileged = false): Promise<DarDetail> {
+  async getDarById(
+    id: string,
+    actor: { userId: string; authUserId?: string | null },
+    isPrivileged = false,
+  ): Promise<DarDetail> {
     const detail = await this.fetchDarDetail(id);
     if (!detail) throw new NotFoundError("DAR");
 
-    const isAssignedApprover = detail.approvals.some((a) => a.assignedUser.id === requesterId);
-    if (!isPrivileged && detail.requester.id !== requesterId && !isAssignedApprover) {
+    const actorIds = new Set([actor.userId, actor.authUserId ?? null].filter((value): value is string => Boolean(value)));
+    const isRequester = actorIds.has(detail.requester.id) || (detail.requester.authUserId ? actorIds.has(detail.requester.authUserId) : false);
+    const isAssignedApprover = detail.approvals.some(
+      (a) => actorIds.has(a.assignedUser.id) || (a.assignedUser.authUserId ? actorIds.has(a.assignedUser.authUserId) : false),
+    );
+
+    if (!isPrivileged && !isRequester && !isAssignedApprover) {
       throw new ForbiddenError();
     }
 
@@ -318,6 +345,7 @@ export class DarService {
           docNumber: item.docNumber,
           docName: item.docName,
           revision: item.revision,
+          effectiveDate: item.effectiveDate ? new Date(item.effectiveDate) : null,
         })),
       },
       distributions: {
@@ -425,6 +453,7 @@ export class DarService {
             docNumber: item.docNumber,
             docName: item.docName,
             revision: item.revision,
+            effectiveDate: item.effectiveDate ? new Date(item.effectiveDate) : null,
             darMasterId: id,
           }));
           await this.darRepo.createItems(itemsData, tx);
@@ -850,6 +879,20 @@ export class DarService {
 
     await db.$transaction(async (tx) => {
       await this.darRepo.updateApproval(myStep.id, { action: "REJECTED", actionDate: now, comment: dbComment }, tx);
+      await this.darRepo.createRejectionHistory(
+        {
+          darMasterId: darId,
+          stepRole: myStep.stepRole,
+          rejectedByUserId: userId,
+          rejectedByAuthUserId: actor.authUserId ?? null,
+          rejectedByName: actorSnapshot?.name ?? null,
+          rejectedByEmployeeId: actorSnapshot?.employeeId ?? null,
+          rejectedByDepartmentName: actorSnapshot?.department?.name ?? null,
+          comment: dbComment,
+          actionDate: now,
+        },
+        tx,
+      );
       await this.approvalSignatureRepo.upsertStep(
         {
           module: "DAR",
@@ -886,10 +929,28 @@ export class DarService {
     // Notify requester
     const rejectedRequesterAuthId = (dar as Record<string, unknown>).requesterAuthUserId as string | null | undefined;
     if (rejectedRequesterAuthId) {
+      const stepLabel = myStep.stepRole === "REVIEWER"
+        ? "Reviewer"
+        : myStep.stepRole === "APPROVER_MR"
+          ? "MR"
+          : myStep.stepRole;
+      const rejectionText = comment.startsWith('{') && comment.endsWith('}')
+        ? (() => { try { const p = JSON.parse(comment) as { text?: string }; return p.text ?? comment; } catch { return comment; } })()
+        : comment;
+      const darNoStr = dar.darNo ?? darId;
+      const requesterName = (dar as Record<string, unknown>).requesterName as string | null ?? '-';
+
       NotificationService.createInAppNotification({
         recipientId: rejectedRequesterAuthId,
         title: 'DAR ถูกปฏิเสธ',
-        body: `DAR ${dar.darNo ?? darId} ถูกปฏิเสธโดย ${myStep.stepRole}`,
+        body: [
+          `DAR ${darNoStr} ถูกปฏิเสธโดย ${actorSnapshot?.name ?? 'Unknown'} (${stepLabel})`,
+          `DAR ${darNoStr} rejected by ${actorSnapshot?.name ?? 'Unknown'} (${stepLabel})`,
+          `เลขที่คำขอ/DAR No.: ${darNoStr}`,
+          `ผู้ร้องขอ/Requester: ${requesterName}`,
+          `ปฏิเสธโดย/Rejected By: ${actorSnapshot?.name ?? 'Unknown'} (${stepLabel})`,
+          `เหตุผล/Reason: ${rejectionText}`,
+        ].join('\n'),
         module: 'DAR', resourceId: darId, resourceType: 'DAR',
       }).catch(() => {});
     }
@@ -1015,11 +1076,11 @@ export class DarService {
     const dar = await this.darRepo.findDarForAttachmentUpload(darId);
     if (!dar) throw new NotFoundError("DAR");
 
-    const isPrivileged = uploaderRole === "QMS" || uploaderRole === "MR";
+    const isPrivileged = isPrivilegedQmsRole(uploaderRole);
     const isAssigned = dar.approvals.some((a) => a.assignedUserId === uploaderId);
     if (!isPrivileged && dar.requesterId !== uploaderId && !isAssigned) throw new ForbiddenError();
 
-    if (dar.status === "COMPLETED" || dar.status === "CANCELLED") {
+    if (!isPrivileged && (dar.status === "COMPLETED" || dar.status === "CANCELLED")) {
       throw new ValidationError("ไม่สามารถเพิ่มไฟล์ในคำขอที่เสร็จสิ้นหรือยกเลิกแล้ว");
     }
 
@@ -1093,11 +1154,11 @@ export class DarService {
     const dar = await this.darRepo.findDarStatusAndRequester(darId);
     if (!dar) throw new NotFoundError("DAR");
 
-    const isPrivileged = userRole === "QMS" || userRole === "MR";
+    const isPrivileged = isPrivilegedQmsRole(userRole);
     const isOwner = attachment.uploadedById === userId || dar.requesterId === userId;
     if (!isPrivileged && !isOwner) throw new ForbiddenError();
 
-    if (dar.status === "COMPLETED" || dar.status === "CANCELLED") {
+    if (!isPrivileged && (dar.status === "COMPLETED" || dar.status === "CANCELLED")) {
       throw new ValidationError("ไม่สามารถลบไฟล์ในคำขอที่เสร็จสิ้นหรือยกเลิกแล้ว");
     }
 
@@ -1115,7 +1176,7 @@ export class DarService {
     userId: string,
     userRole: string
   ): Promise<{ downloadUrl: string; mimeType: string; name: string }> {
-    const isPrivileged = userRole === "QMS" || userRole === "MR" || userRole === "IT";
+    const isPrivileged = isPrivilegedQmsRole(userRole);
 
     if (!isPrivileged) {
       const attachment = await this.darRepo.findAttachmentBySpItemId(spItemId);

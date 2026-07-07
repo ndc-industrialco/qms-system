@@ -2,28 +2,20 @@ import { requireRoleEdge } from "@/lib/auth";
 import { ApprovalConfigService } from "@/services/approvalConfigService";
 import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
+import { APPROVAL_CONFIG_MODULES, type ApprovalConfigModuleKey } from "@/lib/approval-config";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 
 const configService = new ApprovalConfigService();
 
 const approvalConfigSchema = z.object({
-  mrAuthUserId: z.string().nullable().optional(),
-  qmsAuthUserId: z.string().nullable().optional(),
-  emails: z.object({
+  modules: z.array(z.object({
+    moduleKey: z.enum(APPROVAL_CONFIG_MODULES.map((module) => module.key) as [string, ...string[]]),
+    mrAuthUserId: z.string().nullable().optional(),
+    qmsAuthUserId: z.string().nullable().optional(),
     mrEmail: z.string().nullable().optional(),
     qmsEmail: z.string().nullable().optional(),
-  }).optional(),
-  darQmsAuthUserId: z.string().nullable().optional(),
-  carQmsAuthUserId: z.string().nullable().optional(),
-  darMrAuthUserId: z.string().nullable().optional(),
-  carMrAuthUserId: z.string().nullable().optional(),
-  moduleEmails: z.object({
-    darQmsEmail: z.string().nullable().optional(),
-    carQmsEmail: z.string().nullable().optional(),
-    darMrEmail: z.string().nullable().optional(),
-    carMrEmail: z.string().nullable().optional(),
-  }).optional(),
+  })),
 });
 
 export async function GET(req: NextRequest) {
@@ -43,14 +35,10 @@ export async function POST(req: NextRequest) {
     const validated = approvalConfigSchema.parse(body);
 
     await configService.updateConfig(
-      validated.mrAuthUserId ?? null,
-      validated.qmsAuthUserId ?? null,
-      validated.emails,
-      validated.darQmsAuthUserId ?? null,
-      validated.carQmsAuthUserId ?? null,
-      validated.moduleEmails,
-      validated.darMrAuthUserId ?? null,
-      validated.carMrAuthUserId ?? null,
+      validated.modules.map((module) => ({
+        ...module,
+        moduleKey: module.moduleKey as ApprovalConfigModuleKey,
+      })),
     );
 
     return sendSuccess(null, "Approval configurations updated successfully");

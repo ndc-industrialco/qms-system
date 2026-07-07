@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, FileSpreadsheet, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { useUrlFilters } from "@/hooks/use-url-filters";
@@ -16,8 +16,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import CarStatusBadge from "./CarStatusBadge";
 import CarFormModal from "./CarFormModal";
+import CarPreviewExportDialog, { type PreviewRow } from "./CarPreviewExportDialog";
 import { CAR_SCOPE_LABELS, CAR_SOURCE_LABELS, CAR_STATUS_LABELS, type CarDetail, type CarListResponse, type CarListScope, type CarSourceType, type CarStatus, type CarSummary } from "@/types/car";
 import { fmtDate } from "@/lib/format";
+
+const FOLLOW_UP_VALUES = ["near-due-v1", "overdue-v1", "near-due-v2", "overdue-v2"] as const;
+const FOLLOW_UP_LABELS: Record<string, string> = {
+  "near-due-v1": "ใกล้กำหนดตรวจครั้งที่ 1",
+  "overdue-v1": "เลยกำหนดตรวจครั้งที่ 1",
+  "near-due-v2": "ใกล้กำหนดตรวจครั้งที่ 2",
+  "overdue-v2": "เลยกำหนดตรวจครั้งที่ 2",
+};
+const FOLLOW_UP_COLORS: Record<string, string> = {
+  "near-due-v1": "text-amber-600 bg-amber-50 border-amber-200",
+  "overdue-v1": "text-rose-600 bg-rose-50 border-rose-200",
+  "near-due-v2": "text-amber-600 bg-amber-50 border-amber-200",
+  "overdue-v2": "text-rose-600 bg-rose-50 border-rose-200",
+};
 
 interface Props {
   initialData?: CarListResponse;
@@ -103,6 +118,16 @@ export default function CarListTable({
   const [deleteTarget, setDeleteTarget] = useState<CarSummary | null>(null);
   const [hardDeleteTarget, setHardDeleteTarget] = useState<CarSummary | null>(null);
 
+  const handleExportExcel = () => {
+    setExporting(true);
+    const sp = new URLSearchParams();
+    if (params.search) sp.set("search", params.search);
+    if (params.status) sp.set("status", params.status);
+    if (params.sourceType) sp.set("sourceType", params.sourceType);
+    window.open(`/api/car/export?${sp.toString()}`, "_blank");
+    setTimeout(() => setExporting(false), 2000);
+  };
+
   async function handleEdit(car: CarSummary) {
     setEditLoadingId(car.id);
     try {
@@ -149,7 +174,7 @@ export default function CarListTable({
     onError: (e: Error) => toast.error(e.message),
   });
   const { params, rawValues, setParam, clearAll, hasFilters } = useUrlFilters({
-    keys: ["scope", "search", "status", "sourceType", "page"] as const,
+    keys: ["scope", "search", "status", "sourceType", "page", "followUp"] as const,
     searchKey: "search",
     debounceMs: 300,
   });
@@ -171,6 +196,22 @@ export default function CarListTable({
     initialData,
   });
 
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const previewQuery = useQuery<{ data: PreviewRow[] }>({
+    queryKey: ["car-export-preview", params.search, params.status, params.sourceType],
+    queryFn: async () => {
+      const sp = new URLSearchParams();
+      if (params.search) sp.set("search", params.search);
+      if (params.status) sp.set("status", params.status);
+      if (params.sourceType) sp.set("sourceType", params.sourceType);
+      const res = await fetch(`/api/car/export/preview?${sp.toString()}`);
+      if (!res.ok) throw new Error("Failed to load preview");
+      return res.json();
+    },
+    enabled: previewOpen,
+  });
+
   const rawCars = data?.data ?? [];
   const total = data?.meta.total ?? 0;
   const totalPages = data?.meta.total ? Math.ceil(data.meta.total / data.meta.limit) : 0;
@@ -185,9 +226,13 @@ export default function CarListTable({
   }
 
   const shouldGroupByMyDepartment = scope === "all" && Boolean(myAuthDeptId);
-  const cars = shouldGroupByMyDepartment
+  let cars = shouldGroupByMyDepartment
     ? [...rawCars].sort((a, b) => Number(isMyDept(b)) - Number(isMyDept(a)))
     : rawCars;
+
+  if (params.followUp) {
+    cars = cars.filter((c) => c.followUpStatus === params.followUp);
+  }
 
   const myDeptBoundary = cars.findIndex((c) => !isMyDept(c));
 
@@ -245,11 +290,22 @@ export default function CarListTable({
               label: CAR_SOURCE_LABELS[sourceType],
             })),
           },
+          {
+            key: "followUp",
+            label: "ติดตาม",
+            allLabel: "ทั้งหมด",
+            options: FOLLOW_UP_VALUES.map((v) => ({
+              value: v,
+              label: FOLLOW_UP_LABELS[v],
+            })),
+            minWidth: "11rem",
+          },
         ]}
         filterValues={{
           scope,
           status: params.status || "",
           sourceType: params.sourceType || "",
+          followUp: params.followUp || "",
         }}
         onFilterChange={(key, value) => {
           setParam(key, value);
@@ -258,10 +314,52 @@ export default function CarListTable({
         hasActiveFilters={hasFilters}
         onClearAll={clearAll}
         clearLabel="Clear"
-        resultCount={cars.length}
+        resultCount={params.followUp ? cars.length : cars.length}
         totalCount={total}
         countLabel="CARs"
       />
+
+      {/* Follow-up status indicators — show if any cars have non-normal followUpStatus */}
+      {cars.some((c) => c.followUpStatus !== "normal") && (
+        <div className="flex flex-wrap items-center gap-2 px-1">
+          {cars.filter((c) => c.followUpStatus !== "normal").slice(0, 5).map((c) => (
+            <span
+              key={c.id}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${FOLLOW_UP_COLORS[c.followUpStatus] ?? ""}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full currentColor opacity-70" />
+              {FOLLOW_UP_LABELS[c.followUpStatus]} — {c.carNo}
+            </span>
+          ))}
+          {cars.filter((c) => c.followUpStatus !== "normal").length > 5 && (
+            <span className="text-[11px] text-slate-400">
+              +{cars.filter((c) => c.followUpStatus !== "normal").length - 5} รายการ
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Export / Preview actions */}
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-slate-600 border-slate-200 hover:bg-slate-50 h-8"
+          onClick={() => setPreviewOpen(true)}
+        >
+          <Eye className="h-3.5 w-3.5 mr-1.5" />
+          Preview
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-emerald-700 border-emerald-200 hover:bg-emerald-50 h-8"
+          onClick={handleExportExcel}
+        >
+          <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" />
+          ส่งออก Excel
+        </Button>
+      </div>
 
       {cars.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-6">
@@ -292,6 +390,13 @@ export default function CarListTable({
                     </div>
                     <CarStatusBadge status={car.status} />
                   </div>
+                  {car.followUpStatus !== "normal" && (
+                    <div className="mb-2">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${FOLLOW_UP_COLORS[car.followUpStatus] ?? ""}`}>
+                        {FOLLOW_UP_LABELS[car.followUpStatus]}
+                      </span>
+                    </div>
+                  )}
                   <p className="text-sm font-medium text-slate-800 line-clamp-2 mb-3">{car.defectDetail}</p>
                   <div className="space-y-1.5 text-xs mb-3">
                     <p className="text-slate-500">
@@ -350,6 +455,7 @@ export default function CarListTable({
                     <TableHead>{t("car.list.colDept")}</TableHead>
                     <TableHead>{t("car.list.colDetail")}</TableHead>
                     <TableHead className="text-center">{t("car.list.colStatus")}</TableHead>
+                    <TableHead className="text-center">ติดตาม</TableHead>
                     <TableHead className="text-center">{t("car.list.colIssuedAt")}</TableHead>
                     <TableHead className="text-center">{t("car.list.colDueAt")}</TableHead>
                     <TableHead className="text-center w-24">การจัดการ</TableHead>
@@ -362,12 +468,12 @@ export default function CarListTable({
                       <React.Fragment key={car.id}>
                         {shouldGroupByMyDepartment && idx === 0 && myDeptBoundary !== 0 && (
                           <TableRow key="label-mine">
-                            <TableCell colSpan={8} className="py-1.5 px-4 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">แผนกของฉัน</TableCell>
+                            <TableCell colSpan={9} className="py-1.5 px-4 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">แผนกของฉัน</TableCell>
                           </TableRow>
                         )}
                         {shouldGroupByMyDepartment && idx === myDeptBoundary && myDeptBoundary > 0 && (
                           <TableRow key="label-others">
-                            <TableCell colSpan={8} className="py-1.5 px-4 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide border-t border-slate-200">แผนกอื่นๆ</TableCell>
+                            <TableCell colSpan={9} className="py-1.5 px-4 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide border-t border-slate-200">แผนกอื่นๆ</TableCell>
                           </TableRow>
                         )}
                       <TableRow key={car.id} className="hover:bg-slate-50 transition-colors">
@@ -383,6 +489,15 @@ export default function CarListTable({
                         <TableCell className="text-slate-600 max-w-xs truncate">{car.defectDetail}</TableCell>
                         <TableCell className="text-center">
                           <CarStatusBadge status={car.status} />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {car.followUpStatus !== "normal" ? (
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap ${FOLLOW_UP_COLORS[car.followUpStatus] ?? ""}`}>
+                              {FOLLOW_UP_LABELS[car.followUpStatus]}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-300">-</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-slate-500 text-xs text-center font-mono">
                           {fmtDate(car.issuedAt)}
@@ -503,6 +618,15 @@ export default function CarListTable({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CarPreviewExportDialog
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        onExport={handleExportExcel}
+        rows={previewQuery.data?.data ?? []}
+        loading={previewQuery.isLoading}
+        exporting={exporting}
+      />
     </div>
   );
 }

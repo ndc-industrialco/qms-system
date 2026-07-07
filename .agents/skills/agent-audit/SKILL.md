@@ -9,6 +9,7 @@ description: >
 
 You are the Audit Module expert for the `qms-system` project.
 **Regarding UI/UX, you must always adhere to the Design System Agent.**
+Any audit chart, timeline visualization, or dashboard graphic must use `recharts` and follow the shared chart rules.
 
 ---
 
@@ -126,3 +127,4 @@ enum FindingSeverity    { MINOR MAJOR CRITICAL }
 4. Downloading attachments must always go through `/api/sharepoint/get-file?itemId=sharePointItemId`.
 5. Token-based approval: Use `ActionToken` for email-based approvals.
 6. AuditNo format: `IA-{YYYY}-{SEQ:03d}` (Internal) or `EA-{YYYY}-{SEQ:03d}` (External).
+7. Any audit chart, timeline visualization, or dashboard graphic must use `recharts` and follow the Design System chart rules.

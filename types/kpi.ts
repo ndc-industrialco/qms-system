@@ -27,6 +27,10 @@ export interface CreateKpiObjectiveDTO {
   calculationFormula: string;
   actionPlanGuidelines: string;
   referenceDocuments?: string;
+  responsibleAuthUserId?: string;
+  responsibleNameSnapshot?: string;
+  responsibleEmailSnapshot?: string;
+  responsibleEmployeeId?: string;
 }
 
 export interface UpdateKpiObjectiveDTO {
@@ -37,6 +41,10 @@ export interface UpdateKpiObjectiveDTO {
   calculationFormula?: string;
   actionPlanGuidelines?: string;
   referenceDocuments?: string;
+  responsibleAuthUserId?: string;
+  responsibleNameSnapshot?: string;
+  responsibleEmailSnapshot?: string;
+  responsibleEmployeeId?: string;
 }
 
 export interface KpiObjectiveRevisionSnapshot {
@@ -48,6 +56,19 @@ export interface KpiObjectiveRevisionSnapshot {
   calculationFormula: string;
   actionPlanGuidelines: string;
   referenceDocuments: string | null;
+  responsibleAuthUserId: string | null;
+  responsibleNameSnapshot: string | null;
+  responsibleEmailSnapshot: string | null;
+  responsibleEmployeeId: string | null;
+}
+
+export interface KpiRevisionHistoryEntry {
+  auditLogId: string;
+  revisedAt: Date | string;
+  revisedByRole: string;
+  reason: string | null;
+  revisedObjectiveIds: string[];
+  objectiveSnapshots: KpiObjectiveRevisionSnapshot[];
 }
 
 export type KpiRevisionChangeType = 'ADDED' | 'UPDATED' | 'REMOVED';

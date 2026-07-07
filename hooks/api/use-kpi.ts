@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { KPI, KPIObjective } from "@/generated/prisma/client";
 import type {
   KpiObjectiveRevisionSnapshot,
+  KpiRevisionHistoryEntry,
   KpiRemovedObjectiveComparison,
   KpiRevisionChangeType,
 } from "@/types/kpi";
@@ -20,6 +21,7 @@ export type KpiObjectiveWithRevision = KPIObjective & {
 export type KpiDetailResponse = KpiWithUsers & {
   objectives: KpiObjectiveWithRevision[];
   removedObjectives?: KpiRemovedObjectiveComparison[];
+  revisionHistory?: KpiRevisionHistoryEntry[];
   approvalSignatures?: Array<{
     step: string;
     signerUserId: string | null;
@@ -62,11 +64,16 @@ export interface KpiPayload {
 
 export interface KpiObjectivePayload {
   target: number;
+  unit?: string;
   objective: string;
   frequency: string;
   calculationFormula: string;
   actionPlanGuidelines: string;
   referenceDocuments?: string;
+  responsibleAuthUserId: string;
+  responsibleNameSnapshot: string;
+  responsibleEmailSnapshot: string;
+  responsibleEmployeeId?: string;
 }
 
 async function extractError(res: Response): Promise<string> {

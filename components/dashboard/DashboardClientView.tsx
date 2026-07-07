@@ -52,27 +52,27 @@ interface Props {
 function getDeptIcon(name: string) {
   const n = name.toUpperCase();
   if (n.includes("IT")) return <Laptop className="w-6 h-6 text-white" />;
-  if (n.includes("QA") || n.includes("QC") || n.includes("à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸š"))
+  if (n.includes("QA") || n.includes("QC") || n.includes("ตรวจสอบ"))
     return <ClipboardCheck className="w-6 h-6 text-white" />;
   if (
     n.includes("PROCUR") ||
     n.includes("PURCHAS") ||
     n.includes("BUY") ||
-    n.includes("à¸ˆà¸±à¸”à¸‹à¸·à¹‰à¸­")
+    n.includes("จัดซื้อ")
   )
     return <Truck className="w-6 h-6 text-white" />;
   if (
     n.includes("SAFE") ||
     n.includes("SECURE") ||
     n.includes("HEALTH") ||
-    n.includes("à¸„à¸§à¸²à¸¡à¸›à¸¥à¸­à¸”à¸ à¸±à¸¢")
+    n.includes("ความปลอดภัย")
   )
     return <ShieldCheck className="w-6 h-6 text-white" />;
   if (
     n.includes("HR") ||
     n.includes("HUMAN") ||
     n.includes("PEOPLE") ||
-    n.includes("à¸šà¸¸à¸„à¸„à¸¥")
+    n.includes("บุคคล")
   )
     return <Users className="w-6 h-6 text-white" />;
   if (n.includes("QMS") || n.includes("ISO") || n.includes("QUAL"))

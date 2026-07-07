@@ -5,11 +5,9 @@ import { handleApiError } from '@/lib/apiErrorHandler';
 import { requireAuth } from '@/lib/auth';
 import { KpiService } from '@/services/kpiService';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
-import { ApprovalSignatureRepository } from '@/repositories/approvalSignatureRepository';
-import { sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail } from '@/services/email';
+import { sendKpiResultEmail, makeBilingualMail } from '@/services/email';
 
 const service = new KpiService();
-const approvalSigRepo = new ApprovalSignatureRepository();
 
 export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -18,9 +16,6 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const body = await _request.json().catch(() => ({}));
     const reason: string | undefined = body.reason || undefined;
     const attachments = body.attachments || undefined;
-
-    const signatures = await approvalSigRepo.findByDocument('KPI', id);
-    const preparerSig = signatures.find(s => s.step === 'PREPARER');
 
     const updated = await service.rejectObjectives(id, {
       userId: session.user.id,
@@ -65,36 +60,6 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           resourceType: "KPI",
         },
       ).catch(() => { /* logged inside NotificationService */ });
-    }
-
-    const preparerAuthId = (preparerSig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined;
-    if (preparerAuthId) {
-      const preparer = await getUserSnapshot(preparerAuthId);
-      if (preparer?.email) {
-        NotificationService.sendEmailOnce(
-          `KPI:${id}:REJECTED:preparer:${preparerAuthId}`,
-          () => sendKpiRejectedPreparerEmail({
-            to: { name: preparer.name ?? '', email: preparer.email! },
-            departmentName: updated.department,
-            year: updated.yearly,
-            actorName: session.user.name ?? '',
-            kpiId: id,
-            objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
-            senderAccessToken: session.user.accessToken,
-          }),
-          preparer.email,
-          'KPI Rejected - Preparer Notification',
-          preparerAuthId,
-          {
-            title: "KPI ถูกปฏิเสธ",
-            body: `KPI ${updated.department} ${updated.yearly}`,
-            htmlBody: makeBilingualMail({ titleTh: `KPI ${updated.department} ปี ${updated.yearly} ถูกปฏิเสธ`, titleEn: `KPI ${updated.department} ${updated.yearly} Rejected`, facts: kpiRejectFacts }),
-            module: "KPI",
-            resourceId: id,
-            resourceType: "KPI",
-          },
-        ).catch(() => { /* logged inside NotificationService */ });
-      }
     }
 
     NotificationService.notifyDeptMembers(

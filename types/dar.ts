@@ -51,6 +51,7 @@ export type DarItemInput = {
   docNumber: string;
   docName: string;
   revision: string;
+  effectiveDate?: string | null;
 };
 
 export type DarAttachmentRow = {
@@ -97,6 +98,20 @@ export type DarApprovalRow = {
   };
 };
 
+export type DarRejectionHistoryRow = {
+  id: string;
+  stepRole: ApprovalStep;
+  actionDate: string;
+  comment: string;
+  rejectedBy: {
+    id: string;
+    authUserId?: string | null;
+    name: string | null;
+    employeeId: string | null;
+    department: { id: string; name: string } | null;
+  };
+};
+
 export type ReviewerCandidate = {
   id: string;
   name: string | null;
@@ -119,6 +134,7 @@ export type DarDetail = {
   items: DarItemInput[];
   distributions: DarDistributionItem[];
   approvals: DarApprovalRow[];
+  rejectionHistory: DarRejectionHistoryRow[];
   attachments: DarAttachmentRow[];
   qmsProcessing: {
     chkHasAttachment: boolean;

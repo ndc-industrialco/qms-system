@@ -78,6 +78,11 @@ export type DarAttachment = Prisma.DarAttachmentModel
  */
 export type DarApproval = Prisma.DarApprovalModel
 /**
+ * Model DarRejectionHistory
+ * 
+ */
+export type DarRejectionHistory = Prisma.DarRejectionHistoryModel
+/**
  * Model ApprovalSignature
  * 
  */

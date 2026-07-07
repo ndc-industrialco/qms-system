@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { getAuthCenterMe, getAuthCenterUserProfile } from "@/lib/auth-center-admin-client";
 // ponytail: getAuthCenterMe still used when token is fresh; session.user.jobTitle is the stable fallback
 import { CarService } from "@/services/carService";
+import { QmsConfigService } from "@/services/qmsConfigService";
 import CarListTable from "@/components/car/CarListTable";
 import AllDeptCarSection from "@/components/car/AllDeptCarSection";
 import CarFormModalTrigger from "@/components/car/CarFormModalTrigger";
@@ -12,6 +13,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "CAR ของแผนก" };
 
 const carService = new CarService();
+const qmsConfigService = new QmsConfigService();
 
 export default async function UserCarListPage({
   searchParams,
@@ -34,7 +36,7 @@ export default async function UserCarListPage({
   });
   const scope = query.scope === "all" ? "my-department" : (query.scope ?? "my-department");
 
-  const [cars, carsAll, authProfile] = await Promise.all([
+  const [cars, carsAll, authProfile, footerConfig] = await Promise.all([
     hasScope
       ? carService.listCars(query, {
           scope,
@@ -48,6 +50,7 @@ export default async function UserCarListPage({
           ? getAuthCenterMe(session.user.accessToken)
           : getAuthCenterUserProfile(authUserId))
       : Promise.resolve(null),
+    qmsConfigService.getSingleFooterConfig("CAR"),
   ]);
 
   const issuerName = authProfile?.displayName ?? session.user.name ?? null;
@@ -59,7 +62,7 @@ export default async function UserCarListPage({
       <PageHeader
         title="CAR ของแผนก"
         subtitle="Corrective Action Requests สำหรับแผนกของคุณ"
-        actions={hasScope ? <CarFormModalTrigger issuerName={issuerName} defaultIssuerPosition={issuerPosition} /> : undefined}
+        actions={hasScope ? <CarFormModalTrigger issuerName={issuerName} defaultIssuerPosition={issuerPosition} footerConfig={footerConfig} /> : undefined}
       />
       {!hasScope || !cars ? (
         <p className="text-sm text-gray-500">บัญชีของคุณยังไม่ได้ผูกกับแผนก</p>
