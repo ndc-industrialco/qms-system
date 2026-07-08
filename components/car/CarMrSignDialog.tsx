@@ -8,6 +8,7 @@ import type { CarDetail } from "@/types/car";
 import type { SignatureType } from "@/types/dar";
 import { toast } from "sonner";
 import ApproveSignatureSection, { type SigMode } from "@/components/shared/ApproveSignatureSection";
+import RichTextView from "@/components/shared/RichTextView";
 
 interface Props {
   carId: string;
@@ -57,6 +58,15 @@ function Field({ label, value, multiline }: { label: string; value: string; mult
 }
 
 // ── Approval timeline ─────────────────────────────────────────────────────────
+
+function RichField({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <RichTextView content={value} className="mt-1 text-sm font-medium text-slate-800" />
+    </div>
+  );
+}
 
 function ApprovalTimeline({ car }: { car: CarDetail }) {
   const steps = [
@@ -372,8 +382,8 @@ export default function CarMrSignDialog({ carId, car, token, savedSignatureUrl, 
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="ประเด็น / Issue" value={car.defectDetail ?? "-"} multiline />
-                <Field label="อ้างอิง / Reference" value={car.nonConformanceRef ?? "-"} />
+                <RichField label="ประเด็น / Issue" value={car.defectDetail} />
+                <RichField label="อ้างอิง / Reference" value={car.nonConformanceRef} />
               </div>
             </div>
 

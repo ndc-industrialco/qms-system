@@ -1,6 +1,6 @@
 import { NotificationRepository } from "@/repositories/notificationRepository";
 import { logger } from "@/lib/logger";
-import { carMailHtml, getAppUrl, fmtDate } from "./carEmailService";
+import { carMailHtml, getAppUrl, fmtDate, richTextToPlainText } from "./carEmailService";
 
 const repo = new NotificationRepository();
 
@@ -137,7 +137,7 @@ function buildCarHtmlBody(opts: {
   // All other events — generic
   const actionUrl = getAppUrl(`/car/${carId}`);
   const dueTh = opts.nextDueDate ? fmtDate(opts.nextDueDate) : undefined;
-  const commentTh = opts.comment ? `ความคิดเห็น / Comment: ${opts.comment}` : undefined;
+  const commentTh = opts.comment ? `ความคิดเห็น / Comment: ${richTextToPlainText(opts.comment)}` : undefined;
 
   return carMailHtml({
     carNo,
@@ -175,8 +175,8 @@ function buildBody(opts: {
 
   if (opts.targetDepartmentName) lines.push(`หน่วยงาน / Dept: ${opts.targetDepartmentName}`);
   if (opts.isoStandards?.length)  lines.push(`ISO Standards: ${opts.isoStandards.join(", ")}`);
-  if (opts.defectDetail)          lines.push(`ประเด็น / Issue: ${opts.defectDetail}`);
-  if (opts.comment)               lines.push(`ความคิดเห็น / Comment: ${opts.comment}`);
+  if (opts.defectDetail)          lines.push(`ประเด็น / Issue: ${richTextToPlainText(opts.defectDetail)}`);
+  if (opts.comment)               lines.push(`ความคิดเห็น / Comment: ${richTextToPlainText(opts.comment)}`);
   if (opts.nextDueDate)           lines.push(`กำหนดการ / Scheduled: ${opts.nextDueDate}`);
 
   return lines.join("\n");

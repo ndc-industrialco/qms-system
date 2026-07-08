@@ -94,7 +94,7 @@ export const carVerifySchema = z.object({
     })
   ).optional().nullable(),
 }).refine(
-  (data) => !(data.result === "FAILED" && data.round === 1 && !data.nextDueDate),
+  () => true,
   { message: "กรุณาระบุวันติดตามครั้งที่ 2", path: ["nextDueDate"] },
 ).refine(
   (data) => !(data.result === "PASSED" && !data.targetMrAuthUserId),
@@ -114,6 +114,10 @@ export const carCloseSchema = z.object({
       spWebUrl: z.string(),
     })
   ).optional().nullable(),
+});
+
+export const carVerify2DueDateSchema = z.object({
+  nextDueDate: z.string().min(1, "Please select the verification round 2 due date"),
 });
 
 export const carReviewResponseSchema = z.object({
@@ -146,6 +150,7 @@ export type CarCreateInput = z.infer<typeof carCreateSchema>;
 export type CarUpdateInput = z.infer<typeof carUpdateSchema>;
 export type CarRespondInput = z.infer<typeof carRespondSchema>;
 export type CarVerifyInput = z.infer<typeof carVerifySchema>;
+export type CarVerify2DueDateInput = z.infer<typeof carVerify2DueDateSchema>;
 export type CarCloseInput = z.infer<typeof carCloseSchema>;
 export type CarReviewResponseInput = z.infer<typeof carReviewResponseSchema>;
 export type CarListQuery = z.infer<typeof carListQuerySchema>;

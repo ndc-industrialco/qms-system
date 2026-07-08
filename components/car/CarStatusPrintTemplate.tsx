@@ -22,6 +22,20 @@ interface Props {
   status?: string;
 }
 
+function isHtmlContent(content: string) {
+  return /<[a-z][\s\S]*>/i.test(content);
+}
+
+function PrintRichText({ content }: { content: string }) {
+  if (!content) return <span>-</span>;
+
+  if (isHtmlContent(content)) {
+    return <div className="print-rich-text" dangerouslySetInnerHTML={{ __html: content }} />;
+  }
+
+  return <>{content}</>;
+}
+
 export default function CarStatusPrintTemplate({ data, dueFilter, status }: Props) {
   const dueFilterLabel =
     dueFilter === "near-due"
@@ -96,6 +110,20 @@ export default function CarStatusPrintTemplate({ data, dueFilter, status }: Prop
           color: #666;
         }
 
+        .print-container .print-rich-text p {
+          margin: 0 0 2px 0;
+        }
+
+        .print-container .print-rich-text ul,
+        .print-container .print-rich-text ol {
+          margin: 2px 0 2px 14px;
+          padding-left: 10px;
+        }
+
+        .print-container .print-rich-text li {
+          margin: 0 0 1px 0;
+        }
+
         @media print {
           body {
             background-color: #fff;
@@ -156,7 +184,9 @@ export default function CarStatusPrintTemplate({ data, dueFilter, status }: Prop
                 <tr key={row.id}>
                   <td className="font-mono font-semibold text-blue-600 text-center">{row.carNo}</td>
                   <td className="text-center font-mono">{row.issuedAt ? new Date(row.issuedAt).toLocaleDateString("th-TH") : "-"}</td>
-                  <td className="text-left" style={{ wordBreak: "break-word" }}>{row.defectDetail}</td>
+                  <td className="text-left" style={{ wordBreak: "break-word" }}>
+                    <PrintRichText content={row.defectDetail} />
+                  </td>
                   <td className="text-left">{row.targetDepartmentName}</td>
                   <td className="text-center font-mono">{row.responseDueAt ? new Date(row.responseDueAt).toLocaleDateString("th-TH") : "-"}</td>
                   <td className="text-left" style={{ wordBreak: "break-word" }}>{row.followUp}</td>

@@ -243,7 +243,7 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
       </div>
 
       {/* FAILED round 1 — next due date */}
-      {resultValue === "FAILED" && round === 1 && (
+      {resultValue === "FAILED" && round === 1 && false && (
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
             {t("car.verify.nextDueDateLabel")}
@@ -253,10 +253,15 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
             {...register("nextDueDate")}
             className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-colors"
           />
-          {errors.nextDueDate && <p className="mt-1 text-xs text-rose-500">{errors.nextDueDate.message}</p>}
           <p className="mt-1.5 text-xs text-slate-500">
             ระบบจะแจ้งเตือนแผนกผู้รับผิดชอบให้เตรียมแก้ไขและตรวจติดตามรอบที่ 2 ตามวันที่กำหนด
           </p>
+        </div>
+      )}
+
+      {resultValue === "FAILED" && round === 1 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          The system will email and notify the target department to set the Verification Round 2 completion date.
         </div>
       )}
 

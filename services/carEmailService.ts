@@ -10,6 +10,80 @@ export function esc(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+const RICH_TEXT_TAGS = new Set([
+  "p",
+  "br",
+  "strong",
+  "b",
+  "em",
+  "i",
+  "u",
+  "s",
+  "ul",
+  "ol",
+  "li",
+  "blockquote",
+  "a",
+]);
+
+const VOID_RICH_TEXT_TAGS = new Set(["br"]);
+
+function hasHtml(value: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(value);
+}
+
+function sanitizeHref(value: string): string | null {
+  const trimmed = value.trim();
+  if (/^(https?:|mailto:|\/)/i.test(trimmed)) return trimmed;
+  return null;
+}
+
+export function sanitizeRichTextHtml(value: string): string {
+  const withoutUnsafeBlocks = value
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<(script|style)[\s\S]*?>[\s\S]*?<\/\1>/gi, "");
+
+  return withoutUnsafeBlocks.replace(/<\/?([a-z0-9]+)([^>]*)>/gi, (raw, tagName: string, attrs: string) => {
+    const tag = tagName.toLowerCase();
+    if (!RICH_TEXT_TAGS.has(tag)) return esc(raw);
+
+    const isClosing = raw.startsWith("</");
+    if (isClosing) return VOID_RICH_TEXT_TAGS.has(tag) ? "" : `</${tag}>`;
+
+    if (tag === "a") {
+      const hrefMatch = attrs.match(/\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+      const href = sanitizeHref(hrefMatch?.[1] ?? hrefMatch?.[2] ?? hrefMatch?.[3] ?? "");
+      if (!href) return "<a>";
+      return `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">`;
+    }
+
+    return VOID_RICH_TEXT_TAGS.has(tag) ? `<${tag}>` : `<${tag}>`;
+  });
+}
+
+export function richTextToEmailHtml(value: string | null | undefined): string {
+  if (!value) return "";
+  if (hasHtml(value)) return sanitizeRichTextHtml(value);
+  return esc(value).replace(/\r?\n/g, "<br>");
+}
+
+export function richTextToPlainText(value: string | null | undefined): string {
+  if (!value) return "";
+  return value
+    .replace(/<\/(p|div|li|h[1-6]|blockquote)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "- ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export function getAppUrl(path: string): string {
   const base = (process.env.NEXTAUTH_URL ?? "").replace(/\/+$/, "");
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
@@ -131,11 +205,11 @@ export function carMailHtml(opts: {
         </table>
         ${carBlock.defectTh ? `<div style="margin-top:10px;border-top:1px solid #f1f5f9;padding-top:10px">
           <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;text-transform:uppercase">ประเด็น / Issue:</div>
-          <div style="font-size:12px;color:#1e293b;line-height:1.6">${esc(carBlock.defectTh)}</div>
+          <div style="font-size:12px;color:#1e293b;line-height:1.6">${richTextToEmailHtml(carBlock.defectTh)}</div>
         </div>` : ""}
         ${carBlock.nonConformanceTh ? `<div style="margin-top:8px">
           <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;text-transform:uppercase">ข้อกำหนดที่เกี่ยวข้อง / Requirement:</div>
-          <div style="font-size:12px;color:#1e293b;line-height:1.6">${esc(carBlock.nonConformanceTh)}</div>
+          <div style="font-size:12px;color:#1e293b;line-height:1.6">${richTextToEmailHtml(carBlock.nonConformanceTh)}</div>
         </div>` : ""}
       </div>
     </div>` : "";
@@ -612,6 +686,42 @@ export async function sendCarVerify2NotifyEmail(opts: {
 }
 
 // ─── Re-CAR ────────────────────────────────────────────────────────────────────
+export async function sendCarVerify2DateRequestEmail(opts: {
+  carId: string;
+  carNo: string;
+  targetEmail: string;
+  cc?: string[];
+  senderAccessToken?: string | null;
+}): Promise<void> {
+  const url = getAppUrl(`/car/${opts.carId}`);
+
+  const html = carMailHtml({
+    carNo: opts.carNo,
+    statusBadgeTh: "Verification 1 Failed",
+    statusBadgeEn: "Set Verification 2 Date",
+    greeting: {
+      th: "Dear Concerned Department,",
+      en: "Dear Concerned Department,",
+    },
+    intro: {
+      th: `CAR ${opts.carNo} did not pass Verification 1. Please open the CAR and set the completion date for Verification 2.`,
+      en: `CAR ${opts.carNo} did not pass Verification 1. Please open the CAR and set the completion date for Verification 2.`,
+    },
+    closingTh: "Please set the date after confirming when corrective actions will be completed.",
+    closingEn: "Please set the date after confirming when corrective actions will be completed.",
+    actionLabel: "Set Verification 2 Date / View CAR",
+    actionUrl: url,
+  });
+
+  await sendMail({
+    to: opts.targetEmail,
+    cc: opts.cc,
+    subject: `[CAR] Set Verification 2 Date Required - ${opts.carNo}`,
+    bodyHtml: html,
+    senderAccessToken: opts.senderAccessToken,
+  });
+}
+
 export async function sendCarReCarEmail(opts: {
   carId: string;
   carNo: string;

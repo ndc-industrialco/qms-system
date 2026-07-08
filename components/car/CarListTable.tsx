@@ -19,6 +19,7 @@ import CarFormModal from "./CarFormModal";
 import CarPreviewExportDialog, { type PreviewRow } from "./CarPreviewExportDialog";
 import { CAR_SCOPE_LABELS, CAR_SOURCE_LABELS, CAR_STATUS_LABELS, type CarDetail, type CarListResponse, type CarListScope, type CarSourceType, type CarStatus, type CarSummary } from "@/types/car";
 import { fmtDate } from "@/lib/format";
+import RichTextView from "@/components/shared/RichTextView";
 
 const FOLLOW_UP_VALUES = ["near-due-v1", "overdue-v1", "near-due-v2", "overdue-v2"] as const;
 const FOLLOW_UP_LABELS: Record<string, string> = {
@@ -55,6 +56,14 @@ type CarListQuery = {
 const PAGE_SIZE = 20;
 const STATUS_VALUES: CarStatus[] = ["DRAFT", "ISSUED", "RESPONDED", "VERIFY_1", "VERIFY_2", "CLOSED", "RE_CAR", "CANCELLED"];
 const SOURCE_VALUES: CarSourceType[] = ["I", "C", "N", "O"];
+
+function CompactRichText({ content }: { content: string }) {
+  return (
+    <div className="max-h-12 overflow-hidden text-sm text-slate-700 [&_.rich-view]:text-sm [&_.rich-view]:leading-snug [&_.rich-view_*]:my-0 [&_p]:my-0">
+      <RichTextView content={content} />
+    </div>
+  );
+}
 
 async function fetchCars(query: CarListQuery): Promise<CarListResponse> {
   const params = new URLSearchParams();
@@ -397,7 +406,9 @@ export default function CarListTable({
                       </span>
                     </div>
                   )}
-                  <p className="text-sm font-medium text-slate-800 line-clamp-2 mb-3">{car.defectDetail}</p>
+                  <div className="mb-3">
+                    <CompactRichText content={car.defectDetail} />
+                  </div>
                   <div className="space-y-1.5 text-xs mb-3">
                     <p className="text-slate-500">
                       {t("car.list.colDept")}: <span className="text-slate-700">{car.targetDepartment.name}</span>
@@ -486,7 +497,9 @@ export default function CarListTable({
                           {CAR_SOURCE_LABELS[car.sourceType] ?? car.sourceType}
                         </TableCell>
                         <TableCell className="text-slate-700">{car.targetDepartment.name}</TableCell>
-                        <TableCell className="text-slate-600 max-w-xs truncate">{car.defectDetail}</TableCell>
+                        <TableCell className="max-w-xs align-top">
+                          <CompactRichText content={car.defectDetail} />
+                        </TableCell>
                         <TableCell className="text-center">
                           <CarStatusBadge status={car.status} />
                         </TableCell>

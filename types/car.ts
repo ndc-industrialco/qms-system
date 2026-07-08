@@ -135,6 +135,7 @@ export type CarDetail = {
   reCarChildren: { id: string; carNo: string; status: string }[];
   createdAt: string;
   updatedAt: string;
+  targetAuthDepartmentId?: string | null;
   issuer: { id: string; name: string | null; employeeId: string | null; department: { id: string; name: string } | null };
   targetDepartment: { id: string; name: string; emailGroup: string | null };
   relatedDepartmentIds: string[];

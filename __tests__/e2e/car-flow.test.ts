@@ -28,6 +28,7 @@ vi.mock("@/services/carEmailService", () => ({
   sendCarPlanRejectedEmail: vi.fn().mockResolvedValue(undefined),
   sendCarVerifyPassEmail: vi.fn().mockResolvedValue(undefined),
   sendCarVerify2NotifyEmail: vi.fn().mockResolvedValue(undefined),
+  sendCarVerify2DateRequestEmail: vi.fn().mockResolvedValue(undefined),
   sendCarReCarEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -68,7 +69,7 @@ vi.mock("@/repositories/systemConfigRepository");
 import { CarService } from "@/services/carService";
 import { CarRepository } from "@/repositories/carRepository";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
-import { sendCarVerifyPassEmail, sendCarVerify2NotifyEmail } from "@/services/carEmailService";
+import { sendCarVerifyPassEmail, sendCarVerify2NotifyEmail, sendCarVerify2DateRequestEmail } from "@/services/carEmailService";
 import { CarReminderService } from "@/services/carReminderService";
 
 type MockClass<T> = { mock: { instances: T[] } };
@@ -209,7 +210,7 @@ describe("CAR flow — Re-CAR path (VERIFY_1 FAIL → VERIFY_2 FAIL → RE_CAR)"
 
     const result = await svc.verifyCar(
       CAR_ID, "verifier-1",
-      { round: 1, result: "FAILED", findings: "Not fixed", nextDueDate: "2026-07-20", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" },
+      { round: 1, result: "FAILED", findings: "Not fixed", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" },
       "auth-verifier-1"
     );
 
@@ -218,9 +219,10 @@ describe("CAR flow — Re-CAR path (VERIFY_1 FAIL → VERIFY_2 FAIL → RE_CAR)"
       CAR_ID, expect.objectContaining({ round: 1, result: "FAILED" }),
       "verifier-1", expect.any(Object), "VERIFY_2", expect.anything()
     );
-    expect(sendCarVerify2NotifyEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ targetEmail: DEPT_EMAIL, nextDueDate: "2026-07-20" })
+    expect(sendCarVerify2DateRequestEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ targetEmail: DEPT_EMAIL })
     );
+    expect(sendCarVerify2NotifyEmail).not.toHaveBeenCalled();
     expect(sendCarVerifyPassEmail).not.toHaveBeenCalled();
   });
 

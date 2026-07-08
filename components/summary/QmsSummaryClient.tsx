@@ -36,7 +36,18 @@ interface QmsSummaryClientProps {
 }
 
 export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps) {
-  const { dars, cars, kpis, auditFindings, deptCodes, kpiDepts, docDepts } = initialData;
+  const {
+    dars,
+    cars,
+    kpis,
+    auditFindings,
+    deptCodes,
+    kpiDepts,
+    docDepts,
+    pendingCount,
+    pendingDarCount,
+    pendingCarCount,
+  } = initialData;
 
   // ---------------------------------------------------------
   // Department Resolver Helper
@@ -448,6 +459,25 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
               </Button>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="no-print rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-sm font-semibold text-amber-900">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            งานค้างทั้งหมด
+            <strong className="text-base">{pendingCount}</strong>
+          </span>
+          <span className="text-xs text-amber-900/80">นับรายการ DAR/CAR ที่ยังไม่ถึงสถานะจบงาน</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+          <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-amber-900 border border-amber-200">
+            DAR <strong className="ml-1">{pendingDarCount}</strong>
+          </span>
+          <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-amber-900 border border-amber-200">
+            CAR <strong className="ml-1">{pendingCarCount}</strong>
+          </span>
         </div>
       </div>
 

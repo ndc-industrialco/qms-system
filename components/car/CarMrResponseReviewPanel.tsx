@@ -3,10 +3,12 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CheckCircle2, ClipboardList, XCircle, ShieldCheck } from "lucide-react";
+import { CheckCircle2, ClipboardList, Download, Eye, FileText, XCircle, ShieldCheck } from "lucide-react";
 import type { CarDetail } from "@/types/car";
 import type { SignatureType } from "@/types/dar";
 import ApproveSignatureSection, { type SigMode } from "@/components/shared/ApproveSignatureSection";
+import RichTextView from "@/components/shared/RichTextView";
+import { FilePreviewModal, type FilePreviewTarget } from "@/components/common/FilePreviewModal";
 
 import { Button } from "@/components/ui/button";
 
@@ -174,7 +176,17 @@ function Field({ label, value, multiline, highlight }: { label: string; value: s
   );
 }
 
+function RichField({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <RichTextView content={value} className="mt-1 text-sm text-slate-800" />
+    </div>
+  );
+}
+
 function ResponseDetail({ response }: { response: NonNullable<CarDetail["response"]> }) {
+  const [previewTarget, setPreviewTarget] = useState<FilePreviewTarget | null>(null);
   const fmt = (iso: string) => new Date(iso).toLocaleDateString("th-TH", { day: "2-digit", month: "long", year: "numeric" });
 
   const rootCauses = [
@@ -217,6 +229,42 @@ function ResponseDetail({ response }: { response: NonNullable<CarDetail["respons
         <Field label="Preventive Action" value={response.preventiveAction} multiline />
       </div>
       {response.additionalToolDetail && <Field label="Additional Tool" value={response.additionalToolDetail} multiline />}
+      {response.attachments.length > 0 && (
+        <div className="border-t border-slate-100 pt-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">ไฟล์แนบ / Attachments</p>
+          <ul className="space-y-1.5">
+            {response.attachments.map((file) => (
+              <li key={file.id} className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                <span className="min-w-0 flex-1 truncate text-sm text-slate-700">{file.fileName}</span>
+                <span className="shrink-0 text-xs text-slate-400">{Math.round(file.fileSize / 1024)} KB</span>
+                <button
+                  type="button"
+                  onClick={() => setPreviewTarget({
+                    fileName: file.fileName,
+                    mimeType: file.mimeType,
+                    sharePointItemId: file.spItemId,
+                    spDownloadUrl: file.spDownloadUrl,
+                    fileUrl: file.spWebUrl,
+                  })}
+                  className="shrink-0 rounded p-1 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
+                  aria-label={`Preview ${file.fileName}`}
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+                <a
+                  href={`/api/sharepoint/get-file?itemId=${encodeURIComponent(file.spItemId)}`}
+                  className="shrink-0 rounded p-1 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
+                  aria-label={`Download ${file.fileName}`}
+                >
+                  <Download className="h-4 w-4" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {previewTarget && <FilePreviewModal target={previewTarget} onClose={() => setPreviewTarget(null)} />}
     </div>
   );
 }
@@ -603,8 +651,8 @@ export default function CarMrResponseReviewPanel({
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="ประเด็น / Issue" value={car.defectDetail ?? "-"} multiline />
-                <Field label="อ้างอิง / Reference" value={car.nonConformanceRef ?? "-"} />
+                <RichField label="ประเด็น / Issue" value={car.defectDetail} />
+                <RichField label="อ้างอิง / Reference" value={car.nonConformanceRef} />
               </div>
             </div>
 

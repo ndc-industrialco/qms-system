@@ -579,7 +579,7 @@ export default function DarReadOnlyDetail({
       ) : null}
 
       <div className="mt-4 flex select-none justify-end font-mono text-xs text-slate-400">
-        {footerConfigData?.prefix || "FM-DC-01"}
+        {footerConfigData?.prefix || "ไม่มีหมายเลขเอกสาร"} {footerConfigData?.label || "ไม่มีชื่อเอกสาร"}
       </div>
 
       {previewTarget ? (

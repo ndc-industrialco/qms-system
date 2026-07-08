@@ -513,6 +513,34 @@ export class CarRepository extends BaseRepository<CarMaster> {
     });
   }
 
+  async findForVerify2DueDate(id: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        carNo: true,
+        targetDepartmentId: true,
+        targetAuthDepartmentId: true,
+        targetDepartmentName: true,
+        defectDetail: true,
+        isoStandards: true,
+        issuerId: true,
+        issuerAuthUserId: true,
+        targetEmailGroups: true,
+        targetEmailGroupsCc: true,
+        response: {
+          select: { responderAuthUserId: true },
+        },
+        verifications: {
+          where: { round: 1 },
+          select: { id: true, result: true, nextDueDate: true },
+          take: 1,
+        },
+      },
+    });
+  }
+
   async findForClose(id: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id },
@@ -798,6 +826,18 @@ export class CarRepository extends BaseRepository<CarMaster> {
 
     await this.updateStatus(id, nextStatus, tx);
     return verification.id;
+  }
+
+  async updateVerificationNextDueDate(
+    carMasterId: string,
+    round: number,
+    nextDueDate: Date,
+    tx?: Prisma.TransactionClient
+  ) {
+    return this.getClient(tx).carVerification.updateMany({
+      where: { carMasterId, round, result: "FAILED" },
+      data: { nextDueDate },
+    });
   }
 
   async createMrSignatureAndUseToken(

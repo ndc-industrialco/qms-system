@@ -16,6 +16,7 @@ vi.mock("@/services/carEmailService", () => ({
   sendCarRespondedEmail: vi.fn().mockResolvedValue(undefined),
   sendCarVerifyPassEmail: vi.fn().mockResolvedValue(undefined),
   sendCarVerify2NotifyEmail: vi.fn().mockResolvedValue(undefined),
+  sendCarVerify2DateRequestEmail: vi.fn().mockResolvedValue(undefined),
   sendCarReCarEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -53,7 +54,7 @@ vi.mock("@/repositories/systemConfigRepository");
 
 import { CarService } from "@/services/carService";
 import { CarRepository } from "@/repositories/carRepository";
-import { sendCarVerifyPassEmail, sendCarVerify2NotifyEmail } from "@/services/carEmailService";
+import { sendCarVerifyPassEmail, sendCarVerify2NotifyEmail, sendCarVerify2DateRequestEmail } from "@/services/carEmailService";
 import { SystemConfigRepository } from "@/repositories/systemConfigRepository";
 
 type MockClass<T> = { mock: { instances: T[] } };
@@ -256,7 +257,7 @@ describe("CarService", () => {
       await service.verifyCar(
         "car-1",
         "verifier-1",
-        { round: 1, result: "FAILED", findings: "Not fixed", nextDueDate: "2026-07-15", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" },
+        { round: 1, result: "FAILED", findings: "Not fixed", verifierPosition: "QMS Officer", verifierSignaturePath: "data:image/png;base64,test" },
         "auth-verifier-1"
       );
 
@@ -268,9 +269,10 @@ describe("CarService", () => {
         "VERIFY_2",
         expect.anything()
       );
-      expect(sendCarVerify2NotifyEmail).toHaveBeenCalledWith(
+      expect(sendCarVerify2DateRequestEmail).toHaveBeenCalledWith(
         expect.objectContaining({ carId: "car-1", targetEmail: "qa@example.com" })
       );
+      expect(sendCarVerify2NotifyEmail).not.toHaveBeenCalled();
     });
 
     it("FAILED round=2 → status RE_CAR, no email sent", async () => {

@@ -25,6 +25,8 @@ export async function POST(
         action: input.action,
         comment: input.comment,
         signaturePath: input.signaturePath,
+        qmsAuthUserId: input.qmsAuthUserId,
+        attachments: input.attachments,
       });
     } else {
       const session = await requireAuth();
@@ -34,7 +36,7 @@ export async function POST(
       car = await carService.reviewResponseByMRAuthenticated(
         id,
         session.user.id,
-        { action: input.action, comment: input.comment, signaturePath: input.signaturePath, qmsAuthUserId: input.qmsAuthUserId },
+        { action: input.action, comment: input.comment, signaturePath: input.signaturePath, qmsAuthUserId: input.qmsAuthUserId, attachments: input.attachments },
         session.user.authUserId,
         session.user.accessToken,
       );

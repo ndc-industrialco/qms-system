@@ -64,7 +64,13 @@ export interface SummaryDocDept {
   authDeptCode: string | null;
 }
 
-export interface QmsSummaryData {
+export interface QmsPendingCountSummary {
+  pendingCount: number;
+  pendingDarCount: number;
+  pendingCarCount: number;
+}
+
+export interface QmsSummaryData extends QmsPendingCountSummary {
   dars: SummaryDarItem[];
   cars: SummaryCarItem[];
   kpis: SummaryKpiItem[];
@@ -77,8 +83,25 @@ export interface QmsSummaryData {
 export class QmsSummaryService {
   private summaryRepo = new QmsSummaryRepository();
 
+  private isPendingDarStatus(status: DarStatus): boolean {
+    return status !== "COMPLETED" && status !== "CANCELLED";
+  }
+
+  private isPendingCarStatus(status: CarStatus): boolean {
+    return status !== "CLOSED" && status !== "CANCELLED";
+  }
+
   async getSummaryData(): Promise<QmsSummaryData> {
-    const [dars, cars, kpis, auditFindings, deptCodes, kpiDepts, docDepts] = await this.summaryRepo.getSummaryData();
+    const [dars, cars, kpis, auditFindings, deptCodes, kpiDepts, docDepts] =
+      await this.summaryRepo.getSummaryData();
+
+    const pendingDarCount = (dars as Array<{ status: DarStatus }>).filter((d) =>
+      this.isPendingDarStatus(d.status)
+    ).length;
+    const pendingCarCount = (cars as Array<{ status: CarStatus }>).filter((c) =>
+      this.isPendingCarStatus(c.status)
+    ).length;
+    const pendingCount = pendingDarCount + pendingCarCount;
 
     return {
       dars: (dars as Array<{
@@ -138,6 +161,19 @@ export class QmsSummaryService {
       deptCodes: deptCodes as SummaryDeptCode[],
       kpiDepts: kpiDepts as SummaryKpiDept[],
       docDepts: docDepts as SummaryDocDept[],
+      pendingCount,
+      pendingDarCount,
+      pendingCarCount,
+    };
+  }
+
+  async getPendingCountSummary(): Promise<QmsPendingCountSummary> {
+    const summary = await this.getSummaryData();
+
+    return {
+      pendingCount: summary.pendingCount,
+      pendingDarCount: summary.pendingDarCount,
+      pendingCarCount: summary.pendingCarCount,
     };
   }
 }

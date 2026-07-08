@@ -9,6 +9,7 @@ import CarStatusBadge from "./CarStatusBadge";
 import { CAR_SOURCE_LABELS, type CarListResponse } from "@/types/car";
 import { fmtDate } from "@/lib/format";
 import Pagination from "@/components/common/Pagination";
+import RichTextView from "@/components/shared/RichTextView";
 
 const PAGE_SIZE = 20;
 
@@ -17,6 +18,14 @@ async function fetchAllCars(page: number): Promise<CarListResponse> {
   if (!res.ok) throw new Error("Failed to fetch CARs");
   const json = await res.json();
   return { data: json.data ?? [], meta: json.meta ?? { page, limit: PAGE_SIZE, total: 0 } };
+}
+
+function CompactRichText({ content }: { content: string }) {
+  return (
+    <div className="max-h-12 overflow-hidden text-sm text-slate-700 [&_.rich-view]:text-sm [&_.rich-view]:leading-snug [&_.rich-view_*]:my-0 [&_p]:my-0">
+      <RichTextView content={content} />
+    </div>
+  );
 }
 
 export default function AllDeptCarSection({ initialData }: { initialData: CarListResponse }) {
@@ -57,7 +66,7 @@ export default function AllDeptCarSection({ initialData }: { initialData: CarLis
               <CarStatusBadge status={car.status} />
             </div>
             <p className="text-sm text-slate-700 mb-1">{car.targetDepartment.name}</p>
-            <p className="text-xs text-slate-500 line-clamp-2">{car.defectDetail}</p>
+            <CompactRichText content={car.defectDetail} />
           </div>
         ))}
       </div>
@@ -89,7 +98,9 @@ export default function AllDeptCarSection({ initialData }: { initialData: CarLis
                     </TableCell>
                     <TableCell className="text-slate-600 text-xs">{CAR_SOURCE_LABELS[car.sourceType] ?? car.sourceType}</TableCell>
                     <TableCell className="text-slate-700">{car.targetDepartment.name}</TableCell>
-                    <TableCell className="text-slate-600 max-w-xs truncate">{car.defectDetail}</TableCell>
+                    <TableCell className="max-w-xs">
+                      <CompactRichText content={car.defectDetail} />
+                    </TableCell>
                     <TableCell className="text-center"><CarStatusBadge status={car.status} /></TableCell>
                     <TableCell className="text-slate-500 text-xs text-center font-mono">{fmtDate(car.issuedAt)}</TableCell>
                     <TableCell className={`text-xs text-center font-mono ${isOverdue ? "text-rose-600 font-semibold" : "text-slate-500"}`}>

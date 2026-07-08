@@ -288,6 +288,19 @@ export default function DashboardSidebar({
   });
   const carPendingCount = carPendingData?.count ?? 0;
 
+  const { data: qmsPendingData } = useAppQuery<{ count: number; pendingDarCount: number; pendingCarCount: number }>({
+    queryKey: ["qms", "pending-count"],
+    realtimeClass: "A",
+    queryFn: async () => {
+      const res = await fetch("/api/qms/pending-count");
+      if (!res.ok) return { count: 0, pendingDarCount: 0, pendingCarCount: 0 };
+      const json = await res.json();
+      return json.data ?? { count: 0, pendingDarCount: 0, pendingCarCount: 0 };
+    },
+  });
+  const qmsPendingDarCount = qmsPendingData?.pendingDarCount ?? 0;
+  const qmsPendingCarCount = qmsPendingData?.pendingCarCount ?? 0;
+
   return (
     <>
       {isOpen && (
@@ -344,6 +357,8 @@ export default function DashboardSidebar({
 
                 const showBadge = item.href === "/approve" && pendingCount > 0;
                 const showCarBadge = item.href === "/car" && carPendingCount > 0;
+                const showQmsDarBadge = item.href === "/qms/dar" && qmsPendingDarCount > 0;
+                const showQmsCarBadge = item.href === "/qms/car" && qmsPendingCarCount > 0;
 
                 return (
                   <div key={item.href} className="relative group">
@@ -383,6 +398,16 @@ export default function DashboardSidebar({
                         {showCarBadge && (
                           <span className="flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-red-500 px-1 text-[10px] font-bold text-white leading-none">
                             {carPendingCount > 99 ? "99+" : carPendingCount}
+                          </span>
+                        )}
+                        {showQmsDarBadge && (
+                          <span className="flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white leading-none">
+                            {qmsPendingDarCount > 99 ? "99+" : qmsPendingDarCount}
+                          </span>
+                        )}
+                        {showQmsCarBadge && (
+                          <span className="flex items-center justify-center min-w-4.5 h-4.5 rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white leading-none">
+                            {qmsPendingCarCount > 99 ? "99+" : qmsPendingCarCount}
                           </span>
                         )}
                         {isActive && (

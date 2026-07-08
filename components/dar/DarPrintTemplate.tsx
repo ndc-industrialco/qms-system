@@ -772,7 +772,7 @@ export default function DarPrintTemplate({ dar, footerConfig }: DarPrintTemplate
             </table>
           </div>
 
-          <div className="footer-note">{footerPrefix}</div>
+          <div className="footer-note">{footerPrefix} {footerLabel}</div>
 
         </div>
       </div>

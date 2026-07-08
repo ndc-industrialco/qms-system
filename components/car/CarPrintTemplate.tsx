@@ -9,6 +9,26 @@ interface CarPrintTemplateProps {
   footerConfig?: FooterConfig | null;
 }
 
+function isHtmlContent(content: string) {
+  return /<[a-z][\s\S]*>/i.test(content);
+}
+
+function PrintRichText({ content, marginTop = "4px" }: { content: string | null | undefined; marginTop?: string }) {
+  if (!content) return <span>-</span>;
+
+  if (isHtmlContent(content)) {
+    return (
+      <div
+        className="print-rich-text"
+        style={{ marginTop }}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+
+  return <div style={{ marginTop, whiteSpace: "pre-wrap" }}>{content}</div>;
+}
+
 export default function CarPrintTemplate({ car, footerConfig }: CarPrintTemplateProps) {
   const footerLabel = footerConfig?.label?.trim() || "Corrective Action Request / Preventive Action (CAR) | ใบคำขอให้แก้ไขและป้องกันการเกิดซ้ำ (CAR)";
   const footerPrefix = footerConfig?.prefix?.trim() || "FM-QC-02";
@@ -141,6 +161,20 @@ export default function CarPrintTemplate({ car, footerConfig }: CarPrintTemplate
           border: 1px solid #000;
           margin-bottom: 4px;
           min-height: 38px;
+        }
+
+        .print-container .print-rich-text p {
+          margin: 0 0 2px 0;
+        }
+
+        .print-container .print-rich-text ul,
+        .print-container .print-rich-text ol {
+          margin: 2px 0 2px 14px;
+          padding-left: 10px;
+        }
+
+        .print-container .print-rich-text li {
+          margin: 0 0 1px 0;
         }
 
         /* Footer styling */
@@ -293,13 +327,13 @@ export default function CarPrintTemplate({ car, footerConfig }: CarPrintTemplate
               <tr>
                 <td colSpan={2} style={{ minHeight: "50px" }}>
                   <strong>Defect Details / รายละเอียดข้อบกพร่อง:</strong>
-                  <div style={{ marginTop: "4px", whiteSpace: "pre-wrap" }}>{car.defectDetail}</div>
+                  <PrintRichText content={car.defectDetail} />
                 </td>
               </tr>
               <tr>
                 <td colSpan={2}>
                   <strong>Non-Conformance Reference (ข้ออ้างอิง/เอกสารอ้างอิง):</strong>
-                  <div style={{ marginTop: "3px", whiteSpace: "pre-wrap" }}>{car.nonConformanceRef || "—"}</div>
+                  <PrintRichText content={car.nonConformanceRef} marginTop="3px" />
                 </td>
               </tr>
               <tr>

@@ -1,5 +1,97 @@
 [
   {
+    "id": "64",
+    "titleTh": "QMS: เพิ่ม pendingCount รวมงานค้างของ DAR และ CAR",
+    "titleEn": "QMS: Add an aggregate pending count for unfinished work",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/qms-pending-count-summary",
+    "detailsTh": [
+      "services/qmsSummaryService.ts: คำนวณ pendingCount รวมจาก DAR และ CAR ที่ยังไม่จบงาน",
+      "app/api/qms/pending-count/route.ts: เปิด API สำหรับ sidebar ดึงยอดค้างรวมของ QMS",
+      "components/layout/DashboardSidebar.tsx: แสดง badge ยอดค้าง DAR/CAR บนเมนู QMS/DAR และ QMS/CAR",
+      "components/summary/QmsSummaryClient.tsx: แสดงสรุปงานค้าง DAR/CAR บนหน้า QMS"
+    ],
+    "detailsEn": [
+      "services/qmsSummaryService.ts: Calculated an aggregate pending count from unfinished DAR and CAR items",
+      "app/api/qms/pending-count/route.ts: Added an API for the sidebar to fetch the total QMS backlog",
+      "components/layout/DashboardSidebar.tsx: Rendered backlog badges on QMS/DAR and QMS/CAR menu items",
+      "components/summary/QmsSummaryClient.tsx: Rendered the backlog summary on the QMS dashboard"
+    ]
+  },
+  {
+    "id": "63",
+    "titleTh": "CAR: เปิด Preview ไฟล์แนบในหน้า MR ตรวจสอบแผนแก้ไข",
+    "titleEn": "CAR: Preview response attachments on the MR corrective plan review page",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/car-mr-review-attachment-preview",
+    "detailsTh": [
+      "components/car/CarMrResponseReviewPanel.tsx: แสดงไฟล์แนบของแผนแก้ไขในหน้า MR ตรวจสอบแผน และเปิด preview ผ่าน FilePreviewModal",
+      "components/car/CarMrResponseReviewPanel.tsx: เพิ่มปุ่มดาวน์โหลดผ่าน /api/sharepoint/get-file?itemId= โดยไม่ใช้ SharePoint URL ตรง"
+    ],
+    "detailsEn": [
+      "components/car/CarMrResponseReviewPanel.tsx: Displayed corrective plan response attachments on the MR review page and opened previews through FilePreviewModal",
+      "components/car/CarMrResponseReviewPanel.tsx: Added download actions through /api/sharepoint/get-file?itemId= without direct SharePoint URLs"
+    ]
+  },
+  {
+    "id": "62",
+    "titleTh": "CAR: รองรับ WYSIWYG ใน Email และ Notification template",
+    "titleEn": "CAR: Support WYSIWYG content in email and notification templates",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/car-wysiwyg-email-notification-template",
+    "detailsTh": [
+      "services/carEmailService.ts: เพิ่ม rich text sanitizer สำหรับ email และ render defect/reference จาก WYSIWYG โดยไม่โชว์ HTML tag ดิบ",
+      "services/carNotificationService.ts: แปลง notification body แบบ plain text ให้ถอด HTML ออก และให้ htmlBody ใช้ template ที่รองรับ rich text",
+      "__tests__/services/carEmailService.test.ts: เพิ่ม unit test สำหรับ rich text email/plain text helper"
+    ],
+    "detailsEn": [
+      "services/carEmailService.ts: Added a rich text sanitizer for email and rendered WYSIWYG defect/reference content without raw HTML tags",
+      "services/carNotificationService.ts: Converted plain notification bodies to strip HTML while htmlBody uses the rich-text-aware template",
+      "__tests__/services/carEmailService.test.ts: Added unit tests for rich text email/plain text helpers"
+    ]
+  },
+  {
+    "id": "61",
+    "titleTh": "CAR: แสดงรายละเอียด WYSIWYG ในตารางและหน้าอนุมัติ",
+    "titleEn": "CAR: Render WYSIWYG details in tables and approval pages",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/car-wysiwyg-detail-rendering",
+    "detailsTh": [
+      "components/car/CarListTable.tsx และ components/car/AllDeptCarSection.tsx: แสดงรายละเอียด CAR ด้วย RichTextView ในรายการตารางและการ์ดมือถือ",
+      "components/car/CarMrResponseReviewPanel.tsx และ components/car/CarMrSignDialog.tsx: แสดง Issue/Reference จาก WYSIWYG ในหน้าอนุมัติของ MR",
+      "components/car/CarPreviewExportDialog.tsx, components/car/CarPrintTemplate.tsx และ components/car/CarStatusPrintTemplate.tsx: แสดงรายละเอียด CAR ที่เป็น rich text ใน preview/print table"
+    ],
+    "detailsEn": [
+      "components/car/CarListTable.tsx and components/car/AllDeptCarSection.tsx: Render CAR detail with RichTextView in desktop tables and mobile cards",
+      "components/car/CarMrResponseReviewPanel.tsx and components/car/CarMrSignDialog.tsx: Render WYSIWYG Issue/Reference content on MR approval pages",
+      "components/car/CarPreviewExportDialog.tsx, components/car/CarPrintTemplate.tsx and components/car/CarStatusPrintTemplate.tsx: Render rich CAR detail in preview and print tables"
+    ]
+  },
+  {
+    "id": "60",
+    "titleTh": "CAR: แสดง MR reject และให้แผนกกำหนดวันติดตามรอบ 2",
+    "titleEn": "CAR: Show MR rejection details and let target department set round 2 follow-up date",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/car-mr-reject-and-verify2-date-owner",
+    "detailsTh": [
+      "app/api/car/[id]/review-response/route.ts: ส่งไฟล์แนบและ QMS assignee จาก MR review เข้า service เพื่อไม่ให้ข้อมูล reject หาย",
+      "services/carService.ts: เพิ่ม QMS email recipient จาก QMS user ที่ MR เลือก และเปลี่ยน VERIFY_1 failed ให้แจ้งแผนกกำหนดวันติดตามรอบ 2 เอง",
+      "app/api/car/[id]/verify2-due-date/route.ts: เพิ่ม endpoint ให้แผนกเจ้าของ CAR บันทึกวันที่ติดตามรอบ 2",
+      "components/car/CarDetailClient.tsx: แสดงเหตุผล/ไฟล์แนบ MR reject และเพิ่มฟอร์มกำหนดวันติดตามรอบ 2 สำหรับแผนกเจ้าของ CAR"
+    ],
+    "detailsEn": [
+      "app/api/car/[id]/review-response/route.ts: Passed MR review attachments and QMS assignee into the service so rejection evidence is preserved",
+      "services/carService.ts: Added the selected QMS user's email to MR-approved recipients and changed VERIFY_1 failure to ask the target department to set the round 2 date",
+      "app/api/car/[id]/verify2-due-date/route.ts: Added an endpoint for the target department to save the verification round 2 follow-up date",
+      "components/car/CarDetailClient.tsx: Displayed MR rejection reason/attachments and added the target-department round 2 date form"
+    ]
+  },
+  {
     "id": "59",
     "titleTh": "Document Control: ลบคอลัมน์ 1st/2nd และเพิ่มการเลือกแผนกกระจายเอกสารตั้งแต่สร้างชื่อ",
     "titleEn": "Document Control: Remove 1st/2nd columns and add distribution department selection at creation",

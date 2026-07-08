@@ -9,7 +9,7 @@ import { useT } from "@/lib/i18n";
 import RichTextView from "@/components/shared/RichTextView";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
-import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck, ChevronRight, Printer } from "lucide-react";
+import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck, ChevronRight, Printer, Paperclip } from "lucide-react";
 import CarStatusBadge from "./CarStatusBadge";
 import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
@@ -24,6 +24,7 @@ import type { CarDetail, CarAttachmentRow } from "@/types/car";
 import { CAR_SOURCE_LABELS } from "@/types/car";
 import { FilePreviewModal } from "@/components/common/FilePreviewModal";
 import { fmtDate } from "@/lib/format";
+import { parseComment } from "@/lib/utils";
 
 interface Props {
   car: CarDetail;
@@ -52,6 +53,47 @@ async function createReCar(carId: string): Promise<{ newCarId: string; newCarNo:
   return json.data;
 }
 
+async function setVerify2DueDate(carId: string, nextDueDate: string): Promise<void> {
+  const res = await fetch(`/api/car/${carId}/verify2-due-date`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nextDueDate }),
+  });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.message ?? "Failed to save verification round 2 date");
+  }
+}
+
+function MrRejectReviewCard({ review }: { review: NonNullable<CarDetail["mrResponseReview"]> }) {
+  if (review.action !== "REJECTED" || !review.comment) return null;
+  const parsed = parseComment(review.comment);
+
+  return (
+    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
+      <h2 className="text-base font-semibold text-rose-800">MR Reject Detail</h2>
+      <p className="mt-2 whitespace-pre-wrap text-sm text-rose-900">{parsed.text || "-"}</p>
+      {parsed.attachments?.length ? (
+        <div className="mt-3 space-y-2">
+          <p className="text-xs font-semibold text-rose-700">Attachments</p>
+          {parsed.attachments.map((file, index) => (
+            <a
+              key={`${file.spItemId}-${index}`}
+              href={`/api/sharepoint/get-file?itemId=${file.spItemId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm text-rose-700 hover:bg-rose-100"
+            >
+              <Paperclip className="h-4 w-4 shrink-0" />
+              <span className="truncate">{file.fileName}</span>
+            </a>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function CarDetailClient({
   car: initialCar,
   userRole,
@@ -72,6 +114,7 @@ export default function CarDetailClient({
   const [showMrReview, setShowMrReview] = useState(false);
   const [showMrClose, setShowMrClose] = useState(false);
   const [previewFile, setPreviewFile] = useState<CarAttachmentRow | null>(null);
+  const [verify2DueDate, setVerify2DueDateValue] = useState("");
 
   const { data: car = initialCar } = useQuery({
     queryKey: ["car", initialCar.id],
@@ -103,9 +146,30 @@ export default function CarDetailClient({
     },
   });
 
+  const verify2DueDateMutation = useMutation({
+    mutationFn: () => setVerify2DueDate(car.id, verify2DueDate),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["car", car.id] });
+      qc.invalidateQueries({ queryKey: ["cars"] });
+      setVerify2DueDateValue("");
+      toast.success("Saved verification round 2 date");
+    },
+    onError: (err) => toast.error((err as Error).message, { duration: Infinity }),
+  });
+
+  const verify1 = car.verifications.find((v) => v.round === 1);
+
   const canRespond =
     car.status === "ISSUED" &&
     userDepartmentId === car.targetDepartment.id;
+
+  const canSetVerify2DueDate =
+    car.status === "VERIFY_2" &&
+    verify1?.result === "FAILED" &&
+    !verify1.nextDueDate &&
+    (!!userDepartmentId &&
+      (userDepartmentId === car.targetDepartment.id ||
+        userDepartmentId === car.targetAuthDepartmentId));
 
   const canVerify =
     (car.status === "VERIFY_1" || car.status === "VERIFY_2") &&
@@ -268,6 +332,8 @@ export default function CarDetailClient({
             </div>
           </div>
 
+          {car.mrResponseReview && <MrRejectReviewCard review={car.mrResponseReview} />}
+
           {/* Respond prompt (USER) */}
           {canRespond && !showRespond && (
             <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 flex items-center justify-between gap-4">
@@ -282,6 +348,33 @@ export default function CarDetailClient({
             <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
               <h2 className="text-base font-semibold text-slate-800 mb-4">{t("car.detail.respondFormTitle")}</h2>
               <CarRespondForm carId={car.id} defaultPosition={userJobTitle ?? ""} onSuccess={() => setShowRespond(false)} />
+            </div>
+          )}
+
+          {canSetVerify2DueDate && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+              <h2 className="text-base font-semibold text-amber-900">Set Verification Round 2 Date</h2>
+              <p className="mt-1 text-sm text-amber-800">
+                QMS recorded Verification 1 as failed. Please set the completion date for the second follow-up.
+              </p>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <label className="mb-1 block text-sm font-medium text-amber-900">Completion date</label>
+                  <input
+                    type="date"
+                    value={verify2DueDate}
+                    onChange={(event) => setVerify2DueDateValue(event.target.value)}
+                    className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm focus:border-[#0F1059] focus:outline-none focus:ring-2 focus:ring-[#0F1059]/20"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={() => verify2DueDateMutation.mutate()}
+                  disabled={!verify2DueDate || verify2DueDateMutation.isPending}
+                >
+                  {verify2DueDateMutation.isPending ? "Saving..." : "Save Date"}
+                </Button>
+              </div>
             </div>
           )}
 
@@ -369,7 +462,7 @@ export default function CarDetailClient({
                         >
                           <Eye className="h-4 w-4" />
                         </button>
-                        <a href={a.spDownloadUrl} target="_blank" rel="noopener noreferrer"
+                        <a href={`/api/sharepoint/get-file?itemId=${a.spItemId}`} target="_blank" rel="noopener noreferrer"
                           className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600">
                           <Download className="h-4 w-4" />
                         </a>

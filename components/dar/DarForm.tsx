@@ -198,7 +198,7 @@ export default function DarForm({ mode, initialData, departments, requesterInfo,
 
       {/* Footer document name */}
       <div className="flex justify-end text-xs text-slate-400 font-mono mt-4 select-none">
-        {footerConfigData?.prefix || "FM-DC-01"}
+        {footerConfigData?.prefix || "ไม่มีหมายเลขเอกสาร"} {footerConfigData?.label || "ไม่มีชื่อเอกสาร"}
       </div>
 
     </div>

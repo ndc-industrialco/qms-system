@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { FileSpreadsheet, X, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import RichTextView from "@/components/shared/RichTextView";
 
 export interface PreviewRow {
   no: number;
@@ -70,6 +71,18 @@ const COLUMNS = [
   { key: "status", label: "สถานะ", className: "text-center min-w-[90px]" },
   { key: "remark", label: "หมายเหตุ", className: "min-w-[120px]" },
 ];
+
+function PreviewCell({ columnKey, value }: { columnKey: keyof PreviewRow; value: string | number }) {
+  if (columnKey === "defectDetail") {
+    return (
+      <div className="max-h-12 overflow-hidden [&_.rich-view]:text-xs [&_.rich-view]:leading-snug [&_.rich-view_*]:my-0 [&_p]:my-0">
+        <RichTextView content={String(value)} className="text-xs text-slate-700" />
+      </div>
+    );
+  }
+
+  return value;
+}
 
 export default function CarPreviewExportDialog({
   open,
@@ -129,7 +142,7 @@ export default function CarPreviewExportDialog({
                           key={col.key}
                           className={`text-xs py-2 ${col.className}`}
                         >
-                          {row[col.key as keyof PreviewRow]}
+                          <PreviewCell columnKey={col.key as keyof PreviewRow} value={row[col.key as keyof PreviewRow]} />
                         </TableCell>
                       ))}
                     </TableRow>
