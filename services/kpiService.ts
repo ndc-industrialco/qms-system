@@ -15,6 +15,7 @@ import { UserRepository } from '@/repositories/userRepository';
 import { UserPreferenceRepository } from '@/repositories/userPreferenceRepository';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { listAuthCenterAppMembers } from '@/lib/auth-center-admin-client';
+import { isPrivilegedQmsRole } from '@/lib/qms-roles';
 import {
   CreateKpiDTO,
   UpdateKpiDTO,
@@ -934,7 +935,7 @@ export class KpiService {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
     ensureKpiStatusTransition(kpi.status, 'QMS_CHECK');
-    if (!['QMS', 'IT'].includes(actor.role)) throw new ForbiddenError('Only QMS/IT can perform QMS check');
+    if (!isPrivilegedQmsRole(actor.role)) throw new ForbiddenError('Only QMS/MR/IT can perform QMS check');
 
     const now = new Date();
     return db.$transaction(async (tx) => {
@@ -981,7 +982,7 @@ export class KpiService {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
     ensureKpiStatusTransition(kpi.status, 'ANNOUNCED');
-    if (!['QMS', 'IT'].includes(actor.role)) throw new ForbiddenError('Only QMS/IT can announce KPIs');
+    if (!isPrivilegedQmsRole(actor.role)) throw new ForbiddenError('Only QMS/MR/IT can announce KPIs');
 
     const now = new Date();
     const updated = await db.$transaction(async (tx) => {

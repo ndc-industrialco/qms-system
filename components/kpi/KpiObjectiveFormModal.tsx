@@ -248,9 +248,11 @@ export default function KpiObjectiveFormModal({ open, onOpenChange, objective, o
               placeholder={t("kpi.form.responsiblePersonPlaceholder")}
               required
               error={
-                errors.responsibleAuthUserId?.message
-                ?? errors.responsibleNameSnapshot?.message
-                ?? errors.responsibleEmailSnapshot?.message
+                (errors.responsibleAuthUserId?.message || errors.responsibleNameSnapshot?.message)
+                  ? t("kpi.form.responsiblePersonRequired")
+                  : errors.responsibleEmailSnapshot?.message
+                  ? t("kpi.form.responsibleEmailRequired")
+                  : undefined
               }
             />
           </div>

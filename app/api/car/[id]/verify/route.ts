@@ -6,6 +6,7 @@ import { handleApiError } from "@/lib/apiErrorHandler";
 import { ForbiddenError } from "@/errors/customErrors";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
 import { type NextRequest } from "next/server";
+import { isPrivilegedQmsRole } from "@/lib/qms-roles";
 
 const carService = new CarService();
 
@@ -15,7 +16,7 @@ export async function POST(
 ) {
   try {
     const session = await requireAuth();
-    if (session.user.role !== "QMS" && session.user.role !== "IT") {
+    if (!isPrivilegedQmsRole(session.user.role)) {
       throw new ForbiddenError("เฉพาะ QMS/IT เท่านั้นที่สามารถติดตามผล CAR ได้");
     }
 

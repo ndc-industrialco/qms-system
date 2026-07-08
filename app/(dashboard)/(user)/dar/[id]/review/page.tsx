@@ -47,7 +47,15 @@ export default async function DarReviewPage({ params }: Props) {
         />
       </div>
     );
-  } catch {
+  } catch (error) {
+    const err = error as { statusCode?: number; errorCode?: string; name?: string };
+    if (
+      err?.name === "ForbiddenError" ||
+      err?.statusCode === 403 ||
+      err?.errorCode === "FORBIDDEN"
+    ) {
+      redirect("/dar");
+    }
     notFound();
   }
 }

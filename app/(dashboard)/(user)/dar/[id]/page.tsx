@@ -1,11 +1,10 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, unstable_rethrow } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { DarService } from "@/services/darService";
 import DarReadOnlyDetail from "@/components/dar/DarReadOnlyDetail";
 import DarDetailBreadcrumb from "@/components/dar/DarDetailBreadcrumb";
 import type { DarApprovalRow } from "@/types/dar";
 import { db } from "@/lib/db";
-import { ForbiddenError } from "@/errors/customErrors";
 import { hasQmsRole, isPrivilegedQmsRole } from "@/lib/qms-roles";
 
 const darService = new DarService();
@@ -36,7 +35,7 @@ export default async function DarDetailPage({ params }: Props) {
 
     const myPendingStep = dar.approvals.find(
       (a: DarApprovalRow) =>
-        a.assignedUser.id === session.user.id &&
+        (a.assignedUser.id === session.user.id || a.assignedUser.authUserId === (session.user.authUserId ?? null)) &&
         a.action === "PENDING" &&
         a.stepRole !== "PREPARER",
     );
@@ -62,7 +61,16 @@ export default async function DarDetailPage({ params }: Props) {
       </div>
     );
   } catch (error) {
-    if (error instanceof ForbiddenError) redirect("/dar");
+    unstable_rethrow(error);
+
+    const err = error as { statusCode?: number; errorCode?: string; name?: string };
+    if (
+      err?.name === "ForbiddenError" ||
+      err?.statusCode === 403 ||
+      err?.errorCode === "FORBIDDEN"
+    ) {
+      redirect("/dar");
+    }
     notFound();
   }
 }

@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Automated Approval Configuration" };
 
 export default async function ApprovalConfigPage() {
   try {
-    await requireRole("QMS", "IT");
+    await requireRole("QMS", "IT", "MR");
   } catch (e) {
     if (e instanceof ForbiddenError) redirect("/unauthorized?reason=insufficient_role");
     throw e;

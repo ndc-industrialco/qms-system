@@ -22,7 +22,7 @@ export default function QmsCarPageClient({
       <CarListTable
         initialData={initialData}
         isPrivileged
-        canEditDelete={role === "QMS" || role === "IT"}
+        canEditDelete={role === "QMS" || role === "IT" || role === "MR"}
         initialScope={scope as CarListScope}
         allowAllScope
         myAuthDeptId={authDepartmentId}

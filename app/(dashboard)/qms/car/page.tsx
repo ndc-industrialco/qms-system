@@ -56,7 +56,7 @@ export default async function QmsCarListPage({
       <PageHeader
         title="CAR - คำร้องขอแก้ไข"
         subtitle="Corrective Action Requests"
-        actions={role === "QMS" || role === "IT" ? <CarFormModalTrigger issuerName={issuerName} defaultIssuerPosition={issuerPosition} footerConfig={footerConfig} /> : undefined}
+        actions={role === "QMS" || role === "IT" || role === "MR" ? <CarFormModalTrigger issuerName={issuerName} defaultIssuerPosition={issuerPosition} footerConfig={footerConfig} /> : undefined}
       />
       <QmsCarPageClient
         initialData={cars}

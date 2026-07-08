@@ -18,7 +18,7 @@ export async function DELETE(
     const attachment = await repo.findById(id);
     if (!attachment) throw new NotFoundError("Attachment not found");
 
-    const isPrivileged = session.user.role === "QMS" || session.user.role === "IT";
+    const isPrivileged = session.user.role === "QMS" || session.user.role === "IT" || session.user.role === "MR";
     const actorId = session.user.authUserId ?? session.user.id;
     if (!isPrivileged && attachment.uploadedByAuthUserId !== actorId) {
       throw new ForbiddenError("Only the uploader or QMS/IT can delete this attachment");

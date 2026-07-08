@@ -539,7 +539,11 @@
       "frequencyYearly": "Yearly",
       "calculationFormula": "Calculation Formula",
       "actionPlanGuidelines": "Action Plan Guidelines",
-      "referenceDocuments": "Reference Documents"
+      "referenceDocuments": "Reference Documents",
+      "responsiblePerson": "Responsible Person",
+      "responsiblePersonPlaceholder": "Select responsible person...",
+      "responsiblePersonRequired": "Responsible person is required",
+      "responsibleEmailRequired": "Responsible person's email is required"
     },
     "messages": {
       "createSuccess": "KPI created successfully",

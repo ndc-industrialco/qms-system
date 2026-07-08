@@ -6,7 +6,6 @@ import { DepartmentService } from "@/services/departmentService";
 import DarForm from "@/components/dar/DarForm";
 import DarEditHeader from "@/components/dar/DarEditHeader";
 import { db } from "@/lib/db";
-import { ForbiddenError } from "@/errors/customErrors";
 import { isPrivilegedQmsRole } from "@/lib/qms-roles";
 
 const darService = new DarService();
@@ -32,7 +31,14 @@ export default async function DarEditPage({ params }: Props) {
       isPrivileged,
     );
   } catch (error) {
-    if (error instanceof ForbiddenError) redirect("/dar");
+    const err = error as { statusCode?: number; errorCode?: string; name?: string };
+    if (
+      err?.name === "ForbiddenError" ||
+      err?.statusCode === 403 ||
+      err?.errorCode === "FORBIDDEN"
+    ) {
+      redirect("/dar");
+    }
     notFound();
   }
 

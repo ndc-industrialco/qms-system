@@ -173,23 +173,23 @@ export default function CarDetailClient({
 
   const canVerify =
     (car.status === "VERIFY_1" || car.status === "VERIFY_2") &&
-    (userRole === "QMS" || userRole === "IT");
+    (userRole === "QMS" || userRole === "IT" || userRole === "MR");
 
   const canIssue =
     car.status === "DRAFT" &&
-    (userRole === "QMS" || userRole === "IT");
+    (userRole === "QMS" || userRole === "IT" || userRole === "MR");
 
   const canEdit =
     car.status === "DRAFT" &&
-    (userRole === "QMS" || userRole === "IT");
+    (userRole === "QMS" || userRole === "IT" || userRole === "MR");
 
   const canReCar =
     car.status === "RE_CAR" &&
-    (userRole === "QMS" || userRole === "IT");
+    (userRole === "QMS" || userRole === "IT" || userRole === "MR");
 
   const canRemind =
     car.status === "ISSUED" &&
-    (userRole === "QMS" || userRole === "IT");
+    (userRole === "QMS" || userRole === "IT" || userRole === "MR");
 
   const canMrReview =
     car.status === "RESPONDED" &&

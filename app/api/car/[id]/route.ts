@@ -5,6 +5,7 @@ import { sendSuccess } from "@/lib/apiResponse";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { ForbiddenError } from "@/errors/customErrors";
 import { type NextRequest } from "next/server";
+import { isPrivilegedQmsRole } from "@/lib/qms-roles";
 
 const carService = new CarService();
 
@@ -17,7 +18,7 @@ export async function GET(
     const { id } = await params;
     const car = await carService.getCarById(id);
 
-    const isPrivileged = session.user.role === "QMS" || session.user.role === "IT" || session.user.role === "MR";
+    const isPrivileged = isPrivilegedQmsRole(session.user.role);
     if (!isPrivileged) {
       const carAuthDeptId = (car as Record<string, unknown>).targetAuthDepartmentId as string | null | undefined;
       const userAuthDeptId = session.user.authDepartmentId;
@@ -39,7 +40,7 @@ export async function PATCH(
 ) {
   try {
     const session = await requireAuth();
-    if (session.user.role !== "QMS" && session.user.role !== "IT") {
+    if (!isPrivilegedQmsRole(session.user.role)) {
       throw new ForbiddenError("เฉพาะ QMS/IT เท่านั้นที่สามารถแก้ไข CAR ได้");
     }
 
@@ -59,7 +60,7 @@ export async function DELETE(
 ) {
   try {
     const session = await requireAuth();
-    if (session.user.role !== "QMS" && session.user.role !== "IT") {
+    if (!isPrivilegedQmsRole(session.user.role)) {
       throw new ForbiddenError("เฉพาะ QMS/IT เท่านั้นที่สามารถดำเนินการนี้ได้");
     }
 

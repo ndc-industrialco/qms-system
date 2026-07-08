@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Document Footer Configuration" };
 
 export default async function FooterConfigPage() {
   try {
-    await requireRole("QMS", "IT");
+    await requireRole("QMS", "IT", "MR");
   } catch (e) {
     if (e instanceof ForbiddenError) redirect("/unauthorized?reason=insufficient_role");
     throw e;

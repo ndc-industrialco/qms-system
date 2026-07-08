@@ -16,7 +16,7 @@ export default async function AuditPlansPage() {
 
   const role = session.user.role;
   const isPrivileged = role === "QMS" || role === "IT" || role === "MR";
-  const canEdit = role === "QMS" || role === "IT";
+  const canEdit = role === "QMS" || role === "IT" || role === "MR";
 
   const raw = await auditPlanService.listPlans({ page: 1, limit: 20 });
   const initialData = {

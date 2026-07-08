@@ -539,7 +539,11 @@
       "frequencyYearly": "รายปี",
       "calculationFormula": "สูตรการคำนวณ",
       "actionPlanGuidelines": "แนวทางแผนการดำเนินงาน",
-      "referenceDocuments": "เอกสารอ้างอิง"
+      "referenceDocuments": "เอกสารอ้างอิง",
+      "responsiblePerson": "ผู้รับผิดชอบ",
+      "responsiblePersonPlaceholder": "เลือกผู้รับผิดชอบ...",
+      "responsiblePersonRequired": "กรุณาเลือกผู้รับผิดชอบ",
+      "responsibleEmailRequired": "กรุณากรอกอีเมลผู้รับผิดชอบ"
     },
     "messages": {
       "createSuccess": "สร้าง KPI สำเร็จ",

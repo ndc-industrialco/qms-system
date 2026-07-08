@@ -9,7 +9,7 @@ const service = new KpiService();
 
 export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireRole('QMS', 'IT');
+    const session = await requireRole('QMS', 'IT', 'MR');
     const { id } = await params;
     const body = qmsCheckKpiSchema.parse(await _request.json().catch(() => ({})));
     const updated = await service.qmsCheckKpi(id, {

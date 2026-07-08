@@ -1,5 +1,95 @@
 [
   {
+    "id": "69",
+    "titleTh": "Notification: ซ่อนปุ่ม CTA ของ email template ในหน้าแจ้งเตือน",
+    "titleEn": "Notification: hide email CTA buttons inside in-app notification templates",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/notification-hide-email-cta",
+    "detailsTh": [
+      "app/(dashboard)/notifications/NotificationsView.tsx: ปรับ iframe renderer ของ notification template ให้ลบปุ่ม CTA และบรรทัด URL ที่มาจาก email template ออก โดยยังคงปุ่มเปิดรายการของหน้า notification ไว้เหมือนเดิม"
+    ],
+    "detailsEn": [
+      "app/(dashboard)/notifications/NotificationsView.tsx: updated the notification iframe renderer to remove email CTA buttons and raw action URL rows while keeping the notification page action button intact"
+    ]
+  },
+  {
+    "id": "68",
+    "titleTh": "สิทธิ์: ให้ MR ใช้สิทธิ์ระดับ QMS ครบทุกจุดที่ยังถูกบล็อก",
+    "titleEn": "Auth: grant MR QMS-level privileges in the remaining blocked paths",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/mr-qms-privileges-remaining-paths",
+    "detailsTh": [
+      "app/api/car/next-number/route.ts, app/api/car/[id]/route.ts, app/api/car/[id]/issue/route.ts, app/api/car/[id]/re-car/route.ts, app/api/car/[id]/remind/route.ts, app/api/car/[id]/verify/route.ts: ปรับ permission gate ให้ MR ผ่านสิทธิ์ระดับเดียวกับ QMS/IT ในการดูเลข CAR ถัดไป แก้ไข ออก Re-CAR ส่ง reminder และ verify",
+      "services/kpiService.ts: เปิดให้ MR ทำ QMS check และ announce KPI ได้เทียบเท่า QMS โดยใช้ helper สิทธิ์กลาง",
+      "lib/actions/announcement.ts: ปรับ server action ให้ MR โพสต์ประกาศได้เหมือน QMS"
+    ],
+    "detailsEn": [
+      "app/api/car/next-number/route.ts, app/api/car/[id]/route.ts, app/api/car/[id]/issue/route.ts, app/api/car/[id]/re-car/route.ts, app/api/car/[id]/remind/route.ts, app/api/car/[id]/verify/route.ts: updated permission gates so MR now shares QMS/IT-level access for CAR next-number preview, edit, issue, Re-CAR, reminder, and verification flows",
+      "services/kpiService.ts: allowed MR to perform KPI QMS check and KPI announcement through the shared privileged-role helper",
+      "lib/actions/announcement.ts: allowed MR to post announcements through the server action path"
+    ]
+  },
+  {
+    "id": "67",
+    "titleTh": "DAR: Fix false 404 when pending approver opens detail",
+    "titleEn": "DAR: Fix false 404 when a pending approver opens the detail page",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/dar-detail-redirect-false-404",
+    "detailsTh": [
+      "app/(dashboard)/(user)/dar/[id]/page.tsx: Preserve Next.js redirect control flow so pending MR/QMS approvers are routed to the approval page instead of seeing 404"
+    ],
+    "detailsEn": [
+      "app/(dashboard)/(user)/dar/[id]/page.tsx: Preserved Next.js redirect control flow so pending MR/QMS approvers are routed to the approval page instead of seeing 404"
+    ]
+  },
+  {
+    "id": "66",
+    "titleTh": "แปลภาษา: เพิ่มแปลภาษาผู้รับผิดชอบ KPI และแก้ไขการเข้าดู DAR",
+    "titleEn": "Localization & Auth: Add translation for KPI responsible person and fix DAR detail access issues",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/kpi-responsible-person-translation-and-dar-access",
+    "detailsTh": [
+      "messages/en.json, messages/th.json: เพิ่มคีย์แปลภาษา kpi.form.responsiblePerson และข้อความแจ้งเตือนความผิดพลาด",
+      "components/kpi/KpiObjectiveFormModal.tsx: แปลภาษาข้อความเตือนความผิดพลาดในช่องเลือกผู้รับผิดชอบ",
+      "app/(dashboard)/(user)/dar/[id]/page.tsx: ปรับปรุงการตรวจสอบผู้มีสิทธิ์อนุมัติให้รองรับ id และ authUserId และแก้ไขการจัดการข้อผิดพลาด Forbidden เพื่อลดการเกิด 404",
+      "app/(dashboard)/(user)/dar/[id]/edit/page.tsx, app/(dashboard)/(user)/dar/[id]/review/page.tsx, app/print/dar/[id]/page.tsx: ปรับปรุงการดักจับข้อผิดพลาด Forbidden ให้แม่นยำขึ้นเพื่อหลีกเลี่ยงหน้า 404"
+    ],
+    "detailsEn": [
+      "messages/en.json, messages/th.json: Added kpi.form.responsiblePerson translation keys and error validation message translations",
+      "components/kpi/KpiObjectiveFormModal.tsx: Localized error messages on the KPI responsible person picker",
+      "app/(dashboard)/(user)/dar/[id]/page.tsx: Updated pending step logic to support both id and authUserId matches, and made ForbiddenError handler robust to prevent false 404s",
+      "app/(dashboard)/(user)/dar/[id]/edit/page.tsx, app/(dashboard)/(user)/dar/[id]/review/page.tsx, app/print/dar/[id]/page.tsx: Updated ForbiddenError catch blocks to avoid incorrect 404s"
+    ]
+  },
+  {
+    "id": "65",
+    "titleTh": "สิทธิ์: ให้ QMS_MR มีสิทธิ์เท่า QMS_QMS ทุกจุด",
+    "titleEn": "Auth: Grant QMS_MR the same permissions as QMS_QMS everywhere",
+    "date": "2026-07-08",
+    "type": "fix",
+    "commit": "fix/mr-equal-qms-permissions",
+    "detailsTh": [
+      "app/(dashboard)/qms/footer-config/page.tsx: เปิดสิทธิ์ MR เข้าใช้งานหน้าตั้งค่าหัว/ท้ายเอกสาร",
+      "app/(dashboard)/qms/approval-config/page.tsx: เปิดสิทธิ์ MR เข้าใช้งานหน้าตั้งค่าผู้อนุมัติอัตโนมัติ",
+      "app/api/kpi/[id]/announce/route.ts, app/api/kpi/[id]/qms-check/route.ts: เปิดสิทธิ์ MR",
+      "components/car/QmsCarPageClient.tsx, app/(dashboard)/qms/car/page.tsx: ให้ MR ลบ/แก้/สร้าง CAR ได้เท่า QMS",
+      "app/(dashboard)/audit/plans/page.tsx, app/api/audit/attachments/[id]/route.ts, services/audit/auditFindingService.ts: ให้ MR สิทธิ์เท่า QMS/IT",
+      "components/car/CarDetailClient.tsx: ให้ MR สิทธิ์ verify/issue/edit/re-car/remind CAR ได้เท่า QMS"
+    ],
+    "detailsEn": [
+      "app/(dashboard)/qms/footer-config/page.tsx: Allowed MR to access the document footer config page",
+      "app/(dashboard)/qms/approval-config/page.tsx: Allowed MR to access the auto-approval config page",
+      "app/api/kpi/[id]/announce/route.ts, app/api/kpi/[id]/qms-check/route.ts: Allowed MR",
+      "components/car/QmsCarPageClient.tsx, app/(dashboard)/qms/car/page.tsx: MR can delete/edit/create CAR like QMS",
+      "app/(dashboard)/audit/plans/page.tsx, app/api/audit/attachments/[id]/route.ts, services/audit/auditFindingService.ts: MR granted QMS/IT-level privileges",
+      "components/car/CarDetailClient.tsx: MR can verify/issue/edit/re-car/remind CAR like QMS"
+    ]
+  },
+  {
     "id": "64",
     "titleTh": "QMS: เพิ่ม pendingCount รวมงานค้างของ DAR และ CAR",
     "titleEn": "QMS: Add an aggregate pending count for unfinished work",

@@ -291,7 +291,7 @@ export class AuditFindingService {
     plan: { ownerAuthUserId: string; auditors: { assigneeAuthUserId: string }[] },
     actor: Actor
   ) {
-    if (actor.role === "QMS" || actor.role === "IT") return;
+    if (actor.role === "QMS" || actor.role === "IT" || actor.role === "MR") return;
     const actorId = actor.authUserId ?? actor.userId;
     if (
       actorId === plan.ownerAuthUserId ||
@@ -304,7 +304,7 @@ export class AuditFindingService {
     plan: { auditors: { assigneeAuthUserId: string; role: string }[] },
     actor: Actor
   ) {
-    if (actor.role === "QMS" || actor.role === "IT") return;
+    if (actor.role === "QMS" || actor.role === "IT" || actor.role === "MR") return;
     const actorId = actor.authUserId ?? actor.userId;
     const isLead = plan.auditors.some(
       (a) => a.assigneeAuthUserId === actorId && a.role === "LEAD"
@@ -316,7 +316,7 @@ export class AuditFindingService {
     finding: { ownerAuthUserId: string | null },
     actor: Actor
   ) {
-    if (actor.role === "QMS" || actor.role === "IT") return;
+    if (actor.role === "QMS" || actor.role === "IT" || actor.role === "MR") return;
     const actorId = actor.authUserId ?? actor.userId;
     if (finding.ownerAuthUserId && actorId === finding.ownerAuthUserId) return;
     throw new ForbiddenError("Only the finding owner or QMS/IT can respond to this finding");
