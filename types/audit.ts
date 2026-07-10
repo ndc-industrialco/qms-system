@@ -341,6 +341,7 @@ export type AuditAppointmentRow = {
   emailGroupMailsCc: string[];
   ownerSignaturePath: string | null;
   publishedAt: string | null;
+  showCompanyStamp: boolean | null;
   createdAt: string;
   updatedAt: string;
   members: AuditAppointmentMemberRow[];

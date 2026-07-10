@@ -6,17 +6,21 @@
     "date": "2026-07-10",
     "type": "feat",
     "commit": "feat/audit-appointment-company-stamp-option",
-    "detailsTh": [
+"detailsTh": [
       "prisma/schema.prisma: เพิ่มฟิลด์ showCompanyStamp (Boolean, default true) ไปยังโมเดล audit_appointments",
       "lib/validations/audit.ts: เพิ่ม showCompanyStamp ไปยู่ auditAppointmentCreateSchema",
       "services/audit/auditEmailService.ts: เพิ่มพารามิเตอร์ showCompanyStamp ไปยู่ buildBilingualAppointmentLetterHtml, buildAppointmentPublishedHtml และ sendAppointmentPublishedEmail เพื่อควบคุมการแสดงผลลายเซ็นบริษัท",
-      "services/audit/auditAppointmentService.ts: ปรับปรุง create, update, approve methods ให้รองรับและส่งพารามิเตอร์ showCompanyStamp"
+      "services/audit/auditAppointmentService.ts: ปรับปรุง create, update, approve methods ให้รองรับและส่งพารามิเตอร์ showCompanyStamp",
+      "types/audit.ts: เพิ่ม showCompanyStamp ไปยู่ AuditAppointmentRow type เพื่อให้ Print Template สามารถตรวจสอบค่าได้",
+      "components/audit/AuditAppointmentPrintTemplate.tsx: ปรับให้ตรวจสอบ showCompanyStamp !== false ร่วมกับ status === PUBLISHED ก่อนแสดงลายเซ็นบริษัท"
     ],
     "detailsEn": [
       "prisma/schema.prisma: added showCompanyStamp Boolean field (default true) to audit_appointments model",
       "lib/validations/audit.ts: added showCompanyStamp to auditAppointmentCreateSchema",
       "services/audit/auditEmailService.ts: added showCompanyStamp parameter to buildBilingualAppointmentLetterHtml, buildAppointmentPublishedHtml, and sendAppointmentPublishedEmail to control company stamp visibility",
-      "services/audit/auditAppointmentService.ts: updated create, update, and approve methods to support and pass showCompanyStamp parameter"
+      "services/audit/auditAppointmentService.ts: updated create, update, and approve methods to support and pass showCompanyStamp parameter",
+      "types/audit.ts: added showCompanyStamp to AuditAppointmentRow type so Print Template can read the value",
+      "components/audit/AuditAppointmentPrintTemplate.tsx: updated to check showCompanyStamp !== false alongside status === PUBLISHED before rendering the company stamp"
     ]
   },
   {

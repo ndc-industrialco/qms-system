@@ -337,7 +337,7 @@ export default function AuditAppointmentPrintTemplate({
                   </td>
                   {/* Company Stamp */}
                   <td style={{ border: "2px solid #000", borderRight: "none", padding: "2px", textAlign: "center", verticalAlign: "middle" }}>
-                    {appointment.status === "PUBLISHED" && (
+                    {appointment.status === "PUBLISHED" && appointment.showCompanyStamp !== false && (
                       <CompanyStampSvg />
                     )}
                   </td>
