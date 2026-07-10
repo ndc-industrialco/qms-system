@@ -390,4 +390,48 @@ describe("KpiService", () => {
       expect(kpiRepo.delete).toHaveBeenCalledWith("kpi-1", expect.anything());
     });
   });
+
+  // ── announceKpi ────────────────────────────────────────────────────────────
+
+  describe("announceKpi", () => {
+    it("announces KPI from APPROVED status", async () => {
+      const kpi = makeKpi({ status: "APPROVED" });
+      vi.mocked(kpiRepo.findByIdWithRelations).mockResolvedValue(kpi as never);
+      vi.mocked(kpiRepo.update).mockResolvedValue({ ...kpi, status: "ANNOUNCED" } as never);
+
+      const result = await service.announceKpi("kpi-1", ACTOR_REVIEWER, null, {
+        toGroupEmails: ["group1@company.com"],
+      });
+
+      expect(result.status).toBe("ANNOUNCED");
+      expect(kpiRepo.update).toHaveBeenCalledWith(
+        "kpi-1",
+        expect.objectContaining({ status: "ANNOUNCED" }),
+        expect.anything()
+      );
+    });
+
+    it("announces KPI from QMS_CHECK status", async () => {
+      const kpi = makeKpi({ status: "QMS_CHECK" });
+      vi.mocked(kpiRepo.findByIdWithRelations).mockResolvedValue(kpi as never);
+      vi.mocked(kpiRepo.update).mockResolvedValue({ ...kpi, status: "ANNOUNCED" } as never);
+
+      const result = await service.announceKpi("kpi-1", ACTOR_REVIEWER, null, {
+        toGroupEmails: ["group1@company.com"],
+      });
+
+      expect(result.status).toBe("ANNOUNCED");
+    });
+
+    it("throws ConflictError when announcing from invalid status", async () => {
+      const kpi = makeKpi({ status: "DRAFT" });
+      vi.mocked(kpiRepo.findByIdWithRelations).mockResolvedValue(kpi as never);
+
+      await expect(
+        service.announceKpi("kpi-1", ACTOR_REVIEWER, null, {
+          toGroupEmails: ["group1@company.com"],
+        })
+      ).rejects.toThrow(ConflictError);
+    });
+  });
 });

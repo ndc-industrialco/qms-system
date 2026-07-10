@@ -1,5 +1,21 @@
 [
   {
+    "id": "90",
+    "titleTh": "KPI: แก้สถานะการประกาศใช้โดยตรงจาก APPROVED ไปยัง ANNOUNCED ใน State Machine",
+    "titleEn": "KPI: permit state transition from APPROVED directly to ANNOUNCED in the state machine",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-state-machine-approved-to-announced",
+    "detailsTh": [
+      "lib/kpi-state-machine.ts: อนุญาตให้สถานะ APPROVED สามารถเปลี่ยนผ่านไปยัง ANNOUNCED ได้โดยตรง เพื่อสนับสนุนการประกาศใช้ FM-MR-01",
+      "__tests__/services/kpiService.test.ts: เพิ่มการทดสอบหน่วย (Unit tests) ครอบคลุมการส่งประกาศของ KpiService"
+    ],
+    "detailsEn": [
+      "lib/kpi-state-machine.ts: added direct APPROVED to ANNOUNCED transition path to support Master KPI announcement",
+      "__tests__/services/kpiService.test.ts: added unit tests for KpiService.announceKpi transitions"
+    ]
+  },
+  {
     "id": "89",
     "titleTh": "KPI: ลบคำอธิบายกลุ่มอีเมลที่ไม่จำเป็นออกจากหน้าประกาศใช้ FM-MR-01",
     "titleEn": "KPI: remove redundant email group description text from FM-MR-01 announce dialog",
