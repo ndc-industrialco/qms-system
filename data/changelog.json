@@ -1,5 +1,51 @@
 [
   {
+    "id": "88",
+    "titleTh": "KPI: แก้ไขคำสะกดภาษาไทย 'สูตรคำนวณ' และปรับปรุงการแสดงผลข้อความ 2 ภาษา (TH/EN) ให้สมบูรณ์ยิ่งขึ้น",
+    "titleEn": "KPI: fix Thai spelling for calculation formula and enhance bilingual (TH/EN) localization consistency",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-master-print-bilingual-and-spelling",
+    "detailsTh": [
+      "components/kpi/FmMr01PrintTemplate.tsx, components/kpi/KpiMasterReviewDialog.tsx, services/email.ts: แก้ไขคำสะกดผิดจาก 'สูตรคำนวน' เป็น 'สูตรการคำนวณ' และ 'สูตรคำนวณ' ตามพจนานุกรมและพจนานุกรมหลัก",
+      "components/kpi/FmMr01PrintTemplate.tsx, components/kpi/KpiMasterReviewDialog.tsx: ปรับปรุงหัวตารางและข้อความแสดงผลในหน้าตรวจสอบและพิมพ์ FM-MR-01 ให้รองรับภาษาไทยควบคู่ภาษาอังกฤษ (Bilingual TH/EN) อย่างสมบูรณ์และเป็นมาตรฐานเดียวกัน",
+      "components/kpi/KpiMasterAnnounceDialog.tsx: แก้ไขข้อผิดพลาดการเข้ารหัสอักขระภาษาไทย (Mojibake) ของแบบฟอร์มร่างประกาศให้กลับมาแสดงผลภาษาไทยอย่างถูกต้อง และปรับข้อความใน Dialog ให้เป็น 2 ภาษา"
+    ],
+    "detailsEn": [
+      "components/kpi/FmMr01PrintTemplate.tsx, components/kpi/KpiMasterReviewDialog.tsx, services/email.ts: corrected spelling of Thai word for 'calculation formula' from 'สูตรคำนวน' to 'สูตรการคำนวณ' and 'สูตรคำนวณ'",
+      "components/kpi/FmMr01PrintTemplate.tsx, components/kpi/KpiMasterReviewDialog.tsx: updated table headers and UI text in FM-MR-01 print/review screens to display consistent, fully bilingual TH/EN labels",
+      "components/kpi/KpiMasterAnnounceDialog.tsx: resolved Thai character encoding distortion (mojibake) in draft email template, formatting it as a clean bilingual announcement body, and updated dialog labels"
+    ]
+  },
+  {
+    "id": "86",
+    "titleTh": "KPI/Auth Center: แก้การบันทึก email group ของหน่วยงานให้ส่งไปยัง Auth Center จริง",
+    "titleEn": "KPI/Auth Center: persist department email group values back to Auth Center",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/auth-center-department-email-group-persist",
+    "detailsTh": [
+      "lib/auth-center-admin-client.ts, services/departmentService.ts: แก้ create/update department ให้ส่งค่า emailGroup ไปยัง Auth Center แทนการอ่านอย่างเดียว เพื่อให้ /api/departments และ dialog ประกาศ FM-MR-01 เห็นอีเมลกลุ่มหน่วยงานได้ตามข้อมูลจริง"
+    ],
+    "detailsEn": [
+      "lib/auth-center-admin-client.ts, services/departmentService.ts: updated department create/update flows to pass emailGroup through to Auth Center so /api/departments and the FM-MR-01 announce dialog can read real department group emails instead of empty values"
+    ]
+  },
+  {
+    "id": "87",
+    "titleTh": "KPI: เปลี่ยน FM-MR-01 announce dialog ให้เลือก email group แบบเดียวกับ Announcement โดยตรง",
+    "titleEn": "KPI: switch FM-MR-01 announce dialog to direct Announcement-style email group selection",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-master-announce-use-graph-groups",
+    "detailsTh": [
+      "components/kpi/KpiMasterAnnounceDialog.tsx: เปลี่ยนตัวเลือกผู้รับ To/CC จาก department email group ไปเป็น Graph email group picker แบบเดียวกับ Announcement เพื่อให้หน้า FM-MR-01 เลือกกลุ่มผู้รับจากระบบประกาศโดยตรง"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiMasterAnnounceDialog.tsx: replaced department-based To/CC recipient selection with the same Graph email group picker used by Announcements so FM-MR-01 chooses recipients directly from the announcement group source"
+    ]
+  },
+  {
     "id": "85",
     "titleTh": "KPI: เพิ่มการส่งประกาศ (Announce) เอกสาร FM-MR-01 พร้อมตัวเลือกอีเมลกลุ่มและตัวแก้ไขข้อความ WYSIWYG",
     "titleEn": "KPI: add FM-MR-01 Announce feature with group email selection and WYSIWYG content editor",

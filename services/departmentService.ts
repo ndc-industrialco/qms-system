@@ -43,7 +43,11 @@ export class DepartmentService {
 
   async createDepartment(data: { name: string; emailGroup?: string | null; isActive?: boolean }, accessToken?: string | null): Promise<DepartmentRow> {
     const code = data.name.trim().toUpperCase().replace(/\s+/g, "_");
-    const ac = await createAuthCenterDepartment({ code, displayName: data.name.trim() }, { accessToken });
+    const ac = await createAuthCenterDepartment({
+      code,
+      displayName: data.name.trim(),
+      emailGroup: data.emailGroup ?? null,
+    }, { accessToken });
     await invalidateDepartmentCache();
     return this.fromAuthCenter(ac);
   }
@@ -51,7 +55,10 @@ export class DepartmentService {
   // ─── Update ────────────────────────────────────────────────────────────────
 
   async updateDepartment(id: string, data: { name?: string; emailGroup?: string | null; isActive?: boolean }, accessToken?: string | null): Promise<DepartmentRow> {
-    const ac = await updateAuthCenterDepartment(id, { displayName: data.name }, { accessToken });
+    const ac = await updateAuthCenterDepartment(id, {
+      displayName: data.name,
+      emailGroup: data.emailGroup ?? null,
+    }, { accessToken });
     await invalidateDepartmentCache();
     return this.fromAuthCenter(ac);
   }

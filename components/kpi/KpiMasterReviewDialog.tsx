@@ -147,7 +147,7 @@ function UserPicker({ label, value, onChange }: UserPickerProps) {
                 setOpen(true);
               }}
               onFocus={() => setOpen(true)}
-              placeholder="ค้นหาชื่อ หรือ รหัสพนักงาน..."
+              placeholder="ค้นหาชื่อ หรือ รหัสพนักงาน... / Search name or employee ID..."
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-9 pr-4 text-sm transition-colors focus:border-[#0F1059] focus:bg-white focus:outline-none"
             />
             {loading && (
@@ -162,7 +162,7 @@ function UserPicker({ label, value, onChange }: UserPickerProps) {
             >
               {results.length === 0 ? (
                 <p className="px-4 py-3 text-center text-sm text-slate-400">
-                  {loading ? "กำลังค้นหา..." : "ไม่พบผู้ใช้"}
+                  {loading ? "กำลังค้นหา... / Searching..." : "ไม่พบผู้ใช้ / User not found"}
                 </p>
               ) : (
                 <ul className="max-h-48 divide-y divide-slate-50 overflow-y-auto">
@@ -227,7 +227,7 @@ export default function KpiMasterReviewDialog({
 
   const handleSubmit = async () => {
     if (!signatureDataUrl || !reviewer || !approver) {
-      toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+      toast.error("กรุณากรอกข้อมูลให้ครบถ้วน / Please complete all fields");
       return;
     }
 
@@ -249,7 +249,7 @@ export default function KpiMasterReviewDialog({
         throw new Error(json.error ?? t("common.error"));
       }
 
-      toast.success("ส่งข้อมูลตรวจสอบและอนุมัติเรียบร้อยแล้ว");
+      toast.success("ส่งข้อมูลตรวจสอบและอนุมัติเรียบร้อยแล้ว / Master KPI review request submitted successfully");
       onSuccess();
       handleClose();
     } catch (err) {
@@ -268,7 +268,7 @@ export default function KpiMasterReviewDialog({
         <DialogHeader className="px-6 pt-5 pb-4 border-b border-slate-100 shrink-0">
           <DialogTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <FileText className="h-5 w-5 text-indigo-600" />
-            Review & Sign Quality Objectives Master (FM-MR-01) — Year {year}
+            ลงนามตรวจสอบและอนุมัติวัตถุประสงค์คุณภาพ (FM-MR-01) / Review & Sign Quality Objectives Master (FM-MR-01) — Year {year}
           </DialogTitle>
         </DialogHeader>
 
@@ -276,7 +276,7 @@ export default function KpiMasterReviewDialog({
           <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
             {/* Preview Section */}
             <div className="space-y-2">
-              <h3 className="text-sm font-bold text-slate-700">Preview Export (FM-MR-01)</h3>
+              <h3 className="text-sm font-bold text-slate-700">แสดงตัวอย่างเอกสารส่งออก / Preview Export (FM-MR-01)</h3>
               <div className="border border-slate-200 rounded-xl overflow-auto max-h-[40vh] p-4 bg-white">
                 <div className="w-full min-w-[800px] text-[10px] text-black leading-tight">
                   {/* Header Block Table */}
@@ -306,11 +306,11 @@ export default function KpiMasterReviewDialog({
                     <thead>
                       <tr className="bg-gray-100 font-bold border border-black text-[9.5px]">
                         <th style={{ width: "15%" }} className="text-center p-1.5 border border-black font-bold">หน่วยงาน<br/>Departments</th>
-                        <th style={{ width: "25%" }} className="text-center p-1.5 border border-black font-bold">วัตถุประสงค์และเป้าหมาย<br/>Objectives and goals</th>
-                        <th style={{ width: "12%" }} className="text-center p-1.5 border border-black font-bold">สูตรคำนวน<br/>Calculation formula</th>
-                        <th style={{ width: "20%" }} className="text-center p-1.5 border border-black font-bold">แนวทางแผนการดำเนินงาน<br/>Operational plan guidelines</th>
-                        <th style={{ width: "8%" }} className="text-center p-1.5 border border-black font-bold">ความถี่ ในการวัด<br/>Measurement Frequency</th>
-                        <th style={{ width: "10%" }} className="text-center p-1.5 border border-black font-bold">เอกสารอ้างอิง<br/>References</th>
+                        <th style={{ width: "25%" }} className="text-center p-1.5 border border-black font-bold">วัตถุประสงค์และเป้าหมาย<br/>Objectives and Targets</th>
+                        <th style={{ width: "12%" }} className="text-center p-1.5 border border-black font-bold">สูตรการคำนวณ<br/>Calculation Formula</th>
+                        <th style={{ width: "20%" }} className="text-center p-1.5 border border-black font-bold">แนวทางแผนการดำเนินงาน<br/>Action Plan Guidelines</th>
+                        <th style={{ width: "8%" }} className="text-center p-1.5 border border-black font-bold">ความถี่ในการวัดผล<br/>Measurement Frequency</th>
+                        <th style={{ width: "10%" }} className="text-center p-1.5 border border-black font-bold">เอกสารอ้างอิง<br/>Reference Documents</th>
                         <th style={{ width: "10%" }} className="text-center p-1.5 border border-black font-bold">ผู้รับผิดชอบ<br/>Responsible Person</th>
                       </tr>
                     </thead>
@@ -358,7 +358,7 @@ export default function KpiMasterReviewDialog({
                       {activeKpis.length === 0 && (
                         <tr>
                           <td colSpan={7} className="text-center text-slate-400 py-8 border border-black">
-                            ไม่มีข้อมูลเป้าหมายประจำปี {year}
+                            ไม่มีข้อมูลเป้าหมายประจำปี {year} / No annual objectives data for {year}
                           </td>
                         </tr>
                       )}
@@ -374,7 +374,7 @@ export default function KpiMasterReviewDialog({
 
             {/* Signature Pad */}
             <div className="space-y-2">
-              <h3 className="text-sm font-bold text-slate-700">วาดลายเซ็นของคุณ (Preparer Signature)</h3>
+              <h3 className="text-sm font-bold text-slate-700">วาดลายเซ็นของคุณ (Preparer Signature) / Draw your signature (Preparer Signature)</h3>
               <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
                 <SignaturePad
                   onCancel={handleClose}
@@ -388,7 +388,7 @@ export default function KpiMasterReviewDialog({
             {/* Signature Preview */}
             <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-xl border border-slate-100 gap-2">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                <Check className="h-4 w-4" /> ลงชื่อเตรียมเอกสารสำเร็จ
+                <Check className="h-4 w-4" /> ลงชื่อเตรียมเอกสารสำเร็จ / Signature confirmed
               </div>
               {signatureDataUrl && (
                 <div className="bg-white border border-slate-200 rounded-lg p-2 max-w-[200px]">
@@ -405,12 +405,12 @@ export default function KpiMasterReviewDialog({
             {/* Select Reviewer & Approver */}
             <div className="space-y-4">
               <UserPicker
-                label="เลือกผู้ตรวจสอบ (Reviewer)"
+                label="เลือกผู้ตรวจสอบ (Reviewer) / Select Reviewer"
                 value={reviewer}
                 onChange={setReviewer}
               />
               <UserPicker
-                label="เลือกผู้อนุมัติ (Approver)"
+                label="เลือกผู้อนุมัติ (Approver) / Select Approver"
                 value={approver}
                 onChange={setApprover}
               />

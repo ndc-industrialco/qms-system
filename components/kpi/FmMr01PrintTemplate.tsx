@@ -263,8 +263,8 @@ export default function FmMr01PrintTemplate({
               </Button>
               <div className="h-6 w-px bg-slate-200 hidden md:block" />
               <div>
-                <h2 className="text-sm font-bold text-slate-800">Review Mode: FM-MR-01 ({year})</h2>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">สถานะเอกสาร Master: {masterKpi?.status || "ยังไม่ได้เริ่มรีวิว"}</p>
+                <h2 className="text-sm font-bold text-slate-800">โหมดการตรวจสอบ / Review Mode: FM-MR-01 ({year})</h2>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">สถานะเอกสาร Master: {masterKpi?.status || "ยังไม่ได้เริ่มรีวิว"} / Master Document Status: {masterKpi?.status || "Not started review"}</p>
               </div>
             </div>
 
@@ -278,7 +278,7 @@ export default function FmMr01PrintTemplate({
                     onClick={() => setRecallConfirmOpen(true)}
                   >
                     <XCircle className="mr-1.5 h-4 w-4" />
-                    Cancel
+                    ยกเลิกรีวิว / Cancel
                   </Button>
                   <Button
                     variant="outline"
@@ -287,7 +287,7 @@ export default function FmMr01PrintTemplate({
                     onClick={handleResend}
                   >
                     <RefreshCw className={`mr-1.5 h-4 w-4 ${actionBusy === "resend" ? "animate-spin" : ""}`} />
-                    Resend
+                    ส่งอีกครั้ง / Resend
                   </Button>
                 </>
               )}
@@ -363,11 +363,11 @@ export default function FmMr01PrintTemplate({
             <thead>
               <tr style={{ fontSize: "9.5px" }}>
                 <th style={{ width: "15%" }} className="text-center">หน่วยงาน<br/>Departments</th>
-                <th style={{ width: "25%" }} className="text-center">วัตถุประสงค์และเป้าหมาย<br/>Objectives and goals</th>
-                <th style={{ width: "12%" }} className="text-center">สูตรคำนวน<br/>Calculation formula</th>
-                <th style={{ width: "20%" }} className="text-center">แนวทางแผนการดำเนินงาน<br/>Operational plan guidelines</th>
-                <th style={{ width: "8%" }} className="text-center">ความถี่ ในการวัด<br/>Measurement Frequency</th>
-                <th style={{ width: "10%" }} className="text-center">เอกสารอ้างอิง<br/>References</th>
+                <th style={{ width: "25%" }} className="text-center">วัตถุประสงค์และเป้าหมาย<br/>Objectives and Targets</th>
+                <th style={{ width: "12%" }} className="text-center">สูตรการคำนวณ<br/>Calculation Formula</th>
+                <th style={{ width: "20%" }} className="text-center">แนวทางแผนการดำเนินงาน<br/>Action Plan Guidelines</th>
+                <th style={{ width: "8%" }} className="text-center">ความถี่ในการวัดผล<br/>Measurement Frequency</th>
+                <th style={{ width: "10%" }} className="text-center">เอกสารอ้างอิง<br/>Reference Documents</th>
                 <th style={{ width: "10%" }} className="text-center">ผู้รับผิดชอบ<br/>Responsible Person</th>
               </tr>
             </thead>
@@ -418,7 +418,7 @@ export default function FmMr01PrintTemplate({
               {activeKpis.length === 0 && (
                 <tr>
                   <td colSpan={7} className="text-center text-slate-400 py-4">
-                    No data for {year}
+                    ไม่มีข้อมูลสำหรับปี {year} / No data for {year}
                   </td>
                 </tr>
               )}

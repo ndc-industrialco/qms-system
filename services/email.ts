@@ -251,11 +251,11 @@ export function makeMasterObjectivesTable(objectives: KpiObjectiveRow[]): string
         <thead>
           <tr style="background-color:#f1f5f9;font-weight:bold">
             <th style="border:1px solid #000;padding:6px;width:15%;text-align:center">หน่วยงาน<br>Departments</th>
-            <th style="border:1px solid #000;padding:6px;width:25%;text-align:center">วัตถุประสงค์และเป้าหมาย<br>Objectives and goals</th>
-            <th style="border:1px solid #000;padding:6px;width:12%;text-align:center">สูตรคำนวน<br>Calculation formula</th>
-            <th style="border:1px solid #000;padding:6px;width:20%;text-align:center">แนวทางแผนการดำเนินงาน<br>Operational plan guidelines</th>
-            <th style="border:1px solid #000;padding:6px;width:8%;text-align:center">ความถี่ ในการวัด<br>Measurement Frequency</th>
-            <th style="border:1px solid #000;padding:6px;width:10%;text-align:center">เอกสารอ้างอิง<br>References</th>
+            <th style="border:1px solid #000;padding:6px;width:25%;text-align:center">วัตถุประสงค์และเป้าหมาย<br>Objectives and Targets</th>
+            <th style="border:1px solid #000;padding:6px;width:12%;text-align:center">สูตรการคำนวณ<br>Calculation Formula</th>
+            <th style="border:1px solid #000;padding:6px;width:20%;text-align:center">แนวทางแผนการดำเนินงาน<br>Action Plan Guidelines</th>
+            <th style="border:1px solid #000;padding:6px;width:8%;text-align:center">ความถี่ในการวัดผล<br>Measurement Frequency</th>
+            <th style="border:1px solid #000;padding:6px;width:10%;text-align:center">เอกสารอ้างอิง<br>Reference Documents</th>
             <th style="border:1px solid #000;padding:6px;width:10%;text-align:center">ผู้รับผิดชอบ<br>Responsible Person</th>
           </tr>
         </thead>

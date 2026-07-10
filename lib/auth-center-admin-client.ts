@@ -413,6 +413,7 @@ export async function listAuthCenterDepartments(options?: AuthCenterClientAuthOp
 export async function createAuthCenterDepartment(data: {
   code: string;
   displayName: string;
+  emailGroup?: string | null;
 }, options?: AuthCenterClientAuthOptions): Promise<AuthCenterDepartment> {
   const base = getBaseUrl();
   const appId = getAppId();
@@ -437,7 +438,7 @@ export async function createAuthCenterDepartment(data: {
  */
 export async function updateAuthCenterDepartment(
   code: string,
-  data: { displayName?: string },
+  data: { displayName?: string; emailGroup?: string | null },
   options?: AuthCenterClientAuthOptions,
 ): Promise<AuthCenterDepartment> {
   const base = getBaseUrl();
