@@ -1,5 +1,203 @@
 [
   {
+    "id": "105",
+    "titleTh": "Audit: เพิ่มตัวเลือกเลือกแสดง/ซ่อนลายเซ็นบริษัทในเทมเพลตประกาศแต่งตั้งผู้ตรวจ",
+    "titleEn": "Audit: add option to show/hide company stamp in auditor appointment letter template",
+    "date": "2026-07-10",
+    "type": "feat",
+    "commit": "feat/audit-appointment-company-stamp-option",
+    "detailsTh": [
+      "prisma/schema.prisma: เพิ่มฟิลด์ showCompanyStamp (Boolean, default true) ไปยังโมเดล audit_appointments",
+      "lib/validations/audit.ts: เพิ่ม showCompanyStamp ไปยู่ auditAppointmentCreateSchema",
+      "services/audit/auditEmailService.ts: เพิ่มพารามิเตอร์ showCompanyStamp ไปยู่ buildBilingualAppointmentLetterHtml, buildAppointmentPublishedHtml และ sendAppointmentPublishedEmail เพื่อควบคุมการแสดงผลลายเซ็นบริษัท",
+      "services/audit/auditAppointmentService.ts: ปรับปรุง create, update, approve methods ให้รองรับและส่งพารามิเตอร์ showCompanyStamp"
+    ],
+    "detailsEn": [
+      "prisma/schema.prisma: added showCompanyStamp Boolean field (default true) to audit_appointments model",
+      "lib/validations/audit.ts: added showCompanyStamp to auditAppointmentCreateSchema",
+      "services/audit/auditEmailService.ts: added showCompanyStamp parameter to buildBilingualAppointmentLetterHtml, buildAppointmentPublishedHtml, and sendAppointmentPublishedEmail to control company stamp visibility",
+      "services/audit/auditAppointmentService.ts: updated create, update, and approve methods to support and pass showCompanyStamp parameter"
+    ]
+  },
+  {
+    "id": "104",
+    "titleTh": "Audit: ปรับปรุงเทมเพลตอีเมลและ Notification ของประกาศแต่งตั้งผู้ตรวจให้เหมือน PDF",
+    "titleEn": "Audit: update auditor appointment emails and notifications to match PDF template",
+    "date": "2026-07-10",
+    "type": "feat",
+    "commit": "feat/audit-appointment-email-pdf-style",
+    "detailsTh": [
+      "services/audit/auditEmailService.ts, services/audit/auditAppointmentService.ts: เพิ่มฟังก์ชันสรุปโครงสร้างประกาศแต่งตั้งผู้ตรวจสไตล์แบบฟอร์ม FM-DC-06 และนำไปใช้กับอีเมลขออนุมัติ, อีเมลเผยแพร่ และระบบแจ้งเตือนแบบ In-app"
+    ],
+    "detailsEn": [
+      "services/audit/auditEmailService.ts, services/audit/auditAppointmentService.ts: implemented a shared FM-DC-06 bilingual builder for the auditor appointment letters and integrated it into signature request emails, publication announcements, and in-app notifications"
+    ]
+  },
+  {
+    "id": "103",
+    "titleTh": "Audit: นำปุ่มส่งออก Excel ของประกาศแต่งตั้งและผู้ตรวจการในหน้าแสดงรายการออก",
+    "titleEn": "Audit: remove Excel export buttons from the auditor appointments list view",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/audit-appointment-remove-excel-export",
+    "detailsTh": [
+      "components/audit/AuditAppointmentListClient.tsx: นำปุ่มส่งออกตาราง (Excel) และปุ่มส่งออกผู้ตรวจ (Excel) ออกตามข้อกำหนด เพื่อให้เหลือเฉพาะการส่งออกประกาศเป็นไฟล์ PDF"
+    ],
+    "detailsEn": [
+      "components/audit/AuditAppointmentListClient.tsx: removed Excel export buttons from the appointments page, keeping only the PDF export action"
+    ]
+  },
+  {
+    "id": "102",
+    "titleTh": "Audit: เพิ่มปุ่มส่งออกประกาศเป็น PDF ในหน้าแสดงรายการหลัก /audit/appointments",
+    "titleEn": "Audit: add PDF export and print buttons directly to the list view in /audit/appointments",
+    "date": "2026-07-10",
+    "type": "feat",
+    "commit": "feat/audit-appointment-list-pdf-export",
+    "detailsTh": [
+      "components/audit/AuditAppointmentListClient.tsx: เพิ่มปุ่ม 'พิมพ์ประกาศ (PDF)' บนการ์ดประกาศแต่ละรายการ และปรับปรุงปุ่ม 'ส่งออกประกาศ' ด้านบนให้สามารถพิมพ์ประกาศล่าสุดเป็นรูปแบบ PDF ได้โดยตรง"
+    ],
+    "detailsEn": [
+      "components/audit/AuditAppointmentListClient.tsx: added a 'พิมพ์ประกาศ (PDF)' button on individual appointment cards and updated the top global export button to directly print/export the latest published appointment to PDF"
+    ]
+  },
+  {
+    "id": "101",
+    "titleTh": "Audit: ปรับปรุงเทมเพลตสำหรับพิมพ์ประกาศแต่งตั้งผู้ตรวจติดตามภายในเป็นรูปแบบ PDF ให้ตรงกับเอกสารมาตรฐาน",
+    "titleEn": "Audit: update internal auditor appointment print template to match the standard PDF layout",
+    "date": "2026-07-10",
+    "type": "feat",
+    "commit": "feat/audit-appointment-print-pdf-template",
+    "detailsTh": [
+      "components/audit/AuditAppointmentPrintTemplate.tsx: แก้ไขโครงสร้างตารางหัวเอกสาร, ส่วนลงลายมือชื่อ, ตรายางบริษัท (SVG), ย่อหน้าวัตถุประสงค์ตามมาตรฐานแบบสองภาษา และจัดกลุ่มรายชื่อคณะผู้ตรวจตามฝ่ายสังกัดให้สอดคล้องกับแบบฟอร์ม FM-DC-06"
+    ],
+    "detailsEn": [
+      "components/audit/AuditAppointmentPrintTemplate.tsx: redesigned document headers, signature grids, inline company stamp SVG, bilingual objectives paragraph, and grouped auditor lists by department to exactly match form FM-DC-06 template"
+    ]
+  },
+  {
+    "id": "100",
+    "titleTh": "KPI: ปรับชื่อไฟล์ default ของ annual export ให้สั้นเป็น FM-MR-01 และปล่อยให้ผู้ใช้เปลี่ยนชื่อเองตอนบันทึก",
+    "titleEn": "KPI: simplify annual export default filenames to FM-MR-01 and leave final naming to the user",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-annual-export-default-filenames",
+    "detailsTh": [
+      "app/api/kpi/export/fm-mr-01/route.ts, services/kpiService.ts: เปลี่ยนชื่อไฟล์ default ของ annual Excel/PDF export เป็น FM-MR-01.xlsx และ FM-MR-01.pdf เพื่อให้ผู้ใช้ตั้งชื่อปลายทางเองได้สะดวกตอน save"
+    ],
+    "detailsEn": [
+      "app/api/kpi/export/fm-mr-01/route.ts and services/kpiService.ts now use FM-MR-01.xlsx and FM-MR-01.pdf as the default annual export filenames so users can rename the files themselves at save time"
+    ]
+  },
+  {
+    "id": "99",
+    "titleTh": "KPI: แก้ annual PDF และ Excel export ให้ไฮไลต์เฉพาะ objective ที่ diff จริง ไม่อิง flag revise ค้างในฐานข้อมูล",
+    "titleEn": "KPI: fix annual PDF and Excel exports to highlight only true objective diffs instead of persisted revise flags",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-annual-export-diff-highlighting",
+    "detailsTh": [
+      "app/api/kpi/export/fm-mr-01/route.ts, services/kpiService.ts, components/kpi/FmMr01PrintTemplate.tsx: เปลี่ยน annual export และ PDF generator ให้ใช้ revisionChangeType จาก getKpiById แทนการอิง isRevised/isAdded ตรง ๆ จึงไม่ไฮไลต์ objective ทุกตัวในรอบ revise อีกต่อไป",
+      "app/api/kpi/export/fm-mr-01/route.ts, services/kpiService.ts: เพิ่มการแสดง removed objectives ใน annual Excel/PDF export ด้วยพื้นหลังแดงอ่อนและข้อความ Deleted"
+    ],
+    "detailsEn": [
+      "app/api/kpi/export/fm-mr-01/route.ts, services/kpiService.ts, and components/kpi/FmMr01PrintTemplate.tsx now drive annual highlighting from revisionChangeType returned by getKpiById instead of raw isRevised or isAdded flags so only true diffs are emphasized",
+      "app/api/kpi/export/fm-mr-01/route.ts and services/kpiService.ts now include removed objectives in annual Excel and PDF exports with red deleted styling"
+    ]
+  },
+  {
+    "id": "98",
+    "titleTh": "KPI: แก้ไขการแสดงสถานะแก้ไข (isRevised) ของวัตถุประสงค์ที่ไม่เกี่ยวข้องในรอบ Revise",
+    "titleEn": "KPI: fix untouched objectives being marked as revised in revision cycles",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-objective-revision-flag-scoping",
+    "detailsTh": [
+      "services/kpiService.ts: แก้ไขให้เคลียร์สถานะแก้ไขและเพิ่มเดิมเมื่อเริ่มต้นรอบ Revise ใหม่ และแก้ไขไม่ให้ตั้งค่าเป็นวัตถุประสงค์ถูกแก้ไขทั้งหมดหากไม่ได้ระบุ พร้อมปรับปรุงให้ตั้งค่า isRevised เป็นจริงเมื่อผ่านการแก้ไขผ่านบริการ (updateObjective) เฉพาะตัวที่ถูกแก้ไขจริงเท่านั้น"
+    ],
+    "detailsEn": [
+      "services/kpiService.ts: reset all objectives' revision and addition flags when starting a new revision cycle, scoped initial marking to only passed objectiveIds, and updated updateObjective to automatically flag an objective as revised only when it is actually updated."
+    ]
+  },
+  {
+    "id": "98",
+    "titleTh": "KPI: ปรับ Revision history บนหน้า KPI detail จาก card เป็นตารางให้อ่านย้อนหลังง่ายขึ้น",
+    "titleEn": "KPI: convert revision history on the KPI detail page from cards to a table layout",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-revision-history-table-layout",
+    "detailsTh": [
+      "components/kpi/KpiDepartmentDetailClient.tsx: เปลี่ยนส่วน Revision history จาก card หลายชั้นเป็นตารางเดียว โดยคงข้อมูล revision รอบ เวลา เหตุผล และรายละเอียด objective เดิมไว้ครบเพื่อให้ layout สอดคล้องกับตารางวัตถุประสงค์ด้านบน"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiDepartmentDetailClient.tsx now renders revision history as a single table instead of stacked cards while preserving revision round, timestamp, reason, and objective snapshot details in a layout that matches the objectives table above"
+    ]
+  },
+  {
+    "id": "97",
+    "titleTh": "KPI: แสดงความต่างของ revise บนหน้า reviewer/approver ด้วยสีเขียวสำหรับเพิ่มหรือแก้ไข และสีแดงสำหรับรายการที่ลบ",
+    "titleEn": "KPI: show revise diffs on reviewer and approver pages with green added or updated items and red deleted items",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-review-approval-revision-diff-highlights",
+    "detailsTh": [
+      "app/(dashboard)/approve/kpi/[id]/reviewer/page.tsx, app/(dashboard)/approve/kpi/[id]/approver/page.tsx, app/print/qms/kpi/fm-mr-01/page.tsx: เปลี่ยนหน้า FM-MR-01 ให้โหลดข้อมูล KPI รายแผนกผ่าน getKpiById เพื่อดึง revisionChangeType และ removedObjectives มาใช้แสดงผล",
+      "components/kpi/FmMr01PrintTemplate.tsx, components/approve/KpiApproveActionClient.tsx: เพิ่มการไฮไลต์วัตถุประสงค์ที่เพิ่มหรือแก้ไขด้วยตัวหนาเอียงพื้นหลังสีเขียว และแสดงรายการที่ถูกลบด้วยตัวอักษรสีแดงพื้นหลังแดงอ่อนบนหน้า reviewer/approver"
+    ],
+    "detailsEn": [
+      "app/(dashboard)/approve/kpi/[id]/reviewer/page.tsx, app/(dashboard)/approve/kpi/[id]/approver/page.tsx, and app/print/qms/kpi/fm-mr-01/page.tsx now load department KPIs through getKpiById so revisionChangeType and removedObjectives are available to the annual review and approval surfaces",
+      "components/kpi/FmMr01PrintTemplate.tsx and components/approve/KpiApproveActionClient.tsx now render added or updated objectives in bold italic green highlights and render deleted objectives in red on the reviewer and approver pages"
+    ]
+  },
+  {
+    "id": "96",
+    "titleTh": "KPI: แก้ approve token และ in-app notification ให้ยึด auth user id กับ session เดียวกัน",
+    "titleEn": "KPI: align approval tokens and in-app notifications with auth user ids",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-token-and-notification-auth-alignment",
+    "detailsTh": [
+      "services/actionTokenService.ts, app/(dashboard)/approve/page.tsx: ปรับ owner check ของ approve token ให้ตรวจได้ทั้ง local session user id และ auth user id เพื่อให้ลิงก์จากอีเมลและ notification ใช้งานได้จริง",
+      "services/kpiService.ts: ปรับ KPI submit/review notification ให้สร้าง in-app notification ไปยัง reviewer/approver auth user id ก่อน ลดปัญหาแจ้งเตือนสร้างสำเร็จแต่ผู้รับไม่เห็นใน feed"
+    ],
+    "detailsEn": [
+      "services/actionTokenService.ts and app/(dashboard)/approve/page.tsx now validate approval tokens against both the local session user id and auth user id so approval links no longer fail on owner mismatches",
+      "services/kpiService.ts now targets reviewer and approver auth user ids first when creating KPI in-app notifications so successful notification writes appear in the recipient feed"
+    ]
+  },
+  {
+    "id": "95",
+    "titleTh": "KPI: เพิ่มการ export แผนวัตถุประสงค์คุณภาพประจำปี FM-MR-01 เป็นรูปแบบ Excel",
+    "titleEn": "KPI: add FM-MR-01 annual quality objectives export to Excel format",
+    "date": "2026-07-10",
+    "type": "feat",
+    "commit": "feat/kpi-export-fm-mr-01-excel",
+    "detailsTh": [
+      "app/api/kpi/export/fm-mr-01/route.ts: เพิ่ม API endpoint ในการแปลงแผนวัตถุประสงค์คุณภาพประจำปี FM-MR-01 เป็นไฟล์ Excel โดยจัดรูปแบบตาม print template รวมถึงมีแถบหัวข้อ การรวมกลุ่มฝ่าย การไฮไลท์การแก้ไข และช่องลงนามแบบดิจิทัล",
+      "components/kpi/KpiObjectivesClient.tsx, components/kpi/FmMr01PrintTemplate.tsx: เพิ่มปุ่ม Export Excel ในหน้ารายการวัตถุประสงค์ KPI และหน้าแสดงตัวอย่างก่อนพิมพ์ของ FM-MR-01"
+    ],
+    "detailsEn": [
+      "app/api/kpi/export/fm-mr-01/route.ts: created Excel export endpoint for FM-MR-01 that generates styled workbooks replicating the print template layout, department cell merges, revision highlighting, and digital signature boxes",
+      "components/kpi/KpiObjectivesClient.tsx, components/kpi/FmMr01PrintTemplate.tsx: integrated Export Excel action buttons alongside the Print/PDF button in KPI objectives and FM-MR-01 preview screens"
+    ]
+  },
+  {
+    "id": "94",
+    "titleTh": "KPI: แก้ pending approval และปุ่ม reviewer/approver ให้มองเห็นจากทั้ง local user id และ auth user id",
+    "titleEn": "KPI: restore pending approval visibility and reviewer/approver actions for both local user ids and auth user ids",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-pending-approval-user-id-mapping",
+    "detailsTh": [
+      "repositories/kpiRepository.ts, services/approvalsService.ts: ปรับ pending review/approve query ของ KPI ให้จับคู่ได้ทั้ง reviewer/approver local user id และ auth user id เพื่อให้ notification queue และหน้า Approve แสดงรายการได้ตรงกับผู้รับจริง",
+      "app/(dashboard)/qms/kpi/[departmentId]/page.tsx, components/kpi/KpiDepartmentDetailClient.tsx: ส่ง auth user id เข้า detail page และแก้เงื่อนไขปุ่ม Approve/Reject ให้ approver ทำงานบนสถานะ PENDING_APPROVAL ตาม flow จริง"
+    ],
+    "detailsEn": [
+      "repositories/kpiRepository.ts and services/approvalsService.ts now match KPI pending review and approval items by either the local user id or auth user id so pending queues and notifications resolve to the actual assignee",
+      "app/(dashboard)/qms/kpi/[departmentId]/page.tsx and components/kpi/KpiDepartmentDetailClient.tsx now pass the auth user id into the detail page and align approver action visibility with the real PENDING_APPROVAL workflow"
+    ]
+  },
+  {
     "id": "93",
     "titleTh": "KPI: ผูกเลข Rev ของ FM-MR-01 กับรอบ revise/master review ใหม่ทั้ง print preview email และ system master",
     "titleEn": "KPI: bind FM-MR-01 revision labels to master revise cycles across print preview email and system master",

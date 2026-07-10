@@ -5254,6 +5254,7 @@ export const AuditAppointmentScalarFieldEnum = {
   emailGroupMailsCc: 'emailGroupMailsCc',
   ownerSignaturePath: 'ownerSignaturePath',
   publishedAt: 'publishedAt',
+  showCompanyStamp: 'showCompanyStamp',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

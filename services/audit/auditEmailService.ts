@@ -453,6 +453,426 @@ export async function sendChecklistReceivedEmail(opts: {
 
 // ─── Appointment: sign request (Reviewer or Approver) ─────────────────────────
 
+// ─── Appointment: PDF-like HTML Template Builder ─────────────────────────────
+
+function getDeptLabel(dept: string): { th: string; en: string } {
+  const d = dept.trim().toLowerCase();
+  if (d.includes("qms") || d.includes("quality")) {
+    return { th: "แผนกระบบมาตรฐานคุณภาพ", en: "Quality Management System Section" };
+  }
+  if (d.includes("safety") || d.includes("she") || d.includes("environment")) {
+    return { th: "แผนกระบบมาตรฐานความปลอดภัย อาชีวอนามัยและสิ่งแวดล้อม", en: "Safety, Health, and Environment Section" };
+  }
+  if (d.includes("hr") || d.includes("human") || d.includes("resource")) {
+    return { th: "แผนกทรัพยากรบุคคล", en: "Human Resources Section" };
+  }
+  if (d.includes("sales") || d.includes("marketing") || d.includes("sale")) {
+    return { th: "แผนกขายและการตลาด", en: "Sales and Marketing Section" };
+  }
+  if (d.includes("purchase") || d.includes("purchasing") || d.includes("procurement")) {
+    return { th: "แผนกจัดซื้อ", en: "Purchasing Section" };
+  }
+  if (d.includes("production") || d.includes("manufacture")) {
+    return { th: "แผนกผลิต", en: "Production Section" };
+  }
+  if (d.includes("engineer") || d.includes("engineering")) {
+    return { th: "แผนกวิศวกรรม", en: "Engineering Section" };
+  }
+  if (d.includes("warehouse") || d.includes("store") || d.includes("logistics")) {
+    return { th: "แผนกคลังสินค้า", en: "Warehouse Section" };
+  }
+  if (d.includes("it") || d.includes("information")) {
+    return { th: "แผนกเทคโนโลยีสารสนเทศ", en: "IT Section" };
+  }
+  const cleanDept = dept.trim();
+  return { th: `แผนก${cleanDept}`, en: `${cleanDept} Section` };
+}
+
+function getMemberRoleTitle(role: string, department: string, nameTh: string): { th: string; en: string } {
+  const dept = department.toLowerCase();
+  const name = nameTh.toLowerCase();
+  
+  if (dept.includes("qms") || dept.includes("quality")) {
+    return { th: "เจ้าหน้าที่แผนกระบบบริหารงานคุณภาพ", en: "Quality Management System Officer" };
+  }
+  if (dept.includes("safety") || dept.includes("she") || dept.includes("environment")) {
+    if (name.includes("วิหวัส") || name.includes("wittawat")) {
+      return { th: "เจ้าหน้าที่ความปลอดภัย", en: "Safety Officer" };
+    }
+    return { th: "เจ้าหน้าที่สิ่งแวดล้อม", en: "Environmental Officer" };
+  }
+  if (dept.includes("hr") || dept.includes("human") || dept.includes("resource")) {
+    if (name.includes("แสงสุรีย์") || name.includes("saengsuree")) {
+      return { th: "เจ้าหน้าที่ค่าจ้างและสวัสดิการ", en: "HR Payroll and benefits officer" };
+    }
+    return { th: "เจ้าหน้าที่สรรหาบุคลากร", en: "Human Resources Officer" };
+  }
+  if (dept.includes("sales") || dept.includes("marketing") || dept.includes("sale")) {
+    return { th: "เจ้าหน้าที่แผนกขายและการตลาด", en: "Sales and Marketing Officer" };
+  }
+  if (dept.includes("purchase") || dept.includes("purchasing") || dept.includes("procurement")) {
+    return { th: "เจ้าหน้าที่จัดซื้อ", en: "Purchasing Officer" };
+  }
+  if (dept.includes("production")) {
+    return { th: "เจ้าหน้าที่ผลิต", en: "Production Officer" };
+  }
+  if (dept.includes("engineer") || dept.includes("engineering")) {
+    return { th: "เจ้าหน้าที่วิศวกรรม", en: "Engineering Officer" };
+  }
+  if (dept.includes("warehouse")) {
+    return { th: "เจ้าหน้าที่คลังสินค้า", en: "Warehouse Officer" };
+  }
+  if (dept.includes("it")) {
+    return { th: "เจ้าหน้าที่เทคโนโลยีสารสนเทศ", en: "IT Officer" };
+  }
+  
+  if (role === "LEAD_AUDITOR") {
+    return { th: "หัวหน้าผู้ตรวจติดตามภายใน", en: "Lead Auditor" };
+  }
+  if (role === "AUDITOR") {
+    return { th: "ผู้ตรวจติดตามภายใน", en: "Internal Auditor" };
+  }
+  return { th: "คณะทำงาน", en: "Committee Member" };
+}
+
+function parseBilingualName(nameStr: string): { th: string; en: string } {
+  if (nameStr.includes("/")) {
+    const parts = nameStr.split("/").map((p) => p.trim());
+    return { th: parts[0] || "", en: parts[1] || "" };
+  }
+  if (nameStr.includes("(")) {
+    const parts = nameStr.split("(").map((p) => p.trim().replace(")", ""));
+    return { th: parts[0] || "", en: parts[1] || "" };
+  }
+  return { th: nameStr.trim(), en: "" };
+}
+
+function formatDateEn(value: string | Date | null | undefined): string {
+  if (!value) return "-";
+  const date = value instanceof Date ? value : new Date(value);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = months[date.getMonth()];
+  const year = String(date.getFullYear()).substring(2);
+  return `${day}-${month}-${year}`;
+}
+
+function formatDateSign(value: string | Date | null | undefined): string {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+}
+
+export function buildBilingualAppointmentLetterHtml(opts: {
+  appointmentNo: string;
+  title: string;
+  year: number;
+  standards: string[];
+  members: { name: string; role: string; department?: string | null; standards: string[] }[];
+  signoffs?: { signedRole: string; signaturePath?: string | null; signerNameSnapshot?: string | null; signedAt: Date | string }[];
+  ownerSignaturePath?: string | null;
+  ownerName?: string | null;
+  reviewerName?: string | null;
+  approverName?: string | null;
+  status: string;
+  showCompanyStamp?: boolean;
+}): string {
+  const reviewerSignoff = opts.signoffs?.find((s) => s.signedRole === "REVIEWER");
+  const approverSignoff = opts.signoffs?.find((s) => s.signedRole === "APPROVER");
+
+  const has9001 = opts.standards.some((s) => s.includes("9001"));
+  const has14001 = opts.standards.some((s) => s.includes("14001"));
+  const has45001 = opts.standards.some((s) => s.includes("45001"));
+
+  const textThParts: string[] = [];
+  const textEnParts: string[] = [];
+
+  if (has9001) {
+    textThParts.push("ระบบบริหารงานคุณภาพ ISO 9001:2015");
+    textEnParts.push("the Quality Management System (ISO 9001:2015)");
+  }
+  if (has14001) {
+    textThParts.push("ระบบการจัดการสิ่งแวดล้อม ISO 14001:2015");
+    textEnParts.push("the Environmental Management System (ISO 14001:2015)");
+  }
+  if (has45001) {
+    textThParts.push("ระบบการจัดการอาชีวอนามัยและความปลอดภัย ISO 45001:2018");
+    textEnParts.push("the Occupational Health and Safety Management System (ISO 45001:2018)");
+  }
+
+  let thStandardsText = "";
+  if (textThParts.length === 1) {
+    thStandardsText = textThParts[0];
+  } else if (textThParts.length === 2) {
+    thStandardsText = textThParts.join(" และ");
+  } else if (textThParts.length > 2) {
+    const last = textThParts.pop();
+    thStandardsText = textThParts.join(", ") + " และ" + last;
+  } else {
+    thStandardsText = opts.standards.join(", ");
+  }
+
+  let enStandardsText = "";
+  if (textEnParts.length === 1) {
+    enStandardsText = textEnParts[0];
+  } else if (textEnParts.length === 2) {
+    enStandardsText = textEnParts.join(" and ");
+  } else if (textEnParts.length > 2) {
+    const last = textEnParts.pop();
+    enStandardsText = textEnParts.join(", ") + ", and " + last;
+  } else {
+    enStandardsText = opts.standards.join(", ");
+  }
+
+  const groupedDepts: Array<{ department: string; members: typeof opts.members }> = [];
+  opts.members.forEach((m) => {
+    const dept = m.department || "General";
+    let g = groupedDepts.find((x) => x.department === dept);
+    if (!g) {
+      g = { department: dept, members: [] };
+      groupedDepts.push(g);
+    }
+    g.members.push(m);
+  });
+
+  const logoUrl = getAppUrl("/logo/logo.webp");
+
+  return `
+<div style="border: 2px solid #000; padding: 15px 20px; box-sizing: border-box; background-color: #fff; font-family: 'Sarabun', 'Segoe UI', Arial, sans-serif;">
+  
+  <!-- 1. Header Box Table -->
+  <table style="width: 100%; border-collapse: collapse; border: 2px solid #000; margin-bottom: 0; color: #000;">
+    <tbody>
+      <tr>
+        <td style="width: 25%; text-align: center; vertical-align: middle; border: 2px solid #000; padding: 8px 5px;">
+          <img src="${logoUrl}" alt="NDC INDUSTRIAL" style="max-height: 32px; object-fit: contain; display: block; margin: 0 auto 4px;" />
+          <div style="font-size: 8.5px; font-weight: 900; letter-spacing: 1.2px; color: #000; font-family: sans-serif;">INDUSTRIAL</div>
+        </td>
+        
+        <td style="width: 50%; border: 2px solid #000; padding: 8px 10px; text-align: center; vertical-align: middle;">
+          <div style="font-size: 12.5px; font-weight: bold; color: #000; margin-bottom: 3px;">
+            เรื่อง : ประกาศแต่งตั้งคณะทำงานระบบบริหารงาน ISO
+          </div>
+          <div style="font-size: 11px; font-weight: bold; color: #000; line-height: 1.2;">
+            Subject: Announcement of the Appointment of the ISO Management System Working Group
+          </div>
+        </td>
+        
+        <td style="width: 25%; border: 2px solid #000; padding: 0; vertical-align: top;">
+          <table style="width: 100%; border-collapse: collapse; border: none; height: 100%; margin: 0; fontSize: 10px; color: #000;">
+            <tbody>
+              <tr>
+                <td style="border-top: none; border-left: none; border-bottom: 1px solid #000; width: 40px; font-weight: bold; padding: 4px 5px; font-size: 10px;">No.</td>
+                <td style="border-top: none; border-left: 1px solid #000; border-bottom: 1px solid #000; padding: 4px 5px; font-weight: bold; text-align: center; font-size: 9.5px;">${esc(opts.appointmentNo)}</td>
+                <td style="border-top: none; border-left: 1px solid #000; border-bottom: 1px solid #000; border-right: none; width: 35px; text-align: center; padding: 4px 5px; font-weight: bold; font-size: 10px;">R.00</td>
+              </tr>
+              <tr>
+                <td style="border-left: none; border-bottom: 1px solid #000; font-weight: bold; padding: 4px 5px; font-size: 10px;">Date.</td>
+                <td colSpan="2" style="border-left: 1px solid #000; border-bottom: 1px solid #000; border-right: none; padding: 4px 5px; text-align: center; font-weight: bold; font-size: 10px;">${formatDateEn(reviewerSignoff?.signedAt || approverSignoff?.signedAt || new Date())}</td>
+              </tr>
+              <tr>
+                <td style="border-bottom: none; border-left: none; font-weight: bold; padding: 4px 5px; font-size: 10px;">Pages.</td>
+                <td colSpan="2" style="border-bottom: none; border-left: 1px solid #000; border-right: none; padding: 4px 5px; text-align: center; font-weight: bold; font-size: 10px;">1/1</td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 2. Signatures Grid Box -->
+  <table style="width: 100%; border-collapse: collapse; border: 2px solid #000; border-top: none; margin-bottom: 15px; color: #000;">
+    <tbody>
+      <tr style="text-align: center; font-weight: bold; font-size: 10px;">
+        <td style="border: 2px solid #000; border-top: none; border-left: none; width: 25%; padding: 4px; background-color: #f8fafc;">Issued By</td>
+        <td style="border: 2px solid #000; border-top: none; width: 25%; padding: 4px; background-color: #f8fafc;">Checked By</td>
+        <td style="border: 2px solid #000; border-top: none; width: 25%; padding: 4px; background-color: #f8fafc;">Approved By</td>
+        <td style="border: 2px solid #000; border-top: none; border-right: none; width: 25%; padding: 4px; background-color: #f8fafc;">Company Stamp</td>
+      </tr>
+      <tr style="height: 55px; text-align: center; vertical-align: middle;">
+        <!-- Issued By -->
+        <td style="border: 2px solid #000; border-left: none; padding: 4px 5px; vertical-align: middle;">
+          ${opts.ownerSignaturePath ? `
+            <img src="${opts.ownerSignaturePath}" alt="Owner Signature" style="max-height: 35px; max-width: 90%; display: block; margin: 0 auto;" />
+          ` : `
+            <div style="height: 35px;"></div>
+          `}
+          <div style="font-size: 9.5px; font-weight: 500; margin-top: 2px; color: #0F1059;">${esc(opts.ownerName || "")}</div>
+        </td>
+        <!-- Checked By -->
+        <td style="border: 2px solid #000; padding: 4px 5px; vertical-align: middle;">
+          ${reviewerSignoff?.signaturePath ? `
+            <img src="${reviewerSignoff.signaturePath}" alt="Reviewer Signature" style="max-height: 35px; max-width: 90%; display: block; margin: 0 auto;" />
+          ` : `
+            <div style="height: 35px;"></div>
+          `}
+          <div style="font-size: 9.5px; font-weight: 500; margin-top: 2px; color: #0F1059;">${esc(reviewerSignoff?.signerNameSnapshot || opts.reviewerName || "")}</div>
+        </td>
+        <!-- Approved By -->
+        <td style="border: 2px solid #000; padding: 4px 5px; vertical-align: middle;">
+          ${approverSignoff?.signaturePath ? `
+            <img src="${approverSignoff.signaturePath}" alt="Approver Signature" style="max-height: 35px; max-width: 90%; display: block; margin: 0 auto;" />
+          ` : `
+            <div style="height: 35px;"></div>
+          `}
+          <div style="font-size: 9.5px; font-weight: 500; margin-top: 2px; color: #0F1059;">${esc(approverSignoff?.signerNameSnapshot || opts.approverName || "")}</div>
+        </td>
+        <!-- Company Stamp (CSS based) -->
+        <td style="border: 2px solid #000; border-right: none; padding: 2px; text-align: center; vertical-align: middle;">
+          ${(opts.status === "PUBLISHED" && opts.showCompanyStamp !== false) ? `
+            <div style="border: 2px double #0f59a4; border-radius: 50%; width: 55px; height: 55px; margin: 0 auto; color: #0f59a4; text-align: center; box-sizing: border-box; padding-top: 6px; font-family: sans-serif;">
+              <div style="font-size: 5px; font-weight: bold; line-height: 1;">บริษัท เอ็นดีซี</div>
+              <div style="font-size: 9px; font-weight: 900; margin: 1px 0; line-height: 1;">NDC</div>
+              <div style="font-size: 4px; font-weight: bold; letter-spacing: 0.3px; line-height: 1;">INDUSTRIAL</div>
+            </div>
+          ` : ""}
+        </td>
+      </tr>
+      <tr style="font-size: 9px; color: #000;">
+        <td style="border: 2px solid #000; border-bottom: none; border-left: none; padding: 4px 5px;">
+          Date: <span style="color: #0F1059; font-weight: bold; font-family: monospace;">${formatDateSign(reviewerSignoff?.signedAt || approverSignoff?.signedAt || new Date())}</span>
+        </td>
+        <td style="border: 2px solid #000; border-bottom: none; padding: 4px 5px;">
+          Date: <span style="color: #0F1059; font-weight: bold; font-family: monospace;">${formatDateSign(reviewerSignoff?.signedAt)}</span>
+        </td>
+        <td style="border: 2px solid #000; border-bottom: none; padding: 4px 5px;">
+          Date: <span style="color: #0F1059; font-weight: bold; font-family: monospace;">${formatDateSign(approverSignoff?.signedAt)}</span>
+        </td>
+        <td style="border: 2px solid #000; border-bottom: none; border-right: none; padding: 4px 5px;">
+          Date: <span style="color: #0F1059; font-weight: bold; font-family: monospace;">${formatDateSign(approverSignoff?.signedAt)}</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 3. Introduction Paragraphs -->
+  <div style="font-size: 10.5px; text-align: justify; line-height: 1.45; color: #000; margin-bottom: 16px;">
+    <p style="text-indent: 2.5em; margin: 0 0 6px 0;">
+      เพื่อให้การดำเนินงานตามระบบบริหารงานคุณภาพ ${thStandardsText} ของบริษัท เอ็นดีซี อินดัสเทรียล จำกัด เป็นไปอย่างมีประสิทธิภาพเพื่อให้สอดคล้องกับข้อกำหนดของมาตรฐาน และสามารถพัฒนาและปรับปรุงได้อย่างต่อเนื่อง บริษัทฯ จึงแต่งตั้งคณะทำงานระบบบริหารงาน ISO โดยมีรายชื่อดังต่อไปนี้:
+    </p>
+    <p style="text-indent: 2.5em; margin: 0;">
+      In order to ensure the effective implementation of ${enStandardsText} of NDC Industrial Co., Ltd., in compliance with the requirements of the standards and to enable continual improvement and development, the Company hereby appoints the ISO Management System Committee, with the following members:
+    </p>
+  </div>
+
+  <!-- 4. Grouped Committee Members List -->
+  <div style="padding-left: 5px;">
+    ${groupedDepts.map((group, groupIdx) => {
+      const deptLabel = getDeptLabel(group.department);
+      return `
+        <div style="margin-bottom: 12px; font-size: 11px; color: #000;">
+          <div style="font-weight: bold; margin-bottom: 5px;">
+            ${groupIdx + 1}. ${deptLabel.th} ประกอบด้วยบุคคลดังต่อไปนี้
+            <div style="font-weight: bold; font-size: 10px; color: #444; margin-top: 1px;">
+              ${deptLabel.en} Following individuals:
+            </div>
+          </div>
+          
+          <div style="padding-left: 15px;">
+            ${group.members.map((member, mIdx) => {
+              const nameLabel = parseBilingualName(member.name);
+              const roleLabel = getMemberRoleTitle(member.role, group.department, nameLabel.th);
+              return `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; line-height: 1.3;">
+                  <div style="width: 52%;">
+                    <div style="font-weight: 600;">
+                      ${groupIdx + 1}.${mIdx + 1} ${nameLabel.th}
+                    </div>
+                    ${nameLabel.en ? `
+                      <div style="font-size: 9.5px; color: #444; padding-left: 18px;">
+                        ${nameLabel.en}
+                      </div>
+                    ` : ""}
+                  </div>
+                  <div style="width: 48%; text-align: left; padding-left: 10px;">
+                    <div style="font-weight: 600;">
+                      ${roleLabel.th}
+                    </div>
+                    <div style="font-size: 9.5px; color: #555;">
+                      ${roleLabel.en}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }).join("")}
+  </div>
+
+  <!-- 5. Footer Revision Code -->
+  <div style="text-align: right; font-size: 9.5px; color: #000; font-family: monospace; border-top: 1px solid #ddd; padding-top: 5px; margin-top: 15px;">
+    FM-DC-06:Rev.00:20/11/2024
+  </div>
+
+</div>
+`;
+}
+
+export function buildAppointmentSignRequestHtml(opts: {
+  appointmentId: string;
+  appointmentNo: string;
+  title: string;
+  year: number;
+  standards: string[];
+  ownerName?: string | null;
+  reviewerName?: string | null;
+  signedRole: "REVIEWER" | "APPROVER";
+  members: { name: string; role: string; department?: string | null; standards: string[] }[];
+  signoffs: { signedRole: string; signaturePath?: string | null; signerNameSnapshot?: string | null; signedAt: Date | string }[];
+  ownerSignaturePath?: string | null;
+}): string {
+  const rolePath = opts.signedRole === "APPROVER" ? "approver" : "reviewer";
+  const url = getAppUrl(`/approve/audit/appointments/${opts.appointmentId}/${rolePath}`);
+  const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : "Reviewer";
+
+  const urgentBanner = `
+<div style="margin-bottom:20px;padding:14px 16px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:6px;font-size:13.5px;color:#92400e;line-height:1.6;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+  <strong>Signature Required:</strong> Please click the button below to review and sign this internal auditor appointment letter as <strong>${esc(roleLabel)}</strong>.
+  The process cannot proceed without your signature.
+</div>`;
+
+  const letterHtml = buildBilingualAppointmentLetterHtml({
+    appointmentNo: opts.appointmentNo,
+    title: opts.title,
+    year: opts.year,
+    standards: opts.standards,
+    members: opts.members,
+    signoffs: opts.signoffs,
+    ownerSignaturePath: opts.ownerSignaturePath,
+    ownerName: opts.ownerName,
+    reviewerName: opts.reviewerName,
+    status: opts.signedRole === "REVIEWER" ? "PENDING_REVIEW" : "PENDING_APPROVAL",
+  });
+
+  const actionButton = `
+<div style="margin-top:24px;text-align:center">
+  <a href="${esc(url)}"
+     style="display:inline-block;padding:13px 32px;background:#0f1059;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.3px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+    ${opts.signedRole === "APPROVER" ? "Review & Approve" : "Review & Sign"}
+  </a>
+</div>`;
+
+  return `
+<div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;background:#f1f5f9;padding:32px 16px">
+  <div style="max-width:760px;margin:0 auto">
+    ${urgentBanner}
+    ${letterHtml}
+    ${actionButton}
+    <div style="margin-top:20px;text-align:center;font-size:11px;color:#94a3b8">
+      NDC Industrial Co., Ltd. — Quality Management System<br>
+      This is an automated notification. Please do not reply to this email.
+    </div>
+  </div>
+</div>`;
+}
+
 export async function sendAppointmentSignRequestEmail(opts: {
   to: { name: string; email: string };
   appointmentNo: string;
@@ -460,47 +880,22 @@ export async function sendAppointmentSignRequestEmail(opts: {
   year: number;
   standards: string[];
   ownerName?: string | null;
+  reviewerName?: string | null;
   signedRole: "REVIEWER" | "APPROVER";
   appointmentId: string;
   senderAccessToken?: string | null;
+  members: { name: string; role: string; department?: string | null; standards: string[] }[];
+  signoffs: { signedRole: string; signaturePath?: string | null; signerNameSnapshot?: string | null; signedAt: Date | string }[];
+  ownerSignaturePath?: string | null;
 }): Promise<void> {
-  const rolePath = opts.signedRole === "APPROVER" ? "approver" : "reviewer";
-  const url = getAppUrl(`/approve/audit/appointments/${opts.appointmentId}/${rolePath}`);
   const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : "Reviewer";
-  const yearEn = opts.year - 543;
-
-  const standardsBadges = opts.standards.length
-    ? `<div style="margin-top:16px">
-        <p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px">Standards</p>
-        <div>${opts.standards.map((s) => `<span style="display:inline-block;background:#e0e7ff;color:#3730a3;border-radius:4px;padding:3px 10px;font-size:12px;font-weight:700;margin:2px 4px 2px 0">${esc(s)}</span>`).join("")}</div>
-      </div>`
-    : "";
-
-  const urgentBanner = `<div style="margin:16px 0 0;padding:14px 16px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
-    <strong>Your signature is required.</strong> Please click the button below to review and sign this appointment letter as <strong>${esc(roleLabel)}</strong>.
-    The process cannot proceed without your signature.
-  </div>`;
+  const bodyHtml = buildAppointmentSignRequestHtml(opts);
 
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
     subject: `[QMS] Signature Required — Appointment ${opts.appointmentNo} (${roleLabel})`,
-    bodyHtml: layout({
-      badgeColor: "#f59e0b",
-      badgeText: "Signature Required",
-      title: "Appointment Letter — Signature Request",
-      subtitle: `${opts.appointmentNo} · ${roleLabel}`,
-      rows: [
-        { label: "Document No.", value: opts.appointmentNo },
-        { label: "Title", value: opts.title },
-        { label: "Year", value: `${yearEn} (B.E. ${opts.year})` },
-        ...(opts.ownerName ? [{ label: "Prepared by", value: opts.ownerName }] : []),
-        { label: "Your Role", value: roleLabel },
-      ],
-      body: standardsBadges + urgentBanner,
-      actionLabel: opts.signedRole === "APPROVER" ? "Review & Approve" : "Review & Sign",
-      actionUrl: url,
-    }),
+    bodyHtml,
   });
 }
 
@@ -516,110 +911,48 @@ export function buildAppointmentPublishedHtml(opts: {
   ownerName?: string | null;
   reviewerName?: string | null;
   appointmentId: string;
+  signoffs?: { signedRole: string; signaturePath?: string | null; signerNameSnapshot?: string | null; signedAt: Date | string }[];
+  ownerSignaturePath?: string | null;
+  showCompanyStamp?: boolean;
 }): string {
   const url = getAppUrl(`/audit/appointments/${opts.appointmentId}`);
-  const yearEn = opts.year - 543;
 
-  const ROLE_LABELS: Record<string, string> = {
-    LEAD_AUDITOR: "Lead Auditor",
-    AUDITOR: "Internal Auditor",
-    COMMITTEE: "Working Committee",
-    SECRETARY: "Secretary",
-    ADVISOR: "Advisor",
-  };
+  const letterHtml = buildBilingualAppointmentLetterHtml({
+    appointmentNo: opts.appointmentNo,
+    title: opts.title,
+    year: opts.year,
+    standards: opts.standards,
+    members: opts.members,
+    signoffs: opts.signoffs || [],
+    ownerSignaturePath: opts.ownerSignaturePath,
+    ownerName: opts.ownerName,
+    reviewerName: opts.reviewerName,
+    approverName: opts.approverName,
+    status: "PUBLISHED",
+    showCompanyStamp: opts.showCompanyStamp,
+  });
 
-  const memberRows = opts.members.map((m, i) =>
-    `<tr style="background:${i % 2 === 0 ? "#f8fafc" : "#fff"}">
-      <td style="padding:9px 14px;font-size:12px;color:#64748b;border-bottom:1px solid #e2e8f0">${i + 1}</td>
-      <td style="padding:9px 14px;font-size:13px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0">${esc(m.name)}</td>
-      <td style="padding:9px 14px;font-size:12px;color:#64748b;border-bottom:1px solid #e2e8f0">${esc(m.department ?? "—")}</td>
-      <td style="padding:9px 14px;font-size:12px;border-bottom:1px solid #e2e8f0"><span style="background:#f1f5f9;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;color:#334155">${esc(ROLE_LABELS[m.role] ?? m.role)}</span></td>
-      <td style="padding:9px 14px;font-size:11px;color:#64748b;border-bottom:1px solid #e2e8f0">${m.standards.length ? m.standards.map(esc).join(", ") : "—"}</td>
-    </tr>`
-  ).join("");
+  const actionButton = `
+<div style="margin-top:24px;text-align:center">
+  <a href="${esc(url)}"
+     style="display:inline-block;padding:13px 32px;background:#0f1059;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.3px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+    View Full Announcement
+  </a>
+</div>`;
 
   return `
 <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;background:#f1f5f9;padding:32px 16px">
-<div style="max-width:760px;margin:0 auto">
-
-  <!-- Header -->
-  <div style="padding:20px 28px;background:#0f1059;border-radius:10px 10px 0 0">
-    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">NDC Quality Management System</div>
-    <div style="font-size:18px;font-weight:800;color:#fff;line-height:1.3">Appointment of Internal Auditors &amp; ISO Working Committee</div>
-    <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,.75);margin-top:4px">Year ${yearEn}</div>
-    <div style="margin-top:8px;display:flex;align-items:center;gap:10px">
-      <span style="font-size:12px;color:rgba(255,255,255,.6)">Document No. <strong style="color:#fff">${esc(opts.appointmentNo)}</strong></span>
-      <span style="background:#10b981;color:#fff;font-size:10px;font-weight:800;letter-spacing:.8px;padding:3px 10px;border-radius:20px;text-transform:uppercase">Published</span>
+  <div style="max-width:760px;margin:0 auto">
+    <div style="background:#d1fae5; border-left:4px solid #10b981; padding:14px 16px; margin-bottom:20px; font-size:13.5px; color:#065f46; border-radius:6px; font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+      <strong>Published:</strong> Internal auditor appointment letter <strong>${esc(opts.appointmentNo)}</strong> has been approved and published.
+    </div>
+    ${letterHtml}
+    ${actionButton}
+    <div style="margin-top:20px;text-align:center;font-size:11px;color:#94a3b8">
+      NDC Industrial Co., Ltd. — Quality Management System<br>
+      This is an automated notification. Please do not reply to this email.
     </div>
   </div>
-
-  <!-- Body card -->
-  <div style="background:#fff;border-radius:0 0 10px 10px;padding:28px 32px;box-shadow:0 1px 4px rgba(0,0,0,.07)">
-
-    <!-- Salutation -->
-    <p style="font-size:14px;color:#0f172a;margin:0 0 2px;line-height:1.8">เรียน ผู้จัดการ / หัวหน้าทุกหน่วยงาน และพนักงานทุกท่าน</p>
-    <p style="font-size:13px;color:#64748b;margin:0 0 20px;line-height:1.8">Dear Department Managers and All Employees,</p>
-
-    <!-- Paragraph 1 -->
-    <p style="font-size:13px;color:#0f172a;margin:0 0 2px;line-height:1.8">เพื่อให้การดำเนินงานระบบบริหารขององค์กรเป็นไปอย่างมีประสิทธิภาพ และสอดคล้องตามข้อกำหนดมาตรฐานสากล</p>
-    <p style="font-size:13px;color:#64748b;margin:0 0 20px;line-height:1.8">To ensure the effective implementation and continuous improvement of the company&apos;s management systems in accordance with international standards,</p>
-
-    <!-- Paragraph 2 -->
-    <p style="font-size:13px;color:#0f172a;margin:0 0 2px;line-height:1.8">บริษัทฯ ขอประกาศแต่งตั้ง ผู้ตรวจติดตามภายใน (Internal Auditors) และคณะทำงานระบบ ISO ประจำปี ${opts.year} สำหรับมาตรฐานดังต่อไปนี้</p>
-    <p style="font-size:13px;color:#64748b;margin:0 0 16px;line-height:1.8">The Company hereby announces the appointment of Internal Auditors and the ISO Working Committee for the year ${yearEn} covering the following standards:</p>
-
-    <!-- Standards list -->
-    <ul style="margin:0 0 20px;padding-left:20px">
-      ${opts.standards.map((s) => `<li style="font-size:13px;color:#0f172a;padding:4px 0;line-height:1.6">${esc(s)}</li>`).join("")}
-    </ul>
-
-    <!-- Paragraph 3 -->
-    <p style="font-size:13px;color:#0f172a;margin:0 0 2px;line-height:1.8">รายชื่อและหน้าที่รับผิดชอบในการเป็นผู้ตรวจติดตามภายใน และคณะทำงาน มีหน้าที่และความรับผิดชอบ ตามรายละเอียดประกาศที่แนบมานี้</p>
-    <p style="font-size:13px;color:#64748b;margin:0 0 20px;line-height:1.8">The list of appointed Internal Auditors and committee members, along with their roles and responsibilities, are specified in the attached announcement.</p>
-
-    <!-- Members table -->
-    <div style="border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;margin-bottom:24px">
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="background:#0f1059;color:#fff">
-            <th style="padding:10px 14px;font-size:11px;font-weight:700;text-align:left;width:36px">#</th>
-            <th style="padding:10px 14px;font-size:11px;font-weight:700;text-align:left">Name</th>
-            <th style="padding:10px 14px;font-size:11px;font-weight:700;text-align:left">Department</th>
-            <th style="padding:10px 14px;font-size:11px;font-weight:700;text-align:left">Role</th>
-            <th style="padding:10px 14px;font-size:11px;font-weight:700;text-align:left">Standards</th>
-          </tr>
-        </thead>
-        <tbody>${memberRows}</tbody>
-      </table>
-    </div>
-
-    <!-- Paragraph 4 -->
-    <p style="font-size:13px;color:#0f172a;margin:0 0 2px;line-height:1.8">จึงประกาศมาเพื่อทราบ และขอความร่วมมือจากทุกหน่วยงานในการสนับสนุนการดำเนินงานของคณะผู้ตรวจติดตามและคณะทำงานดังกล่าว</p>
-    <p style="font-size:13px;color:#64748b;margin:0 0 20px;line-height:1.8">This announcement is issued for acknowledgement, and all departments are kindly requested to fully support the appointed Internal Auditors and Working Committee in performing their duties.</p>
-
-    <!-- Closing -->
-    <p style="font-size:13px;color:#0f172a;margin:0 0 2px;line-height:1.8">ขอขอบคุณสำหรับความร่วมมือด้วยดีเสมอมา</p>
-    <p style="font-size:13px;color:#64748b;margin:0 0 24px;line-height:1.8">Thank you for your cooperation.</p>
-
-    <!-- Sign-off chain -->
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
-      ${opts.ownerName ? `<div style="flex:1;min-width:120px"><p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:0 0 3px">Prepared by</p><p style="font-size:13px;font-weight:600;color:#0f172a;margin:0">${esc(opts.ownerName)}</p></div>` : ""}
-      ${opts.reviewerName ? `<div style="flex:1;min-width:120px"><p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:0 0 3px">Reviewed by</p><p style="font-size:13px;font-weight:600;color:#0f172a;margin:0">${esc(opts.reviewerName)}</p></div>` : ""}
-      <div style="flex:1;min-width:120px"><p style="font-size:10px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:.5px;margin:0 0 3px">Approved by</p><p style="font-size:13px;font-weight:600;color:#0f172a;margin:0">${esc(opts.approverName)}</p></div>
-    </div>
-
-    <div style="text-align:center">
-      <a href="${esc(url)}" style="display:inline-block;padding:13px 32px;background:#0f1059;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700">View Full Announcement</a>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div style="margin-top:16px;text-align:center;font-size:11px;color:#94a3b8">
-    NDC Industrial Co., Ltd. — Quality Management System<br>
-    This is an automated notification. Please do not reply to this email.
-  </div>
-
-</div>
 </div>`;
 }
 
@@ -636,6 +969,9 @@ export async function sendAppointmentPublishedEmail(opts: {
   reviewerName?: string | null;
   appointmentId: string;
   senderAccessToken?: string | null;
+  signoffs?: { signedRole: string; signaturePath?: string | null; signerNameSnapshot?: string | null; signedAt: Date | string }[];
+  ownerSignaturePath?: string | null;
+  showCompanyStamp?: boolean;
 }): Promise<void> {
   if (!opts.recipients.length && !opts.cc?.length) return;
   const yearEn = opts.year - 543;

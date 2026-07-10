@@ -222,6 +222,7 @@ export const auditAppointmentCreateSchema = z.object({
   approverNameSnapshot: z.string().optional(),
   emailGroupMails: z.array(z.string().email("Invalid email")).default([]),
   emailGroupMailsCc: z.array(z.string().email("Invalid email")).default([]),
+  showCompanyStamp: z.boolean().default(true),
 });
 
 export type AuditAppointmentCreateInput = z.infer<typeof auditAppointmentCreateSchema>;

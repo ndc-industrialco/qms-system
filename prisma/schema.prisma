@@ -981,6 +981,7 @@ model AuditAppointment {
   emailGroupMailsCc     String[]                 @default([]) @map("email_group_mails_cc")
   ownerSignaturePath    String?                  @map("owner_signature_path") @db.Text
   publishedAt           DateTime?                @map("published_at")
+  showCompanyStamp      Boolean                  @default(true) @map("show_company_stamp")
   members               AuditAppointmentMember[]
   signoffs              AuditAppointmentSignoff[]
   sessionPlan           AuditSessionPlan?

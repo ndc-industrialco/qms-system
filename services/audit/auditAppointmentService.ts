@@ -7,7 +7,7 @@ import { AuditAppointmentRepository } from "@/repositories/audit/auditAppointmen
 import { NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import type { AuditAppointmentCreateInput, AuditAppointmentUpdateInput, AuditAppointmentRejectInput } from "@/lib/validations/audit";
-import { sendAppointmentSignRequestEmail, sendAppointmentPublishedEmail, sendAppointmentRejectedEmail, buildAppointmentPublishedHtml, layout, esc } from "./auditEmailService";
+import { sendAppointmentSignRequestEmail, sendAppointmentPublishedEmail, sendAppointmentRejectedEmail, buildAppointmentPublishedHtml, buildAppointmentSignRequestHtml, layout, esc } from "./auditEmailService";
 import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
 import { NotificationService } from "@/services/notificationService";
 import { UserPreferenceRepository } from "@/repositories/userPreferenceRepository";
@@ -18,44 +18,7 @@ function getAppUrl(path: string) {
   return `${(process.env.NEXTAUTH_URL ?? "").replace(/\/+$/, "")}${path}`;
 }
 
-function buildSignRequestHtml(opts: {
-  appointmentId: string;
-  appointmentNo: string;
-  year: number;
-  title: string;
-  standards: string[];
-  ownerName?: string | null;
-  reviewerName?: string | null;
-  signedRole: "REVIEWER" | "APPROVER";
-}): string {
-  const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : "Reviewer";
-  const yearEn = opts.year - 543;
-
-  const standardsBadges = opts.standards.length
-    ? `<div style="margin-top:16px">
-        <p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px">Standards</p>
-        <div>${opts.standards.map((s) => `<span style="display:inline-block;background:#e0e7ff;color:#3730a3;border-radius:4px;padding:3px 10px;font-size:12px;font-weight:700;margin:2px 4px 2px 0">${esc(s)}</span>`).join("")}</div>
-      </div>`
-    : "";
-
-  const urgentBanner = `<div style="margin:16px 0 0;padding:14px 16px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
-    <strong>Your signature is required.</strong> Please click the button below to review and sign this appointment letter as <strong>${esc(roleLabel)}</strong>.
-    The process cannot proceed without your signature.
-  </div>`;
-
-  return layout({
-    badgeColor: "#f59e0b",
-    badgeText: "Signature Required",
-    title: `${esc(opts.appointmentNo)} (${esc(yearEn.toString())})`,
-    subtitle: esc(opts.title),
-    rows: [
-      ...(opts.reviewerName ? [{ label: "Reviewer", value: opts.reviewerName }] : []),
-      ...(opts.ownerName ? [{ label: "Prepared by", value: opts.ownerName }] : []),
-      { label: "Your Role", value: roleLabel },
-    ],
-    body: standardsBadges + urgentBanner,
-  });
-}
+// (Redefined to use buildAppointmentSignRequestHtml from auditEmailService)
 
 
 function buildRejectedHtml(opts: {
@@ -115,6 +78,16 @@ async function sendSignRequest(opts: {
     ? `You have been assigned as Reviewer for "${opts.title}" (Year ${yearEn}). Your signature is required.\nPrepared by: ${opts.ownerName ?? "—"}`
     : `You have been assigned as Approver for "${opts.title}" (Year ${yearEn}). Please review and approve to publish.\nPrepared by: ${opts.ownerName ?? "—"} · Reviewed by: ${opts.reviewerName ?? "—"}`;
 
+  // Fetch complete details including members and signoffs
+  const apptRepo = new AuditAppointmentRepository();
+  const appt = await apptRepo.findDetailById(opts.appointmentId);
+  if (!appt) return;
+
+  const signoffsFormatted = appt.signoffs.map(s => ({
+    ...s,
+    signedAt: s.signedAt.toISOString(),
+  }));
+
   await NotificationService.sendEmailOnce(
     idKey,
     () => sendAppointmentSignRequestEmail({
@@ -127,6 +100,9 @@ async function sendSignRequest(opts: {
       signedRole: opts.signedRole,
       appointmentId: opts.appointmentId,
       senderAccessToken: opts.senderAccessToken,
+      members: appt.members,
+      signoffs: signoffsFormatted,
+      ownerSignaturePath: appt.ownerSignaturePath,
     }),
     opts.targetEmail ?? "",
     subject,
@@ -134,7 +110,7 @@ async function sendSignRequest(opts: {
     {
       title: `${opts.signedRole === "REVIEWER" ? "Signature Required" : "Approval Required"} — ${opts.appointmentNo}`,
       body: plainBody,
-      htmlBody: buildSignRequestHtml({
+      htmlBody: buildAppointmentSignRequestHtml({
         appointmentId: opts.appointmentId,
         appointmentNo: opts.appointmentNo,
         title: opts.title,
@@ -142,6 +118,9 @@ async function sendSignRequest(opts: {
         standards: opts.standards,
         ownerName: opts.ownerName,
         signedRole: opts.signedRole,
+        members: appt.members,
+        signoffs: signoffsFormatted,
+        ownerSignaturePath: appt.ownerSignaturePath,
       }),
       module: "AUDIT",
       resourceId: opts.appointmentId,
@@ -222,6 +201,7 @@ export class AuditAppointmentService {
               approverNameSnapshot: input.approverNameSnapshot ?? null,
               emailGroupMails: input.emailGroupMails,
               emailGroupMailsCc: input.emailGroupMailsCc,
+              showCompanyStamp: input.showCompanyStamp,
               members: {
                 create: input.members.map((m, i) => ({
                   authUserId: m.authUserId,
@@ -312,6 +292,7 @@ export class AuditAppointmentService {
           ...(input.approverNameSnapshot !== undefined && { approverNameSnapshot: input.approverNameSnapshot }),
           ...(input.emailGroupMails !== undefined && { emailGroupMails: input.emailGroupMails }),
           ...(input.emailGroupMailsCc !== undefined && { emailGroupMailsCc: input.emailGroupMailsCc }),
+          ...(input.showCompanyStamp !== undefined && { showCompanyStamp: input.showCompanyStamp }),
         },
         include: { members: { orderBy: { orderIndex: "asc" } }, signoffs: true },
       });
@@ -541,19 +522,27 @@ export class AuditAppointmentService {
       return u;
     });
 
+    // Reload from repository to ensure all signoffs and signatures are fully populated
+    const freshAppt = await this.repo.findDetailById(id);
+    if (!freshAppt) throw new NotFoundError("Appointment not found");
+
+    const signoffsFormatted = freshAppt.signoffs.map(s => ({
+      ...s,
+      signedAt: s.signedAt.toISOString(),
+    }));
+
     const pubYearEn = updated.year - 543;
     const approverName = actor.nameSnapshot ?? actorId;
 
     // Published email — to: emailGroupMails; cc: emailGroupMailsCc + owner + reviewer
     {
-      const toList = appt.emailGroupMails.map((m) => ({ name: m, email: m }));
+      const toList = freshAppt.emailGroupMails.map((m) => ({ name: m, email: m }));
       const ccList: { name: string; email: string }[] = [
-        ...appt.emailGroupMailsCc.map((m) => ({ name: m, email: m })),
+        ...freshAppt.emailGroupMailsCc.map((m) => ({ name: m, email: m })),
       ];
-      if (appt.ownerEmail) ccList.push({ name: appt.ownerNameSnapshot ?? appt.ownerEmail, email: appt.ownerEmail });
-      if (appt.reviewerEmail) ccList.push({ name: appt.reviewerNameSnapshot ?? appt.reviewerEmail, email: appt.reviewerEmail });
+      if (freshAppt.ownerEmail) ccList.push({ name: freshAppt.ownerNameSnapshot ?? freshAppt.ownerEmail, email: freshAppt.ownerEmail });
+      if (freshAppt.reviewerEmail) ccList.push({ name: freshAppt.reviewerNameSnapshot ?? freshAppt.reviewerEmail, email: freshAppt.reviewerEmail });
 
-      // ponytail: splice() was a bug here — it mutated ccList before passing it as cc
       const allRecipients = toList.length ? toList : [...ccList];
       const finalCc = toList.length ? ccList : [];
 
@@ -565,12 +554,15 @@ export class AuditAppointmentService {
           title: updated.title,
           year: updated.year,
           standards: updated.standards,
-          members: appt.members,
+          members: freshAppt.members,
           approverName,
-          ownerName: appt.ownerNameSnapshot,
-          reviewerName: appt.reviewerNameSnapshot,
+          ownerName: freshAppt.ownerNameSnapshot,
+          reviewerName: freshAppt.reviewerNameSnapshot,
           appointmentId: id,
           senderAccessToken: actor.accessToken,
+          signoffs: signoffsFormatted,
+          ownerSignaturePath: freshAppt.ownerSignaturePath,
+          showCompanyStamp: freshAppt.showCompanyStamp,
         }).catch((err) =>
           logger.error("[appointment] published email failed", { error: String(err) })
         );
@@ -583,20 +575,23 @@ export class AuditAppointmentService {
       title: updated.title,
       year: updated.year,
       standards: updated.standards,
-      members: appt.members,
+      members: freshAppt.members,
       approverName,
-      ownerName: appt.ownerNameSnapshot,
-      reviewerName: appt.reviewerNameSnapshot,
+      ownerName: freshAppt.ownerNameSnapshot,
+      reviewerName: freshAppt.reviewerNameSnapshot,
+      signoffs: signoffsFormatted,
+      ownerSignaturePath: freshAppt.ownerSignaturePath,
+      showCompanyStamp: freshAppt.showCompanyStamp,
     });
 
     // Notify owner
-    if (appt.ownerAuthUserId) {
+    if (freshAppt.ownerAuthUserId) {
       await NotificationService.sendEmailOnce(
         `AUDIT_APPT:${id}:PUBLISHED:owner`,
         async () => {},  // published email already sent above to groups; owner gets in-app or is on CC
-        appt.ownerEmail ?? "",
+        freshAppt.ownerEmail ?? "",
         `[QMS] Published — ${updated.appointmentNo}`,
-        appt.ownerAuthUserId,
+        freshAppt.ownerAuthUserId,
         {
           title: `Published — ${updated.appointmentNo}`,
           body: `Appointment letter "${updated.title}" (Year ${pubYearEn}) has been approved and published.\nApproved by: ${approverName}`,
