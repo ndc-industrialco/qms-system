@@ -11,6 +11,21 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     return this.getClient(tx).kPI;
   }
 
+  private buildAssigneeWhere(
+    userField: "reviewerUserId" | "approverUserId",
+    authUserField: "reviewerAuthUserId" | "approverAuthUserId",
+    userId: string,
+    authUserId?: string | null,
+  ): Prisma.KPIWhereInput[] {
+    const assignees: Prisma.KPIWhereInput[] = [{ [userField]: userId }];
+
+    if (authUserId) {
+      assignees.push({ [authUserField]: authUserId });
+    }
+
+    return assignees;
+  }
+
   async paginateKpis(query: ListKpiQuery, tx?: Prisma.TransactionClient): Promise<PaginatedResult<KPI>> {
     const page = query.page || 1;
     const limit = query.limit || 20;
@@ -101,7 +116,12 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     });
   }
 
-  async findPendingReviewByUser(userId: string, take = 10, tx?: Prisma.TransactionClient) {
+  async findPendingReviewByUser(
+    userId: string,
+    authUserId?: string | null,
+    take = 10,
+    tx?: Prisma.TransactionClient,
+  ) {
     const client = this.getClient(tx);
 
     // IDs where reviewer has already approved
@@ -114,7 +134,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     return this.delegate(tx).findMany({
       where: {
         status: "PENDING_REVIEW",
-        reviewerUserId: userId,
+        OR: this.buildAssigneeWhere("reviewerUserId", "reviewerAuthUserId", userId, authUserId),
         id: { notIn: reviewedIdSet },
       },
       orderBy: [{ yearly: "desc" }, { updatedAt: "desc" }],
@@ -123,7 +143,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     });
   }
 
-  async countPendingReviewByUser(userId: string, tx?: Prisma.TransactionClient) {
+  async countPendingReviewByUser(userId: string, authUserId?: string | null, tx?: Prisma.TransactionClient) {
     const client = this.getClient(tx);
 
     const reviewedIds = await client.approvalSignature.findMany({
@@ -135,13 +155,18 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     return this.delegate(tx).count({
       where: {
         status: "PENDING_REVIEW",
-        reviewerUserId: userId,
+        OR: this.buildAssigneeWhere("reviewerUserId", "reviewerAuthUserId", userId, authUserId),
         id: { notIn: reviewedIdSet },
       },
     });
   }
 
-  async findPendingApproveByUser(userId: string, take = 10, tx?: Prisma.TransactionClient) {
+  async findPendingApproveByUser(
+    userId: string,
+    authUserId?: string | null,
+    take = 10,
+    tx?: Prisma.TransactionClient,
+  ) {
     const client = this.getClient(tx);
 
     // IDs where reviewer has approved → approver can now act
@@ -154,7 +179,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     return this.delegate(tx).findMany({
       where: {
         status: "PENDING_APPROVAL",
-        approverUserId: userId,
+        OR: this.buildAssigneeWhere("approverUserId", "approverAuthUserId", userId, authUserId),
         id: { in: reviewedIdSet },
       },
       orderBy: [{ yearly: "desc" }, { updatedAt: "desc" }],
@@ -163,7 +188,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     });
   }
 
-  async countPendingApproveByUser(userId: string, tx?: Prisma.TransactionClient) {
+  async countPendingApproveByUser(userId: string, authUserId?: string | null, tx?: Prisma.TransactionClient) {
     const client = this.getClient(tx);
 
     const reviewedIds = await client.approvalSignature.findMany({
@@ -175,7 +200,7 @@ export class KpiRepository extends BaseRepository<KPI, CreateKpiDTO, UpdateKpiDT
     return this.delegate(tx).count({
       where: {
         status: "PENDING_APPROVAL",
-        approverUserId: userId,
+        OR: this.buildAssigneeWhere("approverUserId", "approverAuthUserId", userId, authUserId),
         id: { in: reviewedIdSet },
       },
     });

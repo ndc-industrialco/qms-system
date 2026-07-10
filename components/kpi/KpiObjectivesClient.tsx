@@ -29,6 +29,7 @@ import {
   UserCheck,
   UserCog,
   Printer,
+  FileSpreadsheet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -558,7 +559,15 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
               onClick={() => window.open(`/print/qms/kpi/fm-mr-01?year=${year}`, "_blank")}
             >
               <Printer className="w-4 h-4" />
-              Export
+              Print / PDF
+            </Button>
+            <Button
+              variant="outline"
+              className="h-9 text-sm rounded-xl gap-1.5 bg-white border-slate-200"
+              onClick={() => window.open(`/api/kpi/export/fm-mr-01?year=${year}`, "_blank")}
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Export Excel
             </Button>
             {privileged && (
               <Button

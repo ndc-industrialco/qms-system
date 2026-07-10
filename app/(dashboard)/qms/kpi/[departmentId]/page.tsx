@@ -32,6 +32,7 @@ export default async function KpiDepartmentPage({ params }: Props) {
         kpiId={departmentId}
         role={role}
         userId={session?.user?.id ?? null}
+        authUserId={session?.user?.authUserId ?? null}
         userDepartmentName={userDepartmentName}
       />
     </div>

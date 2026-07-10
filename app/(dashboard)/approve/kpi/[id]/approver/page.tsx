@@ -5,6 +5,7 @@ import FmMr01ApprovalPageClient from "@/components/kpi/FmMr01ApprovalPageClient"
 import { KpiRepository } from "@/repositories/kpiRepository";
 import { ApprovalSignatureRepository } from "@/repositories/approvalSignatureRepository";
 import { QmsConfigService } from "@/services/qmsConfigService";
+import { KpiService } from "@/services/kpiService";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "KPI - Approve" };
@@ -12,6 +13,7 @@ export const metadata: Metadata = { title: "KPI - Approve" };
 const kpiRepo = new KpiRepository();
 const approvalSignatureRepo = new ApprovalSignatureRepository();
 const qmsConfigService = new QmsConfigService();
+const kpiService = new KpiService();
 
 export default async function KpiApproverPage({
   params,
@@ -31,7 +33,13 @@ export default async function KpiApproverPage({
 
     if (masterKpi?.department === "SYSTEM_MASTER") {
       const [kpis, signatures, footerConfig] = await Promise.all([
-        kpiRepo.findForExport({ yearly: masterKpi.yearly }),
+        kpiRepo.findForExport({ yearly: masterKpi.yearly }).then((rows) =>
+          Promise.all(
+            rows
+              .filter((row) => row.department !== "SYSTEM_MASTER")
+              .map((row) => kpiService.getKpiById(row.id)),
+          ),
+        ),
         approvalSignatureRepo.findByDocument("KPI", id),
         qmsConfigService.getSingleFooterConfig("KPI_ANNUAL"),
       ]);

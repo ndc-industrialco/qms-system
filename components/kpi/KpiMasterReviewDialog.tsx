@@ -47,6 +47,7 @@ interface Props {
   kpis: Array<KpiWithUsers & { objectives?: unknown[] }>;
   masterRevisionNo?: number;
   footerConfig?: FooterConfig | null;
+  masterUpdatedAt?: string | Date | null;
   onSuccess: () => void;
 }
 
@@ -205,6 +206,7 @@ export default function KpiMasterReviewDialog({
   kpis = [],
   masterRevisionNo = 0,
   footerConfig,
+  masterUpdatedAt,
   onSuccess,
 }: Props) {
   const t = useT();
@@ -268,6 +270,12 @@ export default function KpiMasterReviewDialog({
   // Pre-filter KPIs that have objectives
   const activeKpis = kpis.filter(k => k.objectives && (k.objectives as KPIObjectiveData[]).length > 0);
   const revisionTag = formatKpiAnnualRevisionTag(footerConfig?.prefix, masterRevisionNo);
+  const updateDate = (() => {
+    if (!masterUpdatedAt) return "-";
+    const date = new Date(masterUpdatedAt);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" }).replace(/ /g, "-");
+  })();
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -300,10 +308,51 @@ export default function KpiMasterReviewDialog({
                           <div className="font-bold text-[11px] text-[#0F1059]">วัตถุประสงค์คุณภาพ สิ่งแวดล้อม อาชีวอนามัยและความปลอดภัย {year}</div>
                           <div className="font-bold text-[9px] text-[#0f1059]">Quality, Environment, Occupational Health and Safety Objectives {year}</div>
                         </td>
-                        <td className="w-1/5 p-2 border border-black text-[9px] align-middle">
-                          <div><strong>แผนงานประจำปี</strong></div>
-                          <div>Annual Work Plan</div>
-                          <div><strong>{revisionTag}</strong></div>
+                        <td className="w-1/5 p-0 border border-black text-[9px] align-middle">
+                          <table className="w-full h-full border-collapse text-[9px]">
+                            <tbody>
+                              <tr>
+                                <td className="w-[48%] p-1 border border-black font-bold text-[8px]">
+                                  แผนงานประจำปี
+                                  <br />
+                                  Annual Work Plan
+                                </td>
+                                <td className="w-[52%] p-1 border border-black text-center text-[12px] font-bold text-[#0F59A4]">
+                                  {year}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="p-1 border border-black font-bold text-[8px]">
+                                  หน่วยงาน
+                                  <br />
+                                  Department
+                                </td>
+                                <td className="p-1 border border-black text-center text-[11px] text-[#0F59A4]">
+                                  All Department
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="p-1 border border-black font-bold text-[8px]">
+                                  แก้ไขครั้งที่
+                                  <br />
+                                  Revision No.
+                                </td>
+                                <td className="p-1 border border-black text-center text-[11px] font-bold text-[#0F59A4]">
+                                  {revisionTag.replace(/^.*\s(Rev\.\d+)$/i, "$1")}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="p-1 border border-black font-bold text-[8px]">
+                                  วันที่ปรับปรุง
+                                  <br />
+                                  Update date
+                                </td>
+                                <td className="p-1 border border-black text-center text-[11px] font-bold text-[#0F59A4]">
+                                  {updateDate}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </td>
                       </tr>
                     </tbody>

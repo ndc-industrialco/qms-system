@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import ApproveSuccessScreen from "@/components/shared/ApproveSuccessScreen";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import type { KpiRevisionChangeType } from "@/types/kpi";
 
 type Mode = "reviewer" | "approver";
 type KpiType = "kpi" | "kpi-monthly";
@@ -33,6 +34,21 @@ type KpiObjective = {
   calculationFormula: string;
   actionPlanGuidelines: string;
   referenceDocuments?: string | null;
+  revisionChangeType?: Exclude<KpiRevisionChangeType, "REMOVED"> | null;
+};
+
+type RemovedObjective = {
+  id: string;
+  revisionChangeType: "REMOVED";
+  originalObjective: {
+    objective: string;
+    target: number;
+    unit: string | null;
+    frequency: string;
+    calculationFormula: string;
+    actionPlanGuidelines: string;
+    referenceDocuments: string | null;
+  };
 };
 
 type MonthlyCorrectiveAction = {
@@ -226,6 +242,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
   const statusStyle = STATUS_STYLES[status] ?? "bg-slate-100 text-slate-600 border-slate-200";
   const statusLabel = t(`kpi.monthly.status.${status}` as never) ?? status;
   const objectives: KpiObjective[] = type === "kpi" ? (kpi.objectives ?? []) : [];
+  const removedObjectives: RemovedObjective[] = type === "kpi" ? (kpi.removedObjectives ?? []) : [];
   const monthlyDetails: MonthlyDetail[] = type === "kpi-monthly" ? (kpi.details ?? []) : [];
   const approvalSignatures: KpiApprovalSignature[] = kpi.approvalSignatures ?? [];
 
@@ -348,7 +365,7 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
 
       {/* Objectives */}
       {type === "kpi" && objectives.length > 0 && (
-        <ObjectivesSection objectives={objectives} t={t} />
+        <ObjectivesSection objectives={objectives} removedObjectives={removedObjectives} t={t} />
       )}
 
       {/* Monthly details */}
@@ -538,7 +555,15 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function ObjectivesSection({ objectives, t }: { objectives: KpiObjective[]; t: Translator }) {
+function ObjectivesSection({
+  objectives,
+  removedObjectives,
+  t,
+}: {
+  objectives: KpiObjective[];
+  removedObjectives: RemovedObjective[];
+  t: Translator;
+}) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   function toggle(id: string) {
@@ -559,25 +584,45 @@ function ObjectivesSection({ objectives, t }: { objectives: KpiObjective[]; t: T
       <div className="space-y-2">
         {objectives.map((obj, idx) => {
           const isOpen = expanded.has(obj.id);
+          const isAdded = obj.revisionChangeType === "ADDED";
+          const isUpdated = obj.revisionChangeType === "UPDATED";
+          const isChanged = isAdded || isUpdated;
+          const cardClass = isChanged
+            ? "border-emerald-300 bg-emerald-50/70"
+            : "border-slate-100";
+          const headerClass = isChanged ? "hover:bg-emerald-100/70" : "hover:bg-slate-50";
+          const detailClass = isChanged ? "bg-emerald-50/60 border-emerald-200" : "bg-slate-50/50 border-slate-100";
           return (
-            <div key={obj.id} className="rounded-xl border border-slate-100 overflow-hidden">
+            <div key={obj.id} className={`rounded-xl border overflow-hidden ${cardClass}`}>
               {/* Header row */}
               <button
                 type="button"
                 onClick={() => toggle(obj.id)}
-                className="w-full flex items-start gap-3 p-4 text-left hover:bg-slate-50 transition-colors"
+                className={`w-full flex items-start gap-3 p-4 text-left transition-colors ${headerClass}`}
               >
-                <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                <span className={`w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5 ${isChanged ? "bg-emerald-200 text-emerald-800" : "bg-slate-100 text-slate-500"}`}>
                   {idx + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800 leading-snug">{obj.objective}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className={`text-sm leading-snug ${isChanged ? "font-bold italic text-emerald-900" : "font-medium text-slate-800"}`}>{obj.objective}</p>
+                    {isUpdated && (
+                      <span className="inline-flex items-center rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[11px] font-semibold italic text-emerald-700">
+                        Revised
+                      </span>
+                    )}
+                    {isAdded && (
+                      <span className="inline-flex items-center rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[11px] font-semibold italic text-emerald-700">
+                        Added
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                    <span className="text-xs text-slate-500">
-                      {t("kpi.objective.table.target")}: <span className="font-semibold text-slate-700">{obj.target}{obj.unit ? ` ${obj.unit}` : ""}</span>
+                    <span className={`text-xs ${isChanged ? "text-emerald-700" : "text-slate-500"}`}>
+                      {t("kpi.objective.table.target")}: <span className={`${isChanged ? "font-bold italic text-emerald-900" : "font-semibold text-slate-700"}`}>{obj.target}{obj.unit ? ` ${obj.unit}` : ""}</span>
                     </span>
-                    <span className="w-1 h-1 rounded-full bg-slate-300" />
-                    <span className="text-xs text-slate-500">{obj.frequency}</span>
+                    <span className={`w-1 h-1 rounded-full ${isChanged ? "bg-emerald-400" : "bg-slate-300"}`} />
+                    <span className={`text-xs ${isChanged ? "font-bold italic text-emerald-800" : "text-slate-500"}`}>{obj.frequency}</span>
                   </div>
                 </div>
                 {isOpen ? (
@@ -589,7 +634,7 @@ function ObjectivesSection({ objectives, t }: { objectives: KpiObjective[]; t: T
 
               {/* Expanded details */}
               {isOpen && (
-                <div className="border-t border-slate-100 px-4 pb-4 pt-3 space-y-3 bg-slate-50/50">
+                <div className={`border-t px-4 pb-4 pt-3 space-y-3 ${detailClass}`}>
                   <DetailField label={t("kpi.form.calculationFormula")} value={obj.calculationFormula} />
                   <DetailField label={t("kpi.form.actionPlanGuidelines")} value={obj.actionPlanGuidelines} />
                   {obj.referenceDocuments && (
@@ -601,6 +646,50 @@ function ObjectivesSection({ objectives, t }: { objectives: KpiObjective[]; t: T
           );
         })}
       </div>
+
+      {removedObjectives.length > 0 && (
+        <div className="mt-5 border-t border-slate-100 pt-5">
+          <h4 className="text-sm font-semibold text-rose-700 mb-3">
+            Deleted Objectives
+            <span className="ml-2 text-xs font-normal text-rose-400">({removedObjectives.length})</span>
+          </h4>
+          <div className="space-y-2">
+            {removedObjectives.map((removed, idx) => (
+              <div key={removed.id} className="rounded-xl border border-rose-300 bg-rose-50/80 p-4">
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-rose-200 text-rose-700 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-bold italic text-rose-800 leading-snug">
+                        {removed.originalObjective.objective}
+                      </p>
+                      <span className="inline-flex items-center rounded-full border border-rose-300 bg-white px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                        Deleted
+                      </span>
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-3 flex-wrap">
+                      <span className="text-xs text-rose-700">
+                        {t("kpi.objective.table.target")}: <span className="font-bold italic text-rose-900">{removed.originalObjective.target}{removed.originalObjective.unit ? ` ${removed.originalObjective.unit}` : ""}</span>
+                      </span>
+                      <span className="w-1 h-1 rounded-full bg-rose-400" />
+                      <span className="text-xs font-bold italic text-rose-800">{removed.originalObjective.frequency}</span>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <DetailField label={t("kpi.form.calculationFormula")} value={removed.originalObjective.calculationFormula} />
+                      <DetailField label={t("kpi.form.actionPlanGuidelines")} value={removed.originalObjective.actionPlanGuidelines} />
+                      {removed.originalObjective.referenceDocuments && (
+                        <DetailField label={t("kpi.form.referenceDocuments")} value={removed.originalObjective.referenceDocuments} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

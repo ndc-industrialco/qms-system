@@ -25,8 +25,14 @@ export default async function FmMr01PrintPage({ searchParams }: Props) {
     notFound();
   }
 
-  // Fetch KPIs for the requested year.
-  const kpis = await kpiRepo.findForExport({ yearly: year });
+  // Fetch KPIs for the requested year with revision comparison payload.
+  const kpis = await kpiRepo.findForExport({ yearly: year }).then((rows) =>
+    Promise.all(
+      rows
+        .filter((row) => row.department !== "SYSTEM_MASTER")
+        .map((row) => kpiService.getKpiById(row.id)),
+    ),
+  );
   
   // Fetch master KPI and its signatures
   const masterKpi = await kpiRepo.findByDepartmentYear("SYSTEM_MASTER", year);

@@ -6,7 +6,7 @@ import KpiMasterReviewDialog from "@/components/kpi/KpiMasterReviewDialog";
 import KpiMasterAnnounceDialog from "@/components/kpi/KpiMasterAnnounceDialog";
 import ConfirmModal from "@/components/common/ConfirmModal";
 import { Button } from "@/components/ui/button";
-import { FileText, ArrowLeft, RefreshCw, XCircle, Send } from "lucide-react";
+import { FileText, ArrowLeft, RefreshCw, XCircle, Send, FileSpreadsheet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { KpiApprovalSignature } from "@/components/kpi/KpiApprovalTimeline";
@@ -27,6 +27,24 @@ interface KPIObjective {
   responsibleEmailSnapshot?: string | null;
   isRevised?: boolean;
   isAdded?: boolean;
+  revisionChangeType?: string | null;
+}
+
+interface RemovedObjective {
+  id: string;
+  revisionChangeType: "REMOVED";
+  originalObjective: {
+    objective: string;
+    target: number;
+    unit: string | null;
+    frequency: string;
+    calculationFormula: string;
+    actionPlanGuidelines: string;
+    referenceDocuments: string | null;
+    responsibleNameSnapshot?: string | null;
+    responsibleEmployeeId?: string | null;
+    responsibleEmailSnapshot?: string | null;
+  };
 }
 
 interface KPI {
@@ -35,7 +53,9 @@ interface KPI {
   department: string;
   status: string;
   submittedAt?: string | Date | null;
+  updatedAt?: string | Date | null;
   objectives?: KPIObjective[];
+  removedObjectives?: RemovedObjective[];
   prepare: string;
   reviewer: string;
   approver: string;
@@ -99,6 +119,13 @@ export default function FmMr01PrintTemplate({
   const preparerSig = signatures.find(s => s.step === "PREPARER" && s.action === "APPROVED");
   const reviewerSig = signatures.find(s => s.step === "REVIEWER" && s.action === "APPROVED");
   const approverSig = signatures.find(s => s.step === "APPROVER" && s.action === "APPROVED");
+  const updateDate = (() => {
+    const value = masterKpi?.updatedAt ?? masterKpi?.submittedAt ?? null;
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" }).replace(/ /g, "-");
+  })();
 
   const formatDate = (dateVal: string | Date | null | undefined) => {
     if (!dateVal) return "-";
@@ -336,6 +363,15 @@ export default function FmMr01PrintTemplate({
             <Button type="button" className="bg-[#0F1059] hover:bg-[#161875] text-white h-9 rounded-xl font-medium px-5" onClick={() => window.print()}>
               Print
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-xl font-medium px-5 bg-white border-slate-200 text-slate-700 gap-1.5"
+              onClick={() => window.open(`/api/kpi/export/fm-mr-01?year=${year}`, "_blank")}
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Export Excel
+            </Button>
           </div>
         )}
 
@@ -354,10 +390,43 @@ export default function FmMr01PrintTemplate({
                   <div className="font-bold" style={{ fontSize: "14px", color: "#0F1059" }}>{formLabel} {year}</div>
                   <div className="font-bold" style={{ fontSize: "12px", color: "#0f1059" }}>{formLabelEn} {year}</div>
                 </td>
-                <td style={{ width: "20%", padding: "4px", fontSize: "9px" }}>
-                  <div><strong>แผนงานประจำปี</strong></div>
-                  <div>Annual Work Plan</div>
-                  <div><strong>{footerPrefix}</strong></div>
+                <td style={{ width: "20%", padding: 0, fontSize: "9px" }}>
+                  <table style={{ marginBottom: 0, height: "100%" }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ width: "48%", padding: "3px 4px", fontSize: "8px", fontWeight: "bold" }}>
+                          แผนงานประจำปี<br />Annual Work Plan
+                        </td>
+                        <td style={{ width: "52%", padding: "3px 4px", fontSize: "12px", fontWeight: "bold", color: "#0F59A4", textAlign: "center" }}>
+                          {year}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: "3px 4px", fontSize: "8px", fontWeight: "bold" }}>
+                          หน่วยงาน<br />Department
+                        </td>
+                        <td style={{ padding: "3px 4px", fontSize: "11px", color: "#0F59A4", textAlign: "center" }}>
+                          All Department
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: "3px 4px", fontSize: "8px", fontWeight: "bold" }}>
+                          แก้ไขครั้งที่<br />Revision No.
+                        </td>
+                        <td style={{ padding: "3px 4px", fontSize: "11px", fontWeight: "bold", color: "#0F59A4", textAlign: "center" }}>
+                          {footerPrefix.replace(/^.*\s(Rev\.\d+)$/i, "$1")}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: "3px 4px", fontSize: "8px", fontWeight: "bold" }}>
+                          วันที่ปรับปรุง<br />Update date
+                        </td>
+                        <td style={{ padding: "3px 4px", fontSize: "11px", fontWeight: "bold", color: "#0F59A4", textAlign: "center" }}>
+                          {updateDate}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </td>
               </tr>
             </tbody>
@@ -377,48 +446,87 @@ export default function FmMr01PrintTemplate({
               </tr>
             </thead>
             <tbody>
-              {activeKpis.map((kpi) => (
-                kpi.objectives!.map((obj, idx) => {
-                  const isHighlighted = obj.isRevised || obj.isAdded;
-                  const cellBg = isHighlighted ? "#e2f0d9" : undefined;
-                  const printColor = isHighlighted ? "exact" : undefined;
-                  return (
-                    <tr
-                      key={obj.id}
-                      style={{
-                        fontSize: "9px",
-                        fontWeight: isHighlighted ? "bold" : "normal",
-                        fontStyle: isHighlighted ? "italic" : "normal",
-                        textDecoration: obj.isAdded ? "underline" : undefined,
-                      }}
-                    >
-                      {idx === 0 && (
-                        <td rowSpan={kpi.objectives!.length} className="text-center font-bold" style={{ verticalAlign: "top" }}>
-                          {kpi.department}
+              {activeKpis.map((kpi) => {
+                const removedObjectives = kpi.removedObjectives ?? [];
+                const departmentRowSpan = (kpi.objectives?.length ?? 0) + removedObjectives.length;
+
+                return (
+                  <React.Fragment key={kpi.id}>
+                    {kpi.objectives!.map((obj, idx) => {
+                      const isHighlighted = obj.revisionChangeType === "UPDATED" || obj.revisionChangeType === "ADDED";
+                      const cellBg = isHighlighted ? "#e2f0d9" : undefined;
+                      const printColor = isHighlighted ? "exact" : undefined;
+                      return (
+                        <tr
+                          key={obj.id}
+                          style={{
+                            fontSize: "9px",
+                            fontWeight: isHighlighted ? "bold" : "normal",
+                            fontStyle: isHighlighted ? "italic" : "normal",
+                            textDecoration: obj.revisionChangeType === "ADDED" ? "underline" : undefined,
+                            color: isHighlighted ? "#166534" : undefined,
+                          }}
+                        >
+                          {idx === 0 && (
+                            <td rowSpan={departmentRowSpan} className="text-center font-bold" style={{ verticalAlign: "top" }}>
+                              {kpi.department}
+                            </td>
+                          )}
+                          <td style={{ backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>
+                            <div><strong>{obj.objective} {obj.target} {obj.unit || ""}</strong></div>
+                          </td>
+                          <td style={{ whiteSpace: "pre-line", backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>{obj.calculationFormula}</td>
+                          <td style={{ whiteSpace: "pre-line", backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>{obj.actionPlanGuidelines}</td>
+                          <td className="text-center" style={{ backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>{obj.frequency}</td>
+                          <td className="text-center" style={{ backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>{obj.referenceDocuments || "-"}</td>
+                          <td className="text-center" style={{ backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>
+                            {(obj.responsibleNameSnapshot || obj.responsibleEmailSnapshot) ? (
+                              <>
+                                {obj.responsibleNameSnapshot || obj.responsibleEmailSnapshot}
+                                {obj.responsibleEmployeeId ? <br /> : ""}
+                                {obj.responsibleEmployeeId ? `(#${obj.responsibleEmployeeId})` : ""}
+                              </>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {removedObjectives.map((removed) => (
+                      <tr
+                        key={removed.id}
+                        style={{
+                          fontSize: "9px",
+                          fontWeight: "bold",
+                          fontStyle: "italic",
+                          color: "#b91c1c",
+                        }}
+                      >
+                        <td style={{ backgroundColor: "#fee2e2", WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}>
+                          <div><strong>{removed.originalObjective.objective} {removed.originalObjective.target} {removed.originalObjective.unit || ""} (Deleted)</strong></div>
                         </td>
-                      )}
-                      <td style={{ backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>
-                        <div><strong>{obj.objective} {obj.target} {obj.unit || ""}</strong></div>
-                      </td>
-                      <td style={{ whiteSpace: "pre-line", backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>{obj.calculationFormula}</td>
-                      <td style={{ whiteSpace: "pre-line", backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>{obj.actionPlanGuidelines}</td>
-                      <td className="text-center" style={{ backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>{obj.frequency}</td>
-                      <td className="text-center" style={{ backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>{obj.referenceDocuments || "-"}</td>
-                      <td className="text-center" style={{ backgroundColor: cellBg, WebkitPrintColorAdjust: printColor, printColorAdjust: printColor }}>
-                        {(obj.responsibleNameSnapshot || obj.responsibleEmailSnapshot) ? (
-                          <>
-                            {obj.responsibleNameSnapshot || obj.responsibleEmailSnapshot}
-                            {obj.responsibleEmployeeId ? <br /> : ""}
-                            {obj.responsibleEmployeeId ? `(#${obj.responsibleEmployeeId})` : ""}
-                          </>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              ))}
+                        <td style={{ whiteSpace: "pre-line", backgroundColor: "#fee2e2", WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}>{removed.originalObjective.calculationFormula}</td>
+                        <td style={{ whiteSpace: "pre-line", backgroundColor: "#fee2e2", WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}>{removed.originalObjective.actionPlanGuidelines}</td>
+                        <td className="text-center" style={{ backgroundColor: "#fee2e2", WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}>{removed.originalObjective.frequency}</td>
+                        <td className="text-center" style={{ backgroundColor: "#fee2e2", WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}>{removed.originalObjective.referenceDocuments || "-"}</td>
+                        <td className="text-center" style={{ backgroundColor: "#fee2e2", WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}>
+                          {(removed.originalObjective.responsibleNameSnapshot || removed.originalObjective.responsibleEmailSnapshot) ? (
+                            <>
+                              {removed.originalObjective.responsibleNameSnapshot || removed.originalObjective.responsibleEmailSnapshot}
+                              {removed.originalObjective.responsibleEmployeeId ? <br /> : ""}
+                              {removed.originalObjective.responsibleEmployeeId ? `(#${removed.originalObjective.responsibleEmployeeId})` : ""}
+                            </>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
               
               {activeKpis.length === 0 && (
                 <tr>
@@ -516,6 +624,7 @@ export default function FmMr01PrintTemplate({
           kpis={kpis as unknown as Parameters<typeof KpiMasterReviewDialog>[0]["kpis"]}
           masterRevisionNo={masterRevisionNo}
           footerConfig={footerConfig}
+          masterUpdatedAt={masterKpi?.updatedAt ?? masterKpi?.submittedAt ?? null}
           onSuccess={() => {
             router.refresh();
           }}

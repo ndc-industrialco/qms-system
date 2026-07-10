@@ -43,7 +43,8 @@ export default async function ApprovePage({ searchParams }: Props) {
   if (sp.token) {
     let errorMessage: string | null = null;
     try {
-      const tokenData = await ActionTokenService.verify(sp.token, session.user.id);
+      const requesterIds = [session.user.authUserId, session.user.id].filter(Boolean) as string[];
+      const tokenData = await ActionTokenService.verify(sp.token, requesterIds);
       await ActionTokenService.markUsed(sp.token);
       redirect(resolveActionUrl(tokenData));
     } catch (err) {

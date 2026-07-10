@@ -420,7 +420,14 @@ export class KpiService {
   async updateObjective(id: string, dto: UpdateKpiObjectiveDTO) {
     const obj = await this.objectiveRepo.findById(id);
     if (!obj) throw new NotFoundError(`KPI Objective ${id} not found`);
-    return this.objectiveRepo.update(id, dto);
+    
+    const kpi = await this.kpiRepo.findById(obj.kpiId);
+    const updateData = { ...dto };
+    if (kpi?.isRevision) {
+      (updateData as Record<string, unknown>).isRevised = true;
+    }
+    
+    return this.objectiveRepo.update(id, updateData);
   }
 
   async deleteObjective(id: string) {
@@ -1301,8 +1308,13 @@ export class KpiService {
         publishedBy: null,
       } as Record<string, unknown>, tx);
 
-      // Mark specified objectives (or all) as revised
-      const targetObjIds = (objectiveIds && objectiveIds.length > 0) ? objectiveIds : kpi.objectives.map(o => o.id);
+      // Clear previous revision and addition flags on all objectives for this KPI
+      for (const obj of kpi.objectives) {
+        await this.objectiveRepo.update(obj.id, { isRevised: false, isAdded: false } as Record<string, unknown>, tx);
+      }
+
+      // Mark specified objectives as revised (if any)
+      const targetObjIds = (objectiveIds && objectiveIds.length > 0) ? objectiveIds : [];
       for (const objId of targetObjIds) {
         await this.objectiveRepo.update(objId, { isRevised: true } as Record<string, unknown>, tx);
       }
@@ -1429,11 +1441,13 @@ export class KpiService {
 
     const year = kpi.yearly;
     
-    // Fetch all KPIs for the same year to list department objectives
-    const activeKpis = await this.kpiRepo.findForExport({ yearly: year });
-    // Filter active KPIs (excluding SYSTEM_MASTER and empty ones)
-    const filteredKpis = activeKpis.filter(
-      (k) => k.objectives && k.objectives.length > 0 && k.department !== 'SYSTEM_MASTER'
+    // Fetch all KPIs for the same year with revision comparison payload
+    const filteredKpis = await this.kpiRepo.findForExport({ yearly: year }).then((rows) =>
+      Promise.all(
+        rows
+          .filter((row) => row.department !== 'SYSTEM_MASTER')
+          .map((row) => this.getKpiById(row.id)),
+      ),
     );
 
     // Fetch master signatures
@@ -1477,16 +1491,29 @@ export class KpiService {
     if (filteredKpis.length > 0) {
       for (const ak of filteredKpis) {
         const objectives = ak.objectives || [];
+        const removedObjectives = (ak as { removedObjectives?: Array<{ id: string; originalObjective: {
+          objective: string;
+          target: number;
+          unit: string | null;
+          frequency: string;
+          calculationFormula: string;
+          actionPlanGuidelines: string;
+          referenceDocuments: string | null;
+          responsibleNameSnapshot?: string | null;
+          responsibleEmployeeId?: string | null;
+          responsibleEmailSnapshot?: string | null;
+        } }> }).removedObjectives || [];
+        const totalRows = objectives.length + removedObjectives.length;
         for (let i = 0; i < objectives.length; i++) {
           const obj = objectives[i];
-          const isHighlighted = obj.isRevised || obj.isAdded;
+          const isHighlighted = obj.revisionChangeType === 'UPDATED' || obj.revisionChangeType === 'ADDED';
           const cellBg = isHighlighted ? 'background-color: #e2f0d9;' : '';
           const boldItalic = isHighlighted ? 'font-weight: bold; font-style: italic;' : '';
-          const underline = obj.isAdded ? 'text-decoration: underline;' : '';
+          const underline = obj.revisionChangeType === 'ADDED' ? 'text-decoration: underline;' : '';
           
           let deptCell = '';
           if (i === 0) {
-            deptCell = `<td rowspan="${objectives.length}" style="vertical-align: top; font-weight: bold; border: 1px solid #000; padding: 4px 5px; text-align: center;">${ak.department}</td>`;
+            deptCell = `<td rowspan="${totalRows}" style="vertical-align: top; font-weight: bold; border: 1px solid #000; padding: 4px 5px; text-align: center;">${ak.department}</td>`;
           }
           
           let responsibleText = '-';
@@ -1508,6 +1535,27 @@ export class KpiService {
               <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${obj.frequency || ''}</td>
               <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${obj.referenceDocuments || '-'}</td>
               <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${responsibleText}</td>
+            </tr>
+          `;
+        }
+
+        for (const removed of removedObjectives) {
+          let responsibleText = '-';
+          if (removed.originalObjective.responsibleNameSnapshot || removed.originalObjective.responsibleEmailSnapshot) {
+            responsibleText = `${removed.originalObjective.responsibleNameSnapshot || removed.originalObjective.responsibleEmailSnapshot}`;
+            if (removed.originalObjective.responsibleEmployeeId) {
+              responsibleText += `<br/>(#${removed.originalObjective.responsibleEmployeeId})`;
+            }
+          }
+
+          tbodyRows += `
+            <tr style="font-size: 9px; font-weight: bold; font-style: italic; color: #b91c1c;">
+              <td style="border: 1px solid #000; padding: 4px 5px; background-color: #fee2e2;">${removed.originalObjective.objective} ${removed.originalObjective.target} ${removed.originalObjective.unit || ''} (Deleted)</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; background-color: #fee2e2;">${removed.originalObjective.calculationFormula || ''}</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; background-color: #fee2e2;">${removed.originalObjective.actionPlanGuidelines || ''}</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; background-color: #fee2e2;">${removed.originalObjective.frequency}</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; background-color: #fee2e2;">${removed.originalObjective.referenceDocuments || '-'}</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; background-color: #fee2e2;">${responsibleText}</td>
             </tr>
           `;
         }
@@ -1667,7 +1715,7 @@ export class KpiService {
       });
 
       return {
-        name: `FM-MR-01_Quality_Objectives_${year}.pdf`,
+        name: 'FM-MR-01.pdf',
         contentType: 'application/pdf',
         contentBytes: Buffer.from(pdf).toString('base64'),
       };

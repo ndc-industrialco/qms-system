@@ -18,10 +18,14 @@ export async function POST(
     if (!PRIVILEGED.has(session.user.role)) throw new ForbiddenError();
 
     const { id } = await params;
-    const appt = await repo.findWithMembers(id);
+    const appt = await repo.findDetailById(id);
     if (!appt) throw new NotFoundError("Appointment not found");
 
     const token = session.user.accessToken ?? null;
+    const signoffsFormatted = appt.signoffs.map(s => ({
+      ...s,
+      signedAt: s.signedAt.toISOString(),
+    }));
 
     if (appt.status === "PENDING_REVIEW") {
       if (!appt.reviewerEmail) throw new ValidationError("No reviewer email on record");
@@ -35,6 +39,9 @@ export async function POST(
         signedRole: "REVIEWER",
         appointmentId: id,
         senderAccessToken: token,
+        members: appt.members,
+        signoffs: signoffsFormatted,
+        ownerSignaturePath: appt.ownerSignaturePath,
       });
       return sendSuccess(null, `Resent sign request to reviewer: ${appt.reviewerEmail}`);
     }
@@ -51,6 +58,9 @@ export async function POST(
         signedRole: "APPROVER",
         appointmentId: id,
         senderAccessToken: token,
+        members: appt.members,
+        signoffs: signoffsFormatted,
+        ownerSignaturePath: appt.ownerSignaturePath,
       });
       return sendSuccess(null, `Resent sign request to approver: ${appt.approverEmail}`);
     }
@@ -78,6 +88,8 @@ export async function POST(
         reviewerName: appt.reviewerNameSnapshot,
         appointmentId: id,
         senderAccessToken: token,
+        signoffs: signoffsFormatted,
+        ownerSignaturePath: appt.ownerSignaturePath,
       });
       return sendSuccess(null, `Resent published announcement to ${allRecipients.length} recipient(s)`);
     }

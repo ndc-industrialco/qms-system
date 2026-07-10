@@ -36,13 +36,14 @@ export class ActionTokenService {
 
   static async verify(
     token: string,
-    requestingUserId: string
+    requestingUserId: string | string[]
   ): Promise<VerifiedActionToken> {
     const record = await repo.findByToken(token);
     if (!record) throw new TokenNotFoundError();
     if (record.revokedAt) throw new TokenRevokedError();
     if (record.expiresAt < new Date()) throw new TokenExpiredError();
-    if (record.issuedTo !== requestingUserId) throw new TokenOwnerError();
+    const requestingIds = Array.isArray(requestingUserId) ? requestingUserId : [requestingUserId];
+    if (!requestingIds.includes(record.issuedTo)) throw new TokenOwnerError();
     return {
       id: record.id,
       token: record.token,

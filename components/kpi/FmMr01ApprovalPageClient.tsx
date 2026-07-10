@@ -34,6 +34,24 @@ type Objective = {
   responsibleNameSnapshot?: string | null;
   responsibleEmployeeId?: string | null;
   responsibleEmailSnapshot?: string | null;
+  revisionChangeType?: string | null;
+};
+
+type RemovedObjective = {
+  id: string;
+  revisionChangeType: "REMOVED";
+  originalObjective: {
+    objective: string;
+    target: number;
+    unit: string | null;
+    frequency: string;
+    calculationFormula: string;
+    actionPlanGuidelines: string;
+    referenceDocuments: string | null;
+    responsibleNameSnapshot?: string | null;
+    responsibleEmployeeId?: string | null;
+    responsibleEmailSnapshot?: string | null;
+  };
 };
 
 type KpiRow = {
@@ -42,6 +60,7 @@ type KpiRow = {
   department: string;
   status: string;
   objectives?: Objective[];
+  removedObjectives?: RemovedObjective[];
   prepare: string;
   reviewer: string;
   approver: string;

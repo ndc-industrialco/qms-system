@@ -75,8 +75,18 @@ function AppointmentCard({ appt, canCrud, onEdit, onDelete }: CardProps) {
         )}
       </Link>
 
-      {canCrud && (
+      {(canCrud || appt.status === "PUBLISHED") && (
         <div className="border-t border-slate-100 bg-slate-50 px-5 py-2.5 flex items-center gap-2 justify-end">
+          <Link
+            href={`/print/audit/appointment/${appt.id}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors mr-auto"
+          >
+            <Download className="w-3 h-3 text-slate-400" />
+            พิมพ์ประกาศ (PDF)
+          </Link>
           {canResend && (
             <button
               type="button"
@@ -106,14 +116,16 @@ function AppointmentCard({ appt, canCrud, onEdit, onDelete }: CardProps) {
               แก้ไข
             </button>
           )}
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onDelete(appt); }}
-            className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
-          >
-            <Trash2 className="w-3 h-3" />
-            ลบ
-          </button>
+          {canCrud && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onDelete(appt); }}
+              className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
+            >
+              <Trash2 className="w-3 h-3" />
+              ลบ
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -171,24 +183,21 @@ export function AuditAppointmentListClient({ initialData, canCreate, canCrud = f
             />
           </div>
           {(canCreate || canCrud) && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => window.open("/api/audit/appointments/export")}
-                className="rounded-xl shrink-0 border-slate-200"
-              >
-                <Download className="h-4 w-4 mr-1.5" />
-                ส่งออกประกาศ
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => window.open("/api/audit/auditors/export")}
-                className="rounded-xl shrink-0 border-slate-200"
-              >
-                <Download className="h-4 w-4 mr-1.5" />
-                ส่งออกผู้ตรวจ (Auditor)
-              </Button>
-            </>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const latest = items.find((a) => a.status === "PUBLISHED") || items[0];
+                if (latest) {
+                  window.open(`/print/audit/appointment/${latest.id}`, "_blank");
+                } else {
+                  toast.error("ไม่พบประกาศแต่งตั้งที่สามารถส่งออกได้");
+                }
+              }}
+              className="rounded-xl shrink-0 border-slate-200"
+            >
+              <Download className="h-4 w-4 mr-1.5" />
+              ส่งออกประกาศ (PDF)
+            </Button>
           )}
           {canCreate && (
             <Button

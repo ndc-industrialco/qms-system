@@ -50,6 +50,7 @@ interface Props {
   kpiId: string;
   role: UserRole;
   userId: string | null;
+  authUserId: string | null;
   userDepartmentName: string | null;
 }
 
@@ -161,7 +162,7 @@ function RoleBanner({ role, kpiStatus, deptMatch }: { role: UserRole; kpiStatus:
   );
 }
 
-export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDepartmentName }: Props) {
+export default function KpiDepartmentDetailClient({ kpiId, role, userId, authUserId, userDepartmentName }: Props) {
   const t = useT();
   const privileged = isPrivileged(role);
   const canAlwaysEdit = privileged;
@@ -336,12 +337,20 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
 
   const kpiWithIds = kpi as typeof kpi & { reviewerUserId?: string | null; approverUserId?: string | null };
   const reviewerSig = (kpi as typeof kpi & { approvalSignatures?: Array<{ step: string; signerUserId: string | null; action?: string }> }).approvalSignatures?.find((s: { step: string; signerUserId: string | null; action?: string }) => s.step === 'REVIEWER');
-  const isReviewer = userId != null && kpiWithIds.reviewerUserId === userId;
-  const isApprover = userId != null && kpiWithIds.approverUserId === userId;
+  const isReviewer = (
+    (userId != null && kpiWithIds.reviewerUserId === userId)
+    || (authUserId != null && kpiWithIds.reviewerAuthUserId === authUserId)
+  );
+  const isApprover = (
+    (userId != null && kpiWithIds.approverUserId === userId)
+    || (authUserId != null && kpiWithIds.approverAuthUserId === authUserId)
+  );
   const reviewerAlreadySigned = reviewerSig?.action === 'APPROVED';
   const canReview = isReviewer && kpiStatus === "PENDING_REVIEW" && !reviewerAlreadySigned;
-  const canApprove = isApprover && kpiStatus === "PENDING_REVIEW" && reviewerAlreadySigned;
-  const canReject = (isReviewer || isApprover) && kpiStatus === "PENDING_REVIEW";
+  const canApprove = isApprover && kpiStatus === "PENDING_APPROVAL";
+  const canReject =
+    (isReviewer && kpiStatus === "PENDING_REVIEW")
+    || (isApprover && kpiStatus === "PENDING_APPROVAL");
   const canAnnounce = privileged && kpiStatus === "QMS_CHECK";
   const canRevise = privileged && (kpiStatus === "APPROVED" || kpiStatus === "ANNOUNCED");
 
@@ -738,7 +747,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
         </div>
       )}
 
-      {revisionHistory.length > 0 && (
+      {false && revisionHistory.length > 0 && (
         <div className="space-y-3">
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 flex items-center justify-between">
             <div>
@@ -798,6 +807,94 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, userDep
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {revisionHistory.length > 0 && (
+        <div className="space-y-3">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-emerald-800">Revision history</p>
+              <p className="text-xs text-emerald-700">Every revise keeps the previous annual objectives as a historical snapshot.</p>
+            </div>
+            <Button variant="outline" size="sm" className="shrink-0 border-emerald-200 text-emerald-700 hover:bg-emerald-100" onClick={handleRevisePreviewOpen}>
+              <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" />
+              Export Excel
+            </Button>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-200 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[980px] text-xs">
+                <thead className="bg-emerald-50/80">
+                  <tr className="border-b border-emerald-200">
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Revision</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Date</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Reason</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Objective</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Target</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Frequency</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Responsible</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Formula</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Guidelines</th>
+                    <th className="px-3 py-2 text-left font-semibold text-emerald-900">Reference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {revisionHistory.map((entry, index) => (
+                    entry.objectiveSnapshots.map((snapshot, snapshotIndex) => {
+                      const snapshotTarget = formatObjectiveTarget(snapshot, t);
+                      const wasRevisedInRound = entry.revisedObjectiveIds.includes(snapshot.objectiveId);
+                      return (
+                        <tr
+                          key={`${entry.auditLogId}-${snapshot.objectiveId}`}
+                          className={cn(
+                            "border-b border-emerald-100 align-top last:border-b-0",
+                            wasRevisedInRound ? "bg-emerald-50/40" : "bg-white",
+                          )}
+                        >
+                          {snapshotIndex === 0 && (
+                            <>
+                              <td rowSpan={entry.objectiveSnapshots.length} className="px-3 py-2 font-semibold text-slate-900">
+                                Revision {revisionHistory.length - index}
+                              </td>
+                              <td rowSpan={entry.objectiveSnapshots.length} className="px-3 py-2 text-slate-600">
+                                <div>{formatRevisionTimestamp(entry.revisedAt)}</div>
+                                <div className="mt-1 text-[11px] text-slate-400">{entry.revisedByRole}</div>
+                              </td>
+                              <td rowSpan={entry.objectiveSnapshots.length} className="px-3 py-2 text-slate-600">
+                                {entry.reason || "-"}
+                              </td>
+                            </>
+                          )}
+                          <td className="px-3 py-2 text-slate-800">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className={cn("font-medium", wasRevisedInRound && "font-semibold text-emerald-800")}>
+                                {snapshot.objective}
+                              </span>
+                              {wasRevisedInRound && (
+                                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                  Revised in this round
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-3 py-2 text-slate-700">
+                            {snapshotTarget.value}{snapshotTarget.unitLabel ? ` ${snapshotTarget.unitLabel}` : ""}
+                          </td>
+                          <td className="px-3 py-2 text-slate-700">{snapshot.frequency}</td>
+                          <td className="px-3 py-2 text-slate-700">{formatResponsiblePerson(snapshot)}</td>
+                          <td className="px-3 py-2 text-slate-600 whitespace-pre-wrap">{snapshot.calculationFormula}</td>
+                          <td className="px-3 py-2 text-slate-600 whitespace-pre-wrap">{snapshot.actionPlanGuidelines}</td>
+                          <td className="px-3 py-2 text-slate-600">{snapshot.referenceDocuments || "-"}</td>
+                        </tr>
+                      );
+                    })
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
