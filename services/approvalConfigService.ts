@@ -54,8 +54,14 @@ export class ApprovalConfigService {
       getApprovalConfigKey(module.key, "QMS", "EMAIL"),
     ]);
 
-    const [appMembers, configRows] = await Promise.all([
-      listAuthCenterAppMembers({ accessToken }),
+    let appMembers: Awaited<ReturnType<typeof listAuthCenterAppMembers>> = [];
+    try {
+      appMembers = await listAuthCenterAppMembers({ accessToken });
+    } catch {
+      // If app members fetch fails (e.g., session revoked), continue with empty list
+    }
+
+    const [configRows] = await Promise.all([
       this.configRepo.findManyByKeys([
         ...configKeys,
         "CURRENT_MR_AUTH_USER_ID",
@@ -74,11 +80,15 @@ export class ApprovalConfigService {
         rolesByUser.set(user.id, user.roles);
       }
     } catch {
-      const grants = await listAuthCenterRoleGrants({ accessToken });
-      for (const grant of grants) {
-        const list = rolesByUser.get(grant.userId) ?? [];
-        list.push(grant.role);
-        rolesByUser.set(grant.userId, list);
+      try {
+        const grants = await listAuthCenterRoleGrants({ accessToken });
+        for (const grant of grants) {
+          const list = rolesByUser.get(grant.userId) ?? [];
+          list.push(grant.role);
+          rolesByUser.set(grant.userId, list);
+        }
+      } catch {
+        // If all Auth Center calls fail, continue without role info
       }
     }
 

@@ -1,5 +1,21 @@
 [
   {
+    "id": "93",
+    "titleTh": "KPI: ผูกเลข Rev ของ FM-MR-01 กับรอบ revise/master review ใหม่ทั้ง print preview email และ system master",
+    "titleEn": "KPI: bind FM-MR-01 revision labels to master revise cycles across print preview email and system master",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-master-revision-cycle-labels",
+    "detailsTh": [
+      "services/kpiService.ts, app/print/qms/kpi/fm-mr-01/page.tsx, components/kpi/FmMr01PrintTemplate.tsx, components/kpi/KpiMasterReviewDialog.tsx, app/api/kpi/master-review/route.ts, services/email.ts: เพิ่มการคำนวณเลข revision ของ FM-MR-01 ตามรอบ revise/master review ใหม่ และแสดง Rev.00/01/02 ให้ตรงกันทั้งหัวกระดาษด้านขวา footer preview email และ PDF/print ของ system master",
+      "services/kpiService.ts: เมื่อ revise KPI รายแผนกหลัง master ถูกอนุมัติหรือประกาศแล้ว จะ reset SYSTEM_MASTER กลับเป็น DRAFT เพื่อบังคับให้ส่งอนุมัติ master ใหม่ในรอบ revision ถัดไป"
+    ],
+    "detailsEn": [
+      "services/kpiService.ts, app/print/qms/kpi/fm-mr-01/page.tsx, components/kpi/FmMr01PrintTemplate.tsx, components/kpi/KpiMasterReviewDialog.tsx, app/api/kpi/master-review/route.ts, services/email.ts: added FM-MR-01 revision-cycle calculation so Rev.00/01/02 stays aligned across the right header block, footer, preview, email, and system-master PDF/print output",
+      "services/kpiService.ts: revising a department KPI after the master is approved or announced now resets SYSTEM_MASTER back to DRAFT so the master document must be submitted for approval again in the next revision cycle"
+    ]
+  },
+  {
     "id": "92",
     "titleTh": "KPI: เปิดให้กดส่งประกาศใช้ซ้ำได้เมื่อสถานะเป็น ANNOUNCED แล้ว",
     "titleEn": "KPI: allow resending announcement when status is already ANNOUNCED",

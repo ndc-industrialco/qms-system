@@ -14,6 +14,8 @@ import { Search, X, Loader2, User, FileText, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import type { KpiWithUsers } from "@/hooks/api/use-kpi";
+import type { FooterConfig } from "@/services/qmsConfigService";
+import { formatKpiAnnualRevisionTag } from "@/lib/kpi-annual-document";
 
 export interface KPIObjectiveData {
   id: string;
@@ -43,6 +45,8 @@ interface Props {
   onClose: () => void;
   year: number;
   kpis: Array<KpiWithUsers & { objectives?: unknown[] }>;
+  masterRevisionNo?: number;
+  footerConfig?: FooterConfig | null;
   onSuccess: () => void;
 }
 
@@ -199,6 +203,8 @@ export default function KpiMasterReviewDialog({
   onClose,
   year,
   kpis = [],
+  masterRevisionNo = 0,
+  footerConfig,
   onSuccess,
 }: Props) {
   const t = useT();
@@ -261,6 +267,7 @@ export default function KpiMasterReviewDialog({
 
   // Pre-filter KPIs that have objectives
   const activeKpis = kpis.filter(k => k.objectives && (k.objectives as KPIObjectiveData[]).length > 0);
+  const revisionTag = formatKpiAnnualRevisionTag(footerConfig?.prefix, masterRevisionNo);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -296,6 +303,7 @@ export default function KpiMasterReviewDialog({
                         <td className="w-1/5 p-2 border border-black text-[9px] align-middle">
                           <div><strong>แผนงานประจำปี</strong></div>
                           <div>Annual Work Plan</div>
+                          <div><strong>{revisionTag}</strong></div>
                         </td>
                       </tr>
                     </tbody>
@@ -366,7 +374,7 @@ export default function KpiMasterReviewDialog({
                   </table>
 
                   <div className="text-[8px] text-right mt-1.5 font-sans">
-                    FM-MR-01 Rev.02 / วัตถุประสงค์คุณภาพประจำปี
+                    {revisionTag} / วัตถุประสงค์คุณภาพประจำปี
                   </div>
                 </div>
               </div>

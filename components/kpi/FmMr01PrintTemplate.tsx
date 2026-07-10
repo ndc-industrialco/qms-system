@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { KpiApprovalSignature } from "@/components/kpi/KpiApprovalTimeline";
 import type { FooterConfig } from "@/services/qmsConfigService";
+import { formatKpiAnnualRevisionTag } from "@/lib/kpi-annual-document";
 
 interface KPIObjective {
   id: string;
@@ -33,6 +34,7 @@ interface KPI {
   yearly: number;
   department: string;
   status: string;
+  submittedAt?: string | Date | null;
   objectives?: KPIObjective[];
   prepare: string;
   reviewer: string;
@@ -47,6 +49,7 @@ interface FmMr01PrintTemplateProps {
   masterKpi?: KPI | null;
   signatures?: KpiApprovalSignature[];
   footerConfig?: FooterConfig | null;
+  masterRevisionNo?: number;
   showReviewToolbar?: boolean;
   showWorkflow?: boolean;
   isEmbedded?: boolean;
@@ -60,6 +63,7 @@ export default function FmMr01PrintTemplate({
   masterKpi,
   signatures = [],
   footerConfig,
+  masterRevisionNo = 0,
   showReviewToolbar = true,
   showWorkflow,
   isEmbedded = false,
@@ -73,7 +77,7 @@ export default function FmMr01PrintTemplate({
   const formLabel = "วัตถุประสงค์คุณภาพ สิ่งแวดล้อม อาชีวอนามัยและความปลอดภัย";
   const formLabelEn = "Quality, Environment, Occupational Health and Safety Objectives";
   const footerLabel = footerConfig?.label?.trim() || "วัตถุประสงค์คุณภาพประจำปี";
-  const footerPrefix = footerConfig?.prefix?.trim() || "FM-MR-01 Rev.02";
+  const footerPrefix = formatKpiAnnualRevisionTag(footerConfig?.prefix, masterRevisionNo);
 
   const isReviewMode = mode === "review";
   const canSubmitReview = isReviewMode && (!masterKpi || masterKpi.status === "DRAFT");
@@ -353,6 +357,7 @@ export default function FmMr01PrintTemplate({
                 <td style={{ width: "20%", padding: "4px", fontSize: "9px" }}>
                   <div><strong>แผนงานประจำปี</strong></div>
                   <div>Annual Work Plan</div>
+                  <div><strong>{footerPrefix}</strong></div>
                 </td>
               </tr>
             </tbody>
@@ -498,7 +503,7 @@ export default function FmMr01PrintTemplate({
           
           {/* Footer prefix and label */}
           <div className="footer-note" data-footer={`${footerPrefix} ${footerLabel}`}>
-            FM-MR-01 Rev.02 / วัตถุประสงค์คุณภาพประจำปี
+            {footerPrefix} / วัตถุประสงค์คุณภาพประจำปี
           </div>
         </div>
       </div>
@@ -509,6 +514,8 @@ export default function FmMr01PrintTemplate({
           onClose={() => setReviewDialogOpen(false)}
           year={year}
           kpis={kpis as unknown as Parameters<typeof KpiMasterReviewDialog>[0]["kpis"]}
+          masterRevisionNo={masterRevisionNo}
+          footerConfig={footerConfig}
           onSuccess={() => {
             router.refresh();
           }}

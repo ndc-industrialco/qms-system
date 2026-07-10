@@ -4,10 +4,12 @@ import { KpiRepository } from "@/repositories/kpiRepository";
 import { ApprovalSignatureRepository } from "@/repositories/approvalSignatureRepository";
 import FmMr01PrintTemplate from "@/components/kpi/FmMr01PrintTemplate";
 import { QmsConfigService } from "@/services/qmsConfigService";
+import { KpiService } from "@/services/kpiService";
 
 const kpiRepo = new KpiRepository();
 const approvalSignatureRepo = new ApprovalSignatureRepository();
 const qmsConfigService = new QmsConfigService();
+const kpiService = new KpiService();
 
 type Props = { searchParams: Promise<{ year?: string; mode?: string }> };
 
@@ -29,11 +31,12 @@ export default async function FmMr01PrintPage({ searchParams }: Props) {
   // Fetch master KPI and its signatures
   const masterKpi = await kpiRepo.findByDepartmentYear("SYSTEM_MASTER", year);
 
-  const [signatures, footerConfig] = await Promise.all([
+  const [signatures, footerConfig, masterRevisionNo] = await Promise.all([
     masterKpi
       ? approvalSignatureRepo.findByDocument("KPI", masterKpi.id)
       : Promise.resolve([]),
     qmsConfigService.getSingleFooterConfig("KPI_ANNUAL"),
+    kpiService.getMasterRevisionNumber(year),
   ]);
 
   return (
@@ -45,6 +48,7 @@ export default async function FmMr01PrintPage({ searchParams }: Props) {
       masterKpi={masterKpi}
       signatures={signatures}
       footerConfig={footerConfig}
+      masterRevisionNo={masterRevisionNo}
     />
   );
 }

@@ -9,8 +9,11 @@ import { makeBilingualMail, sendMail, makeMasterObjectivesTable } from "@/servic
 import { ApprovalModule, ApprovalStep } from "@/generated/prisma/client";
 import { getUserSnapshot } from "@/lib/userSnapshotCache";
 import { z } from "zod";
+import { QmsConfigService } from "@/services/qmsConfigService";
+import { formatKpiAnnualRevisionTag } from "@/lib/kpi-annual-document";
 
 const service = new KpiService();
+const qmsConfigService = new QmsConfigService();
 
 const masterReviewSchema = z.object({
   yearly: z.union([z.number(), z.string().transform(Number)]),
@@ -72,6 +75,11 @@ export async function POST(request: NextRequest) {
 
       // Fetch master KPI details containing aggregated objectives from all departments
       const kpiDetails = await service.getKpiById(updatedKpi.id);
+      const [masterRevisionNo, footerConfig] = await Promise.all([
+        service.getMasterRevisionNumber(Number(yearly)),
+        qmsConfigService.getSingleFooterConfig("KPI_ANNUAL"),
+      ]);
+      const revisionTag = formatKpiAnnualRevisionTag(footerConfig.prefix, masterRevisionNo);
 
       await NotificationService.sendEmailOnce(
         `KPI:${updatedKpi.id}:SUBMITTED:reviewer:${reviewer.id}:${reviewerToken.substring(0, 16)}`,
@@ -88,7 +96,7 @@ export async function POST(request: NextRequest) {
                 { labelTh: "เอกสาร", labelEn: "Document", value: `Annual Quality Objectives (FM-MR-01)` },
                 { labelTh: "ปี", labelEn: "Year", value: String(yearly) },
               ],
-              extraHtml: makeMasterObjectivesTable(kpiDetails.objectives),
+              extraHtml: makeMasterObjectivesTable(kpiDetails.objectives, revisionTag),
               actionLabelTh: "ตรวจสอบแผนงาน",
               actionLabelEn: "Review Plan",
               actionUrl: url,
@@ -110,7 +118,7 @@ export async function POST(request: NextRequest) {
               { labelTh: "เอกสาร", labelEn: "Document", value: `Annual Quality Objectives (FM-MR-01)` },
               { labelTh: "ปี", labelEn: "Year", value: String(yearly) },
             ],
-            extraHtml: makeMasterObjectivesTable(kpiDetails.objectives),
+            extraHtml: makeMasterObjectivesTable(kpiDetails.objectives, revisionTag),
             actionLabelTh: "ตรวจสอบแผนงาน",
             actionLabelEn: "Review Plan",
             actionUrl: url,

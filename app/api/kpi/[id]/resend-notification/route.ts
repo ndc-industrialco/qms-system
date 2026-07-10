@@ -15,9 +15,12 @@ import {
   sendMail,
 } from "@/services/email";
 import { NotificationService } from "@/services/notificationService";
+import { QmsConfigService } from "@/services/qmsConfigService";
+import { formatKpiAnnualRevisionTag } from "@/lib/kpi-annual-document";
 
 const paramsSchema = z.object({ id: z.string().min(1) });
 const service = new KpiService();
+const qmsConfigService = new QmsConfigService();
 
 export async function POST(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
@@ -56,6 +59,11 @@ export async function POST(_request: NextRequest, context: { params: Promise<{ i
 
       if (kpi.department === "SYSTEM_MASTER") {
         const url = `${(process.env.NEXTAUTH_URL ?? "").replace(/\/+$/, "")}/approve?token=${encodeURIComponent(reviewerToken)}`;
+        const [masterRevisionNo, footerConfig] = await Promise.all([
+          service.getMasterRevisionNumber(kpi.yearly),
+          qmsConfigService.getSingleFooterConfig("KPI_ANNUAL"),
+        ]);
+        const revisionTag = formatKpiAnnualRevisionTag(footerConfig.prefix, masterRevisionNo);
         await NotificationService.sendEmailOnce(
           `KPI:${id}:RESENT:reviewer:${kpi.reviewerUserId}:${reviewerToken.substring(0, 16)}`,
           async () => {
@@ -72,7 +80,7 @@ export async function POST(_request: NextRequest, context: { params: Promise<{ i
                   { labelTh: "เอกสาร", labelEn: "Document", value: "Annual Quality Objectives (FM-MR-01)" },
                   { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
                 ],
-                extraHtml: makeMasterObjectivesTable(kpi.objectives),
+                extraHtml: makeMasterObjectivesTable(kpi.objectives, revisionTag),
                 actionLabelTh: "ตรวจสอบแผนงาน",
                 actionLabelEn: "Review Plan",
                 actionUrl: url,
@@ -94,7 +102,7 @@ export async function POST(_request: NextRequest, context: { params: Promise<{ i
                 { labelTh: "เอกสาร", labelEn: "Document", value: "Annual Quality Objectives (FM-MR-01)" },
                 { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
               ],
-              extraHtml: makeMasterObjectivesTable(kpi.objectives),
+              extraHtml: makeMasterObjectivesTable(kpi.objectives, revisionTag),
               actionLabelTh: "ตรวจสอบแผนงาน",
               actionLabelEn: "Review Plan",
               actionUrl: url,

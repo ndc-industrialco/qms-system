@@ -163,6 +163,7 @@ export async function listAuthCenterAppMembers(options?: AuthCenterClientAuthOpt
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    if (res.status === 401) throw new UnauthorizedError();
     throw new Error(`Auth Center app members failed (${res.status}): ${text}`);
   }
 

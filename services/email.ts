@@ -199,7 +199,7 @@ export interface KpiMonthlyDetailRow {
   achievedStatus: string | null;
 }
 
-export function makeMasterObjectivesTable(objectives: KpiObjectiveRow[]): string {
+export function makeMasterObjectivesTable(objectives: KpiObjectiveRow[], revisionTag = "FM-MR-01 Rev.00"): string {
   if (objectives.length === 0) return "";
 
   // Group by department from the prefix `[Dept]` in objective string
@@ -263,7 +263,7 @@ export function makeMasterObjectivesTable(objectives: KpiObjectiveRow[]): string
           ${rowsHtml}
         </tbody>
       </table>
-      <div style="text-align:right;font-size:8px;color:#64748b;margin-top:6px">FM-MR-01 Rev.02 / วัตถุประสงค์คุณภาพประจำปี</div>
+      <div style="text-align:right;font-size:8px;color:#64748b;margin-top:6px">${revisionTag} / วัตถุประสงค์คุณภาพประจำปี</div>
     </div>
   `;
 }

@@ -22,6 +22,7 @@ import { UserPreferenceRepository } from '@/repositories/userPreferenceRepositor
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { listAuthCenterAppMembers } from '@/lib/auth-center-admin-client';
 import { isPrivilegedQmsRole } from '@/lib/qms-roles';
+import { formatKpiAnnualRevisionTag } from '@/lib/kpi-annual-document';
 import {
   CreateKpiDTO,
   UpdateKpiDTO,
@@ -47,6 +48,54 @@ export class KpiService {
   private approvalSignatureRepo = new ApprovalSignatureRepository();
   private userRepo = new UserRepository();
   private userPrefRepo = new UserPreferenceRepository();
+
+  async getMasterRevisionNumber(year: number): Promise<number> {
+    const masterKpi = await db.kPI.findFirst({
+      where: { department: 'SYSTEM_MASTER', yearly: year },
+      select: { id: true, submittedAt: true },
+    });
+
+    const departmentKpis = await db.kPI.findMany({
+      where: {
+        yearly: year,
+        department: { not: 'SYSTEM_MASTER' },
+      },
+      select: { id: true },
+    });
+
+    const latestRevise = departmentKpis.length > 0
+      ? await db.auditLog.findFirst({
+          where: {
+            resourceType: 'KPI',
+            action: 'REVISE',
+            resourceId: { in: departmentKpis.map((kpi) => kpi.id) },
+          },
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true },
+        })
+      : null;
+
+    const submitCount = masterKpi
+      ? await db.auditLog.count({
+          where: {
+            resourceType: 'KPI',
+            resourceId: masterKpi.id,
+            action: 'SUBMIT',
+          },
+        })
+      : 0;
+
+    const effectiveSubmitCount = submitCount > 0
+      ? submitCount
+      : masterKpi?.submittedAt
+        ? 1
+        : 0;
+    const approvedRevisionNo = Math.max(0, effectiveSubmitCount - 1);
+    const hasPendingRevisionCycle = !!latestRevise?.createdAt
+      && (!masterKpi?.submittedAt || latestRevise.createdAt > masterKpi.submittedAt);
+
+    return approvedRevisionNo + (hasPendingRevisionCycle ? 1 : 0);
+  }
 
   private buildObjectiveSnapshot(
     objective: {
@@ -1274,6 +1323,27 @@ export class KpiService {
       await this.approvalSignatureRepo.deleteByDocument('KPI', id, tx);
       await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
 
+      if (kpi.department !== 'SYSTEM_MASTER') {
+        const masterKpi = await tx.kPI.findFirst({
+          where: { department: 'SYSTEM_MASTER', yearly: kpi.yearly },
+        });
+
+        if (masterKpi && (masterKpi.status === 'APPROVED' || masterKpi.status === 'ANNOUNCED')) {
+          await tx.kPI.update({
+            where: { id: masterKpi.id },
+            data: {
+              status: 'DRAFT',
+              publishedAt: null,
+              publishedBy: null,
+              submittedAt: null,
+            },
+          });
+
+          await this.approvalSignatureRepo.deleteByDocument('KPI', masterKpi.id, tx);
+          await ActionTokenService.revokeByDocument(ApprovalModule.KPI, masterKpi.id);
+        }
+      }
+
       await AuditService.record({
         actorUserId: actor.userId,
         actorAuthUserId: actor.authUserId,
@@ -1373,7 +1443,8 @@ export class KpiService {
     const qmsConfigService = new QmsConfigService();
     const footerConfig = await qmsConfigService.getSingleFooterConfig('KPI_ANNUAL');
     const footerLabel = footerConfig?.label?.trim() || 'วัตถุประสงค์คุณภาพประจำปี';
-    const footerPrefix = footerConfig?.prefix?.trim() || 'FM-MR-01 Rev.02';
+    const revisionNo = await this.getMasterRevisionNumber(year);
+    const footerPrefix = formatKpiAnnualRevisionTag(footerConfig?.prefix, revisionNo);
 
     // Signatures mapping for the printout block
     const preparerSig = signatures.find(s => s.step === 'PREPARER' && s.action === 'APPROVED');
@@ -1515,6 +1586,7 @@ export class KpiService {
               <td style="width: 20%; padding: 4px; font-size: 9px;">
                 <div><strong>แผนงานประจำปี</strong></div>
                 <div>Annual Work Plan</div>
+                <div><strong>${footerPrefix}</strong></div>
               </td>
             </tr>
           </tbody>
@@ -1685,6 +1757,17 @@ export class KpiService {
           signaturePath: dto.signatureDataUrl,
         },
       });
+
+      await AuditService.record({
+        actorUserId: userId,
+        actorAuthUserId: actor.authUserId,
+        actorRole: actor.role,
+        action: 'SUBMIT',
+        resourceType: 'KPI',
+        resourceId: kpi.id,
+        before: { status: kpi.status },
+        after: { status: updated.status, yearly: Number(dto.yearly), department: 'SYSTEM_MASTER' },
+      }, tx);
 
       return updated;
     });
