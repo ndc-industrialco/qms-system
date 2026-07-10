@@ -1,5 +1,9 @@
 import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
 import { AuditService } from '@/services/auditService';
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
+import { QmsConfigService } from '@/services/qmsConfigService';
 import { NotificationService } from '@/services/notificationService';
 import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail, sendKpiAnnouncementEmail, sendMail } from '@/services/email';
 import { ActionTokenService } from '@/services/actionTokenService';
@@ -1016,16 +1020,24 @@ export class KpiService {
 
     await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
 
-    // Generate Excel attachment for announcement email
-    let excelAttachment: { name: string; contentType: string; contentBytes: string } | null = null;
-    try {
-      excelAttachment = await this.generateAnnouncementExcel(kpi);
-    } catch {
-      // Excel generation is best-effort
-    }
-
     const isSystemMaster = kpi.department === 'SYSTEM_MASTER';
     const displayDept = isSystemMaster ? 'FM-MR-01 (วัตถุประสงค์คุณภาพประจำปี)' : kpi.department;
+
+    // Generate PDF for SYSTEM_MASTER or Excel for department KPIs
+    let attachment: { name: string; contentType: string; contentBytes: string } | null = null;
+    if (isSystemMaster) {
+      try {
+        attachment = await this.generateAnnouncementPdf(kpi);
+      } catch (err) {
+        logger.error('[announceKpi] PDF generation failed', { err });
+      }
+    } else {
+      try {
+        attachment = await this.generateAnnouncementExcel(kpi);
+      } catch {
+        // Excel generation is best-effort
+      }
+    }
 
     if (body?.toGroupEmails?.length) {
       try {
@@ -1045,7 +1057,7 @@ export class KpiService {
             actionLabelEn: 'Open Plan',
             actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/print/qms/kpi/fm-mr-01?year=${kpi.yearly}&mode=review`,
           }),
-          attachments: excelAttachment ? [excelAttachment] : undefined,
+          attachments: attachment ? [attachment] : undefined,
           senderAccessToken,
         });
 
@@ -1124,7 +1136,7 @@ export class KpiService {
             actorName: actor.name ?? '',
             kpiId: id,
             senderAccessToken,
-            attachment: excelAttachment ?? undefined,
+            attachment: attachment ?? undefined,
           }),
           member.email,
           emailSubject,
@@ -1340,6 +1352,256 @@ export class KpiService {
       contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       contentBytes: Buffer.from(buffer).toString('base64'),
     };
+  }
+
+  private async generateAnnouncementPdf(kpi: Awaited<ReturnType<KpiRepository['findByIdWithRelations']>>) {
+    if (!kpi) return null;
+
+    const year = kpi.yearly;
+    
+    // Fetch all KPIs for the same year to list department objectives
+    const activeKpis = await this.kpiRepo.findForExport({ yearly: year });
+    // Filter active KPIs (excluding SYSTEM_MASTER and empty ones)
+    const filteredKpis = activeKpis.filter(
+      (k) => k.objectives && k.objectives.length > 0 && k.department !== 'SYSTEM_MASTER'
+    );
+
+    // Fetch master signatures
+    const signatures = await this.approvalSignatureRepo.findByDocument('KPI', kpi.id);
+    
+    // Fetch footer configuration
+    const qmsConfigService = new QmsConfigService();
+    const footerConfig = await qmsConfigService.getSingleFooterConfig('KPI_ANNUAL');
+    const footerLabel = footerConfig?.label?.trim() || 'วัตถุประสงค์คุณภาพประจำปี';
+    const footerPrefix = footerConfig?.prefix?.trim() || 'FM-MR-01 Rev.02';
+
+    // Signatures mapping for the printout block
+    const preparerSig = signatures.find(s => s.step === 'PREPARER' && s.action === 'APPROVED');
+    const reviewerSig = signatures.find(s => s.step === 'REVIEWER' && s.action === 'APPROVED');
+    const approverSig = signatures.find(s => s.step === 'APPROVER' && s.action === 'APPROVED');
+
+    const formatDate = (dateVal?: Date | string | null) => {
+      if (!dateVal) return '-';
+      const d = new Date(dateVal);
+      return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
+    const preparerDate = formatDate(preparerSig?.actionDate);
+    const reviewerDate = formatDate(reviewerSig?.actionDate);
+    const approverDate = formatDate(approverSig?.actionDate);
+
+    // Load NDC logo to base64 to embed directly in the HTML
+    const logoPath = path.join(process.cwd(), 'public', 'logo', 'logo.webp');
+    let logoBase64 = '';
+    try {
+      if (fs.existsSync(logoPath)) {
+        logoBase64 = `data:image/webp;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+      }
+    } catch (err) {
+      logger.warn('[generateAnnouncementPdf] Logo load failed', { err });
+    }
+
+    // Build the objectives table HTML rows
+    let tbodyRows = '';
+    if (filteredKpis.length > 0) {
+      for (const ak of filteredKpis) {
+        const objectives = ak.objectives || [];
+        for (let i = 0; i < objectives.length; i++) {
+          const obj = objectives[i];
+          const isHighlighted = obj.isRevised || obj.isAdded;
+          const cellBg = isHighlighted ? 'background-color: #e2f0d9;' : '';
+          const boldItalic = isHighlighted ? 'font-weight: bold; font-style: italic;' : '';
+          const underline = obj.isAdded ? 'text-decoration: underline;' : '';
+          
+          let deptCell = '';
+          if (i === 0) {
+            deptCell = `<td rowspan="${objectives.length}" style="vertical-align: top; font-weight: bold; border: 1px solid #000; padding: 4px 5px; text-align: center;">${ak.department}</td>`;
+          }
+          
+          let responsibleText = '-';
+          if (obj.responsibleNameSnapshot || obj.responsibleEmailSnapshot) {
+            responsibleText = `${obj.responsibleNameSnapshot || obj.responsibleEmailSnapshot}`;
+            if (obj.responsibleEmployeeId) {
+              responsibleText += `<br/>(#${obj.responsibleEmployeeId})`;
+            }
+          }
+
+          tbodyRows += `
+            <tr style="font-size: 9px; ${boldItalic} ${underline}">
+              ${deptCell}
+              <td style="border: 1px solid #000; padding: 4px 5px; ${cellBg}">
+                <div><strong>${obj.objective} ${obj.target} ${obj.unit || ''}</strong></div>
+              </td>
+              <td style="border: 1px solid #000; padding: 4px 5px; white-space: pre-line; ${cellBg}">${obj.calculationFormula || ''}</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; white-space: pre-line; ${cellBg}">${obj.actionPlanGuidelines || ''}</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${obj.frequency || ''}</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${obj.referenceDocuments || '-'}</td>
+              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${responsibleText}</td>
+            </tr>
+          `;
+        }
+      }
+    } else {
+      tbodyRows = `
+        <tr>
+          <td colspan="7" style="text-align: center; border: 1px solid #000; padding: 16px; color: #94a3b8;">
+            ไม่มีข้อมูลสำหรับปี ${year} / No data for ${year}
+          </td>
+        </tr>
+      `;
+    }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 10mm 8mm 8mm 8mm;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+            color: #000;
+            line-height: 1.2;
+            background-color: #fff;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+          }
+          td, th {
+            border: 1px solid #000;
+            padding: 4px 5px;
+            vertical-align: middle;
+          }
+          th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+          }
+          .text-center {
+            text-align: center;
+          }
+          .font-bold {
+            font-weight: bold;
+          }
+          .signature-box {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 24px;
+            margin-bottom: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <!-- Header Block -->
+        <table style="margin-bottom: 8px;">
+          <tbody>
+            <tr>
+              <td style="width: 20%; text-align: left; padding: 4px;">
+                <div style="display: flex; align-items: center; justify-content: flex-start; padding: 2px;">
+                  ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="height: 30px; object-fit: contain;" />` : ''}
+                </div>
+              </td>
+              <td style="width: 60%; text-align: center;">
+                <div class="font-bold" style="font-size: 14px; color: #0F1059;">วัตถุประสงค์คุณภาพ สิ่งแวดล้อม อาชีวอนามัยและความปลอดภัย ${year}</div>
+                <div class="font-bold" style="font-size: 12px; color: #0F1059;">Quality, Environment, Occupational Health and Safety Objectives ${year}</div>
+              </td>
+              <td style="width: 20%; padding: 4px; font-size: 9px;">
+                <div><strong>แผนงานประจำปี</strong></div>
+                <div>Annual Work Plan</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Objectives Table -->
+        <table style="margin-bottom: 12px;">
+          <thead>
+            <tr style="font-size: 9.5px;">
+              <th style="width: 15%;" class="text-center">หน่วยงาน<br/>Departments</th>
+              <th style="width: 25%;" class="text-center">วัตถุประสงค์และเป้าหมาย<br/>Objectives and Targets</th>
+              <th style="width: 12%;" class="text-center">สูตรการคำนวณ<br/>Calculation Formula</th>
+              <th style="width: 20%;" class="text-center">แนวทางแผนการดำเนินงาน<br/>Action Plan Guidelines</th>
+              <th style="width: 8%;" class="text-center">ความถี่ในการวัดผล<br/>Measurement Frequency</th>
+              <th style="width: 10%;" class="text-center">เอกสารอ้างอิง<br/>Reference Documents</th>
+              <th style="width: 10%;" class="text-center">ผู้รับผิดชอบ<br/>Responsible Person</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tbodyRows}
+          </tbody>
+        </table>
+
+        <!-- Bottom Signatures Block -->
+        <div class="signature-box">
+          <table style="width: 48%; border-collapse: collapse; table-layout: fixed;">
+            <tbody>
+              <tr>
+                <td style="width: 33%; border: 1px solid #000; padding: 8px 6px; text-align: center; vertical-align: top;">
+                  <div class="font-bold">ผู้จัดทำ / Prepared By</div>
+                  <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+                    ${preparerSig?.signaturePath ? `<img src="${preparerSig.signaturePath}" alt="Preparer Signature" style="max-height: 42px; object-fit: contain;" />` : '<span style="color: #94a3b8;">ยังไม่ได้ลงชื่อ / Unsigned</span>'}
+                  </div>
+                  <div class="font-bold">(${kpi.prepare})</div>
+                  <div style="font-size: 8px; color: #475569; margin-top: 4px;">วันที่ / Date: ${preparerDate}</div>
+                </td>
+                <td style="width: 33%; border: 1px solid #000; padding: 8px 6px; text-align: center; vertical-align: top;">
+                  <div class="font-bold">ผู้ตรวจสอบ / Reviewed By</div>
+                  <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+                    ${reviewerSig?.signaturePath ? `<img src="${reviewerSig.signaturePath}" alt="Reviewer Signature" style="max-height: 42px; object-fit: contain;" />` : '<span style="color: #94a3b8;">ยังไม่ได้ลงชื่อ / Unsigned</span>'}
+                  </div>
+                  <div class="font-bold">(${kpi.reviewer})</div>
+                  <div style="font-size: 8px; color: #475569; margin-top: 4px;">วันที่ / Date: ${reviewerDate}</div>
+                </td>
+                <td style="width: 33%; border: 1px solid #000; padding: 8px 6px; text-align: center; vertical-align: top;">
+                  <div class="font-bold">ผู้อนุมัติ / Approved By</div>
+                  <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+                    ${approverSig?.signaturePath ? `<img src="${approverSig.signaturePath}" alt="Approver Signature" style="max-height: 42px; object-fit: contain;" />` : '<span style="color: #94a3b8;">ยังไม่ได้ลงชื่อ / Unsigned</span>'}
+                  </div>
+                  <div class="font-bold">(${kpi.approver})</div>
+                  <div style="font-size: 8px; color: #475569; margin-top: 4px;">วันที่ / Date: ${approverDate}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="font-size: 8px; text-align: right; margin-top: 6px; font-family: Arial, sans-serif; color: #000;">
+          ${footerPrefix} ${footerLabel}
+        </div>
+      </body>
+      </html>
+    `;
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    try {
+      const page = await browser.newPage();
+      await page.setContent(htmlContent);
+      const pdf = await page.pdf({
+        format: 'A4',
+        landscape: true,
+        printBackground: true,
+      });
+
+      return {
+        name: `FM-MR-01_Quality_Objectives_${year}.pdf`,
+        contentType: 'application/pdf',
+        contentBytes: Buffer.from(pdf).toString('base64'),
+      };
+    } finally {
+      await browser.close();
+    }
   }
 
   async getMonthlySummary(year: number) {

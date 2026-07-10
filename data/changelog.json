@@ -1,5 +1,21 @@
 [
   {
+    "id": "91",
+    "titleTh": "KPI: เปลี่ยนการแนบไฟล์ประกาศใช้ FM-MR-01 เป็น PDF แทนนามสกุล Excel",
+    "titleEn": "KPI: switch FM-MR-01 announcement attachment from Excel to PDF",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-master-announce-pdf-attachment",
+    "detailsTh": [
+      "services/kpiService.ts: เพิ่มการสร้างและแปลงหน้าเอกสาร FM-MR-01 เป็น PDF โดยใช้ Puppeteer สำหรับแนบในอีเมลประกาศ",
+      "components/kpi/KpiMasterAnnounceDialog.tsx: ปรับปรุงคำอธิบายเตือนการแนบไฟล์แสดงสถานะแบบ PDF แทน Excel Export"
+    ],
+    "detailsEn": [
+      "services/kpiService.ts: implemented server-side PDF generation of FM-MR-01 using Puppeteer for the announcement attachment",
+      "components/kpi/KpiMasterAnnounceDialog.tsx: updated description message to alert the user of a PDF attachment instead of Excel Export"
+    ]
+  },
+  {
     "id": "90",
     "titleTh": "KPI: แก้สถานะการประกาศใช้โดยตรงจาก APPROVED ไปยัง ANNOUNCED ใน State Machine",
     "titleEn": "KPI: permit state transition from APPROVED directly to ANNOUNCED in the state machine",

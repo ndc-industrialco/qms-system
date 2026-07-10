@@ -129,7 +129,7 @@ export default function KpiMasterAnnounceDialog({ open, onClose, kpiId, year, on
 
           <div className="rounded-xl border border-[#0F1059]/20 bg-[#0F1059]/5 px-4 py-3 text-xs text-[#0F1059] flex items-center gap-2">
             <Send className="w-4 h-4 shrink-0" />
-            <span>อีเมลประกาศจะแนบไฟล์ตารางวัตถุประสงค์คุณภาพประจำปี (Excel Export) ไปด้วยโดยอัตโนมัติ / The announcement email will automatically attach the Annual Quality Objectives sheet (Excel Export).</span>
+            <span>อีเมลประกาศจะแนบไฟล์ตารางวัตถุประสงค์คุณภาพประจำปี (PDF) ไปด้วยโดยอัตโนมัติ / The announcement email will automatically attach the Annual Quality Objectives sheet (PDF).</span>
           </div>
         </div>
 
