@@ -1,5 +1,19 @@
 [
   {
+    "id": "92",
+    "titleTh": "KPI: เปิดให้กดส่งประกาศใช้ซ้ำได้เมื่อสถานะเป็น ANNOUNCED แล้ว",
+    "titleEn": "KPI: allow resending announcement when status is already ANNOUNCED",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-master-announce-resend-allowed",
+    "detailsTh": [
+      "components/kpi/FmMr01PrintTemplate.tsx: อนุญาตให้ปุ่มประกาศแสดงค้างอยู่โดยเปลี่ยนป้ายข้อความเปลี่ยนเป็น 'ส่งประกาศอีกครั้ง' เมื่อสถานะเป็น ANNOUNCED"
+    ],
+    "detailsEn": [
+      "components/kpi/FmMr01PrintTemplate.tsx: kept the Announce button visible in ANNOUNCED status but relabeled it to 'Resend' to allow re-announcements"
+    ]
+  },
+  {
     "id": "91",
     "titleTh": "KPI: เปลี่ยนการแนบไฟล์ประกาศใช้ FM-MR-01 เป็น PDF แทนนามสกุล Excel",
     "titleEn": "KPI: switch FM-MR-01 announcement attachment from Excel to PDF",

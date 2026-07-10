@@ -302,13 +302,13 @@ export default function FmMr01PrintTemplate({
                 </Button>
               )}
 
-              {masterKpi?.status === "APPROVED" && isPrivileged && (
+              {(masterKpi?.status === "APPROVED" || masterKpi?.status === "ANNOUNCED") && isPrivileged && (
                 <Button
                   className="bg-[#0F1059] hover:bg-[#161875] text-white font-semibold px-6 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_4px_12px_rgba(15,16,89,0.2)] shrink-0 transition-transform active:scale-[0.98]"
                   onClick={() => setAnnounceDialogOpen(true)}
                 >
                   <Send className="w-4 h-4" />
-                  ประกาศใช้ / Announce
+                  {masterKpi?.status === "ANNOUNCED" ? "ส่งประกาศอีกครั้ง / Resend" : "ประกาศใช้ / Announce"}
                 </Button>
               )}
 
