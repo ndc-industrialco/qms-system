@@ -3,20 +3,45 @@
 import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useUrlFilters } from "@/hooks/use-url-filters";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import type { KpiYearlyPreviewData } from "@/services/kpiExportService";
 import { useKpiMonthlyList } from "@/hooks/api/use-kpi-monthly";
 import { KpiMonthlyTable } from "@/components/kpi/KpiMonthlyTable";
 import KpiMonthlyDetailModal from "@/components/kpi/KpiMonthlyDetailModal";
+import KpiYearlyExportPreviewDialog from "@/components/kpi/KpiYearlyExportPreviewDialog";
 import PageHeader from "@/components/common/PageHeader";
+import ConfirmModal from "@/components/common/ConfirmModal";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  ArrowLeft, Building2, Info, ShieldCheck,
+  AlertTriangle, ArrowLeft, Building2, Download, Info, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MONTHS_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."] as const;
 const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
+
+const MONTH_INDEX_MAP: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+};
+
+const isMonthEditable = (m: string, y: number): boolean => {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  
+  const mIndex = MONTH_INDEX_MAP[m];
+  if (mIndex === undefined) return false;
+  
+  if (y === currentYear && mIndex === currentMonth) return true;
+  
+  const prevDate = new Date(currentYear, currentMonth - 1, 1);
+  if (y === prevDate.getFullYear() && mIndex === prevDate.getMonth()) return true;
+  
+  return false;
+};
 const STATUSES = ["DRAFT", "PENDING_REVIEW", "PENDING_APPROVAL", "APPROVED", "REJECTED"] as const;
 
 type MonthlyStatus = typeof STATUSES[number];
@@ -130,11 +155,13 @@ function DeptDashboard({
   isLoading,
   onSelect,
   onDotClick,
+  year,
 }: {
   data: DeptSummaryRow[];
   isLoading: boolean;
   onSelect: (kpiId: string) => void;
   onDotClick: (kpiId: string, reportId: string) => void;
+  year: number;
 }) {
   if (isLoading) return <DeptDashboardSkeleton />;
 
@@ -193,14 +220,18 @@ function DeptDashboard({
                 );
               }
               const color = DOT_COLOR[entry.status as MonthlyStatus] ?? "bg-slate-300";
+              const editable = isMonthEditable(month, year);
               return (
-                <div key={month} className="flex justify-center">
+                <div key={month} className="flex justify-center py-0.5">
                   <button
                     type="button"
-                    title={`${MONTHS_TH[i]} — ${DOT_LABEL[entry.status as MonthlyStatus] ?? entry.status}`}
+                    title={`${MONTHS_TH[i]} — ${DOT_LABEL[entry.status as MonthlyStatus] ?? entry.status} ${editable ? "(แก้ไขได้)" : "(อ่านอย่างเดียว)"}`}
                     className={cn(
-                      "h-3 w-3 rounded-full transition-transform hover:scale-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      color
+                      "h-3 w-3 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      color,
+                      editable
+                        ? "ring-2 ring-[#0F1059] ring-offset-1 hover:scale-125 scale-100 opacity-100 animate-pulse"
+                        : "opacity-35 hover:opacity-60 scale-90 hover:scale-105"
                     )}
                     onClick={() => onDotClick(row.id, entry.id)}
                   />
@@ -222,6 +253,7 @@ function DeptDashboard({
 export default function KpiMonthlyClient({ userRole, userId, monthlyFormDocName }: Props) {
   const t = useT();
   const currentYear = new Date().getFullYear();
+  const queryClient = useQueryClient();
 
   const { params, setParam, setParams } = useUrlFilters({
     keys: ["mKpi", "mYear", "mMonth", "mStatus", "mPage", "mReport"],
@@ -244,8 +276,64 @@ export default function KpiMonthlyClient({ userRole, userId, monthlyFormDocName 
 
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [cleanupConfirmOpen, setCleanupConfirmOpen] = useState(false);
+  const [exportPreviewOpen, setExportPreviewOpen] = useState(false);
+  const cleanupStatusQuery = useQuery<{ reportCount: number }>({
+    queryKey: ["kpiMonthlySystemMasterCleanup"],
+    queryFn: async () => {
+      const res = await fetch("/api/kpi/monthly/system-master-cleanup");
+      if (!res.ok) throw new Error("Failed to load cleanup summary");
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: isPrivileged(userRole),
+  });
+  const cleanupMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/kpi/monthly/system-master-cleanup", {
+        method: "POST",
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(json?.error?.message ?? json?.message ?? "Cleanup failed");
+      }
+      return json.data as {
+        deletedReportCount: number;
+      };
+    },
+    onSuccess: async (result) => {
+      setCleanupConfirmOpen(false);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["kpiMonthlySystemMasterCleanup"] }),
+        queryClient.invalidateQueries({ queryKey: ["kpiMonthlySummary", year] }),
+        queryClient.invalidateQueries({ queryKey: ["kpiMonthly"] }),
+      ]);
+      if (selectedKpiId) {
+        handleBack();
+      }
+      toast.success(`Cleaned up ${result.deletedReportCount} SYSTEM_MASTER monthly report(s).`);
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Cleanup failed", { duration: Infinity });
+    },
+  });
 
   const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i + 1);
+  const exportPreviewQuery = useQuery<{ data: KpiYearlyPreviewData }>({
+    queryKey: ["kpiYearlyExportPreview", year, selectedKpiId],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams({ year: String(year) });
+      if (selectedKpiId) {
+        searchParams.set("kpiId", selectedKpiId);
+      }
+      const res = await fetch(`/api/kpi/monthly-export/preview?${searchParams.toString()}`);
+      if (!res.ok) {
+        throw new Error("Failed to load export preview");
+      }
+      return res.json();
+    },
+    enabled: exportPreviewOpen,
+  });
 
   useEffect(() => {
     if (!params.mReport) return;
@@ -274,9 +362,40 @@ export default function KpiMonthlyClient({ userRole, userId, monthlyFormDocName 
     if (selectedKpiId !== kpiId) setParam("mKpi", kpiId);
   }
 
+  function handleExport() {
+    setExportPreviewOpen(true);
+  }
+
+  function handleDownloadExport() {
+    const searchParams = new URLSearchParams({
+      year: String(year),
+    });
+
+    if (selectedKpiId) {
+      searchParams.set("kpiId", selectedKpiId);
+    }
+
+    window.open(`/api/kpi/monthly-export?${searchParams.toString()}`, "_blank");
+  }
+
   return (
     <div className="space-y-5">
-      <PageHeader title={t("kpi.monthly.title")} subtitle={t("kpi.monthly.subtitle")} />
+      <PageHeader
+        title={t("kpi.monthly.title")}
+        subtitle={t("kpi.monthly.subtitle")}
+        actions={(
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-xl border-slate-200"
+            onClick={handleExport}
+          >
+            <Download className="mr-1.5 h-4 w-4" />
+            Export Excel
+          </Button>
+        )}
+      />
 
       <RoleBanner role={userRole} />
 
@@ -345,6 +464,25 @@ export default function KpiMonthlyClient({ userRole, userId, monthlyFormDocName 
             </Select>
           </>
         )}
+
+        {isPrivileged(userRole) && (cleanupStatusQuery.data?.reportCount ?? 0) > 0 && (
+          <div className="ml-auto flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <span className="text-xs font-medium text-amber-700">
+              Found {cleanupStatusQuery.data?.reportCount} SYSTEM_MASTER monthly record(s)
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              className="rounded-lg"
+              disabled={cleanupMutation.isPending}
+              onClick={() => setCleanupConfirmOpen(true)}
+            >
+              Cleanup Once
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -365,6 +503,7 @@ export default function KpiMonthlyClient({ userRole, userId, monthlyFormDocName 
           isLoading={summaryQuery.isLoading}
           onSelect={handleSelectKpi}
           onDotClick={handleDotClick}
+          year={year}
         />
       )}
 
@@ -376,6 +515,27 @@ export default function KpiMonthlyClient({ userRole, userId, monthlyFormDocName 
         userRole={userRole}
         userId={userId}
         monthlyFormDocName={monthlyFormDocName}
+      />
+
+      {cleanupConfirmOpen && (
+        <ConfirmModal
+          title="Cleanup SYSTEM_MASTER Monthly Data"
+          message="This one-time admin action deletes the wrong monthly reports created under SYSTEM_MASTER and removes their related approval signatures, tokens, notifications, and audit logs. The FM-MR-01 master KPI record will remain."
+          confirmLabel="Cleanup Now"
+          cancelLabel="Cancel"
+          loading={cleanupMutation.isPending}
+          onCancel={() => setCleanupConfirmOpen(false)}
+          onConfirm={() => cleanupMutation.mutate()}
+        />
+      )}
+
+      <KpiYearlyExportPreviewDialog
+        open={exportPreviewOpen}
+        onClose={() => setExportPreviewOpen(false)}
+        onDownload={handleDownloadExport}
+        data={exportPreviewQuery.data?.data ?? null}
+        loading={exportPreviewQuery.isLoading}
+        downloading={false}
       />
     </div>
   );

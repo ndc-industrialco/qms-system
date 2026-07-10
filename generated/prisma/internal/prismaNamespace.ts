@@ -4883,6 +4883,7 @@ export const KPIObjectiveScalarFieldEnum = {
   responsibleEmailSnapshot: 'responsibleEmailSnapshot',
   responsibleEmployeeId: 'responsibleEmployeeId',
   isRevised: 'isRevised',
+  isAdded: 'isAdded',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

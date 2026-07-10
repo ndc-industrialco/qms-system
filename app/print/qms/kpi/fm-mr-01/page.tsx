@@ -1,16 +1,20 @@
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { KpiRepository } from "@/repositories/kpiRepository";
+import { ApprovalSignatureRepository } from "@/repositories/approvalSignatureRepository";
 import FmMr01PrintTemplate from "@/components/kpi/FmMr01PrintTemplate";
+import { QmsConfigService } from "@/services/qmsConfigService";
 
 const kpiRepo = new KpiRepository();
+const approvalSignatureRepo = new ApprovalSignatureRepository();
+const qmsConfigService = new QmsConfigService();
 
-type Props = { searchParams: Promise<{ year?: string }> };
+type Props = { searchParams: Promise<{ year?: string; mode?: string }> };
 
 export const metadata = { title: "FM-MR-01 Master Print" };
 
 export default async function FmMr01PrintPage({ searchParams }: Props) {
-  await requireAuth();
+  const session = await requireAuth();
   const params = await searchParams;
   const yearStr = params.year;
   const year = yearStr ? parseInt(yearStr, 10) : new Date().getFullYear();
@@ -20,9 +24,27 @@ export default async function FmMr01PrintPage({ searchParams }: Props) {
   }
 
   // Fetch KPIs for the requested year.
-  // We can filter to only include APPROVED if strictly required, but for a master report,
-  // showing all or filtering via DB is up to the business logic. We'll show all existing ones.
   const kpis = await kpiRepo.findForExport({ yearly: year });
   
-  return <FmMr01PrintTemplate kpis={kpis} year={year} />;
+  // Fetch master KPI and its signatures
+  const masterKpi = await kpiRepo.findByDepartmentYear("SYSTEM_MASTER", year);
+
+  const [signatures, footerConfig] = await Promise.all([
+    masterKpi
+      ? approvalSignatureRepo.findByDocument("KPI", masterKpi.id)
+      : Promise.resolve([]),
+    qmsConfigService.getSingleFooterConfig("KPI_ANNUAL"),
+  ]);
+
+  return (
+    <FmMr01PrintTemplate
+      kpis={kpis}
+      year={year}
+      mode={params.mode}
+      role={session.user.role}
+      masterKpi={masterKpi}
+      signatures={signatures}
+      footerConfig={footerConfig}
+    />
+  );
 }

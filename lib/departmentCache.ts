@@ -1,6 +1,7 @@
 import { redis } from "@/lib/redis";
 import { listAuthCenterDepartments } from "@/lib/auth-center-admin-client";
 import type { AuthCenterDepartment } from "@/lib/auth-center-admin-client";
+import { UnauthorizedError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 
 const CACHE_KEY = "ac:departments";
@@ -26,7 +27,16 @@ export async function getDepartments(accessToken?: string | null): Promise<AuthC
     return [];
   }
 
-  const depts = await listAuthCenterDepartments({ accessToken });
+  let depts: AuthCenterDepartment[];
+  try {
+    depts = await listAuthCenterDepartments({ accessToken });
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      logger.warn("[departmentCache] Auth Center department list unauthorized - returning empty list");
+      return [];
+    }
+    throw error;
+  }
 
   try {
     await redis.set(CACHE_KEY, JSON.stringify(depts), "EX", CACHE_TTL);

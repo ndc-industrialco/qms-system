@@ -1,8 +1,10 @@
 import { ConflictError, ForbiddenError, NotFoundError } from '@/errors/customErrors';
 import { AuditService } from '@/services/auditService';
 import { NotificationService } from '@/services/notificationService';
-import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail, sendKpiAnnouncementEmail } from '@/services/email';
+import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail, sendKpiAnnouncementEmail, sendMail } from '@/services/email';
 import { ActionTokenService } from '@/services/actionTokenService';
+import { DepartmentService } from '@/services/departmentService';
+import { logger } from '@/lib/logger';
 import { ApprovalModule, ApprovalStep } from '@/generated/prisma/client';
 import { ensureKpiStatusTransition } from '@/lib/kpi-state-machine';
 import { db } from '@/lib/db';
@@ -354,8 +356,12 @@ export class KpiService {
   }
 
   async addObjective(dto: CreateKpiObjectiveDTO) {
-    await this.getKpiById(dto.kpiId);
-    return this.objectiveRepo.createObjective(dto);
+    const kpi = await this.getKpiById(dto.kpiId);
+    return this.objectiveRepo.createObjective({
+      ...dto,
+      isRevised: kpi.isRevision,
+      isAdded: kpi.isRevision,
+    });
   }
 
   async updateObjective(id: string, dto: UpdateKpiObjectiveDTO) {
@@ -682,42 +688,49 @@ export class KpiService {
     const preparerAuthId = (preparerSig as Record<string, unknown>)?.signerAuthUserId as string | null | undefined;
     if (preparerAuthId) {
       const preparer = await getUserSnapshot(preparerAuthId);
-        NotificationService.sendEmailOnce(
-          `KPI:${id}:APPROVED:preparer:${preparerAuthId}`,
-          () => sendKpiResultEmail({
+      const isSystemMaster = kpi.department === 'SYSTEM_MASTER';
+      const displayDept = isSystemMaster ? 'FM-MR-01 (วัตถุประสงค์คุณภาพประจำปี)' : kpi.department;
+      const actionUrl = isSystemMaster
+        ? `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/print/qms/kpi/fm-mr-01?year=${kpi.yearly}&mode=review`
+        : `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`;
+
+      NotificationService.sendEmailOnce(
+        `KPI:${id}:APPROVED:preparer:${preparerAuthId}`,
+        () => sendKpiResultEmail({
           to: { name: preparer?.name ?? '', email: preparer?.email ?? '' },
-            departmentName: kpi.department,
-            year: kpi.yearly,
-            status: 'APPROVED',
-            actorName: actor.name ?? '',
-            kpiId: id,
-            objectives: kpi.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
-            senderAccessToken: actor.accessToken,
+          departmentName: kpi.department,
+          year: kpi.yearly,
+          status: 'APPROVED',
+          actorName: actor.name ?? '',
+          kpiId: id,
+          objectives: kpi.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
+          senderAccessToken: actor.accessToken,
+          actionUrl,
+        }),
+        preparer?.email ?? '',
+        'KPI Approved',
+        preparerAuthId,
+        {
+          title: 'KPI ได้รับการอนุมัติแล้ว',
+          body: `${displayDept} ปี ${kpi.yearly} ได้รับการอนุมัติ`,
+          htmlBody: makeBilingualMail({
+            titleTh: `ผลการอนุมัติ ${displayDept} ปี ${kpi.yearly}`,
+            titleEn: `${displayDept} ${kpi.yearly} Approval Result`,
+            facts: [
+              { labelTh: "สถานะ", labelEn: "Status", value: "อนุมัติแล้ว / APPROVED" },
+              { labelTh: "ดำเนินการโดย", labelEn: "Action By", value: actor.name ?? '' },
+              { labelTh: "หน่วยงาน/เอกสาร", labelEn: "Department/Doc", value: displayDept },
+              { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
+              { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(kpi.objectives.length) },
+            ],
+            actionLabelTh: isSystemMaster ? "เปิดดูแผนงาน" : "เปิด KPI",
+            actionLabelEn: isSystemMaster ? "Open Plan" : "Open KPI",
+            actionUrl,
           }),
-          preparer?.email ?? '',
-          'KPI Approved',
-          preparerAuthId,
-          {
-            title: 'KPI ได้รับการอนุมัติแล้ว',
-            body: `KPI ${kpi.department} ${kpi.yearly} ได้รับการอนุมัติ`,
-            htmlBody: makeBilingualMail({
-              titleTh: `ผลการอนุมัติ KPI ${kpi.department} ปี ${kpi.yearly}`,
-              titleEn: `KPI ${kpi.department} ${kpi.yearly} Approval Result`,
-              facts: [
-                { labelTh: "สถานะ", labelEn: "Status", value: "อนุมัติแล้ว / APPROVED" },
-                { labelTh: "ดำเนินการโดย", labelEn: "Action By", value: actor.name ?? '' },
-                { labelTh: "หน่วยงาน", labelEn: "Department", value: kpi.department },
-                { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
-                { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(kpi.objectives.length) },
-              ],
-              actionLabelTh: "เปิด KPI",
-              actionLabelEn: "Open KPI",
-              actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`,
-            }),
-            module: 'KPI',
-            resourceId: id,
-            resourceType: 'KPI',
-          },
+          module: 'KPI',
+          resourceId: id,
+          resourceType: 'KPI',
+        },
         ).catch(() => {});
     }
 
@@ -977,7 +990,12 @@ export class KpiService {
     id: string,
     actor: ActorContext,
     senderAccessToken?: string | null,
-    documentName?: string | null,
+    body?: {
+      documentName?: string | null;
+      toGroupEmails?: string[];
+      ccGroupEmails?: string[];
+      wysiwygContent?: string;
+    }
   ) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
@@ -985,6 +1003,7 @@ export class KpiService {
     if (!isPrivilegedQmsRole(actor.role)) throw new ForbiddenError('Only QMS/MR/IT can announce KPIs');
 
     const now = new Date();
+    const documentName = body?.documentName;
     const updated = await db.$transaction(async (tx) => {
       const result = await this.kpiRepo.update(id, {
         status: 'ANNOUNCED',
@@ -997,23 +1016,6 @@ export class KpiService {
 
     await ActionTokenService.revokeByDocument(ApprovalModule.KPI, id);
 
-    // Fetch all department members from Auth Center
-    let deptMembers: { id: string; email?: string | null; name?: string | null }[] = [];
-    try {
-      const kpiDept = await db.kpiDept.findFirst({ where: { name: kpi.department, isActive: true } });
-      if (kpiDept?.authDeptCode) {
-        const members = await listAuthCenterAppMembers({ accessToken: senderAccessToken ?? undefined });
-        deptMembers = members
-          .filter(m => {
-            const dept = (m as Record<string, unknown>).department as string | undefined;
-            return dept === kpiDept.authDeptCode || dept === kpi.department;
-          })
-          .map(m => ({ id: m.id, email: m.email, name: m.displayName }));
-      }
-    } catch {
-      // Fallback: notify only known users
-    }
-
     // Generate Excel attachment for announcement email
     let excelAttachment: { name: string; contentType: string; contentBytes: string } | null = null;
     try {
@@ -1022,54 +1024,142 @@ export class KpiService {
       // Excel generation is best-effort
     }
 
-    // Send announcement email to all department members
-    const emailSubject = `[ประกาศ] KPI ${kpi.department} ปี ${kpi.yearly} / KPI Announcement`;
-    for (const member of deptMembers) {
-      if (!member.email) continue;
-      NotificationService.sendEmailOnce(
-        `KPI:${id}:ANNOUNCED:${member.id}`,
-        () => sendKpiAnnouncementEmail({
-          to: { name: member.name ?? '', email: member.email! },
-          departmentName: kpi.department,
-          year: kpi.yearly,
-          actorName: actor.name ?? '',
-          kpiId: id,
-          senderAccessToken,
-          attachment: excelAttachment ?? undefined,
-        }),
-        member.email,
-        emailSubject,
-        member.id,
-        {
-          title: 'KPI ประกาศใช้',
-          body: `KPI ${kpi.department} ${kpi.yearly} ประกาศใช้แล้ว`,
-          htmlBody: makeBilingualMail({
-            titleTh: `KPI ${kpi.department} ปี ${kpi.yearly} ประกาศใช้`,
-            titleEn: `KPI ${kpi.department} ${kpi.yearly} Announced`,
+    const isSystemMaster = kpi.department === 'SYSTEM_MASTER';
+    const displayDept = isSystemMaster ? 'FM-MR-01 (วัตถุประสงค์คุณภาพประจำปี)' : kpi.department;
+
+    if (body?.toGroupEmails?.length) {
+      try {
+        await sendMail({
+          to: body.toGroupEmails.map(email => ({ name: email, email })),
+          cc: body.ccGroupEmails?.map(email => ({ name: email, email })),
+          subject: `[ประกาศ] วัตถุประสงค์คุณภาพประจำปี FM-MR-01 ปี ${kpi.yearly} / Quality Objectives Announcement`,
+          bodyHtml: makeBilingualMail({
+            titleTh: `ประกาศวัตถุประสงค์คุณภาพประจำปี FM-MR-01 ปี ${kpi.yearly}`,
+            titleEn: `FM-MR-01 Quality Objectives ${kpi.yearly} Announced`,
             facts: [
-              { labelTh: 'หน่วยงาน', labelEn: 'Department', value: kpi.department },
+              { labelTh: 'ประเภทเอกสาร', labelEn: 'Doc Type', value: displayDept },
               { labelTh: 'ปี', labelEn: 'Year', value: String(kpi.yearly) },
             ],
+            extraHtml: body.wysiwygContent || undefined,
+            actionLabelTh: 'เปิดดูแผนงาน',
+            actionLabelEn: 'Open Plan',
+            actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/print/qms/kpi/fm-mr-01?year=${kpi.yearly}&mode=review`,
           }),
+          attachments: excelAttachment ? [excelAttachment] : undefined,
+          senderAccessToken,
+        });
+
+        // Save announcement to database
+        await db.announcement.create({
+          data: {
+            sourceSystem: 'QMS',
+            title: `ประกาศวัตถุประสงค์คุณภาพประจำปี FM-MR-01 ปี ${kpi.yearly}`,
+            content: body.wysiwygContent || `วัตถุประสงค์คุณภาพประจำปี FM-MR-01 ปี ${kpi.yearly} ประกาศใช้แล้ว`,
+            displayType: 'LIST',
+            pushToCompanyCenter: true,
+            createdById: actor.userId,
+            createdByAuthUserId: actor.authUserId,
+            createdByName: actor.name,
+          },
+        });
+
+        // Fan out in-app notifications to matched departments
+        const deptService = new DepartmentService();
+        const activeDepts = await deptService.getActiveDepartments(senderAccessToken);
+        const matchedDepts = activeDepts.filter(d => d.emailGroup && body.toGroupEmails?.includes(d.emailGroup));
+        for (const dept of matchedDepts) {
+          await NotificationService.notifyDeptMembers(
+            dept.id,
+            senderAccessToken,
+            {
+              title: 'ประกาศวัตถุประสงค์คุณภาพประจำปี FM-MR-01',
+              body: `วัตถุประสงค์คุณภาพประจำปี FM-MR-01 ปี ${kpi.yearly} ประกาศใช้แล้ว`,
+              htmlBody: makeBilingualMail({
+                titleTh: `วัตถุประสงค์คุณภาพประจำปี FM-MR-01 ปี ${kpi.yearly} ประกาศใช้`,
+                titleEn: `FM-MR-01 Quality Objectives ${kpi.yearly} Announced`,
+                facts: [
+                  { labelTh: 'หน่วยงาน', labelEn: 'Department', value: dept.name },
+                  { labelTh: 'ปี', labelEn: 'Year', value: String(kpi.yearly) },
+                ],
+                actionLabelTh: 'เปิดดูแผนงาน',
+                actionLabelEn: 'Open Plan',
+                actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/print/qms/kpi/fm-mr-01?year=${kpi.yearly}&mode=review`,
+              }),
+              module: 'KPI',
+              resourceId: id,
+              resourceType: 'KPI_ANNOUNCEMENT',
+            }
+          ).catch(() => {});
+        }
+      } catch (err) {
+        logger.warn('[announceKpi] Custom announcement send failed', { err });
+      }
+    } else {
+      // Fetch all department members from Auth Center
+      let deptMembers: { id: string; email?: string | null; name?: string | null }[] = [];
+      try {
+        const kpiDept = await db.kpiDept.findFirst({ where: { name: kpi.department, isActive: true } });
+        if (kpiDept?.authDeptCode) {
+          const members = await listAuthCenterAppMembers({ accessToken: senderAccessToken ?? undefined });
+          deptMembers = members
+            .filter(m => {
+              const dept = (m as Record<string, unknown>).department as string | undefined;
+              return dept === kpiDept.authDeptCode || dept === kpi.department;
+            })
+            .map(m => ({ id: m.id, email: m.email, name: m.displayName }));
+        }
+      } catch {
+        // Fallback: notify only known users
+      }
+
+      const emailSubject = `[ประกาศ] KPI ${displayDept} ปี ${kpi.yearly} / KPI Announcement`;
+      for (const member of deptMembers) {
+        if (!member.email) continue;
+        NotificationService.sendEmailOnce(
+          `KPI:${id}:ANNOUNCED:${member.id}`,
+          () => sendKpiAnnouncementEmail({
+            to: { name: member.name ?? '', email: member.email! },
+            departmentName: displayDept,
+            year: kpi.yearly,
+            actorName: actor.name ?? '',
+            kpiId: id,
+            senderAccessToken,
+            attachment: excelAttachment ?? undefined,
+          }),
+          member.email,
+          emailSubject,
+          member.id,
+          {
+            title: 'KPI ประกาศใช้',
+            body: `KPI ${displayDept} ${kpi.yearly} ประกาศใช้แล้ว`,
+            htmlBody: makeBilingualMail({
+              titleTh: `KPI ${displayDept} ปี ${kpi.yearly} ประกาศใช้`,
+              titleEn: `KPI ${displayDept} ${kpi.yearly} Announced`,
+              facts: [
+                { labelTh: 'หน่วยงาน/เอกสาร', labelEn: 'Department/Doc', value: displayDept },
+                { labelTh: 'ปี', labelEn: 'Year', value: String(kpi.yearly) },
+              ],
+            }),
+            module: 'KPI',
+            resourceId: id,
+            resourceType: 'KPI_ANNOUNCEMENT',
+          },
+        ).catch(() => {});
+      }
+
+      // Also create in-app notifications for department members
+      NotificationService.notifyDeptMembers(
+        kpi.department,
+        senderAccessToken,
+        {
+          title: `KPI ${displayDept} ${kpi.yearly} ประกาศใช้ / Announced`,
+          body: `KPI ${displayDept} ปี ${kpi.yearly} ประกาศใช้แล้ว`,
           module: 'KPI',
           resourceId: id,
           resourceType: 'KPI_ANNOUNCEMENT',
         },
       ).catch(() => {});
     }
-
-    // Also create in-app notifications for department members
-    NotificationService.notifyDeptMembers(
-      kpi.department,
-      senderAccessToken,
-      {
-        title: `KPI ${kpi.department} ${kpi.yearly} ประกาศใช้ / Announced`,
-        body: `KPI ${kpi.department} ปี ${kpi.yearly} ประกาศใช้แล้ว`,
-        module: 'KPI',
-        resourceId: id,
-        resourceType: 'KPI_ANNOUNCEMENT',
-      },
-    ).catch(() => {});
 
     return updated;
   }
@@ -1259,5 +1349,84 @@ export class KpiService {
       for (const r of k.monthlyReports) monthMap[r.month] = { id: r.id, status: r.status };
       return { id: k.id, department: k.department, yearly: k.yearly, objectiveCount: k.objectives.length, months: monthMap };
     });
+  }
+
+  async submitMasterReview(
+    dto: {
+      yearly: number;
+      signatureDataUrl: string;
+      reviewer: { id: string; name: string; email: string };
+      approver: { id: string; name: string; email: string };
+    },
+    actor: ActorContext
+  ) {
+    const userId = actor.userId;
+    const userSnapshot = await getUserSnapshot(userId);
+    const actorName = userSnapshot?.name || 'System Admin';
+    const actorEmail = userSnapshot?.email || '';
+    const actorDept = userSnapshot?.departmentName || '';
+
+    const updatedKpi = await db.$transaction(async (tx) => {
+      let kpi = await tx.kPI.findFirst({
+        where: { department: 'SYSTEM_MASTER', yearly: Number(dto.yearly) },
+      });
+
+      if (!kpi) {
+        kpi = await tx.kPI.create({
+          data: {
+            department: 'SYSTEM_MASTER',
+            yearly: Number(dto.yearly),
+            prepare: actorName,
+            reviewer: dto.reviewer.name,
+            approver: dto.approver.name,
+            status: 'DRAFT',
+          },
+        });
+      }
+
+      // Update KPI details and set status to PENDING_REVIEW
+      const updated = await tx.kPI.update({
+        where: { id: kpi.id },
+        data: {
+          status: 'PENDING_REVIEW',
+          prepare: actorName,
+          prepareSignature: dto.signatureDataUrl,
+          reviewerUserId: dto.reviewer.id,
+          reviewerAuthUserId: dto.reviewer.id,
+          reviewer: dto.reviewer.name,
+          reviewerEmail: dto.reviewer.email,
+          approverUserId: dto.approver.id,
+          approverAuthUserId: dto.approver.id,
+          approver: dto.approver.name,
+          approverEmail: dto.approver.email,
+          submittedAt: new Date(),
+        },
+      });
+
+      // Save signature for PREPARER step
+      await tx.approvalSignature.deleteMany({
+        where: { module: 'KPI', documentId: kpi.id },
+      });
+
+      await tx.approvalSignature.create({
+        data: {
+          module: 'KPI',
+          documentId: kpi.id,
+          step: 'PREPARER',
+          action: 'APPROVED',
+          actionDate: new Date(),
+          signerUserId: userId,
+          signerAuthUserId: actor.authUserId ?? userId,
+          signerName: actorName,
+          signerEmail: actorEmail,
+          signerDepartmentName: actorDept,
+          signaturePath: dto.signatureDataUrl,
+        },
+      });
+
+      return updated;
+    });
+
+    return updatedKpi;
   }
 }

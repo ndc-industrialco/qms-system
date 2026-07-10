@@ -558,8 +558,17 @@ export default function KpiObjectivesClient({ role, userDepartmentId }: Props) {
               onClick={() => window.open(`/print/qms/kpi/fm-mr-01?year=${year}`, "_blank")}
             >
               <Printer className="w-4 h-4" />
-              FM-MR-01
+              Export
             </Button>
+            {privileged && (
+              <Button
+                className="h-9 text-sm rounded-xl gap-1.5 bg-[#0F1059] hover:bg-[#161875] text-white font-medium"
+                onClick={() => router.push(`/print/qms/kpi/fm-mr-01?year=${year}&mode=review`)}
+              >
+                <FileText className="w-4 h-4" />
+                Review
+              </Button>
+            )}
             <Select value={String(year)} onValueChange={v => setYear(Number(v))}>
               <SelectTrigger className="w-28 rounded-xl text-sm h-9 bg-white border-slate-200">
                 <SelectValue />

@@ -117,6 +117,9 @@ export const qmsCheckKpiSchema = z.object({
 
 export const publishKpiSchema = z.object({
   documentName: z.string().max(500).nullable().optional(),
+  toGroupEmails: z.array(z.string()).optional(),
+  ccGroupEmails: z.array(z.string()).optional(),
+  wysiwygContent: z.string().optional(),
 });
 
 export const copyKpiSchema = z.object({

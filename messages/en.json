@@ -665,6 +665,7 @@
       "correctiveAction": {
         "addNew": "Add new corrective action",
         "noneRequired": "All objectives achieved — no corrective action required.",
+        "noneFailed": "No objectives failed criteria — no corrective action required.",
         "times": "Times",
         "rootCause": "Root cause analysis",
         "guidelines": "Guidelines for improvement",

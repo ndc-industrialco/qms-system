@@ -18,7 +18,7 @@ export interface MailRecipient {
   email: string;
 }
 
-interface SendMailOptions {
+export interface SendMailOptions {
   to: MailRecipient[];
   cc?: MailRecipient[];
   subject: string;
@@ -43,7 +43,7 @@ function getM2MHeaders(): Record<string, string> | null {
   };
 }
 
-async function sendMail(opts: SendMailOptions): Promise<void> {
+export async function sendMail(opts: SendMailOptions): Promise<void> {
   const base = process.env.AUTH_CENTER_URL?.replace(/\/$/, "");
   if (!base) {
     logger.warn("[email] AUTH_CENTER_URL not set — mail skipped", { subject: opts.subject, to: opts.to.map((r) => r.email) });
@@ -183,6 +183,12 @@ export interface KpiObjectiveRow {
   objective: string;
   target: number;
   unit: string | null;
+  frequency?: string;
+  calculationFormula?: string;
+  actionPlanGuidelines?: string;
+  referenceDocuments?: string | null;
+  responsibleNameSnapshot?: string | null;
+  responsibleEmployeeId?: string | null;
 }
 
 export interface KpiMonthlyDetailRow {
@@ -193,8 +199,86 @@ export interface KpiMonthlyDetailRow {
   achievedStatus: string | null;
 }
 
+export function makeMasterObjectivesTable(objectives: KpiObjectiveRow[]): string {
+  if (objectives.length === 0) return "";
+
+  // Group by department from the prefix `[Dept]` in objective string
+  const grouped: Record<string, KpiObjectiveRow[]> = {};
+  for (const obj of objectives) {
+    const match = obj.objective.match(/^\[([^\]]+)\]\s*(.*)$/);
+    const dept = match ? match[1] : "SYSTEM_MASTER";
+    const cleanObjective = match ? match[2] : obj.objective;
+    if (!grouped[dept]) {
+      grouped[dept] = [];
+    }
+    grouped[dept].push({
+      ...obj,
+      objective: cleanObjective,
+    });
+  }
+
+  let rowsHtml = "";
+  for (const [dept, list] of Object.entries(grouped)) {
+    list.forEach((obj, idx) => {
+      const rowspan = idx === 0 ? ` rowspan="${list.length}"` : "";
+      const deptCell = idx === 0 
+        ? `<td${rowspan} style="border:1px solid #000;padding:6px;font-weight:bold;text-align:center;background-color:#f8fafc;vertical-align:top">${esc(dept)}</td>` 
+        : "";
+
+      rowsHtml += `
+        <tr>
+          ${deptCell}
+          <td style="border:1px solid #000;padding:6px;vertical-align:top">
+            <strong>${esc(obj.objective)} ${obj.target} ${esc(obj.unit || "")}</strong>
+          </td>
+          <td style="border:1px solid #000;padding:6px;vertical-align:top;white-space:pre-line">${esc(obj.calculationFormula || "-")}</td>
+          <td style="border:1px solid #000;padding:6px;vertical-align:top;white-space:pre-line">${esc(obj.actionPlanGuidelines || "-")}</td>
+          <td style="border:1px solid #000;padding:6px;vertical-align:top;text-align:center">${esc(obj.frequency || "-")}</td>
+          <td style="border:1px solid #000;padding:6px;vertical-align:top;text-align:center">${esc(obj.referenceDocuments || "-")}</td>
+          <td style="border:1px solid #000;padding:6px;vertical-align:top;text-align:center">
+            ${esc(obj.responsibleNameSnapshot || "-")}
+            ${obj.responsibleEmployeeId ? `<br><span style="color:#64748b;font-size:8px">(#${esc(obj.responsibleEmployeeId)})</span>` : ""}
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  return `
+    <div style="margin-top:20px;overflow-x:auto">
+      <div style="font-size:12px;font-weight:bold;color:#0f1059;margin-bottom:8px">ตารางแผนวัตถุประสงค์คุณภาพ (FM-MR-01) / Quality Objectives List</div>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;color:#000;font-family:Segoe UI,Arial,sans-serif;border:1px solid #000">
+        <thead>
+          <tr style="background-color:#f1f5f9;font-weight:bold">
+            <th style="border:1px solid #000;padding:6px;width:15%;text-align:center">หน่วยงาน<br>Departments</th>
+            <th style="border:1px solid #000;padding:6px;width:25%;text-align:center">วัตถุประสงค์และเป้าหมาย<br>Objectives and goals</th>
+            <th style="border:1px solid #000;padding:6px;width:12%;text-align:center">สูตรคำนวน<br>Calculation formula</th>
+            <th style="border:1px solid #000;padding:6px;width:20%;text-align:center">แนวทางแผนการดำเนินงาน<br>Operational plan guidelines</th>
+            <th style="border:1px solid #000;padding:6px;width:8%;text-align:center">ความถี่ ในการวัด<br>Measurement Frequency</th>
+            <th style="border:1px solid #000;padding:6px;width:10%;text-align:center">เอกสารอ้างอิง<br>References</th>
+            <th style="border:1px solid #000;padding:6px;width:10%;text-align:center">ผู้รับผิดชอบ<br>Responsible Person</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+      <div style="text-align:right;font-size:8px;color:#64748b;margin-top:6px">FM-MR-01 Rev.02 / วัตถุประสงค์คุณภาพประจำปี</div>
+    </div>
+  `;
+}
+
 function makeObjectivesTable(objectives: KpiObjectiveRow[]): string {
   if (objectives.length === 0) return "";
+  
+  // Auto-detect master KPI plan objectives
+  const isMaster = objectives.some(
+    (o) => o.calculationFormula || o.actionPlanGuidelines || o.objective.startsWith("[")
+  );
+  if (isMaster) {
+    return makeMasterObjectivesTable(objectives);
+  }
+
   const rows = objectives
     .map(
       (o, i) => `
@@ -577,26 +661,32 @@ export async function sendKpiResultEmail(opts: {
   kpiId?: string;
   objectives?: KpiObjectiveRow[];
   senderAccessToken?: string | null;
+  actionUrl?: string;
 }) {
-  const url = getAppUrl(`/qms/kpi`);
+  const isSystemMaster = opts.departmentName === "SYSTEM_MASTER" || opts.departmentName.includes("FM-MR-01");
+  const url = opts.actionUrl ?? (isSystemMaster
+    ? getAppUrl(`/print/qms/kpi/fm-mr-01?year=${opts.year}&mode=review`)
+    : getAppUrl(`/qms/kpi`));
   const statusTh = opts.status === "APPROVED" ? "อนุมัติแล้ว" : "ถูกปฏิเสธ";
+  const displayDept = isSystemMaster ? "FM-MR-01 (วัตถุประสงค์คุณภาพประจำปี)" : opts.departmentName;
+
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
-    subject: `[KPI] ${opts.status} - ${opts.departmentName} / ${opts.year}`,
+    subject: `[KPI] ${opts.status} - ${displayDept} / ${opts.year}`,
     bodyHtml: makeBilingualMail({
-      titleTh: `ผลการอนุมัติ KPI ${opts.departmentName} ปี ${opts.year}`,
-      titleEn: `KPI ${opts.departmentName} ${opts.year} Approval Result`,
+      titleTh: `ผลการอนุมัติ ${displayDept} ปี ${opts.year}`,
+      titleEn: `${displayDept} ${opts.year} Approval Result`,
       facts: [
         { labelTh: "สถานะ", labelEn: "Status", value: `${statusTh} / ${opts.status}` },
         { labelTh: "ดำเนินการโดย", labelEn: "Action By", value: opts.actorName },
-        { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
+        { labelTh: "หน่วยงาน/เอกสาร", labelEn: "Department/Doc", value: displayDept },
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
         ...(opts.objectives ? [{ labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(opts.objectives.length) }] : []),
       ],
       extraHtml: opts.objectives ? makeObjectivesTable(opts.objectives) : undefined,
-      actionLabelTh: "เปิด KPI",
-      actionLabelEn: "Open KPI",
+      actionLabelTh: isSystemMaster ? "เปิดดูแผนงาน" : "เปิด KPI",
+      actionLabelEn: isSystemMaster ? "Open Plan" : "Open KPI",
       actionUrl: url,
     }),
   });

@@ -58,6 +58,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/mcp": "^0.0.77",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/ioredis": "^4.28.10",
     "@types/node": "^20",

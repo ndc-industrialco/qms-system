@@ -108,6 +108,12 @@ type Props = {
   userRole: UserRole;
 };
 
+function resolveKpiDepartmentLabel(department: string): string {
+  return department === "SYSTEM_MASTER"
+    ? "FM-MR-01 / Annual Quality Objectives"
+    : department;
+}
+
 export default function ApprovePageClient({ userRole }: Props) {
   const t = useT();
   const locale = useLocale();
@@ -190,11 +196,12 @@ export default function ApprovePageClient({ userRole }: Props) {
     }
 
     for (const item of data.pendingKpiReviewItems) {
+      const departmentLabel = resolveKpiDepartmentLabel(item.department);
       items.push({
         id: `kpi-review-${item.id}`,
         module: "kpi",
         role: "review",
-        title: item.department,
+        title: departmentLabel,
         subtitle: item.source === "OBJECTIVE" ? t("approve.typeObjective") : t("approve.typeMonthly"),
         description: item.month ? `${item.month} ${item.year}` : String(item.year),
         href:
@@ -203,18 +210,19 @@ export default function ApprovePageClient({ userRole }: Props) {
             : `/approve/kpi/${item.id}/reviewer?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`,
         sortDate: `${item.year}-${item.month ? String(item.month).padStart(2, "0") : "12"}-01T00:00:00.000Z`,
         meta: [
-          { label: t("approve.department"), value: item.department },
+          { label: t("approve.department"), value: departmentLabel },
           { label: t("approve.period"), value: item.month ? `${item.month} ${item.year}` : String(item.year) },
         ],
       });
     }
 
     for (const item of data.pendingKpiApproveItems) {
+      const departmentLabel = resolveKpiDepartmentLabel(item.department);
       items.push({
         id: `kpi-approve-${item.id}`,
         module: "kpi",
         role: "approval",
-        title: item.department,
+        title: departmentLabel,
         subtitle: item.source === "OBJECTIVE" ? t("approve.typeObjective") : t("approve.typeMonthly"),
         description: item.month ? `${item.month} ${item.year}` : String(item.year),
         href:
@@ -223,7 +231,7 @@ export default function ApprovePageClient({ userRole }: Props) {
             : `/approve/kpi/${item.id}/approver?type=kpi-monthly&kpiId=${item.kpiId}&year=${item.year}${item.month ? `&month=${item.month}` : ""}`,
         sortDate: `${item.year}-${item.month ? String(item.month).padStart(2, "0") : "12"}-01T00:00:00.000Z`,
         meta: [
-          { label: t("approve.department"), value: item.department },
+          { label: t("approve.department"), value: departmentLabel },
           { label: t("approve.period"), value: item.month ? `${item.month} ${item.year}` : String(item.year) },
         ],
       });

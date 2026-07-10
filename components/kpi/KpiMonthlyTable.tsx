@@ -89,6 +89,27 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
+const MONTH_INDEX_MAP: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+};
+
+const isMonthEditable = (m: string, y: number): boolean => {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  
+  const mIndex = MONTH_INDEX_MAP[m];
+  if (mIndex === undefined) return false;
+  
+  if (y === currentYear && mIndex === currentMonth) return true;
+  
+  const prevDate = new Date(currentYear, currentMonth - 1, 1);
+  if (y === prevDate.getFullYear() && mIndex === prevDate.getMonth()) return true;
+  
+  return false;
+};
+
 export function KpiMonthlyTable({ data, isLoading, meta, onPageChange, onRowClick }: Props) {
   const t = useT();
   const totalPages = meta ? Math.ceil(meta.total / meta.limit) || 1 : 1;
@@ -128,7 +149,16 @@ export function KpiMonthlyTable({ data, isLoading, meta, onPageChange, onRowClic
                 onClick={() => onRowClick(row)}
               >
                 <td className="whitespace-nowrap px-5 py-3.5">
-                  <span className="text-sm font-semibold text-slate-800">{row.month} {row.year}</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-slate-800">{row.month} {row.year}</span>
+                    <span className="mt-1.5 text-[10px] font-medium self-start">
+                      {isMonthEditable(row.month, row.year) ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-bold">● แก้ไขได้ / Editable</span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">● อ่านอย่างเดียว / Read-only</span>
+                      )}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-5 py-3.5 text-center">
                   <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
@@ -166,6 +196,13 @@ export function KpiMonthlyTable({ data, isLoading, meta, onPageChange, onRowClic
               <div>
                 <p className="text-sm font-semibold text-slate-800">{row.month} {row.year}</p>
                 <p className="mt-0.5 text-xs text-slate-400">{row.kpi.department}</p>
+                <div className="mt-1.5">
+                  {isMonthEditable(row.month, row.year) ? (
+                    <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-bold text-[9px]">● แก้ไขได้ / Editable</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 text-[9px]">● อ่านอย่างเดียว / Read-only</span>
+                  )}
+                </div>
               </div>
               <StatusBadge status={row.status} />
             </div>

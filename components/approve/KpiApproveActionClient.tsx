@@ -68,6 +68,8 @@ const ACHIEVED_STYLES: Record<string, string> = {
   PENDING: "bg-amber-50 text-amber-600 border-amber-200",
 };
 
+const MASTER_KPI_LABEL = "FM-MR-01 / Annual Quality Objectives";
+
 export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props) {
   const t = useT();
   const qc = useQueryClient();
@@ -130,7 +132,11 @@ export default function KpiApproveActionClient({ id, mode, type, kpiId }: Props)
 
   const department = useMemo(() => {
     if (!query.data) return "";
-    return type === "kpi" ? query.data.department : (query.data.kpi?.department ?? "");
+    const dept = type === "kpi" ? query.data.department : (query.data.kpi?.department ?? "");
+    if (dept === "SYSTEM_MASTER") {
+      return MASTER_KPI_LABEL;
+    }
+    return dept;
   }, [query.data, type]);
 
   async function submitAction(

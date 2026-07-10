@@ -24,6 +24,83 @@ export class KpiMonthlyService {
   private userRepo = new UserRepository();
   private userPrefRepo = new UserPreferenceRepository();
 
+  async getSystemMasterCleanupSummary() {
+    const reportCount = await this.reportRepo.countSystemMasterReports();
+    return { reportCount };
+  }
+
+  async cleanupSystemMasterMonthlyReports(actor: ActorContext) {
+    if (!['QMS', 'MR', 'IT'].includes(actor.role)) {
+      throw new ForbiddenError('Only QMS/MR/IT can clean up SYSTEM_MASTER monthly data');
+    }
+
+    return db.$transaction(async (tx) => {
+      const reportIds = await this.reportRepo.findSystemMasterReportIds(tx);
+      if (reportIds.length === 0) {
+        return {
+          deletedReportCount: 0,
+          deletedSignatureCount: 0,
+          deletedTokenCount: 0,
+          deletedNotificationCount: 0,
+          deletedAuditLogCount: 0,
+        };
+      }
+
+      const [deletedSignatures, deletedTokens, deletedNotifications, deletedAuditLogs, deletedReports] = await Promise.all([
+        tx.approvalSignature.deleteMany({
+          where: {
+            module: 'KPI_MONTHLY',
+            documentId: { in: reportIds },
+          },
+        }),
+        tx.actionToken.deleteMany({
+          where: {
+            module: 'KPI_MONTHLY',
+            documentId: { in: reportIds },
+          },
+        }),
+        tx.notification.deleteMany({
+          where: {
+            resourceId: { in: reportIds },
+            resourceType: { in: ['KPI_MONTHLY', 'KPI_MONTHLY_REVIEWER', 'KPI_MONTHLY_APPROVER'] },
+          },
+        }),
+        tx.auditLog.deleteMany({
+          where: {
+            resourceType: 'KPI_MONTHLY_REPORT',
+            resourceId: { in: reportIds },
+          },
+        }),
+        this.reportRepo.deleteSystemMasterReports(tx),
+      ]);
+
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
+        actorRole: actor.role,
+        action: 'DELETE',
+        resourceType: 'KPI',
+        resourceId: 'SYSTEM_MASTER_MONTHLY_CLEANUP',
+        metadata: {
+          deletedReportIds: reportIds,
+          deletedReportCount: deletedReports.count,
+          deletedSignatureCount: deletedSignatures.count,
+          deletedTokenCount: deletedTokens.count,
+          deletedNotificationCount: deletedNotifications.count,
+          deletedAuditLogCount: deletedAuditLogs.count,
+        },
+      }, tx);
+
+      return {
+        deletedReportCount: deletedReports.count,
+        deletedSignatureCount: deletedSignatures.count,
+        deletedTokenCount: deletedTokens.count,
+        deletedNotificationCount: deletedNotifications.count,
+        deletedAuditLogCount: deletedAuditLogs.count,
+      };
+    });
+  }
+
   async createMonthlyReport(dto: CreateMonthlyReportDTO) {
     const existing = await this.reportRepo.findByCompositeKey(dto.kpiId, dto.month, dto.year);
     if (existing) throw new ConflictError(`Monthly report for ${dto.month} ${dto.year} already exists`);

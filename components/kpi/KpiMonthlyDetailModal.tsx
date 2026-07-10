@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertTriangle, CheckCircle2, ExternalLink, FileText,
-  ShieldCheck, Upload, X, XCircle, Printer,
+  ShieldCheck, Upload, X, XCircle, Printer, Info,
 } from "lucide-react";
 import {
   useKpiMonthlyById,
@@ -99,6 +99,11 @@ function fmtUnit(unit: string | null | undefined) {
   if (!unit) return "";
   return UNIT_DISPLAY[unit.toLowerCase()] ?? unit;
 }
+
+const MONTH_INDEX_MAP: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+};
 
 /** Derive pass/fail from input vs target — mirrors server logic */
 function computeAchieved(inputVal: string, target: number): AchievedStatus {
@@ -251,14 +256,35 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
 
   const reportStatus = report?.status as MonthlyStatus | undefined;
   const isPreparer = !report?.prepareBy || report?.prepareBy === userId;
+
+  const isMonthAllowed = React.useMemo(() => {
+    if (!report?.month || !report?.year) return false;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-11
+    
+    const mIndex = MONTH_INDEX_MAP[report.month];
+    if (mIndex === undefined) return false;
+    
+    // Current month
+    if (report.year === currentYear && mIndex === currentMonth) return true;
+    
+    // Previous month (1 month ago)
+    const prevDate = new Date(currentYear, currentMonth - 1, 1);
+    if (report.year === prevDate.getFullYear() && mIndex === prevDate.getMonth()) return true;
+    
+    return false;
+  }, [report?.month, report?.year]);
+
   const isEditable = privileged
     ? reportStatus !== "APPROVED"
-    : (reportStatus === "DRAFT" || reportStatus === "REJECTED") && isPreparer;
+    : (reportStatus === "DRAFT" || reportStatus === "REJECTED") && isPreparer && isMonthAllowed;
   const details = (report?.details ?? []) as DetailRow[];
   // Live-compute achieved status from current inputs for realtime UX
   const liveAchieved = (detail: DetailRow): AchievedStatus =>
     isEditable ? computeAchieved(actualInputs[detail.id] ?? "", detail.kpiObjective.target) : detail.achievedStatus;
   const notOkDetails = details.filter((d) => liveAchieved(d) === "NOT_OK");
+  const hasPendingDetails = details.some((d) => liveAchieved(d) === "PENDING");
 
   useEffect(() => {
     setRemark(report?.remark ?? "");
@@ -453,6 +479,15 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
             )}
           </div>
         </DialogHeader>
+
+        {!isMonthAllowed && !privileged && (
+          <div className="bg-slate-50 border-b border-slate-100 px-6 py-2.5 flex items-center gap-2 text-xs text-slate-500 shrink-0">
+            <Info className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <span>
+              <strong>โหมดอ่านอย่างเดียว (Read-only)</strong> — เนื่องจากระบบเปิดให้กรอกหรือแก้ไขผลการดำเนินงานเฉพาะเดือนปัจจุบันและเดือนที่แล้วเท่านั้น
+            </span>
+          </div>
+        )}
 
         {isLoading || !report ? (
           <ModalSkeleton />
@@ -658,7 +693,11 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                   {notOkDetails.length === 0 ? (
                     <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                      <p className="text-sm text-emerald-700">{t("kpi.monthly.correctiveAction.noneRequired")}</p>
+                      <p className="text-sm text-emerald-700">
+                        {hasPendingDetails
+                          ? t("kpi.monthly.correctiveAction.noneFailed")
+                          : t("kpi.monthly.correctiveAction.noneRequired")}
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -906,7 +945,13 @@ export default function KpiMonthlyDetailModal({ kpiId, reportId, open, onOpenCha
                 </div>
               )}
               <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <Button type="button" variant="ghost" size="sm" onClick={() => window.print()} className="h-7 text-xs text-slate-500 hover:text-slate-700">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.open(`/print/qms/kpi/monthly/${reportId}`, "_blank")}
+                  className="h-7 text-xs text-slate-500 hover:text-slate-700"
+                >
                   <Printer className="w-3.5 h-3.5 mr-1.5" />
                   Print / Export PDF
                 </Button>

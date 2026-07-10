@@ -1,9 +1,17 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import KpiApproveActionClient from "@/components/approve/KpiApproveActionClient";
+import FmMr01ApprovalPageClient from "@/components/kpi/FmMr01ApprovalPageClient";
+import { KpiRepository } from "@/repositories/kpiRepository";
+import { ApprovalSignatureRepository } from "@/repositories/approvalSignatureRepository";
+import { QmsConfigService } from "@/services/qmsConfigService";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "KPI — Review" };
+export const metadata: Metadata = { title: "KPI - Review" };
+
+const kpiRepo = new KpiRepository();
+const approvalSignatureRepo = new ApprovalSignatureRepository();
+const qmsConfigService = new QmsConfigService();
 
 export default async function KpiReviewerPage({
   params,
@@ -17,6 +25,32 @@ export default async function KpiReviewerPage({
   const type = sp.type ?? "kpi";
 
   if (type === "kpi-monthly" && !sp.kpiId) redirect("/approve");
+
+  if (type !== "kpi-monthly") {
+    const masterKpi = await kpiRepo.findByIdWithRelations(id);
+
+    if (masterKpi?.department === "SYSTEM_MASTER") {
+      const [kpis, signatures, footerConfig] = await Promise.all([
+        kpiRepo.findForExport({ yearly: masterKpi.yearly }),
+        approvalSignatureRepo.findByDocument("KPI", id),
+        qmsConfigService.getSingleFooterConfig("KPI_ANNUAL"),
+      ]);
+
+      return (
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+          <FmMr01ApprovalPageClient
+            approvalDocumentId={id}
+            mode="reviewer"
+            year={masterKpi.yearly}
+            kpis={kpis}
+            masterKpi={masterKpi}
+            signatures={signatures}
+            footerConfig={footerConfig}
+          />
+        </div>
+      );
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

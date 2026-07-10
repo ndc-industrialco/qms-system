@@ -69,7 +69,7 @@ export default async function CompanyCenterDashboard() {
     }),
 
     db.kPI.findMany({
-      where: { yearly: currentYear, status: 'APPROVED' },
+      where: { yearly: currentYear, status: 'APPROVED', department: { not: 'SYSTEM_MASTER' } },
       select: {
         id: true,
         department: true,

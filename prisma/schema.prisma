@@ -346,6 +346,7 @@ model KPIObjective {
   responsibleEmailSnapshot String?        @map("responsible_email_snapshot")
   responsibleEmployeeId String?           @map("responsible_employee_id")
   isRevised            Boolean            @default(false) @map("is_revised")
+  isAdded              Boolean            @default(false) @map("is_added")
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   kpi                  KPI                @relation(fields: [kpiId], references: [id], onDelete: Cascade)

@@ -69,7 +69,11 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
       ...(query.year ? { year: query.year } : {}),
       ...(query.month ? { month: query.month } : {}),
       ...(query.status ? { status: query.status } : {}),
-      ...(query.department ? { kpi: { department: { contains: query.department, mode: 'insensitive' } } } : {}),
+      kpi: {
+        department: query.department
+          ? { contains: query.department, mode: 'insensitive', not: 'SYSTEM_MASTER' }
+          : { not: 'SYSTEM_MASTER' },
+      },
     };
 
     const [data, total] = await Promise.all([
@@ -92,6 +96,38 @@ export class KpiMonthlyReportRepository extends BaseRepository<KPIMonthlyReport,
     ]);
 
     return { data, meta: { page, limit, total } };
+  }
+
+  async countSystemMasterReports(tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).count({
+      where: {
+        kpi: {
+          department: 'SYSTEM_MASTER',
+        },
+      },
+    });
+  }
+
+  async findSystemMasterReportIds(tx?: Prisma.TransactionClient) {
+    const rows = await this.delegate(tx).findMany({
+      where: {
+        kpi: {
+          department: 'SYSTEM_MASTER',
+        },
+      },
+      select: { id: true },
+    });
+    return rows.map((row) => row.id);
+  }
+
+  async deleteSystemMasterReports(tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).deleteMany({
+      where: {
+        kpi: {
+          department: 'SYSTEM_MASTER',
+        },
+      },
+    });
   }
 
   async updateStatus(id: string, status: MonthlyStatus, fields?: Partial<{ prepareBy: string; reviewBy: string; approveBy: string; submittedAt: Date; approvedAt: Date }>, tx?: Prisma.TransactionClient) {

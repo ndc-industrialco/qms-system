@@ -12,13 +12,18 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const session = await requireRole('QMS', 'IT', 'MR');
     const { id } = await params;
     const body = publishKpiSchema.parse(await _request.json().catch(() => ({})));
-    const updated = await service.announceKpi(id, {
-      userId: session.user.id,
-      authUserId: session.user.authUserId,
-      role: session.user.role,
-      departmentId: session.user.authDepartmentId ?? session.user.departmentId,
-      accessToken: session.user.accessToken,
-    }, session.user.accessToken, body.documentName);
+    const updated = await service.announceKpi(
+      id,
+      {
+        userId: session.user.id,
+        authUserId: session.user.authUserId,
+        role: session.user.role,
+        departmentId: session.user.authDepartmentId ?? session.user.departmentId,
+        accessToken: session.user.accessToken,
+      },
+      session.user.accessToken,
+      body
+    );
     return sendSuccess(updated, 'KPI announced successfully');
   } catch (error) {
     return handleApiError(error);

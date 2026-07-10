@@ -22,8 +22,14 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       accessToken: session.user.accessToken,
     }, body);
 
+    const isSystemMaster = updated.department === 'SYSTEM_MASTER';
+    const displayDept = isSystemMaster ? 'FM-MR-01 (วัตถุประสงค์คุณภาพประจำปี)' : updated.department;
+    const actionUrl = isSystemMaster
+      ? `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/print/qms/kpi/fm-mr-01?year=${updated.yearly}&mode=review`
+      : `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`;
+
     const kpiApproveFacts = [
-      { labelTh: "หน่วยงาน", labelEn: "Department", value: updated.department },
+      { labelTh: "หน่วยงาน/เอกสาร", labelEn: "Department/Doc", value: displayDept },
       { labelTh: "ปี", labelEn: "Year", value: String(updated.yearly) },
       { labelTh: "อนุมัติโดย", labelEn: "Approved By", value: session.user.name ?? '' },
       { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(updated.objectives.length) },
@@ -43,14 +49,22 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
           kpiId: id,
           objectives: updated.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
           senderAccessToken: session.user.accessToken,
+          actionUrl,
         }),
         u?.email ?? '',
         'KPI Approved',
         authId,
         {
           title: "KPI ได้รับการอนุมัติ",
-          body: `KPI ${updated.department} ${updated.yearly}`,
-          htmlBody: makeBilingualMail({ titleTh: `KPI ${updated.department} ปี ${updated.yearly} ได้รับการอนุมัติ`, titleEn: `KPI ${updated.department} ${updated.yearly} Approved`, facts: kpiApproveFacts }),
+          body: `${displayDept} ปี ${updated.yearly} ได้รับการอนุมัติ`,
+          htmlBody: makeBilingualMail({
+            titleTh: `ผลการอนุมัติ ${displayDept} ปี ${updated.yearly}`,
+            titleEn: `${displayDept} ${updated.yearly} Approved`,
+            facts: kpiApproveFacts,
+            actionLabelTh: isSystemMaster ? "เปิดดูแผนงาน" : "เปิด KPI",
+            actionLabelEn: isSystemMaster ? "Open Plan" : "Open KPI",
+            actionUrl,
+          }),
           module: "KPI",
           resourceId: id,
           resourceType: "KPI",

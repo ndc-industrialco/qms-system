@@ -49,6 +49,7 @@ export type KPIObjectiveMinAggregateOutputType = {
   responsibleEmailSnapshot: string | null
   responsibleEmployeeId: string | null
   isRevised: boolean | null
+  isAdded: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -68,6 +69,7 @@ export type KPIObjectiveMaxAggregateOutputType = {
   responsibleEmailSnapshot: string | null
   responsibleEmployeeId: string | null
   isRevised: boolean | null
+  isAdded: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -87,6 +89,7 @@ export type KPIObjectiveCountAggregateOutputType = {
   responsibleEmailSnapshot: number
   responsibleEmployeeId: number
   isRevised: number
+  isAdded: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -116,6 +119,7 @@ export type KPIObjectiveMinAggregateInputType = {
   responsibleEmailSnapshot?: true
   responsibleEmployeeId?: true
   isRevised?: true
+  isAdded?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -135,6 +139,7 @@ export type KPIObjectiveMaxAggregateInputType = {
   responsibleEmailSnapshot?: true
   responsibleEmployeeId?: true
   isRevised?: true
+  isAdded?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -154,6 +159,7 @@ export type KPIObjectiveCountAggregateInputType = {
   responsibleEmailSnapshot?: true
   responsibleEmployeeId?: true
   isRevised?: true
+  isAdded?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -260,6 +266,7 @@ export type KPIObjectiveGroupByOutputType = {
   responsibleEmailSnapshot: string | null
   responsibleEmployeeId: string | null
   isRevised: boolean
+  isAdded: boolean
   createdAt: Date
   updatedAt: Date
   _count: KPIObjectiveCountAggregateOutputType | null
@@ -302,6 +309,7 @@ export type KPIObjectiveWhereInput = {
   responsibleEmailSnapshot?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   responsibleEmployeeId?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   isRevised?: Prisma.BoolFilter<"KPIObjective"> | boolean
+  isAdded?: Prisma.BoolFilter<"KPIObjective"> | boolean
   createdAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   kpi?: Prisma.XOR<Prisma.KPIScalarRelationFilter, Prisma.KPIWhereInput>
@@ -323,6 +331,7 @@ export type KPIObjectiveOrderByWithRelationInput = {
   responsibleEmailSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   responsibleEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   isRevised?: Prisma.SortOrder
+  isAdded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   kpi?: Prisma.KPIOrderByWithRelationInput
@@ -347,6 +356,7 @@ export type KPIObjectiveWhereUniqueInput = Prisma.AtLeast<{
   responsibleEmailSnapshot?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   responsibleEmployeeId?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   isRevised?: Prisma.BoolFilter<"KPIObjective"> | boolean
+  isAdded?: Prisma.BoolFilter<"KPIObjective"> | boolean
   createdAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   kpi?: Prisma.XOR<Prisma.KPIScalarRelationFilter, Prisma.KPIWhereInput>
@@ -368,6 +378,7 @@ export type KPIObjectiveOrderByWithAggregationInput = {
   responsibleEmailSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   responsibleEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   isRevised?: Prisma.SortOrder
+  isAdded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.KPIObjectiveCountOrderByAggregateInput
@@ -395,6 +406,7 @@ export type KPIObjectiveScalarWhereWithAggregatesInput = {
   responsibleEmailSnapshot?: Prisma.StringNullableWithAggregatesFilter<"KPIObjective"> | string | null
   responsibleEmployeeId?: Prisma.StringNullableWithAggregatesFilter<"KPIObjective"> | string | null
   isRevised?: Prisma.BoolWithAggregatesFilter<"KPIObjective"> | boolean
+  isAdded?: Prisma.BoolWithAggregatesFilter<"KPIObjective"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"KPIObjective"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"KPIObjective"> | Date | string
 }
@@ -413,6 +425,7 @@ export type KPIObjectiveCreateInput = {
   responsibleEmailSnapshot?: string | null
   responsibleEmployeeId?: string | null
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   kpi: Prisma.KPICreateNestedOneWithoutObjectivesInput
@@ -434,6 +447,7 @@ export type KPIObjectiveUncheckedCreateInput = {
   responsibleEmailSnapshot?: string | null
   responsibleEmployeeId?: string | null
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUncheckedCreateNestedManyWithoutKpiObjectiveInput
@@ -453,6 +467,7 @@ export type KPIObjectiveUpdateInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   kpi?: Prisma.KPIUpdateOneRequiredWithoutObjectivesNestedInput
@@ -474,6 +489,7 @@ export type KPIObjectiveUncheckedUpdateInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUncheckedUpdateManyWithoutKpiObjectiveNestedInput
@@ -494,6 +510,7 @@ export type KPIObjectiveCreateManyInput = {
   responsibleEmailSnapshot?: string | null
   responsibleEmployeeId?: string | null
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -512,6 +529,7 @@ export type KPIObjectiveUpdateManyMutationInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -531,6 +549,7 @@ export type KPIObjectiveUncheckedUpdateManyInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -560,6 +579,7 @@ export type KPIObjectiveCountOrderByAggregateInput = {
   responsibleEmailSnapshot?: Prisma.SortOrder
   responsibleEmployeeId?: Prisma.SortOrder
   isRevised?: Prisma.SortOrder
+  isAdded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -583,6 +603,7 @@ export type KPIObjectiveMaxOrderByAggregateInput = {
   responsibleEmailSnapshot?: Prisma.SortOrder
   responsibleEmployeeId?: Prisma.SortOrder
   isRevised?: Prisma.SortOrder
+  isAdded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -602,6 +623,7 @@ export type KPIObjectiveMinOrderByAggregateInput = {
   responsibleEmailSnapshot?: Prisma.SortOrder
   responsibleEmployeeId?: Prisma.SortOrder
   isRevised?: Prisma.SortOrder
+  isAdded?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -693,6 +715,7 @@ export type KPIObjectiveCreateWithoutKpiInput = {
   responsibleEmailSnapshot?: string | null
   responsibleEmployeeId?: string | null
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailCreateNestedManyWithoutKpiObjectiveInput
@@ -712,6 +735,7 @@ export type KPIObjectiveUncheckedCreateWithoutKpiInput = {
   responsibleEmailSnapshot?: string | null
   responsibleEmployeeId?: string | null
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUncheckedCreateNestedManyWithoutKpiObjectiveInput
@@ -761,6 +785,7 @@ export type KPIObjectiveScalarWhereInput = {
   responsibleEmailSnapshot?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   responsibleEmployeeId?: Prisma.StringNullableFilter<"KPIObjective"> | string | null
   isRevised?: Prisma.BoolFilter<"KPIObjective"> | boolean
+  isAdded?: Prisma.BoolFilter<"KPIObjective"> | boolean
   createdAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KPIObjective"> | Date | string
 }
@@ -779,6 +804,7 @@ export type KPIObjectiveCreateWithoutMonthlyDetailsInput = {
   responsibleEmailSnapshot?: string | null
   responsibleEmployeeId?: string | null
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   kpi: Prisma.KPICreateNestedOneWithoutObjectivesInput
@@ -799,6 +825,7 @@ export type KPIObjectiveUncheckedCreateWithoutMonthlyDetailsInput = {
   responsibleEmailSnapshot?: string | null
   responsibleEmployeeId?: string | null
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -833,6 +860,7 @@ export type KPIObjectiveUpdateWithoutMonthlyDetailsInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   kpi?: Prisma.KPIUpdateOneRequiredWithoutObjectivesNestedInput
@@ -853,6 +881,7 @@ export type KPIObjectiveUncheckedUpdateWithoutMonthlyDetailsInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -871,6 +900,7 @@ export type KPIObjectiveCreateManyKpiInput = {
   responsibleEmailSnapshot?: string | null
   responsibleEmployeeId?: string | null
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -889,6 +919,7 @@ export type KPIObjectiveUpdateWithoutKpiInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUpdateManyWithoutKpiObjectiveNestedInput
@@ -908,6 +939,7 @@ export type KPIObjectiveUncheckedUpdateWithoutKpiInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   monthlyDetails?: Prisma.KPIMonthlyDetailUncheckedUpdateManyWithoutKpiObjectiveNestedInput
@@ -927,6 +959,7 @@ export type KPIObjectiveUncheckedUpdateManyWithoutKpiInput = {
   responsibleEmailSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   responsibleEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isRevised?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isAdded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -977,6 +1010,7 @@ export type KPIObjectiveSelect<ExtArgs extends runtime.Types.Extensions.Internal
   responsibleEmailSnapshot?: boolean
   responsibleEmployeeId?: boolean
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -999,6 +1033,7 @@ export type KPIObjectiveSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   responsibleEmailSnapshot?: boolean
   responsibleEmployeeId?: boolean
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -1019,6 +1054,7 @@ export type KPIObjectiveSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   responsibleEmailSnapshot?: boolean
   responsibleEmployeeId?: boolean
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
@@ -1039,11 +1075,12 @@ export type KPIObjectiveSelectScalar = {
   responsibleEmailSnapshot?: boolean
   responsibleEmployeeId?: boolean
   isRevised?: boolean
+  isAdded?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type KPIObjectiveOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kpiId" | "target" | "unit" | "objective" | "frequency" | "calculationFormula" | "actionPlanGuidelines" | "referenceDocuments" | "responsibleAuthUserId" | "responsibleNameSnapshot" | "responsibleEmailSnapshot" | "responsibleEmployeeId" | "isRevised" | "createdAt" | "updatedAt", ExtArgs["result"]["kPIObjective"]>
+export type KPIObjectiveOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kpiId" | "target" | "unit" | "objective" | "frequency" | "calculationFormula" | "actionPlanGuidelines" | "referenceDocuments" | "responsibleAuthUserId" | "responsibleNameSnapshot" | "responsibleEmailSnapshot" | "responsibleEmployeeId" | "isRevised" | "isAdded" | "createdAt" | "updatedAt", ExtArgs["result"]["kPIObjective"]>
 export type KPIObjectiveInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   kpi?: boolean | Prisma.KPIDefaultArgs<ExtArgs>
   monthlyDetails?: boolean | Prisma.KPIObjective$monthlyDetailsArgs<ExtArgs>
@@ -1077,6 +1114,7 @@ export type $KPIObjectivePayload<ExtArgs extends runtime.Types.Extensions.Intern
     responsibleEmailSnapshot: string | null
     responsibleEmployeeId: string | null
     isRevised: boolean
+    isAdded: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["kPIObjective"]>
@@ -1518,6 +1556,7 @@ export interface KPIObjectiveFieldRefs {
   readonly responsibleEmailSnapshot: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly responsibleEmployeeId: Prisma.FieldRef<"KPIObjective", 'String'>
   readonly isRevised: Prisma.FieldRef<"KPIObjective", 'Boolean'>
+  readonly isAdded: Prisma.FieldRef<"KPIObjective", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"KPIObjective", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"KPIObjective", 'DateTime'>
 }

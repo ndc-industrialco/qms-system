@@ -30,7 +30,7 @@ export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateK
     });
   }
 
-  async createObjective(data: CreateKpiObjectiveDTO & { isRevised?: boolean }, tx?: Prisma.TransactionClient) {
+  async createObjective(data: CreateKpiObjectiveDTO & { isRevised?: boolean; isAdded?: boolean }, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).create({
       data: {
         kpi: { connect: { id: data.kpiId } },
@@ -46,6 +46,7 @@ export class KpiObjectiveRepository extends BaseRepository<KPIObjective, CreateK
         responsibleEmailSnapshot: data.responsibleEmailSnapshot,
         responsibleEmployeeId: data.responsibleEmployeeId,
         isRevised: data.isRevised ?? false,
+        isAdded: data.isAdded ?? false,
       },
     });
   }

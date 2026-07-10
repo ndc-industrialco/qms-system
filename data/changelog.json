@@ -1,5 +1,295 @@
 [
   {
+    "id": "85",
+    "titleTh": "KPI: เพิ่มการส่งประกาศ (Announce) เอกสาร FM-MR-01 พร้อมตัวเลือกอีเมลกลุ่มและตัวแก้ไขข้อความ WYSIWYG",
+    "titleEn": "KPI: add FM-MR-01 Announce feature with group email selection and WYSIWYG content editor",
+    "date": "2026-07-09",
+    "type": "feat",
+    "commit": "feat/kpi-fm-mr-01-announce-group-wysiwyg",
+    "detailsTh": [
+      "prisma/schema.prisma, repositories/kpiObjectiveRepository.ts, services/kpiService.ts, components/kpi/FmMr01PrintTemplate.tsx: เพิ่มฟิลด์ isAdded เพื่อแยกแยะและจัดรูปแบบวัตถุประสงค์คุณภาพที่ถูกเพิ่มขึ้นใหม่ระหว่างรอบการ Revise โดยให้มีขีดเส้นใต้ (Underline) นอกเหนือจากการแสดงผลตัวหนา ตัวเอียง และพื้นหลังสีเขียว",
+      "components/kpi/FmMr01PrintTemplate.tsx: เพิ่มการตรวจสอบคุณลักษณะการปรับปรุง (isRevised) ของวัตถุประสงค์ เพื่อจัดรูปแบบตัวหนา ตัวเอียง และเปลี่ยนสีพื้นหลังแถวเป็นสีเขียวตาราง รวมถึงเพิ่มปุ่ม ส่งรีวิวใหม่อีกรอบ / Submit Review Again",
+      "components/kpi/KpiMasterAnnounceDialog.tsx, services/kpiService.ts: ปรับเปลี่ยนการดึงข้อมูลอีเมลกลุ่มหน่วยงานให้อ้างอิงและตรวจสอบจาก Auth Center ผ่าน DepartmentService และ /api/departments แทนฐานข้อมูล kpiDept ท้องถิ่น",
+      "components/kpi/FmMr01PrintTemplate.tsx: เพิ่มปุ่ม ประกาศใช้ / Announce บนแถบเครื่องมือเมื่อสถานะเอกสารเป็น APPROVED",
+      "components/kpi/KpiMasterAnnounceDialog.tsx: สร้างคอมโพเนนต์ Dialog สำหรับระบุข้อความประกาศผ่าน WYSIWYG และระบุอีเมลกลุ่ม (To, CC) ของแผนกต่างๆ",
+      "app/api/kpi/[id]/announce/route.ts, schemas/kpiSchema.ts: อัปเดต Schema และ Controller ให้รองรับการรับข้อความและอีเมลกลุ่ม",
+      "services/kpiService.ts: อัปเดตเมธอด announceKpi ให้ประมวลผลการส่งเมลไปยังกลุ่มและ CC แนบไฟล์ Excel สรุป KPI และสร้างบันทึก Announcement ลงฐานข้อมูล"
+    ],
+    "detailsEn": [
+      "prisma/schema.prisma, repositories/kpiObjectiveRepository.ts, services/kpiService.ts, components/kpi/FmMr01PrintTemplate.tsx: introduced isAdded database field to track and format objectives added during a revision cycle with an underline, alongside existing bold, italic, and green background styles",
+      "components/kpi/FmMr01PrintTemplate.tsx: implemented isRevised checks on objective items to format target rows in bold/italic with a light-green background, and added a Submit Review Again action button to the sticky review toolbar",
+      "components/kpi/KpiMasterAnnounceDialog.tsx, services/kpiService.ts: changed group email lookup and matching to use Auth Center active departments via DepartmentService and /api/departments rather than the local kpiDept database table",
+      "components/kpi/FmMr01PrintTemplate.tsx: added Announce button to toolbar when document status is APPROVED",
+      "components/kpi/KpiMasterAnnounceDialog.tsx: created dialog component with group email (To, CC) grids and tiptap WYSIWYG content editor",
+      "app/api/kpi/[id]/announce/route.ts, schemas/kpiSchema.ts: updated schema and controller to accept group emails and custom message payload",
+      "services/kpiService.ts: updated announceKpi method to support custom announcement emails to select groups, attach generated excel sheets, and save announcements into database"
+    ]
+  },
+  {
+    "id": "84",
+    "titleTh": "KPI Monthly: เปลี่ยน export yearly ให้มี preview ก่อน download และรีดีไซน์ yearly template",
+    "titleEn": "KPI Monthly: add yearly preview-before-download flow and redesign the yearly template",
+    "date": "2026-07-09",
+    "type": "improvement",
+    "commit": "improve/kpi-yearly-preview-template-flow",
+    "detailsTh": [
+      "components/kpi/KpiMonthlyClient.tsx, components/kpi/KpiYearlyExportPreviewDialog.tsx: เปลี่ยนปุ่ม Export Excel ให้เปิด preview dialog ก่อน และค่อยกด Download Excel จากใน preview",
+      "app/api/kpi/monthly-export/preview/route.ts, services/kpiExportService.ts: เพิ่ม API preview สำหรับ yearly KPI summary และรวม data-shape กลางให้ preview กับ export ใช้ข้อมูลชุดเดียวกัน",
+      "docs/template/kpi_yearly_template.html: รีดีไซน์ template ใหม่ทั้งไฟล์ให้ layout สะอาด อ่านง่าย และตรงกับหน้าตา preview ปัจจุบัน"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiMonthlyClient.tsx and components/kpi/KpiYearlyExportPreviewDialog.tsx: changed the Export Excel action to open a preview dialog first, with Download Excel triggered from inside the preview",
+      "app/api/kpi/monthly-export/preview/route.ts and services/kpiExportService.ts: added a yearly KPI preview API and centralized the preview/export data shape so both surfaces stay aligned",
+      "docs/template/kpi_yearly_template.html: redesigned the yearly template file into a cleaner, more readable layout that matches the new preview direction"
+    ]
+  },
+  {
+    "id": "83",
+    "titleTh": "KPI Monthly: เพิ่มปุ่ม Export Excel ที่หน้า monthly และเปลี่ยนให้ใช้ template ผล KPI รายปี",
+    "titleEn": "KPI Monthly: add page-level Excel export and switch the monthly export to the yearly KPI template",
+    "date": "2026-07-09",
+    "type": "feature",
+    "commit": "feat/kpi-monthly-template-export",
+    "detailsTh": [
+      "components/kpi/KpiMonthlyClient.tsx: เพิ่มปุ่ม Export Excel บนหน้า qms/kpi/monthly และส่ง year พร้อม kpiId ที่เลือกอยู่ไปยัง API export",
+      "app/api/kpi/monthly-export/route.ts: เปลี่ยนจากการสร้างตารางดิบแบบ row-by-row มาใช้ไฟล์ docs/template/KPI Result Year 2026.xlsx เป็น template หลัก",
+      "app/api/kpi/monthly-export/route.ts: เติมข้อมูล KPI objectives รายปีลง sheet หลักตามเดือน Jan-Dec, อัปเดตหัวเอกสารตามปีที่เลือก และลบ sample sheets ที่ยังเป็นข้อมูลตัวอย่างออกจากไฟล์ส่งออก"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiMonthlyClient.tsx: added an Export Excel button on qms/kpi/monthly and pass the selected year plus current kpiId into the export API",
+      "app/api/kpi/monthly-export/route.ts: replaced the raw row-based workbook generation with docs/template/KPI Result Year 2026.xlsx as the export template",
+      "app/api/kpi/monthly-export/route.ts: populate yearly KPI objective results into the main Jan-Dec sheet, rewrite the header year values, and remove leftover sample sheets from the exported file"
+    ]
+  },
+  {
+    "id": "82",
+    "titleTh": "KPI: ปรับปรุงการจัดวางหน้าจอการรีวิว/อนุมัติ FM-MR-01 ให้สอดคล้องกับมาตรฐานของระบบ",
+    "titleEn": "KPI: align FM-MR-01 review/approval page layout with standard system style",
+    "date": "2026-07-09",
+    "type": "fix",
+    "commit": "fix/fm-mr-01-approval-layout-alignment",
+    "detailsTh": [
+      "components/kpi/FmMr01ApprovalPageClient.tsx, components/kpi/KpiSignatureDialog.tsx: ย้ายส่วนอัปโหลดเอกสารแนบประกอบจากแผงหลักไปอยู่ใน Modal ลงลายเซ็น (KpiSignatureDialog) แทน โดยเพิ่มการรองรับ children ให้กับคอมโพเนนต์ Dialog",
+      "components/kpi/FmMr01ApprovalPageClient.tsx: ปรับปรุงโครงสร้าง Layout หน้าจอเป็นแบบสองคอลัมน์บน Desktop (แสดงตารางเอกสารทางซ้าย แผงดำเนินการทางขวา) และแบบ Stack บนมือถือที่มีแถบ Action ด้านล่าง",
+      "components/kpi/FmMr01ApprovalPageClient.tsx: เพิ่มการแสดงผล Timeline ของเวิร์กโฟลว์การลงนามแบบแนวตั้ง (vertical layout) ในแผง Action ด้านขวา และแสดงรายการแนบการดำเนินการ/การปฏิเสธให้ชัดเจน",
+      "components/kpi/FmMr01PrintTemplate.tsx: เพิ่มพร็อพ isEmbedded เพื่อซ่อนแถบ Print และ wrapper ด้านนอกเพื่อแสดงตารางเอกสารซ้อนใน Layout สองคอลัมน์ได้อย่างแนบเนียน",
+      "app/(dashboard)/approve/kpi/[id]/reviewer/page.tsx, app/(dashboard)/approve/kpi/[id]/approver/page.tsx: เปลี่ยนมาใช้ wrapper กว้างปกติ max-w-7xl เพื่อความต่อเนื่องและสอดคล้องกับหน้าอื่นๆ"
+    ],
+    "detailsEn": [
+      "components/kpi/FmMr01ApprovalPageClient.tsx, components/kpi/KpiSignatureDialog.tsx: moved the action attachments upload interface from the main panel to the signature modal, equiping the dialog component with children prop support",
+      "components/kpi/FmMr01ApprovalPageClient.tsx: updated page layout structure to standard double-column desktop layout (document on the left, sticky action panel on the right) and stacked layout with bottom drawer/bar on mobile screens",
+      "components/kpi/FmMr01ApprovalPageClient.tsx: added a vertical workflow timeline inside the right-hand action panel and reorganized file attachments section for actions/rejections",
+      "components/kpi/FmMr01PrintTemplate.tsx: added isEmbedded prop to hide the outer full-screen wrappers and print toolbar when integrated inside a split layout",
+      "app/(dashboard)/approve/kpi/[id]/reviewer/page.tsx, app/(dashboard)/approve/kpi/[id]/approver/page.tsx: updated wrapper classes to standard max-w-7xl for consistent page dimensions"
+    ]
+  },
+  {
+    "id": "81",
+    "titleTh": "KPI Monthly: เพิ่ม admin action สำหรับ cleanup ข้อมูลรายงานรายเดือนของ SYSTEM_MASTER ที่เกิดผิดประเภท",
+    "titleEn": "KPI Monthly: add one-time admin cleanup action for wrongly created SYSTEM_MASTER monthly data",
+    "date": "2026-07-09",
+    "type": "fix",
+    "commit": "fix/kpi-monthly-system-master-cleanup-action",
+    "detailsTh": [
+      "app/api/kpi/monthly/system-master-cleanup/route.ts, services/kpiMonthlyService.ts: เพิ่ม API และ service สำหรับ QMS/MR/IT เพื่อดูจำนวนข้อมูลที่ค้างและสั่ง cleanup รายงานรายเดือนของ SYSTEM_MASTER ได้ครั้งเดียว",
+      "services/kpiMonthlyService.ts, repositories/kpiMonthlyReportRepository.ts: ลบข้อมูล kpi_monthly_reports ของ SYSTEM_MASTER พร้อมกวาด ApprovalSignature, ActionToken, Notification และ AuditLog ที่ผูกกับรายงานเหล่านั้น",
+      "components/kpi/KpiMonthlyClient.tsx: เพิ่มแถบแจ้งเตือนและปุ่มยืนยัน Cleanup Once บนหน้า KPI Monthly สำหรับผู้มีสิทธิ์ และซ่อนปุ่มอัตโนมัติเมื่อ cleanup หมดแล้ว"
+    ],
+    "detailsEn": [
+      "app/api/kpi/monthly/system-master-cleanup/route.ts and services/kpiMonthlyService.ts: added a privileged one-time cleanup endpoint for QMS/MR/IT to inspect and remove wrongly created SYSTEM_MASTER monthly reports",
+      "services/kpiMonthlyService.ts and repositories/kpiMonthlyReportRepository.ts: delete SYSTEM_MASTER monthly reports and sweep their linked approval signatures, action tokens, notifications, and audit logs",
+      "components/kpi/KpiMonthlyClient.tsx: added an admin warning banner and Cleanup Once confirmation action on the KPI Monthly page, and hide it automatically after cleanup reaches zero"
+    ]
+  },
+  {
+    "id": "80",
+    "titleTh": "KPI: เพิ่มหน้า Print PDF / Export สำหรับรายงานผลวัตถุประสงค์คุณภาพรายเดือน (FM-MR-03)",
+    "titleEn": "KPI: add print/PDF export page for monthly quality objectives report (FM-MR-03)",
+    "date": "2026-07-09",
+    "type": "feature",
+    "commit": "feat/kpi-monthly-fm-mr-03-print",
+    "detailsTh": [
+      "components/kpi/FmMr03PrintTemplate.tsx: สร้างคอมโพเนนต์เทมเพลตการพิมพ์ตามโครงสร้าง docs/template/kpi_monthly_template.html",
+      "components/kpi/FmMr03PrintTemplate.tsx: เปลี่ยนการแสดงผลลัพธ์เป็น OK/NG และเปลี่ยนมาแสดงรูปโลโก้จริงจาก /logo/logo.webp",
+      "components/kpi/FmMr03PrintTemplate.tsx, app/print/qms/kpi/monthly/[reportId]/page.tsx: แสดงบล็อกและรูปภาพลายเซ็นของผู้ตรวจสอบ (Reviewed By) เพิ่มเติมเพื่อให้ตรงตามสิทธิ์การลงนามในเวิร์กโฟลว์",
+      "components/kpi/FmMr03PrintTemplate.tsx, app/print/qms/kpi/monthly/[reportId]/page.tsx: ลบกล่องและสิทธิ์การลงนามของผู้อนุมัติ (Approved By) ออกเพื่อให้เหลือเพียง Prepared By และ Reviewed By",
+      "app/print/qms/kpi/monthly/[reportId]/page.tsx: สร้างหน้าเพจสำหรับการดึงข้อมูลรายงานรายเดือนและผลงาน 12 เดือนเพื่อส่งต่อให้เทมเพลต",
+      "components/kpi/KpiMonthlyDetailModal.tsx: เชื่อมโยงปุ่มพิมพ์รายงานให้ไปที่หน้าเพจใหม่แบบเปิดแท็บใหม่",
+      "components/kpi/KpiMonthlyDetailModal.tsx: เพิ่มข้อกำหนดการล็อคสิทธิ์ให้แก้ไขข้อมูลผลจริงได้เฉพาะรายงานของเดือนปัจจุบันและเดือนย้อนหลังไม่เกิน 1 เดือนเท่านั้น สำหรับผู้ใช้งานทั่วไป",
+      "components/kpi/KpiMonthlyClient.tsx, components/kpi/KpiMonthlyTable.tsx, components/kpi/KpiMonthlyDetailModal.tsx: เพิ่มการแสดงผลสี ป้ายกำกับ (Badge) และข้อความชี้แจงโหมดการแก้ไขของแต่ละเดือนให้ผู้ใช้เห็นชัดเจน"
+    ],
+    "detailsEn": [
+      "components/kpi/FmMr03PrintTemplate.tsx: created print template component matching docs/template/kpi_monthly_template.html",
+      "components/kpi/FmMr03PrintTemplate.tsx: display status as OK/NG instead of Thai words and render NDC logo image from /logo/logo.webp",
+      "components/kpi/FmMr03PrintTemplate.tsx, app/print/qms/kpi/monthly/[reportId]/page.tsx: added reviewer signature box (Reviewed By) to the monthly quality objectives print layout",
+      "components/kpi/FmMr03PrintTemplate.tsx, app/print/qms/kpi/monthly/[reportId]/page.tsx: removed Approved By signature box, keeping only Prepared By and Reviewed By",
+      "app/print/qms/kpi/monthly/[reportId]/page.tsx: added route handler to fetch monthly report details and 12-month data grid for printing",
+      "components/kpi/KpiMonthlyDetailModal.tsx: updated Print/Export button to open the new print route in a new tab",
+      "components/kpi/KpiMonthlyDetailModal.tsx: restricted editing of monthly actual results to the current month and the previous 1 month only for non-privileged users",
+      "components/kpi/KpiMonthlyClient.tsx, components/kpi/KpiMonthlyTable.tsx, components/kpi/KpiMonthlyDetailModal.tsx: added visual color indicators, badges, and read-only informational banners to clearly present period editability status to users"
+    ]
+  },
+  {
+    "id": "79",
+    "titleTh": "KPI: แก้ไขการแสดงผลข้อความเรื่องการดำเนินการแก้ไขเมื่อข้อมูลเป็น PENDING (ยังไม่กรอกผลจริง)",
+    "titleEn": "KPI: fix corrective action message display when results are PENDING (unfilled actuals)",
+    "date": "2026-07-09",
+    "type": "fix",
+    "commit": "fix/kpi-monthly-pending-corrective-action-msg",
+    "detailsTh": [
+      "components/kpi/KpiMonthlyDetailModal.tsx: ตรวจสอบสถานะ PENDING ของเป้าหมายเพื่อแสดงข้อความให้เหมาะสมขึ้น หากมีเป้าหมายที่ยังไม่ได้ระบุผลจริง จะแสดงข้อความว่า 'ไม่มีวัตถุประสงค์ที่ไม่ผ่านเกณฑ์ — ไม่จำเป็นต้องดำเนินการแก้ไข' แทนที่จะบอกว่าผ่านเกณฑ์ทั้งหมด",
+      "messages/th.json, messages/en.json: เพิ่มคีย์แปลภาษาสำหรับ noneFailed"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiMonthlyDetailModal.tsx: check hasPendingDetails to conditionally render a more accurate message 'No objectives failed criteria — no corrective action required' instead of saying 'All objectives achieved' when some actuals are unfilled",
+      "messages/th.json, messages/en.json: added noneFailed translation keys"
+    ]
+  },
+  {
+    "id": "78",
+    "titleTh": "KPI: จำกัดบล็อกลายเซ็น FM-MR-01 ให้อยู่ขวาล่างไม่เกินครึ่งหน้า",
+    "titleEn": "KPI: constrain the FM-MR-01 signature block to the bottom-right half of the page",
+    "date": "2026-07-09",
+    "type": "fix",
+    "commit": "fix/fm-mr-01-signature-block-right-half",
+    "detailsTh": [
+      "components/kpi/FmMr01PrintTemplate.tsx: ห่อบล็อกลายเซ็นให้ชิดขวา จำกัดความกว้างไว้ 48% ของหน้า และลด spacing ภายในตารางเพื่อไม่ให้ล้ำเข้าครึ่งซ้ายเวลา print"
+    ],
+    "detailsEn": [
+      "components/kpi/FmMr01PrintTemplate.tsx: wrapped the signature table in a right-aligned container, capped it at 48% page width, and tightened internal spacing so it stays within the right half when printed"
+    ]
+  },
+  {
+    "id": "77",
+    "titleTh": "KPI: ซ่อน Approval Workflow จากการ export หน้า FM-MR-01",
+    "titleEn": "KPI: hide the Approval Workflow section from FM-MR-01 export output",
+    "date": "2026-07-09",
+    "type": "fix",
+    "commit": "fix/fm-mr-01-hide-approval-workflow-on-export",
+    "detailsTh": [
+      "components/kpi/FmMr01PrintTemplate.tsx: เพิ่ม class สำหรับซ่อนส่วน Approval Workflow ตอน print/PDF แต่ยังแสดงบนหน้าจอ review"
+    ],
+    "detailsEn": [
+      "components/kpi/FmMr01PrintTemplate.tsx: added a print-only hide class so the Approval Workflow section stays visible on screen but is omitted from print/PDF export"
+    ]
+  },
+  {
+    "id": "76",
+    "titleTh": "KPI: ลบปุ่ม Download PDF ที่ซ้ำกับ Print บนหน้า FM-MR-01",
+    "titleEn": "KPI: remove the duplicate Download PDF button from the FM-MR-01 page",
+    "date": "2026-07-09",
+    "type": "fix",
+    "commit": "fix/fm-mr-01-remove-duplicate-print-button",
+    "detailsTh": [
+      "components/kpi/FmMr01PrintTemplate.tsx: ลบปุ่ม Download PDF เพราะเรียก `window.print()` เหมือนปุ่ม Print ทำให้ซ้ำและเพิ่มความรกของแถบ action"
+    ],
+    "detailsEn": [
+      "components/kpi/FmMr01PrintTemplate.tsx: removed the Download PDF button because it used the same `window.print()` action as the Print button and only added redundant UI"
+    ]
+  },
+  {
+    "id": "75",
+    "titleTh": "KPI: ผูก footer ของหน้า print FM-MR-01 ให้ใช้ qms/footer-config",
+    "titleEn": "KPI: wire the FM-MR-01 print footer to qms/footer-config",
+    "date": "2026-07-09",
+    "type": "feat",
+    "commit": "feat/fm-mr-01-footer-config",
+    "detailsTh": [
+      "app/print/qms/kpi/fm-mr-01/page.tsx: ดึงค่า footer config ของ `KPI_ANNUAL` ส่งเข้า template",
+      "components/kpi/FmMr01PrintTemplate.tsx: เปลี่ยน footer จาก hardcode เป็น prefix/label ที่อ่านจาก qms/footer-config พร้อม fallback ค่าเดิม"
+    ],
+    "detailsEn": [
+      "app/print/qms/kpi/fm-mr-01/page.tsx: loaded the `KPI_ANNUAL` footer config and passed it into the template",
+      "components/kpi/FmMr01PrintTemplate.tsx: replaced the hardcoded footer with qms/footer-config prefix/label values while keeping the old footer as fallback"
+    ]
+  },
+  {
+    "id": "74",
+    "titleTh": "Approve: ปรับการ์ดคิวอนุมัติ KPI ไม่ให้แสดง SYSTEM_MASTER",
+    "titleEn": "Approve: replace SYSTEM_MASTER on KPI queue cards with the FM-MR-01 label",
+    "date": "2026-07-09",
+    "type": "fix",
+    "commit": "fix/approve-kpi-system-master-card-label",
+    "detailsTh": [
+      "components/approve/ApprovePageClient.tsx: map `SYSTEM_MASTER` เป็น `FM-MR-01 / Annual Quality Objectives` ทั้งหัวข้อการ์ดและข้อมูลแผนกบนหน้า /approve"
+    ],
+    "detailsEn": [
+      "components/approve/ApprovePageClient.tsx: mapped `SYSTEM_MASTER` to `FM-MR-01 / Annual Quality Objectives` for the queue card title and department meta on /approve"
+    ]
+  },
+  {
+    "id": "73",
+    "titleTh": "KPI: ปรับคำแสดงผลบนหน้า approve ของ FM-MR-01 ไม่ให้โชว์ SYSTEM_MASTER",
+    "titleEn": "KPI: replace SYSTEM_MASTER label on the approve page with the FM-MR-01 document name",
+    "date": "2026-07-09",
+    "type": "fix",
+    "commit": "fix/kpi-approve-system-master-label",
+    "detailsTh": [
+      "components/approve/KpiApproveActionClient.tsx: เปลี่ยนคำแสดงผลของ department `SYSTEM_MASTER` บนหน้า approve เป็น `FM-MR-01 / Annual Quality Objectives`"
+    ],
+    "detailsEn": [
+      "components/approve/KpiApproveActionClient.tsx: replaced the raw `SYSTEM_MASTER` department label on the approve screen with `FM-MR-01 / Annual Quality Objectives`"
+    ]
+  },
+  {
+    "id": "72",
+    "titleTh": "KPI: à¸›à¸£à¸±à¸šà¸«à¸™à¹‰à¸² Review FM-MR-01 à¹ƒà¸«à¹‰à¸¢à¹‰à¸²à¸¢à¸¥à¸²à¸¢à¹€à¸‹à¹‡à¸™à¹„à¸›à¸”à¹‰à¸²à¸™à¸¥à¹ˆà¸²à¸‡ à¹à¸¥à¸°à¹€à¸žà¸´à¹ˆà¸¡à¸›à¸¸à¹ˆà¸¡ Cancel / Resend",
+    "titleEn": "KPI: move FM-MR-01 review signatures below and add Cancel / Resend actions",
+    "date": "2026-07-09",
+    "type": "feat",
+    "commit": "feat/kpi-master-review-cancel-resend",
+    "detailsTh": [
+      "components/kpi/FmMr01PrintTemplate.tsx: à¸¢à¹‰à¸²à¸¢ KpiApprovalTimeline à¸¥à¸‡à¹„à¸›à¸ªà¹ˆà¸§à¸™à¸¥à¹ˆà¸²à¸‡à¸‚à¸­à¸‡à¹€à¸­à¸à¸ªà¸²à¸£à¹ƒà¸™à¹‚à¸«à¸¡à¸” review à¹à¸¥à¸°à¹€à¸žà¸´à¹ˆà¸¡à¸›à¸¸à¹ˆà¸¡ Cancel / Resend à¸žà¸£à¹‰à¸­à¸¡ confirmation à¸ªà¸³à¸«à¸£à¸±à¸š recall",
+      "app/api/kpi/[id]/resend-notification/route.ts: à¹€à¸žà¸´à¹ˆà¸¡ API resend à¸à¸²à¸£à¹à¸ˆà¹‰à¸‡à¹€à¸•à¸·à¸­à¸™ KPI workflow à¸•à¸²à¸¡à¸ªà¸–à¸²à¸™à¸° PENDING_REVIEW / PENDING_APPROVAL à¸£à¸§à¸¡à¸–à¸¶à¸‡ FM-MR-01",
+      "services/kpiService.ts: à¸›à¸£à¸±à¸š recall notification à¸‚à¸­à¸‡ SYSTEM_MASTER à¹ƒà¸«à¹‰à¹à¸ªà¸”à¸‡à¸Šà¸·à¹ˆà¸­ FM-MR-01 à¹à¸¥à¸° link à¸à¸¥à¸±à¸šà¹„à¸›à¸«à¸™à¹‰à¸² KPI à¸—à¸µà¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡"
+    ],
+    "detailsEn": [
+      "components/kpi/FmMr01PrintTemplate.tsx: moved the approval timeline below the FM-MR-01 table in review mode and added Cancel / Resend actions with recall confirmation",
+      "app/api/kpi/[id]/resend-notification/route.ts: added resend notification support for KPI workflow pending-review and pending-approval states, including FM-MR-01",
+      "services/kpiService.ts: updated SYSTEM_MASTER recall notifications to use the FM-MR-01 display name and the correct KPI landing link"
+    ]
+  },
+  {
+    "id": "71",
+    "titleTh": "KPI: ปรับปรุงการนำทางไปยังหน้ารีวิว FM-MR-01 และความสวยงามของแถบสถานะการอนุมัติลายเซ็น",
+    "titleEn": "KPI: Improve FM-MR-01 review navigation and approval signatures status timeline design",
+    "date": "2026-07-09",
+    "type": "feat",
+    "commit": "feat/kpi-master-review-ux-timeline",
+    "detailsTh": [
+      "components/kpi/KpiObjectivesClient.tsx: เปลี่ยนการเปิด Dialog ของปุ่ม Review เป็นการ Navigate ไปหน้า /print/qms/kpi/fm-mr-01 พร้อมพารามิเตอร์ mode=review",
+      "app/print/qms/kpi/fm-mr-01/page.tsx: ปรับแก้ให้ดึงข้อมูล SYSTEM_MASTER KPI และดึงลายเซ็นมาแสดงผล",
+      "components/kpi/FmMr01PrintTemplate.tsx: เพิ่มแถบการทำงานด้านบนในโหมด Review ออกแบบสไตล์กระจกโปร่งแสง (glassmorphic) ที่สอดคล้องกับมาตรฐานของระบบ แสดงผล KpiApprovalTimeline และปุ่มส่งรีวิว พร้อมแสดงลายเซ็นที่ส่วนล่างของตารางเมื่ออนุมัติเสร็จสิ้น"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiObjectivesClient.tsx: updated the Review button handler to navigate directly to the print route in review mode",
+      "app/print/qms/kpi/fm-mr-01/page.tsx: loaded master KPI details and approval signatures context for rendering",
+      "components/kpi/FmMr01PrintTemplate.tsx: added a sticky review actions header toolbar with horizontal timeline progress styled to match system standards, and rendering bottom signature block once signed"
+    ]
+  },
+  {
+    "id": "70",
+    "titleTh": "KPI: เพิ่มฟีเจอร์ Review แผนงานวัตถุประสงค์คุณภาพประจำปี (FM-MR-01)",
+    "titleEn": "KPI: Add Master Quality Objectives (FM-MR-01) review and approval flow",
+    "date": "2026-07-09",
+    "type": "feat",
+    "commit": "feat/kpi-master-review-flow",
+    "detailsTh": [
+      "components/kpi/KpiObjectivesClient.tsx: เพิ่มปุ่ม Review สำหรับ QMS_QMS, QMS_IT, QMS_MR เพื่อขอตรวจสอบแผนวัตถุประสงค์คุณภาพประจำปี",
+      "components/kpi/KpiMasterReviewDialog.tsx: สร้างคอมโพเนนต์ Dialog สำหรับ Preview การ Export (FM-MR-01) พร้อม pad วาดลายเซ็น และฟอร์มเลือก Reviewer และ Approver",
+      "app/api/kpi/master-review/route.ts: สร้าง API รับข้อมูลการ Review บันทึกลายเซ็น ออก actionToken และส่ง Email/Notification",
+      "services/kpiService.ts: ปรับปรุง getKpiById, reviewObjectives, approveObjectives, rejectObjectives ให้รองรับ SYSTEM_MASTER KPI ที่ดึงข้อมูลจากทุกแผนก และปรับแต่งการแจ้งเตือนและการสร้างรายงานรายเดือนอย่างมีเงื่อนไข",
+      "components/approve/KpiApproveActionClient.tsx: แสดงชื่อหน่วยงานระบบเป็น วัตถุประสงค์คุณภาพประจำปี (FM-MR-01)"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiObjectivesClient.tsx: added a Review button for QMS_QMS, QMS_IT, QMS_MR to start the annual objectives master review",
+      "components/kpi/KpiMasterReviewDialog.tsx: created dialog component to preview the FM-MR-01 table, collect preparer's signature, and select Reviewer & Approver",
+      "app/api/kpi/master-review/route.ts: created API to initialize SYSTEM_MASTER KPI, save preparer signature, issue action token, and send email/in-app notifications",
+      "services/kpiService.ts: updated getKpiById, reviewObjectives, approveObjectives, and rejectObjectives to support combining objectives for SYSTEM_MASTER, skip monthly report generation, and customize notification parameters",
+      "components/approve/KpiApproveActionClient.tsx: resolved SYSTEM_MASTER department name as วัตถุประสงค์คุณภาพประจำปี (FM-MR-01) for display on approval screen"
+    ]
+  },
+  {
     "id": "69",
     "titleTh": "Notification: ซ่อนปุ่ม CTA ของ email template ในหน้าแจ้งเตือน",
     "titleEn": "Notification: hide email CTA buttons inside in-app notification templates",
