@@ -103,9 +103,7 @@ export default function KpiMasterAnnounceDialog({ open, onClose, kpiId, year, on
               placeholder="ค้นหากลุ่มอีเมลสำหรับผู้รับหลัก... / Search recipient email groups..."
               required
             />
-            <p className="text-xs text-slate-500">
-              ใช้กลุ่มอีเมลจากระบบเดียวกันกับระบบประกาศหลัก โดยไม่อิงตามหน่วยงาน / Uses the same email groups as the main announcement system, independent of departments
-            </p>
+
           </div>
 
           <div className="space-y-2">

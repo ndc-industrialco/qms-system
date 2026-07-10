@@ -1,5 +1,19 @@
 [
   {
+    "id": "89",
+    "titleTh": "KPI: ลบคำอธิบายกลุ่มอีเมลที่ไม่จำเป็นออกจากหน้าประกาศใช้ FM-MR-01",
+    "titleEn": "KPI: remove redundant email group description text from FM-MR-01 announce dialog",
+    "date": "2026-07-10",
+    "type": "fix",
+    "commit": "fix/kpi-master-announce-remove-desc",
+    "detailsTh": [
+      "components/kpi/KpiMasterAnnounceDialog.tsx: ลบคำบรรยายการใช้งานกลุ่มอีเมลที่ไม่จำเป็นออกตามที่ผู้ใช้ร้องขอ"
+    ],
+    "detailsEn": [
+      "components/kpi/KpiMasterAnnounceDialog.tsx: removed unnecessary email group system description text as requested"
+    ]
+  },
+  {
     "id": "88",
     "titleTh": "KPI: แก้ไขคำสะกดภาษาไทย 'สูตรคำนวณ' และปรับปรุงการแสดงผลข้อความ 2 ภาษา (TH/EN) ให้สมบูรณ์ยิ่งขึ้น",
     "titleEn": "KPI: fix Thai spelling for calculation formula and enhance bilingual (TH/EN) localization consistency",
