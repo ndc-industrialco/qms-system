@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth";
-import { ForbiddenError } from "@/errors/customErrors";
+import { ForbiddenError, UnauthorizedError } from "@/errors/customErrors";
 import { redirect } from "next/navigation";
 import { DepartmentCodeRepository } from "@/repositories/departmentCodeRepository";
 import { listAuthCenterDepartments } from "@/lib/auth-center-admin-client";
@@ -19,10 +19,18 @@ export default async function DepartmentCodePage() {
     throw e;
   }
 
-  const [authDepts, savedCodes] = await Promise.all([
-    listAuthCenterDepartments({ accessToken: session.user.accessToken }),
-    repo.findAll(),
-  ]);
+  let authDepts, savedCodes;
+  try {
+    [authDepts, savedCodes] = await Promise.all([
+      listAuthCenterDepartments({ accessToken: session.user.accessToken }),
+      repo.findAll(),
+    ]);
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      redirect("/api/auth/signout?callbackUrl=/qms/department-codes");
+    }
+    throw e;
+  }
 
   const codeMap = new Map(savedCodes.map(c => [c.authDeptId, c]));
 
@@ -43,3 +51,4 @@ export default async function DepartmentCodePage() {
     </div>
   );
 }
+

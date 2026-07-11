@@ -7,6 +7,8 @@ import { t } from "@/lib/i18n";
 import PageHeader from "@/components/common/PageHeader";
 import ProfileClient from "@/components/profile/ProfileClient";
 import type { Metadata } from "next";
+import { UnauthorizedError } from "@/lib/errors";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "My Profile",
@@ -18,16 +20,25 @@ const deptService = new DepartmentService();
 export default async function ProfilePage() {
   const session = await requireAuth();
   const authUserId = session.user.authUserId ?? session.user.id;
-  const [departments, authProfile, userPref, snapshot] = await Promise.all([
-    deptService.getActiveDepartments(session.user.accessToken),
-    authUserId
-      ? (session.user.accessToken
-          ? getAuthCenterMe(session.user.accessToken)
-          : getAuthCenterUserProfile(authUserId))
-      : Promise.resolve(null),
-    userPrefRepo.findByAuthUserId(session.user.id),
-    getUserSnapshot(session.user.id),
-  ]);
+  
+  let departments, authProfile, userPref, snapshot;
+  try {
+    [departments, authProfile, userPref, snapshot] = await Promise.all([
+      deptService.getActiveDepartments(session.user.accessToken),
+      authUserId
+        ? (session.user.accessToken
+            ? getAuthCenterMe(session.user.accessToken)
+            : getAuthCenterUserProfile(authUserId))
+        : Promise.resolve(null),
+      userPrefRepo.findByAuthUserId(session.user.id),
+      getUserSnapshot(session.user.id),
+    ]);
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      redirect("/api/auth/signout?callbackUrl=/profile");
+    }
+    throw e;
+  }
 
   const authDepartmentId = session.user.authDepartmentId ?? null;
   const departmentName = authDepartmentId
@@ -59,3 +70,4 @@ export default async function ProfilePage() {
     </div>
   );
 }
+

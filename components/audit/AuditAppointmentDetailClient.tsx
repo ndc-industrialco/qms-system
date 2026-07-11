@@ -157,12 +157,6 @@ export function AuditAppointmentDetailClient({ initialData, canSubmit, canCrud =
                     Print
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="sm" className="rounded-lg">
-                  <Link href={`/print/audit/auditor/${appt.id}`} target="_blank" rel="noreferrer">
-                    <Printer className="mr-1.5 h-3.5 w-3.5" />
-                    พิมพ์เอกสารผู้ตรวจ (Auditor Doc)
-                  </Link>
-                </Button>
                 {canCrud && (
                   <>
                     {canEdit && (

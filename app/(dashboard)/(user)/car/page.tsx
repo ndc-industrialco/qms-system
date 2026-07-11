@@ -9,6 +9,8 @@ import CarFormModalTrigger from "@/components/car/CarFormModalTrigger";
 import PageHeader from "@/components/common/PageHeader";
 import { carListQuerySchema } from "@/lib/validations/car";
 import type { Metadata } from "next";
+import { UnauthorizedError } from "@/lib/errors";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "CAR ของแผนก" };
 
@@ -36,22 +38,30 @@ export default async function UserCarListPage({
   });
   const scope = query.scope === "all" ? "my-department" : (query.scope ?? "my-department");
 
-  const [cars, carsAll, authProfile, footerConfig] = await Promise.all([
-    hasScope
-      ? carService.listCars(query, {
-          scope,
-          issuerAuthUserId: session.user.id,
-          authDepartmentId,
-        })
-      : Promise.resolve(undefined),
-    carService.listCars({ page: 1, limit: 20 }, { scope: "all" }),
-    authUserId
-      ? (session.user.accessToken
-          ? getAuthCenterMe(session.user.accessToken)
-          : getAuthCenterUserProfile(authUserId))
-      : Promise.resolve(null),
-    qmsConfigService.getSingleFooterConfig("CAR"),
-  ]);
+  let cars, carsAll, authProfile, footerConfig;
+  try {
+    [cars, carsAll, authProfile, footerConfig] = await Promise.all([
+      hasScope
+        ? carService.listCars(query, {
+            scope,
+            issuerAuthUserId: session.user.id,
+            authDepartmentId,
+          })
+        : Promise.resolve(undefined),
+      carService.listCars({ page: 1, limit: 20 }, { scope: "all" }),
+      authUserId
+        ? (session.user.accessToken
+            ? getAuthCenterMe(session.user.accessToken)
+            : getAuthCenterUserProfile(authUserId))
+        : Promise.resolve(null),
+      qmsConfigService.getSingleFooterConfig("CAR"),
+    ]);
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      redirect("/api/auth/signout?callbackUrl=/car");
+    }
+    throw e;
+  }
 
   const issuerName = authProfile?.displayName ?? session.user.name ?? null;
   // ponytail: jobTitle baked into session at login — no separate API call needed
@@ -86,3 +96,4 @@ export default async function UserCarListPage({
     </div>
   );
 }
+

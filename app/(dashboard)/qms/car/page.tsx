@@ -7,6 +7,8 @@ import CarFormModalTrigger from "@/components/car/CarFormModalTrigger";
 import PageHeader from "@/components/common/PageHeader";
 import { carListQuerySchema } from "@/lib/validations/car";
 import type { Metadata } from "next";
+import { UnauthorizedError } from "@/lib/errors";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { title: "CAR - QMS" };
 
@@ -34,19 +36,27 @@ export default async function QmsCarListPage({
   });
   const scope = query.scope ?? "all";
 
-  const [cars, authProfile, footerConfig] = await Promise.all([
-    carService.listCars(query, {
-      scope,
-      issuerAuthUserId: session.user.id,
-      authDepartmentId,
-    }),
-    authUserId
-      ? (session.user.accessToken
-          ? getAuthCenterMe(session.user.accessToken)
-          : getAuthCenterUserProfile(authUserId))
-      : Promise.resolve(null),
-    qmsConfigService.getSingleFooterConfig("CAR"),
-  ]);
+  let cars, authProfile, footerConfig;
+  try {
+    [cars, authProfile, footerConfig] = await Promise.all([
+      carService.listCars(query, {
+        scope,
+        issuerAuthUserId: session.user.id,
+        authDepartmentId,
+      }),
+      authUserId
+        ? (session.user.accessToken
+            ? getAuthCenterMe(session.user.accessToken)
+            : getAuthCenterUserProfile(authUserId))
+        : Promise.resolve(null),
+      qmsConfigService.getSingleFooterConfig("CAR"),
+    ]);
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      redirect("/api/auth/signout?callbackUrl=/qms/car");
+    }
+    throw e;
+  }
 
   const issuerName = authProfile?.displayName ?? session.user.name ?? null;
   const issuerPosition = authProfile?.jobTitle ?? session.user.jobTitle ?? null;
@@ -67,3 +77,4 @@ export default async function QmsCarListPage({
     </div>
   );
 }
+

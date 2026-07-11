@@ -8,6 +8,8 @@ import LocalizedEmptyState from "@/components/common/LocalizedEmptyState";
 import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
 import en from "@/messages/en.json";
+import { UnauthorizedError } from "@/lib/errors";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: en.it.users.title,
@@ -18,13 +20,21 @@ const deptService = new DepartmentService();
 export default async function ItUsersPage() {
   const session = await requireRole("IT");
 
-  const departments = await deptService.getActiveDepartments(session.user.accessToken);
-
-  const [acUsers, appMembers, grants] = await Promise.all([
-    listAuthCenterUsers({ accessToken: session.user.accessToken }),
-    listAuthCenterAppMembers({ accessToken: session.user.accessToken }),
-    listAuthCenterRoleGrants({ accessToken: session.user.accessToken }),
-  ]);
+  let departments;
+  let acUsers, appMembers, grants;
+  try {
+    departments = await deptService.getActiveDepartments(session.user.accessToken);
+    [acUsers, appMembers, grants] = await Promise.all([
+      listAuthCenterUsers({ accessToken: session.user.accessToken }),
+      listAuthCenterAppMembers({ accessToken: session.user.accessToken }),
+      listAuthCenterRoleGrants({ accessToken: session.user.accessToken }),
+    ]);
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      redirect("/api/auth/signout?callbackUrl=/it/users");
+    }
+    throw e;
+  }
 
   const roleMap = new Map<string, { role: string; grantId: string }>();
   const duplicateAuthUserIds = new Set<string>();
@@ -86,3 +96,4 @@ export default async function ItUsersPage() {
     </div>
   );
 }
+

@@ -1,5 +1,29 @@
 [
   {
+    "id": "106",
+    "titleTh": "Auth: จัดการข้อผิดพลาด UnauthorizedError (401) ใน Server Components และเปลี่ยนเส้นทางไปยังหน้าลงชื่อออก",
+    "titleEn": "Auth: handle UnauthorizedError (401) in Server Components and redirect to signout page",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/auth-center-unauthorized-redirect",
+    "detailsTh": [
+      "app/(dashboard)/it/departments/page.tsx: ครอบการดึงข้อมูลหน่วยงานด้วย try/catch และเปลี่ยนเส้นทางไปยัง signout หากพบข้อผิดพลาด UnauthorizedError เพื่อให้ผู้ใช้ล็อกอินใหม่เพื่อรับโทเค็นใหม่",
+      "app/(dashboard)/it/users/page.tsx: เพิ่ม try/catch สำหรับการดึงข้อมูลผู้ใช้และสิทธิ์หน่วยงานจาก Auth Center และทำการเปลี่ยนเส้นทางไปยังหน้า signout เมื่อโทเค็นหมดอายุ",
+      "app/(dashboard)/qms/department-codes/page.tsx: ป้องกันหน้าพังเมื่อโทเค็นไม่ถูกต้องโดยเพิ่มการเปลี่ยนเส้นทางไปยังหน้า signout",
+      "app/(dashboard)/(user)/car/page.tsx: ปรับปรุงการตรวจสอบโทเค็นขณะดึงข้อมูลและแสดงรายละเอียดหน้า CAR ของแผนก",
+      "app/(dashboard)/qms/car/page.tsx: ป้องกันปัญหาการเข้าถึงโดยไม่ได้รับอนุญาตในหน้าจัดการ CAR ของ QMS",
+      "app/(dashboard)/profile/page.tsx: เปลี่ยนเส้นทางไปยังหน้าล็อกเอาต์หากโทเค็นหมดอายุระหว่างดึงข้อมูลผู้ใช้จาก Auth Center"
+    ],
+    "detailsEn": [
+      "app/(dashboard)/it/departments/page.tsx: wrapped department fetching in try/catch to redirect to signout on UnauthorizedError so users can re-authenticate for a fresh token",
+      "app/(dashboard)/it/users/page.tsx: added try/catch block around Auth Center user and role grants fetch, redirecting to signout upon UnauthorizedError",
+      "app/(dashboard)/qms/department-codes/page.tsx: prevented page crash by redirecting to signout when token is invalid or expired",
+      "app/(dashboard)/(user)/car/page.tsx: enhanced try/catch handling for Auth Center profile and department data retrieval",
+      "app/(dashboard)/qms/car/page.tsx: handled UnauthorizedError to redirect users to signout cleanly",
+      "app/(dashboard)/profile/page.tsx: added try/catch block to redirect user to logout page if token expired during profile load"
+    ]
+  },
+  {
     "id": "105",
     "titleTh": "Audit: เพิ่มตัวเลือกเลือกแสดง/ซ่อนลายเซ็นบริษัทในเทมเพลตประกาศแต่งตั้งผู้ตรวจ",
     "titleEn": "Audit: add option to show/hide company stamp in auditor appointment letter template",
