@@ -1,5 +1,21 @@
 [
   {
+    "id": "107",
+    "titleTh": "Audit: แก้ไขการแสดงผลชื่อผู้ตรวจสอบ (Reviewer) และผู้อนุมัติ (Approver) เป็น ID แทนชื่อ",
+    "titleEn": "Audit: fix Reviewer and Approver display showing as IDs instead of names",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-plan-reviewer-approver-name-display",
+    "detailsTh": [
+      "app/api/dar/role-users/route.ts: ปรับปรุงการดึงข้อมูลรายชื่อผู้ตรวจสอบ/ผู้อนุมัติ หากข้อมูล snapshot ในแคชเป็นว่าง ให้ทำการดึงข้อมูลชื่อและอีเมลจริงจาก Auth Center แทนการใช้ ID (authUserId)",
+      "app/api/ms-graph/users/search/route.ts: ปรับแต่งให้ค้นหาแบบระบุ ID ตรงตัวได้ (Case-insensitive matching) เพื่อรองรับการ Prefill ข้อมูลผู้ตรวจสอบ/ผู้อนุมัติเก่าในหน้าจอต่างๆ"
+    ],
+    "detailsEn": [
+      "app/api/dar/role-users/route.ts: fallback to fetching display names and emails from Auth Center if cached snapshot is empty, preventing ID fallback",
+      "app/api/ms-graph/users/search/route.ts: added case-insensitive direct ID matching in Entra/Auth Center user search filters to support user lookups by ID during pre-filling"
+    ]
+  },
+  {
     "id": "106",
     "titleTh": "Auth: จัดการข้อผิดพลาด UnauthorizedError (401) ใน Server Components และเปลี่ยนเส้นทางไปยังหน้าลงชื่อออก",
     "titleEn": "Auth: handle UnauthorizedError (401) in Server Components and redirect to signout page",

@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
         };
       }).filter((user) => {
         if (!q) return true;
+        if (user.id.toLowerCase() === q.toLowerCase()) return true;
         const haystack = [
           user.displayName ?? "",
           user.email ?? "",
