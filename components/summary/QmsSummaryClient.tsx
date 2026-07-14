@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import {
   Filter,
-  Printer,
   Calendar,
   Building2,
   FileText,
@@ -13,7 +12,10 @@ import {
   X,
   AlertTriangle,
   RotateCcw,
+  ArrowUpRight,
+  FileSpreadsheet,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -97,25 +99,27 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
   // ---------------------------------------------------------
   // Filters State
   // ---------------------------------------------------------
-  const [selectedYear, setSelectedYear] = useState<string>("2026");
+  const currentYear = String(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<string>(currentYear);
   const [selectedDept, setSelectedDept] = useState<string>("ALL");
   const [selectedForm, setSelectedForm] = useState<string>("ALL");
   const [selectedPurpose, setSelectedPurpose] = useState<string>("ALL");
   const [activeTab, setActiveTab] = useState<"dar" | "car" | "kpi" | "audit">("dar");
 
-  const hasActiveFilters = selectedYear !== "2026" || selectedDept !== "ALL" || selectedForm !== "ALL" || selectedPurpose !== "ALL";
+  const hasActiveFilters = selectedYear !== currentYear || selectedDept !== "ALL" || selectedForm !== "ALL" || selectedPurpose !== "ALL";
 
   const clearAllFilters = useCallback(() => {
-    setSelectedYear("2026");
+    setSelectedYear(currentYear);
     setSelectedDept("ALL");
     setSelectedForm("ALL");
     setSelectedPurpose("ALL");
-  }, []);
+  }, [currentYear]);
 
   // ---------------------------------------------------------
-  // PDF Export Selection State
+  // Excel Export Selection State
   // ---------------------------------------------------------
   const [isExportMode, setIsExportMode] = useState<boolean>(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [selectedCharts, setSelectedCharts] = useState<Record<string, boolean>>({
     dar_by_dept: true,
     dar_by_status: true,
@@ -145,8 +149,41 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
     setSelectedCharts(updated);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleExportExcel = async () => {
+    if (isExportingExcel) return;
+
+    setIsExportingExcel(true);
+    try {
+      const response = await fetch("/api/qms/summary/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          year: selectedYear,
+          department: selectedDept,
+          form: selectedForm,
+          purpose: selectedPurpose,
+          dars: filteredDars,
+          cars: filteredCars,
+          kpis: filteredKpis,
+          auditFindings: filteredAuditFindings,
+          module: activeTab,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Excel export failed");
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `QMS-Summary-${selectedYear}.xlsx`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export QMS summary Excel", error);
+    } finally {
+      setIsExportingExcel(false);
+    }
   };
 
   // ---------------------------------------------------------
@@ -421,22 +458,25 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
   return (
     <div className="space-y-6">
       {/* 1. Header (Normal Mode) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 no-print">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F1059] via-[#17186f] to-[#25277f] px-5 py-6 text-white shadow-[0_14px_36px_rgba(15,16,89,0.2)] md:px-7 no-print">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-cyan-300/10 blur-3xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-5">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-[#0F1059]" />
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200">Quality Management System</p>
+          <h1 className="flex items-center gap-2 text-2xl font-bold">
+            <BarChart3 className="h-6 w-6 text-cyan-300" />
             หน้าสรุปผลภาพรวมระบบ QMS
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="mt-1 max-w-2xl text-sm text-blue-100/75">
             ระบบรายงานสถิติและข้อมูลภาพรวมของ DAR, CAR, KPI และผลการตรวจสอบ (Audit)
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="hidden">
           {!isExportMode ? (
-            <Button onClick={() => setIsExportMode(true)} className="bg-[#0F1059] hover:bg-[#161875] text-white">
-              <Printer className="h-4 w-4 mr-2" />
-              เตรียมส่งออก PDF
+            <Button onClick={() => setIsExportMode(true)} className="bg-white text-[#0F1059] hover:bg-blue-50">
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              เตรียมส่งออก Excel
             </Button>
           ) : (
             <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
@@ -446,8 +486,9 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
               <Button onClick={() => handleSelectAllCharts(false)} variant="ghost" size="sm" className="text-xs">
                 ล้างทั้งหมด
               </Button>
-              <Button onClick={handlePrint} className="bg-emerald-600 hover:bg-emerald-700 text-white" size="sm">
-                พิมพ์ออกเป็น PDF
+              <Button onClick={handleExportExcel} disabled={isExportingExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white" size="sm">
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                {isExportingExcel ? "กำลังสร้าง Excel..." : "ดาวน์โหลด Excel"}
               </Button>
               <Button
                 onClick={() => setIsExportMode(false)}
@@ -460,6 +501,20 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
             </div>
           )}
         </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3 no-print">
+        {[
+          { label: "DAR ที่ต้องติดตาม", value: pendingDarCount, href: "/qms/dar", tone: "text-amber-700", icon: FileText },
+          { label: "CAR ที่ต้องติดตาม", value: pendingCarCount, href: "/qms/car", tone: "text-rose-700", icon: ClipboardCheck },
+          { label: "ดู KPI รายเดือน", value: filteredKpis.length, href: "/qms/kpi/monthly", tone: "text-[#0F1059]", icon: BarChart3 },
+        ].map((item) => (
+          <Link key={item.href} href={item.href} className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md">
+            <span className="flex items-center gap-3"><span className="rounded-xl bg-slate-50 p-2"><item.icon className={`h-4 w-4 ${item.tone}`} /></span><span className="text-sm font-semibold text-slate-700">{item.label}</span></span>
+            <span className="flex items-center gap-2"><strong className={`text-lg ${item.tone}`}>{item.value}</strong><ArrowUpRight className="h-4 w-4 text-slate-300 transition group-hover:text-slate-600" /></span>
+          </Link>
+        ))}
       </div>
 
       <div className="no-print rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
@@ -486,7 +541,7 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
         <div className="no-print rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-800 flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 text-blue-600" />
           <div>
-            <strong>โหมดเตรียมส่งออก PDF เปิดใช้งานอยู่:</strong> กรุณาทำเครื่องหมายติ๊กถูกมุมบนขวาของแต่ละกราฟเพื่อเลือกว่าจะรวมไว้ในไฟล์ PDF จากนั้นคลิกปุ่มสีเขียว <strong>&quot;พิมพ์ออกเป็น PDF&quot;</strong> หรือใช้คีย์บอร์ดกด Ctrl+P
+            เลือกตัวกรอง แล้วกด <strong>&quot;ดาวน์โหลด Excel&quot;</strong>
           </div>
         </div>
       )}
@@ -603,11 +658,11 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
         {hasActiveFilters && (
           <div className="flex flex-wrap items-center gap-2 px-5 pb-4">
             <span className="text-[11px] text-slate-400 font-medium">ตัวกรองที่ใช้งาน:</span>
-            {selectedYear !== "2026" && (
+            {selectedYear !== currentYear && (
               <span className="inline-flex items-center gap-1 rounded-lg bg-[#0F1059]/5 border border-[#0F1059]/10 px-2.5 py-1 text-[11px] font-medium text-[#0F1059]">
                 <Calendar className="h-3 w-3" />
                 ปี {selectedYear}
-                <button onClick={() => setSelectedYear("2026")} className="ml-0.5 hover:text-[#0F1059]/70">
+                <button onClick={() => setSelectedYear(currentYear)} className="ml-0.5 hover:text-[#0F1059]/70">
                   <X className="h-3 w-3" />
                 </button>
               </span>
@@ -692,7 +747,7 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
       </div>
 
       {/* 5. Charts Content Panels */}
-      <div className="space-y-6">
+      <div className="space-y-6 rounded-2xl bg-slate-50 p-1">
         {/* TAB 1: DAR */}
         {(activeTab === "dar" || isExportMode) && (
           <div
@@ -821,6 +876,16 @@ export default function QmsSummaryClient({ initialData }: QmsSummaryClientProps)
             </div>
           </div>
         )}
+      </div>
+
+      <div className="no-print flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">ส่งออก {activeTab.toUpperCase()} เฉพาะ Module นี้</p>
+        </div>
+        <Button onClick={handleExportExcel} disabled={isExportingExcel} className="bg-[#0F1059] text-white hover:bg-[#161875]">
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
+          {isExportingExcel ? "กำลังสร้าง Excel..." : `ดาวน์โหลด ${activeTab.toUpperCase()}`}
+        </Button>
       </div>
 
       {/* 6. Print Footer (Only shown when browser printing is triggered) */}

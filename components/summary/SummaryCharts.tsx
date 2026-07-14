@@ -101,7 +101,7 @@ function ChartCard({
     <div
       className={`relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 ${
         selected ? "ring-2 ring-[#0F1059]/20" : ""
-      } ${isExportMode && !selected ? "opacity-40 print:hidden" : ""}`}
+      } ${isExportMode && !selected ? "chart-unselected opacity-40" : ""}`}
     >
       {isExportMode && onToggleSelect && (
         <div className="absolute top-4 right-4 z-10 no-print">

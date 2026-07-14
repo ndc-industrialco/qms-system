@@ -36,8 +36,12 @@ export async function GET(req: NextRequest) {
     try {
       const cached = await redis.get(cacheKey);
       if (cached) {
+        const cachedData = JSON.parse(cached) as { downloadUrl?: string };
         return NextResponse.json({
-          data: JSON.parse(cached),
+          data: {
+            ...cachedData,
+            previewUrl: `/api/sharepoint/preview-file?itemId=${encodeURIComponent(itemId)}`,
+          },
           error: null,
         });
       }
@@ -52,7 +56,11 @@ export async function GET(req: NextRequest) {
       officeEmbedUrl = await getOfficePreviewUrl(itemId);
     }
 
-    const responseData = { ...info, officeEmbedUrl };
+    const responseData = {
+      ...info,
+      officeEmbedUrl,
+      previewUrl: `/api/sharepoint/preview-file?itemId=${encodeURIComponent(itemId)}`,
+    };
 
     try {
       // Cache for 45 minutes (2700 seconds) since pre-signed URL expires after 60 minutes

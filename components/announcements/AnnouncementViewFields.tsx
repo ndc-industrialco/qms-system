@@ -12,7 +12,7 @@ function formatDate(date: Date | null): string {
 function AttachmentPreview({ itemId, fileName }: { itemId: string; fileName: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [previewData, setPreviewData] = useState<{ downloadUrl: string; officeEmbedUrl?: string | null; mimeType?: string } | null>(null);
+  const [previewData, setPreviewData] = useState<{ downloadUrl: string; previewUrl?: string; officeEmbedUrl?: string | null; mimeType?: string } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -59,7 +59,8 @@ function AttachmentPreview({ itemId, fileName }: { itemId: string; fileName: str
 
   if (!previewData) return null;
 
-  const { downloadUrl, officeEmbedUrl, mimeType } = previewData;
+  const { downloadUrl, previewUrl, officeEmbedUrl, mimeType } = previewData;
+  const filePreviewUrl = previewUrl || downloadUrl;
   const lowerName = fileName.toLowerCase();
   const isImage = mimeType?.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp)$/i.test(lowerName);
   const isPdf = mimeType === "application/pdf" || lowerName.endsWith(".pdf");
@@ -69,7 +70,7 @@ function AttachmentPreview({ itemId, fileName }: { itemId: string; fileName: str
       <div className="mt-2 max-w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={downloadUrl}
+          src={filePreviewUrl}
           alt={fileName}
           className="max-h-[300px] w-auto object-contain rounded"
         />
@@ -81,7 +82,7 @@ function AttachmentPreview({ itemId, fileName }: { itemId: string; fileName: str
     return (
       <div className="mt-2 w-full h-[350px] rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
         <iframe
-          src={`${downloadUrl}#toolbar=0`}
+          src={`${filePreviewUrl}#toolbar=0`}
           className="w-full h-full border-none"
           title={fileName}
         />
