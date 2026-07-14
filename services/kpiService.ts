@@ -388,10 +388,36 @@ export class KpiService {
   async deleteKpi(id: string, actor?: ActorContext) {
     const kpi = await this.kpiRepo.findByIdWithRelations(id);
     if (!kpi) throw new NotFoundError(`KPI ${id} not found`);
-    if (kpi.monthlyReports.length > 0) {
-      throw new ConflictError('Cannot delete KPI with existing monthly reports');
-    }
+
+    const monthlyReportIds = kpi.monthlyReports.map((report) => report.id);
     return db.$transaction(async (tx) => {
+      if (monthlyReportIds.length > 0) {
+        await tx.approvalSignature.deleteMany({
+          where: { module: 'KPI_MONTHLY', documentId: { in: monthlyReportIds } },
+        });
+        await tx.actionToken.deleteMany({
+          where: { module: 'KPI_MONTHLY', documentId: { in: monthlyReportIds } },
+        });
+        await tx.notification.deleteMany({
+          where: {
+            resourceId: { in: monthlyReportIds },
+            resourceType: { in: ['KPI_MONTHLY', 'KPI_MONTHLY_REVIEWER', 'KPI_MONTHLY_APPROVER'] },
+          },
+        });
+        await tx.auditLog.deleteMany({
+          where: { resourceType: 'KPI_MONTHLY_REPORT', resourceId: { in: monthlyReportIds } },
+        });
+        await tx.kPIMonthlyDetail.deleteMany({
+          where: { monthlyReportId: { in: monthlyReportIds } },
+        });
+        await tx.kPIMonthlyReport.deleteMany({ where: { id: { in: monthlyReportIds } } });
+      }
+
+      await tx.approvalSignature.deleteMany({ where: { module: 'KPI', documentId: id } });
+      await tx.actionToken.deleteMany({ where: { module: 'KPI', documentId: id } });
+      await tx.notification.deleteMany({ where: { resourceId: id, resourceType: { in: ['KPI', 'KPI_REVIEWER', 'KPI_APPROVER'] } } });
+      await tx.auditLog.deleteMany({ where: { resourceType: 'KPI', resourceId: id } });
+      await tx.kPIObjective.deleteMany({ where: { kpiId: id } });
       const deleted = await this.kpiRepo.delete(id, tx);
       if (actor) {
         await AuditService.record({

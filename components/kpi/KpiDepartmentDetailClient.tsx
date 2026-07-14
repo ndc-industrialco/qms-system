@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n";
 import { KPI_UNITS } from "@/lib/kpi-units";
 import { fetchApprovalConfigDefaultUser } from "@/lib/approval-config-client";
@@ -32,6 +33,7 @@ import {
   useAnnounceKpi,
   useReviseKpi,
   useUpdateKpi,
+  useDeleteKpi,
   type KpiDetailResponse,
   type KpiObjectiveWithRevision,
 } from "@/hooks/api/use-kpi";
@@ -181,6 +183,8 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, authUse
   const [signatureMode, setSignatureMode] = useState<"submit" | "review" | "approve">("submit");
   const [pendingSignature, setPendingSignature] = useState<string | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const router = useRouter();
 
   const addMutation = useAddObjective();
   const updateMutation = useUpdateObjective();
@@ -193,6 +197,7 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, authUse
   const announceMutation = useAnnounceKpi();
   const reviseMutation = useReviseKpi();
   const updateKpiMutation = useUpdateKpi();
+  const deleteKpiMutation = useDeleteKpi();
 
   const [docNameEditOpen, setDocNameEditOpen] = useState(false);
   const [docNameValue, setDocNameValue] = useState("");
@@ -486,6 +491,15 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, authUse
                 className="rounded-xl"
               >
                 <Edit3 className="w-4 h-4 text-slate-400" />
+              </Button>
+            )}
+            {privileged && (
+              <Button
+                variant="destructive"
+                className="rounded-xl"
+                onClick={() => setResetConfirmOpen(true)}
+              >
+                Reset KPI
               </Button>
             )}
           </div>
@@ -940,6 +954,30 @@ export default function KpiDepartmentDetailClient({ kpiId, role, userId, authUse
             }
           }}
           onCancel={() => { setDeleteConfirmOpen(false); setDeleteTargetId(null); }}
+        />
+      )}
+
+      {resetConfirmOpen && (
+        <ConfirmModal
+          title="Reset KPI ของแผนกนี้"
+          message={`การดำเนินการนี้จะลบ KPI รายปี วัตถุประสงค์รายปี และ KPI Monthly ทั้งหมดของ ${kpi?.department ?? "แผนกนี้"} ปี ${kpi?.yearly ?? "ที่เลือก"} รวมถึงข้อมูล workflow ที่เกี่ยวข้อง และไม่สามารถกู้คืนได้`}
+          confirmLabel="ยืนยัน Reset KPI"
+          cancelLabel={t("common.cancel")}
+          danger
+          loading={deleteKpiMutation.isPending}
+          onConfirm={async () => {
+            try {
+              await deleteKpiMutation.mutateAsync(kpiId);
+              toast.success("Reset KPI สำเร็จ");
+              router.push("/qms/kpi");
+              router.refresh();
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : t("error.title"), { duration: Infinity });
+            } finally {
+              setResetConfirmOpen(false);
+            }
+          }}
+          onCancel={() => setResetConfirmOpen(false)}
         />
       )}
 

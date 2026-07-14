@@ -11,7 +11,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/db", () => ({
   db: {
-    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn({})),
+    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn({
+      approvalSignature: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      actionToken: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      notification: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      auditLog: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      kPIMonthlyDetail: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      kPIMonthlyReport: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      kPIObjective: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    })),
     actionToken: {
       create: vi.fn().mockResolvedValue({}),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
@@ -373,12 +381,15 @@ describe("KpiService", () => {
       await expect(service.deleteKpi("missing")).rejects.toThrow(NotFoundError);
     });
 
-    it("throws ConflictError when KPI has monthly reports", async () => {
+    it("resets KPI and its monthly reports when monthly data exists", async () => {
       vi.mocked(kpiRepo.findByIdWithRelations).mockResolvedValue(
         makeKpi({ monthlyReports: [{ id: "report-1" }] }) as never
       );
+      vi.mocked(kpiRepo.delete).mockResolvedValue({} as never);
 
-      await expect(service.deleteKpi("kpi-1")).rejects.toThrow(ConflictError);
+      await service.deleteKpi("kpi-1");
+
+      expect(kpiRepo.delete).toHaveBeenCalledWith("kpi-1", expect.anything());
     });
 
     it("deletes KPI when no monthly reports exist", async () => {
