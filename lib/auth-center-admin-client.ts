@@ -140,6 +140,7 @@ export async function listAuthCenterUsers(options?: AuthCenterClientAuthOptions)
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    if (res.status === 401) throw new UnauthorizedError();
     throw new Error(`Auth Center user list failed (${res.status}): ${text}`);
   }
 
@@ -187,6 +188,7 @@ export async function listAuthCenterRoleGrants(options?: AuthCenterClientAuthOpt
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    if (res.status === 401) throw new UnauthorizedError();
     throw new Error(`Auth Center role grants list failed (${res.status}): ${text}`);
   }
 
@@ -356,7 +358,10 @@ export async function getAuthCenterMe(
     cache: "no-store",
   });
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    if (res.status === 401) throw new UnauthorizedError();
+    return null;
+  }
 
   const json = await res.json() as { data?: Record<string, unknown> };
   const d = json.data ?? {};
