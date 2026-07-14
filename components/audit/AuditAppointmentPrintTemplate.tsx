@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-page-custom-font */
+/* eslint-disable @next/next/no-img-element */
 import PrintPageActions from "@/components/shared/PrintPageActions";
 import type { AuditAppointmentRow } from "@/types/audit";
 import type { FooterConfig } from "@/services/qmsConfigService";

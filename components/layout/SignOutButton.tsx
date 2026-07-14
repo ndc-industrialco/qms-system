@@ -17,7 +17,6 @@ export default function SignOutButton({ label = "ออกจากระบบ"
           {label}
         </Button>
       </form>
-      <div className="text-[10px] text-slate-400/60 pl-3.5 mt-0.5 select-none">v2</div>
     </div>
   );
 }

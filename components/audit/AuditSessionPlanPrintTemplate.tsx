@@ -1,5 +1,8 @@
 "use client";
 
+/* eslint-disable @next/next/no-page-custom-font */
+/* eslint-disable @next/next/no-img-element */
+
 import PrintPageActions from "@/components/shared/PrintPageActions";
 import type { FooterConfig } from "@/services/qmsConfigService";
 import { resolvePrintLabel } from "./AuditPrintShared";

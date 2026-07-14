@@ -43,4 +43,22 @@ export class NotificationLogRepository {
       update: {},
     });
   }
+
+  async findRecentLogs(channel: string, limit: number = 20) {
+    return db.notificationLog.findMany({
+      where: { channel },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        status: true,
+        recipient: true,
+        subject: true,
+        errorMessage: true,
+        attempts: true,
+        sentAt: true,
+        createdAt: true,
+      },
+    });
+  }
 }

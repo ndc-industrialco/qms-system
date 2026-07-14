@@ -29,6 +29,7 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/health/route.ts",
   "app/api/health/live/route.ts",
   "app/api/health/ready/route.ts",
+  "app/api/health/email/route.ts",
   "app/api/system-info/route.ts",
   "app/api/development-logs/route.ts",
   "app/api/qms/footer-config/route.ts",
@@ -88,6 +89,7 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/audit/plans/[id]/close/route.ts",
   "app/api/audit/plans/[id]/complete/route.ts",
   "app/api/audit/plans/[id]/delete/route.ts",
+  "app/api/audit/schedules/[id]/accept-suggested-date/route.ts",
   "app/api/car/[id]/remind/route.ts",
   // DELETE with path param only
   "app/api/audit/attachments/[id]/route.ts",

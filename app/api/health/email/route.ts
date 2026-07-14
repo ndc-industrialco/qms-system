@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/apiErrorHandler";
-import { db } from "@/lib/db";
+import { NotificationLogRepository } from "@/repositories/notificationLogRepository";
 import { getEmailSendReadiness } from "@/lib/email-health";
+
+const notifLogRepo = new NotificationLogRepository();
 
 export async function GET() {
   try {
@@ -16,21 +18,7 @@ export async function GET() {
       hasM2mCredentials,
     });
 
-    const logs = await db.notificationLog.findMany({
-      where: { channel: "EMAIL" },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-      select: {
-        id: true,
-        status: true,
-        recipient: true,
-        subject: true,
-        errorMessage: true,
-        attempts: true,
-        sentAt: true,
-        createdAt: true,
-      },
-    });
+    const logs = await notifLogRepo.findRecentLogs("EMAIL", 20);
 
     const counts = logs.reduce(
       (result, log) => {
