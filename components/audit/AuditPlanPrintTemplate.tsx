@@ -71,7 +71,7 @@ export default function AuditPlanPrintTemplate({
           <InfoCard label="Title" value={plan.title} />
           <InfoCard label="Standards" value={joinOrDash(plan.standards)} />
           <InfoCard label="Audit Period" value={`${formatThaiDate(plan.startDate)} - ${formatThaiDate(plan.endDate)}`} />
-          <InfoCard label="Owner" value={plan.ownerNameSnapshot ?? "-"} />
+          <InfoCard label="Prepare (ผู้จัดทำ)" value={plan.ownerNameSnapshot ?? plan.ownerEmail ?? "-"} />
           <InfoCard label="Scope" value={plan.scope ?? "-"} />
           <InfoCard label="Appointment Link" value={plan.appointmentId ?? "-"} mono />
           <InfoCard label="Reviewer" value={plan.reviewerNameSnapshot ?? plan.reviewerEmail ?? "-"} />

@@ -115,6 +115,7 @@ export type AuditPlanSummary = {
   startDate: string | null;
   endDate: string | null;
   ownerAuthUserId: string;
+  ownerEmail: string | null;
   ownerNameSnapshot: string | null;
   createdAt: string;
   updatedAt: string;
@@ -135,7 +136,7 @@ export type AuditAuditorRow = {
   role: AuditorRole;
 };
 
-export type AuditScheduleConfirmStatus = "PENDING" | "CONFIRMED" | "UNAVAILABLE";
+export type AuditScheduleConfirmStatus = "PENDING" | "CONFIRMED" | "UNAVAILABLE" | "SUGGESTED";
 
 export type AuditTeamRole = "LEAD_AUDITOR" | "AUDITOR" | "OBSERVER" | "AUDITEE";
 
@@ -166,7 +167,12 @@ export type AuditScheduleRow = {
   departmentName: string | null;
   contactEmail: string | null;
   confirmStatus: AuditScheduleConfirmStatus;
-  unavailableReason: string | null;
+    unavailableReason: string | null;
+    suggestedStartAt: string | null;
+    suggestedEndAt: string | null;
+    suggestedReason: string | null;
+    suggestedByName: string | null;
+    suggestedAt: string | null;
   confirmedAt: string | null;
   confirmedByName: string | null;
   leadAuditorAuthUserId: string | null;
@@ -265,6 +271,7 @@ export type AuditPlanDetail = AuditPlanSummary & {
   findings: AuditFindingRow[];
   signoffs: AuditSignoffRow[];
   report: AuditReportRow | null;
+  sessionPlanId?: string | null;
 };
 
 export type AuditAttachmentRow = {

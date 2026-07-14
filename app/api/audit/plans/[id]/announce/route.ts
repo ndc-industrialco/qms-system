@@ -23,7 +23,7 @@ export async function POST(
     const body = await req.json();
     const input = auditAnnounceSchema.parse(body);
 
-    const plan = await repo.findForAnnounce(planId);
+    const plan = await repo.findDetailById(planId);
     if (!plan) throw new ValidationError("Plan not found");
 
     if (plan.status !== "PLANNED" && plan.status !== "ANNOUNCED") {
@@ -46,6 +46,12 @@ export async function POST(
         planId,
         auditNo: plan.auditNo,
         planTitle: plan.title,
+        auditType: plan.auditType,
+        startDate: plan.startDate?.toISOString() ?? null,
+        endDate: plan.endDate?.toISOString() ?? null,
+        scope: plan.scope,
+        departments: plan.departments.map((d) => ({ name: d.departmentName, code: d.departmentCode })),
+        auditors: plan.auditors.map((a) => ({ name: a.assigneeNameSnapshot, role: a.role })),
         message: input.message,
         recipients: input.recipientEmails.map((e) => ({ name: e, email: e })),
         senderAccessToken: session.user.accessToken,

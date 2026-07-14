@@ -29,6 +29,57 @@ Update this file:
 
 ## Entries
 
+### [2026-07-13] Sprint Update — Audit Suggested Date + Database Deployment
+
+- Implementer: Codex (AI assistant)
+- Status: `completed`
+- Scope: Allow audit departments to suggest a replacement audit date when they cannot attend the scheduled slot; deploy the related database migration.
+
+#### Summary
+
+Added the complete suggested-date flow. A department can respond with a reason and a new start/end time. The audit plan owner receives in-app/email notification, then accepts the proposed date and sends a new schedule invitation.
+
+#### Implementation Details
+
+- Added `SUGGESTED` to `AuditScheduleConfirmStatus`.
+- Added suggested date metadata and proposer fields to `AuditSchedule`.
+- Added validation requiring reason, both dates, and `end > start` for suggested dates.
+- Added `POST /api/audit/schedules/[id]/accept-suggested-date` with owner/lead/privileged authorization.
+- Added owner notification, email template support, UI form fields, status display, and accept action.
+- Added migration `20260713170000_add_audit_suggested_date`.
+- Reconciled existing migration history where older schema objects already existed, then deployed all pending migrations.
+
+#### Files Touched
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20260713170000_add_audit_suggested_date/migration.sql`
+- `lib/validations/audit.ts`
+- `types/audit.ts`
+- `services/audit/auditPlanService.ts`
+- `services/audit/auditEmailService.ts`
+- `app/api/audit/schedules/[id]/accept-suggested-date/route.ts`
+- `hooks/api/use-audit-schedules.ts`
+- `components/audit/AuditPlanDetailClient.tsx`
+- `app/(dashboard)/audit/plans/[id]/page.tsx`
+- `__tests__/audit-suggest-date.test.ts`
+
+#### Tests and Verification
+
+- Vitest: `8 files, 56 tests passed`
+- Target test: suggested-date schema tests passed
+- TypeScript: `tsc --noEmit` passed
+- Build: `npm run build` passed
+- Prisma: `migrate deploy` completed successfully
+- Prisma status: `Database schema is up to date!`
+
+#### Blockers
+
+- Lint still reports one pre-existing `ndc/no-db-in-api` error in `app/api/health/email/route.ts` and existing audit print-template warnings; unrelated to this sprint batch.
+
+#### Follow-up
+
+- Manually verify the department response and owner acceptance flow in `/audit/plans/[id]` against a real email configuration.
+
 ### [2026-06-19 00:00] Initial Setup
 
 - Implementer: (original)

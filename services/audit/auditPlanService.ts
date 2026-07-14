@@ -541,9 +541,15 @@ export class AuditPlanService {
         data: {
           confirmStatus: input.status,
           unavailableReason: input.status === "UNAVAILABLE" ? (input.reason ?? null) : null,
-          confirmedAt: now,
-          confirmedByAuthUserId: actorId,
-          confirmedByName: actor.nameSnapshot ?? null,
+          suggestedStartAt: input.status === "SUGGESTED" ? (input.suggestedStartAt ?? null) : null,
+          suggestedEndAt: input.status === "SUGGESTED" ? (input.suggestedEndAt ?? null) : null,
+          suggestedReason: input.status === "SUGGESTED" ? (input.reason ?? null) : null,
+          suggestedByAuthUserId: input.status === "SUGGESTED" ? actorId : null,
+          suggestedByName: input.status === "SUGGESTED" ? (actor.nameSnapshot ?? null) : null,
+          suggestedAt: input.status === "SUGGESTED" ? now : null,
+          confirmedAt: input.status === "SUGGESTED" ? null : now,
+          confirmedByAuthUserId: input.status === "SUGGESTED" ? null : actorId,
+          confirmedByName: input.status === "SUGGESTED" ? null : (actor.nameSnapshot ?? null),
         },
       });
 
@@ -568,13 +574,15 @@ export class AuditPlanService {
     // Notify plan owner that dept confirmed/declined
     if (plan.ownerAuthUserId && plan.ownerAuthUserId !== actorId) {
       const deptLabel = schedule.departmentName ?? "แผนก";
-      const statusLabel = input.status === "CONFIRMED" ? "ยืนยันแล้ว" : "แจ้งไม่ว่าง";
+      const statusLabel = input.status === "CONFIRMED" ? "ยืนยันแล้ว" : input.status === "SUGGESTED" ? "เสนอวันใหม่" : "แจ้งไม่ว่าง";
       await NotificationService.createInAppNotification({
         recipientId: plan.ownerAuthUserId,
         recipientAuthUserId: plan.ownerAuthUserId,
         title: `${deptLabel} ${statusLabel} — ${plan.auditNo}`,
         body: input.status === "UNAVAILABLE"
           ? `${deptLabel} ไม่ว่างในช่วง "${schedule.sessionTitle}": ${input.reason ?? "-"}`
+          : input.status === "SUGGESTED"
+            ? `${deptLabel} เสนอวันใหม่สำหรับ "${schedule.sessionTitle}"${input.suggestedStartAt ? `: ${input.suggestedStartAt.toLocaleString("th-TH")}` : ""}`
           : `${deptLabel} ยืนยันตาราง "${schedule.sessionTitle}" แล้ว`,
         module: "AUDIT",
         resourceId: plan.id,
@@ -593,11 +601,76 @@ export class AuditPlanService {
         status: input.status,
         confirmedBy: actor.nameSnapshot ?? actorId,
         reason: input.reason ?? null,
+        suggestedStartAt: input.suggestedStartAt?.toISOString() ?? null,
+        suggestedEndAt: input.suggestedEndAt?.toISOString() ?? null,
         planId: plan.id,
         senderAccessToken: actor.accessToken,
       }).catch((err) => logger.warn("[auditSchedule] status email failed", { error: String(err) }));
     }
 
+    return updated;
+  }
+
+  async acceptSuggestedSchedule(
+    scheduleId: string,
+    actor: { userId: string; authUserId?: string | null; role: string; accessToken?: string | null }
+  ) {
+    const schedule = await this.scheduleRepo.findWithPlan(scheduleId);
+    if (!schedule) throw new NotFoundError("Schedule not found");
+    const plan = await this.repo.findWithAuditorsAndLead(schedule.planId);
+    if (!plan) throw new NotFoundError("Audit plan not found");
+    this.assertOwnerLeadOrPrivileged(plan, actor);
+    if (schedule.confirmStatus !== "SUGGESTED" || !schedule.suggestedStartAt || !schedule.suggestedEndAt) {
+      throw new ValidationError("No suggested date is waiting for approval");
+    }
+
+    const updated = await db.$transaction(async (tx) => {
+      const result = await tx.auditSchedule.update({
+        where: { id: scheduleId },
+        data: {
+          startAt: schedule.suggestedStartAt!,
+          endAt: schedule.suggestedEndAt!,
+          confirmStatus: "PENDING",
+          unavailableReason: null,
+          suggestedStartAt: null,
+          suggestedEndAt: null,
+          suggestedReason: null,
+          suggestedByAuthUserId: null,
+          suggestedByName: null,
+          suggestedAt: null,
+          confirmedAt: null,
+          confirmedByAuthUserId: null,
+          confirmedByName: null,
+        },
+      });
+      await AuditService.record({
+        actorUserId: actor.userId,
+        actorAuthUserId: actor.authUserId,
+        actorRole: actor.role,
+        action: "UPDATE",
+        resourceType: "AUDIT_SCHEDULE",
+        resourceId: scheduleId,
+        before: { confirmStatus: schedule.confirmStatus, startAt: schedule.startAt, endAt: schedule.endAt },
+        after: { confirmStatus: "PENDING", startAt: result.startAt, endAt: result.endAt },
+        metadata: { action: "ACCEPT_SUGGESTED_DATE" },
+      }, tx);
+      return result;
+    });
+
+    if (updated.contactEmail && updated.departmentName) {
+      sendScheduleInviteEmail({
+        to: { name: updated.departmentName, email: updated.contactEmail },
+        planTitle: plan.title,
+        auditNo: plan.auditNo,
+        sessionTitle: updated.sessionTitle,
+        departmentName: updated.departmentName,
+        startAt: updated.startAt.toISOString(),
+        endAt: updated.endAt.toISOString(),
+        location: updated.location,
+        planId: plan.id,
+        senderAccessToken: actor.accessToken ?? null,
+      }).catch((err) => logger.warn("[auditSchedule] suggested date invite failed", { error: String(err) }));
+    }
     return updated;
   }
 

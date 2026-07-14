@@ -1,5 +1,289 @@
 [
   {
+    "id": "124",
+    "titleTh": "Audit: ปรับปรุงการแสดงตำแหน่งของผู้จัดทำ ผู้ตรวจสอบ และผู้อนุมัติในหน้ารายละเอียดและนำออก Excel แผนตรวจติดตาม",
+    "titleEn": "Audit: resolved job title positions dynamically from Auth Center for session plan print page and Excel export",
+    "date": "2026-07-13",
+    "type": "fix",
+    "commit": "fix/audit-session-plan-signoff-positions",
+    "detailsTh": [
+      "app/print/audit/plan/[id]/page.tsx: ปรับปรุงการดึงตำแหน่งงานของผู้จัดทำ ผู้ตรวจสอบ และผู้อนุมัติจาก Auth Center โดยครอบคลุมกรณีที่ใช้ข้อมูลจาก appointment",
+      "app/print/audit/session-plan/[id]/page.tsx: ปรับปรุงการดึงข้อมูลตำแหน่งงานของ owner, reviewer, approver และ signoffs จาก Auth Center ให้ครอบคลุมกรณีที่ไม่มี auditPlan (fallback ไปยัง appointment)",
+      "app/api/audit/session-plans/[planId]/export/route.ts: ย้ายและปรับปรุงระบบค้นหาข้อมูลตำแหน่งงานจาก Auth Center ให้ใช้ได้ทั้งแบบมีและไม่มี auditPlan"
+    ],
+    "detailsEn": [
+      "app/print/audit/plan/[id]/page.tsx: updated job titles lookup for plan preparer, reviewer, and approver to dynamically query from Auth Center, falling back to appointment values correctly",
+      "app/print/audit/session-plan/[id]/page.tsx: updated profile lookup to query job titles from Auth Center for owner, reviewer, approver, and signoffs, falling back to appointment users when auditPlan is null",
+      "app/api/audit/session-plans/[planId]/export/route.ts: refactored job title lookup logic from Auth Center to function correctly for both direct appointments and audit plan session exports"
+    ]
+  },
+  {
+    "id": "123",
+    "titleTh": "Audit: แก้ไขหน้าพิมพ์แผนการตรวจ (Audit Plan Print) ให้แสดงโดยใช้ AuditSessionPlanPrintTemplate แทนเทมเพลตเก่า",
+    "titleEn": "Audit: updated Audit Plan print page to render AuditSessionPlanPrintTemplate instead of the old print template",
+    "date": "2026-07-13",
+    "type": "fix",
+    "commit": "fix/audit-plan-print-use-session-template",
+    "detailsTh": [
+      "app/print/audit/plan/[id]/page.tsx: เปลี่ยนโครงสร้างหน้าพิมพ์แผนการตรวจให้ไปดึงข้อมูลแผนรายเซสชัน (AuditSessionPlan) และแสดงผลผ่าน AuditSessionPlanPrintTemplate แทน AuditPlanPrintTemplate"
+    ],
+    "detailsEn": [
+      "app/print/audit/plan/[id]/page.tsx: restructured Audit Plan print page to query AuditSessionPlan and render it using AuditSessionPlanPrintTemplate instead of AuditPlanPrintTemplate"
+    ]
+  },
+  {
+    "id": "122",
+    "titleTh": "Audit: แก้ไขผู้จัดทำในแผนกำหนดการตรวจ (Session Plan) ให้ดึงข้อมูลจาก PREPARER signoff แทนข้อมูลเจ้าของในใบแต่งตั้ง (Appointment)",
+    "titleEn": "Audit: updated prepared by section in Session Plan print and Excel templates to use PREPARER signoff instead of Appointment owner",
+    "date": "2026-07-13",
+    "type": "fix",
+    "commit": "fix/audit-session-plan-preparer-signoff",
+    "detailsTh": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: ปรับปรุงส่วน Prepared by และ Date ให้ดึงรูปภาพลายเซ็น ชื่อ และวันที่เซ็นจาก preparerSignoff ของ Audit Plan แทน owner จาก Appointment",
+      "app/api/audit/session-plans/[planId]/export/route.ts: ปรับปรุงการส่งออก Excel ทั้ง FM-MR-06 และ FM-MR-07 ในส่วนผู้จัดทำและวันที่ให้ดึงจาก preparerSignoff"
+    ],
+    "detailsEn": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: updated Prepared by and Date sections to display signature image, name, and sign date from preparerSignoff of Audit Plan instead of owner of Appointment",
+      "app/api/audit/session-plans/[planId]/export/route.ts: updated Excel export signature blocks for both FM-MR-06 and FM-MR-07 sheets to fetch name and date from preparerSignoff"
+    ]
+  },
+  {
+    "id": "121",
+    "titleTh": "Audit: รวมทุกแท็บในหน้ารายละเอียดแผนการตรวจสอบเข้าเป็นแท็บเดียว (Overview Tab)",
+    "titleEn": "Audit: consolidated all tabs in Audit Plan detail view into a single Overview tab",
+    "date": "2026-07-11",
+    "type": "feature",
+    "commit": "feat/audit-plan-detail-single-tab-consolidation",
+    "detailsTh": [
+      "components/audit/AuditPlanDetailClient.tsx: รวมทั้งหมด 6 แท็บ (Overview, Schedule, Departments, Findings, Attachments, Report & Sign) เข้าเป็นแท็บเดียว Overview Tab โดยยกเลิกการใช้งาน TabKey type และ TABS array ลบการนำเข้า Calendar, PenLine, Send ที่ไม่ถูกใช้งาน และตrox state activeTab ที่ไม่มีความจำเป็น"
+    ],
+    "detailsEn": [
+      "components/audit/AuditPlanDetailClient.tsx: consolidated all 6 tabs (Overview, Schedule, Departments, Findings, Attachments, Report & Sign) into a single Overview tab by removing TabKey type and TABS array, removing unused imports (Calendar, PenLine, Send), and removing the activeTab state that is no longer needed"
+    ]
+  },
+  {
+    "id": "120",
+    "titleTh": "Audit: เพิ่ม fallback logic แสดงตำแหน่งใน Audit Session Plan Print Template จาก role-based default เมื่อไม่มี position จาก Auth Center",
+    "titleEn": "Audit: added fallback logic to show role-based default positions in Audit Session Plan Print Template when position is not available from Auth Center",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-session-plan-position-fallback",
+    "detailsTh": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: เพิ่มฟังก์ชัน getPositionDisplay เพื่อให้แสดงตำแหน่งจาก Auth Center (signoff.position) แล้ว fallback ไปยัง signedRole หรือค่า default (QMS Officer/Management Representative/Managing Director) ตามบทบาท"
+    ],
+    "detailsEn": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: added getPositionDisplay helper function to show position from Auth Center (signoff.position), falling back to signedRole or role-based defaults (QMS Officer/Management Representative/Managing Director) depending on the signoff role"
+    ]
+  },
+  {
+    "id": "119",
+    "titleTh": "Audit: ดึงตำแหน่ง (jobTitle) ของ Prepare/Reviewer/Approver จาก Auth Center แสดงในใบประกาศ FM-MR-06/07 และ Excel export แทนข้อความคงที่",
+    "titleEn": "Audit: fetch position (jobTitle) of Prepare/Reviewer/Approver from Auth Center for FM-MR-06/07 print and Excel export instead of hardcoded labels",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-session-plan-position-from-auth-center",
+    "detailsTh": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: เพิ่มฟิลด์ signedByAuthUserId และ position ใน signoff type, เปลี่ยนตำแหน่ง Prepare/Reviewer/Approver ให้แสดง jobTitle จาก Auth Center แทนข้อความ 'QMS Officer'/'Management Representative'/'Managing Director' คงที่",
+      "app/print/audit/session-plan/[id]/page.tsx: ดึง jobTitle ของผู้ใช้จาก Auth Center (getAuthCenterUserProfile) และส่งผ่านใน signoff.position",
+      "app/api/audit/session-plans/[planId]/export/route.ts: ดึง jobTitle ของผู้ใช้จาก Auth Center และใช้ในตำแหน่งท้ายเอกสาร Excel ของทั้ง FM-MR-06 และ FM-MR-07"
+    ],
+    "detailsEn": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: added signedByAuthUserId and position fields to signoff type, replaced hardcoded 'QMS Officer'/'Management Representative'/'Managing Director' with jobTitle fetched from Auth Center",
+      "app/print/audit/session-plan/[id]/page.tsx: fetch jobTitle from Auth Center (getAuthCenterUserProfile) and pass via signoff.position",
+      "app/api/audit/session-plans/[planId]/export/route.ts: fetch jobTitle from Auth Center and use it in Excel document footer for both FM-MR-06 and FM-MR-07"
+    ]
+  },
+  {
+    "id": "118",
+    "titleTh": "Audit: แก้ไขข้อความตำแหน่งใน Audit Session Plan Print Template ให้แสดงตำแหน่งของผู้จัดทำจาก signoff PREPARER แทน QMS Officer หรือ Management Representative คงที่",
+    "titleEn": "Audit: fixed role labels in Audit Session Plan Print Template to show actual role from PREPARER signoff instead of hardcoded QMS Officer",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-session-plan-role-label-dynamic",
+    "detailsTh": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: เพิ่มการค้นหา preparerSignoff จาก signoffs array และแสดง signedRole ของผู้จัดทำแทนข้อความ QMS Officer คงที่",
+      "app/api/audit/session-plans/[planId]/export/route.ts: เพิ่มการค้นหา preparerSignoff และอัปเดตทั้งสองตำแหน่ง Gantt (FM-MR-06) และ Session (FM-MR-07) ใน Excel export ให้ใช้ signedRole จาก PREPARER signoff"
+    ],
+    "detailsEn": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: added preparerSignoff lookup and display the signedRole from signoff instead of hardcoded 'QMS Officer'",
+      "app/api/audit/session-plans/[planId]/export/route.ts: added preparerSignoff lookup and updated both Gantt (FM-MR-06) and Session (FM-MR-07) Excel export sections to use signedRole from PREPARER signoff"
+    ]
+  },
+  {
+    "id": "117",
+    "titleTh": "Audit: แก้ไข PDF/Excel Template — Owner → Prepare และอ้างอิง ownerEmail จากระบบจริง",
+    "titleEn": "Audit: fixed PDF/Excel templates — renamed Owner to Prepare with real ownerEmail",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-plan-prepare-real-data",
+    "detailsTh": [
+      "types/audit.ts: เพิ่ม ownerEmail ใน AuditPlanSummary type",
+      "app/print/audit/plan/[id]/page.tsx: เพิ่ม ownerEmail ในการ serialize ข้อมูล",
+      "components/audit/AuditPlanPrintTemplate.tsx: เปลี่ยน Owner → Prepare (ผู้จัดทำ) พร้อม email fallback",
+      "app/api/audit/plans/export/route.ts: เปลี่ยน Owner → Prepare (ผู้จัดทำ)",
+      "components/audit/AuditPlanDetailClient.tsx: เปลี่ยน \"เจ้าของแผน\" → \"ผู้จัดทำ\""
+    ],
+    "detailsEn": [
+      "types/audit.ts: added ownerEmail to AuditPlanSummary type",
+      "app/print/audit/plan/[id]/page.tsx: added ownerEmail to serialization",
+      "components/audit/AuditPlanPrintTemplate.tsx: renamed Owner → Prepare (ผู้จัดทำ) with email fallback",
+      "app/api/audit/plans/export/route.ts: renamed Owner column to Prepare (ผู้จัดทำ)",
+      "components/audit/AuditPlanDetailClient.tsx: renamed \"เจ้าของแผน\" → \"ผู้จัดทำ\""
+    ]
+  },
+  {
+    "id": "116",
+    "titleTh": "Audit: ปรับการแสดงผลรหัสควบคุมเอกสารและช่องลงชื่อของตัวดาวน์โหลด Excel ให้ตรงตามใบประกาศ (doc-no-config) และ 3 คอลัมน์",
+    "titleEn": "Audit: updated Excel exporter doc-no value to use dynamic doc control config and aligned layout to 3 signature columns",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-excel-doc-config-and-layout",
+    "detailsTh": [
+      "app/api/audit/session-plans/[planId]/export/route.ts: ปรับการดึง docPrefix ให้ใช้ค่าคอนฟิกส่วนท้ายเอกสาร AUDIT_PLAN และจัดผังลายเซ็นสำหรับ FM-MR-06 และ FM-MR-07 ใน Excel ให้เหลือ 3 ช่องความกว้างเท่าๆ กันไม่มีตราประทับ"
+    ],
+    "detailsEn": [
+      "app/api/audit/session-plans/[planId]/export/route.ts: integrated AUDIT_PLAN footer configuration docPrefix into Excel bottom labels and restructured both FM-MR-06 and FM-MR-07 layouts to exactly 3 signature columns."
+    ]
+  },
+  {
+    "id": "115",
+    "titleTh": "Audit: แก้ไขบั๊กการดึงลายเซ็นลงนามของแผนการตรวจติดตาม ให้ดึงจากข้อมูลของแผนแทนข้อมูลจากจดหมายแต่งตั้ง (Appointment)",
+    "titleEn": "Audit: fixed signature resolution bug for session plans to fetch from AuditPlan instead of the AuditAppointment",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-session-plan-signatures-source",
+    "detailsTh": [
+      "app/print/audit/session-plan/[id]/page.tsx: แก้ไขการดึงข้อมูลลายเซ็นของแผน (Prepared/Reviewed/Approved) ให้ดึงโดยตรงจาก AuditPlan และความพึงพอใจลายเซ็นของผู้ใช้ (UserPreference) ของเจ้าของแผน",
+      "app/api/audit/session-plans/[planId]/export/route.ts: ทำการปรับแก้การแสดงผลลายเซ็นในตัวดาวน์โหลด Excel ให้ดึงจาก AuditPlan ในตรรกะแบบเดียวกัน"
+    ],
+    "detailsEn": [
+      "app/print/audit/session-plan/[id]/page.tsx: updated signature and signoffs mapping to use the actual AuditPlan and UserPreference of the plan owner, preventing leaking published appointment signatures.",
+      "app/api/audit/session-plans/[planId]/export/route.ts: mirrored signature and signoffs lookup for the Excel export flow to correctly fetch from the AuditPlan boundary."
+    ]
+  },
+  {
+    "id": "114",
+    "titleTh": "Audit: นำส่วนของตราประทับบริษัท (Company Stamp) ออกจากหน้าพิมพ์แบบฟอร์มการตรวจทั้งหมด",
+    "titleEn": "Audit: removed Company Stamp column and visual SVG components from all printable Audit templates",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-remove-company-stamp",
+    "detailsTh": [
+      "components/audit/AuditAppointmentPrintTemplate.tsx: ลบคอลัมน์และคอมโพเนนต์ Company Stamp SVG ออก ปรับสัดส่วนเป็น 3 คอลัมน์กว้าง 33.33% เท่ากัน",
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: ปรับแก้ไขตารางลงลายมือชื่อแถว Date ให้มี 3 คอลัมน์ให้ตรงกันกับแถวลายเซ็นด้านบน"
+    ],
+    "detailsEn": [
+      "components/audit/AuditAppointmentPrintTemplate.tsx: deleted CompanyStampSvg component and column, adjusting the remaining 3 columns to 33.33% width each.",
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: corrected signature table Date row by removing the 4th column, aligning perfectly with the 3 signature columns above."
+    ]
+  },
+  {
+    "id": "113",
+    "titleTh": "Audit: ปรับฟิลด์ผู้รับการตรวจ (Auditee) ให้ดึงข้อมูลเป็นรายชื่อพนักงานประจำแผนกหากไม่มีระบุผู้รับการตรวจตรงตัว",
+    "titleEn": "Audit: set Auditee cell values to default to bilingual Department Staff if no explicit auditees are assigned",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-plan-auditee-default-fallback",
+    "detailsTh": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: ปรับตัวแปร auditeeDisplay ในตารางตรวจให้ใช้ข้อความรูปแบบ 'พนักงานแผนก [ชื่อแผนก] / [ชื่อแผนก] Staff' แทนสัญลักษณ์ขีด (-) เมื่อไม่มีการกำหนดรายชื่อผู้รับการตรวจเจาะจง",
+      "app/api/audit/session-plans/[planId]/export/route.ts: ปรับการแสดงผลฟิลด์ผู้รับการตรวจในไฟล์ Excel ในตรรกะแบบเดียวกัน"
+    ],
+    "detailsEn": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: updated auditeeDisplay variable fallback value to output 'พนักงานแผนก [Dept] / [Dept] Staff' instead of dash (-) when no explicit auditee members are found.",
+      "app/api/audit/session-plans/[planId]/export/route.ts: mirrored auditeeDisplay default fallback logic within the Excel worksheets exporter."
+    ]
+  },
+  {
+    "id": "112",
+    "titleTh": "Audit: พิมพ์และส่งออกประกาศการตรวจ (FM-MR-07) โดยใช้ข้อมูลและคอนฟิกส่วนท้ายกระดาษจากแผนการตรวจ (Audit Plan / AUDIT_PLAN)",
+    "titleEn": "Audit: updated FM-MR-07 print/export routes to load and map AuditPlan schedules dynamically and load AUDIT_PLAN footer config",
+    "date": "2026-07-11",
+    "type": "fix",
+    "commit": "fix/audit-plan-dynamic-schedules-mapping",
+    "detailsTh": [
+      "app/print/audit/session-plan/[id]/page.tsx: ปรับปรุงให้ดึงค่า FooterConfig คีย์ AUDIT_PLAN เสมอสำหรับแบบฟอร์ม FM-MR-07 และทำการแปลงข้อมูลตารางเวลา (schedules) จากแผนการตรวจ (Audit Plan) มาเขียนทับลงใน sessions โดยอัตโนมัติ",
+      "app/api/audit/session-plans/[planId]/export/route.ts: ปรับให้ใช้ ExportNamingMeta คีย์ AUDIT_PLAN และดึง/แผนผังข้อมูล schedules จาก Audit Plan มาแสดงแทน และแก้ไขโดยเอา as any casting ออกโดยใช้ Object.assign",
+      "repositories/audit/auditPlanRepository.ts: เพิ่มเมธอด findByAppointmentId สำหรับค้นหาแผนตรวจจากรหัสการแต่งตั้ง"
+    ],
+    "detailsEn": [
+      "app/print/audit/session-plan/[id]/page.tsx: updated printable view to consistently load AUDIT_PLAN footer config and dynamically override sessions list by mapping schedules from the associated AuditPlan.",
+      "app/api/audit/session-plans/[planId]/export/route.ts: set naming metadata to AUDIT_PLAN and integrated AuditPlan schedules dynamic mapping for Excel exports, resolving explicit as any casting with Object.assign.",
+      "repositories/audit/auditPlanRepository.ts: added findByAppointmentId query helper."
+    ]
+  },
+  {
+    "id": "111",
+    "titleTh": "Audit: ปรับเปลี่ยนรูปแบบปุ่มดาวน์โหลดเอกสารแผนการตรวจในหน้ารายละเอียดเป็นแบบฟอร์มประกาศโปรแกรมการตรวจ FM-MR-07 แทน FM-MR-06",
+    "titleEn": "Audit: updated export actions in Audit Plan detail view to use FM-MR-07 (Session Program) instead of FM-MR-06",
+    "date": "2026-07-11",
+    "type": "feature",
+    "commit": "feat/audit-plan-switch-export-to-mr07",
+    "detailsTh": [
+      "components/audit/AuditPlanDetailClient.tsx: อัปเดตลิงก์ปุ่ม Export PDF และ Export Excel ในหน้ารายละเอียดแผนตรวจให้ชี้ไปยังประเภท session เพื่อส่งออกข้อมูลแบบฟอร์ม FM-MR-07 (ประกาศโปรแกรมการตรวจติดตามภายในประจำปี)"
+    ],
+    "detailsEn": [
+      "components/audit/AuditPlanDetailClient.tsx: updated query parameter of Export PDF and Export Excel action buttons to type=session to render the FM-MR-07 (Session Announcement) layout."
+    ]
+  },
+  {
+    "id": "110",
+    "titleTh": "Audit: ปรับปรุงปุ่มพิมพ์และส่งออกเอกสารแผนการตรวจในหน้ารายละเอียดแผนงาน เป็น Export PDF และ Export Excel แบบฟอร์ม FM-MR-06",
+    "titleEn": "Audit: refactored print and export buttons in Audit Plan detail view to Export PDF and Export Excel using FM-MR-06 layout",
+    "date": "2026-07-11",
+    "type": "feature",
+    "commit": "feat/audit-plan-refactor-export-to-mr06",
+    "detailsTh": [
+      "components/audit/AuditPlanDetailClient.tsx: แทนที่ปุ่ม Print เดิม และ พิมพ์เอกสารผู้ตรวจ (Auditor Doc) เป็นปุ่ม 'Export PDF' และ 'Export Excel' สำหรับแบบฟอร์ม FM-MR-06 (Gantt Plan) โดยตรง",
+      "app/print/audit/session-plan/[id]/page.tsx: ปรับปรุงกลไก resolveSessionPlan เพื่อค้นหาแผนตรวจผ่าน appointmentId และสร้างตารางแบบร่าง (draft) ให้โดยอัตโนมัติหากไม่มีอยู่ในระบบ",
+      "app/api/audit/session-plans/[planId]/export/route.ts: ปรับปรุงการตรวจสอบและดึงแผนตรวจผ่าน parameter appointmentId เพื่อรองรับการสั่งดาวน์โหลด Excel ได้ทันทีแม้ไม่มีการเปิดหน้าแก้ไขแผนงานมาก่อน"
+    ],
+    "detailsEn": [
+      "components/audit/AuditPlanDetailClient.tsx: replaced default Print and Auditor Doc buttons with direct 'Export PDF' and 'Export Excel' entries pointing to the FM-MR-06 Gantt layout.",
+      "app/print/audit/session-plan/[id]/page.tsx: refactored resolveSessionPlan to locate plans by appointmentId and automatically generate draft data on the fly if missing.",
+      "app/api/audit/session-plans/[planId]/export/route.ts: upgraded parameter resolution to locate session plan data by appointmentId dynamically during Excel export triggers."
+    ]
+  },
+  {
+    "id": "109",
+    "titleTh": "Audit: เพิ่มปุ่มสั่งพิมพ์และปุ่มส่งออก Excel ของแผน Gantt (FM-MR-06) และประกาศการตรวจ (FM-MR-07) ในหน้ารายละเอียดแผนการตรวจ",
+    "titleEn": "Audit: added print and excel export action entries for FM-MR-06 and FM-MR-07 in Audit Plan detail view page",
+    "date": "2026-07-11",
+    "type": "feature",
+    "commit": "feat/audit-plan-detail-session-export-integration",
+    "detailsTh": [
+      "components/audit/AuditPlanDetailClient.tsx: เพิ่มปุ่มสำหรับพิมพ์และส่งออก Excel สำหรับแผน Gantt (FM-MR-06) และประกาศตรวจ (FM-MR-07) เมื่อพบแผนงานตรวจที่เชื่อมโยงอยู่",
+      "app/(dashboard)/audit/plans/[id]/page.tsx: ปรับปรุงการดึงและแนบข้อมูล ID แผนโปรแกรมตรวจ (sessionPlanId) ลงใน serialized data ของแผนการตรวจ",
+      "types/audit.ts: ขยายโครงสร้างไทป์ AuditPlanDetail เพิ่มคุณสมบัติ sessionPlanId"
+    ],
+    "detailsEn": [
+      "components/audit/AuditPlanDetailClient.tsx: integrated print and export actions for Gantt (FM-MR-06) and Session Program (FM-MR-07) layouts inside the Audit Plan actions card.",
+      "app/(dashboard)/audit/plans/[id]/page.tsx: resolved and attached corresponding sessionPlanId to the serialized Audit Plan payload.",
+      "types/audit.ts: extended AuditPlanDetail type definition with optional sessionPlanId property."
+    ]
+  },
+  {
+    "id": "108",
+    "titleTh": "Audit: พัฒนาปุ่มพิมพ์เอกสารและส่งออก Excel สำหรับแผนความก้าวหน้าโครงการ (FM-MR-06) และประกาศโปรแกรมการตรวจ (FM-MR-07)",
+    "titleEn": "Audit: added print layouts and Excel exports for Annual Gantt Plan (FM-MR-06) and Session Program Announcement (FM-MR-07)",
+    "date": "2026-07-11",
+    "type": "feature",
+    "commit": "feat/audit-session-plan-print-and-export",
+    "detailsTh": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: พัฒนาเทมเพลตสำหรับพิมพ์เอกสารบนเบราว์เซอร์ (HTML Print View) ขนาด A4 Landscape สำหรับทั้ง FM-MR-06 และ FM-MR-07 พร้อมส่วนหัวและท้ายเอกสารลายมือชื่อ",
+      "app/print/audit/session-plan/[id]/page.tsx: สร้างหน้าเพจสำหรับการพิมพ์แผนงานแบบกำหนดประเภท (type=gantt หรือ type=session)",
+      "app/api/audit/session-plans/[planId]/export/route.ts: สร้าง API ส่งออกตารางเวลาแผนงานและรายชื่อทีมผู้ตรวจในรูปแบบไฟล์ Excel (.xlsx) ตามรูปแบบเอกสารมาตรฐาน QMS",
+      "components/audit/AuditSessionPlanClient.tsx: เพิ่มปุ่มกดพิมพ์แผน และปุ่มส่งออก Excel ของทั้งสองแบบฟอร์มเพื่อเรียกใช้งานในหน้าจัดการแผนตรวจและ Gantt Chart",
+      "repositories/audit/auditSessionPlanRepository.ts: อัปเดตเมธอด findDetailById เพื่อดึงข้อมูลรายชื่อคณะทำงาน (members) และรายการลงนาม (signoffs) เพื่อนำมาใช้ในเอกสารพิมพ์"
+    ],
+    "detailsEn": [
+      "components/audit/AuditSessionPlanPrintTemplate.tsx: developed A4 Landscape HTML print layouts for both FM-MR-06 (Gantt) and FM-MR-07 (Session Announcement) forms with bilingual support and signature footers.",
+      "app/print/audit/session-plan/[id]/page.tsx: created standalone print routes supporting gantt and session announcement query modes.",
+      "app/api/audit/session-plans/[planId]/export/route.ts: implemented standalone excel exports (.xlsx) for Gantt chart rows and auditor team compilation arrays.",
+      "components/audit/AuditSessionPlanClient.tsx: integrated print and excel download buttons inside the session plan management header view.",
+      "repositories/audit/auditSessionPlanRepository.ts: updated findDetailById to include appointment members and signoffs for document footer signatures compilation."
+    ]
+  },
+  {
     "id": "107",
     "titleTh": "Audit: แก้ไขการแสดงผลชื่อผู้ตรวจสอบ (Reviewer) และผู้อนุมัติ (Approver) เป็น ID แทนชื่อ",
     "titleEn": "Audit: fix Reviewer and Approver display showing as IDs instead of names",

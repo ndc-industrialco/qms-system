@@ -9,643 +9,189 @@ interface CarPrintTemplateProps {
   footerConfig?: FooterConfig | null;
 }
 
-function isHtmlContent(content: string) {
-  return /<[a-z][\s\S]*>/i.test(content);
+const isoOptions = ["ISO9001:2015", "ISO14001:2015", "ISO45001:2018"];
+
+function hasHtml(value: string) {
+  return /<[a-z][\s\S]*>/i.test(value);
 }
 
-function PrintRichText({ content, marginTop = "4px" }: { content: string | null | undefined; marginTop?: string }) {
-  if (!content) return <span>-</span>;
+function formatDate(value: string | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("th-TH");
+}
 
-  if (isHtmlContent(content)) {
-    return (
-      <div
-        className="print-rich-text"
-        style={{ marginTop }}
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
-    );
+function RichText({ value, className = "" }: { value: string | null | undefined; className?: string }) {
+  if (!value) return <span className="empty-value">-</span>;
+  if (hasHtml(value)) {
+    return <div className={`rich-text ${className}`} dangerouslySetInnerHTML={{ __html: value }} />;
   }
-
-  return <div style={{ marginTop, whiteSpace: "pre-wrap" }}>{content}</div>;
+  return <div className={`rich-text ${className}`}>{value}</div>;
 }
 
-export default function CarPrintTemplate({ car, footerConfig }: CarPrintTemplateProps) {
-  const footerLabel = footerConfig?.label?.trim() || "Corrective Action Request / Preventive Action (CAR) | ใบคำขอให้แก้ไขและป้องกันการเกิดซ้ำ (CAR)";
-  const footerPrefix = footerConfig?.prefix?.trim() || "FM-QC-02";
-  const [primaryTitle, secondaryTitle] = splitBilingualLabel(footerLabel);
-
-  // Helper to format date
-  const formatDate = (dateStr: string | null | undefined) => {
-    if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString("th-TH");
-  };
-
+function Checkbox({ checked, label }: { checked: boolean; label: string }) {
   return (
-    <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        @page {
-          size: A4;
-          margin: 10mm 8mm 8mm 8mm;
-        }
-        
-        body {
-          margin: 0;
-          padding: 0;
-          font-family: 'Segoe UI', Arial, sans-serif;
-          font-size: 9px;
-          color: #000;
-          line-height: 1.2;
-          background-color: #f8fafc;
-        }
-
-        .print-container {
-          width: 100%;
-          max-width: 194mm;
-          margin: 0 auto;
-          background-color: #fff;
-          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-          padding: 8mm 6mm;
-        }
-
-        /* Common Borders & Grid styles */
-        .print-container table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 4px;
-        }
-
-        .print-container td, .print-container th {
-          border: 1px solid #000;
-          padding: 3px 4px;
-          vertical-align: top;
-        }
-
-        .print-container .text-center {
-          text-align: center;
-        }
-
-        .print-container .text-left {
-          text-align: left;
-        }
-
-        .print-container .text-right {
-          text-align: right;
-        }
-
-        .print-container .font-bold {
-          font-weight: bold;
-        }
-
-        .print-container .bg-gray {
-          background-color: #f3f4f6;
-        }
-
-        /* Section Headers */
-        .print-container .section-title {
-          font-weight: bold;
-          text-align: left;
-          background-color: #e2e8f0;
-          border: 1px solid #000;
-          border-bottom: none;
-          padding: 3px 6px;
-          font-size: 9.5px;
-        }
-
-        /* Checkbox list styles */
-        .print-container .checkbox-container {
-          border: 1px solid #000;
-          padding: 4px 6px;
-          margin-bottom: 4px;
-        }
-
-        .print-container .checkbox-item {
-          display: inline-flex;
-          align-items: center;
-          margin-right: 12px;
-        }
-
-        .print-container .checkbox-box {
-          width: 9px;
-          height: 9px;
-          border: 1px solid #000;
-          margin-right: 4px;
-          display: inline-block;
-          text-align: center;
-          line-height: 8px;
-          font-size: 8px;
-          font-weight: bold;
-        }
-
-        .print-container .checkbox-box.checked::after {
-          content: "✓";
-        }
-
-        /* Header Logo Styles */
-        .print-container .logo-container {
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          padding: 2px;
-        }
-
-        /* Dotted line helper */
-        .print-container .dotted-line {
-          border-bottom: 1px dotted #000;
-          display: inline-block;
-        }
-
-        /* Blank lines helper */
-        .print-container .line-container {
-          padding: 4px 6px;
-          border: 1px solid #000;
-          margin-bottom: 4px;
-          min-height: 38px;
-        }
-
-        .print-container .print-rich-text p {
-          margin: 0 0 2px 0;
-        }
-
-        .print-container .print-rich-text ul,
-        .print-container .print-rich-text ol {
-          margin: 2px 0 2px 14px;
-          padding-left: 10px;
-        }
-
-        .print-container .print-rich-text li {
-          margin: 0 0 1px 0;
-        }
-
-        /* Footer styling */
-        .print-container .footer-note {
-          font-size: 8px;
-          text-align: left;
-          margin-top: 4px;
-          font-family: Arial, sans-serif;
-        }
-
-        .signature-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          font-size: 8px;
-          padding: 2px;
-        }
-
-        .signature-img {
-          max-height: 30px;
-          max-width: 100%;
-          object-fit: contain;
-          margin-bottom: 2px;
-        }
-
-        /* Print media overrides */
-        @media print {
-          body {
-            background-color: #fff;
-          }
-          .print-container {
-            width: 100%;
-            max-width: 100%;
-            box-shadow: none;
-            padding: 0;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-        `
-      }} />
-
-      <div className="py-8 bg-slate-100 min-h-screen">
-        <PrintPageActions />
-
-        <div className="print-container">
-          {/* 1. Header (Logo & Title & Doc No) */}
-          <table style={{ marginBottom: "6px" }}>
-            <tbody>
-              <tr>
-                <td style={{ width: "25%", textAlign: "left", padding: "4px", verticalAlign: "middle" }}>
-                  <div className="logo-container">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/logo/logo.webp" alt="NDC Industrial Logo" style={{ height: "26px", objectFit: "contain" }} />
-                  </div>
-                </td>
-                <td style={{ width: "50%", textAlign: "center", verticalAlign: "middle" }}>
-                  <div className="font-bold" style={{ fontSize: "12px", letterSpacing: "0.5px" }}>{primaryTitle}</div>
-                  <div className="font-bold text-slate-700" style={{ fontSize: "10px" }}>{secondaryTitle}</div>
-                </td>
-                <td style={{ width: "25%", padding: 0 }}>
-                  <table style={{ width: "100%", height: "100%", border: "none", margin: 0 }}>
-                    <tbody>
-                      <tr>
-                        <td className="font-bold text-center bg-gray" style={{ padding: "2px", fontSize: "8.5px", borderTop: "none", borderLeft: "none", borderRight: "none" }}>
-                          For DCC
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ padding: "2px 4px", borderLeft: "none", borderRight: "none", fontSize: "8.5px" }}>
-                          <strong>CAR No. :</strong> <span className="font-bold font-mono">{car.carNo}</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ padding: "2px 4px", borderBottom: "none", borderLeft: "none", borderRight: "none", fontSize: "8.5px" }}>
-                          <strong>Date :</strong> {formatDate(car.issuedAt)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {/* 2. Section 1 Header */}
-          <div className="section-title">
-            1. Defect Description & Issuer Details / รายละเอียดความบกพร่องและผู้ออก CAR
-          </div>
-          
-          {/* Section 1 Content Grid */}
-          <table style={{ marginBottom: "6px" }}>
-            <tbody>
-              <tr>
-                <td style={{ width: "50%" }}>
-                  <strong>To (ถึง แผนก):</strong> {car.targetDepartment.name}
-                </td>
-                <td style={{ width: "50%" }}>
-                  <strong>Issuer (ผู้พบปัญหา):</strong> {car.issuer.name || "-"} ({car.issuerPosition})
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Date of Issue (วันที่ออก):</strong> {formatDate(car.issuedAt)}
-                </td>
-                <td>
-                  <strong>Response Due Date (กำหนดส่งคืน):</strong> {formatDate(car.responseDueAt)}
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2}>
-                  <strong>ISO Standard Requirements (ข้อกำหนดมาตรฐาน):</strong>{" "}
-                  {car.isoStandards.length > 0 ? (
-                    car.isoStandards.map((std) => (
-                      <span key={std} className="mr-2">
-                        <span className="checkbox-box checked" style={{ verticalAlign: "middle" }}></span>
-                        <span style={{ marginLeft: "2px", verticalAlign: "middle" }}>{std}</span>
-                      </span>
-                    ))
-                  ) : (
-                    <span>—</span>
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2} style={{ padding: "4px" }}>
-                  <strong>Source of Issue / แหล่งที่มาของความบกพร่อง:</strong>
-                  <div style={{ marginTop: "3px" }}>
-                    <span className="checkbox-item">
-                      <span className={`checkbox-box ${car.sourceType === "I" ? "checked" : ""}`}></span>
-                      <span>(I) Internal Audit / การตรวจติดตามคุณภาพภายใน</span>
-                    </span>
-                    <span className="checkbox-item">
-                      <span className={`checkbox-box ${car.sourceType === "C" ? "checked" : ""}`}></span>
-                      <span>(C) Customer Complaint / ข้อร้องเรียนจากลูกค้า</span>
-                    </span>
-                    <span className="checkbox-item">
-                      <span className={`checkbox-box ${car.sourceType === "N" ? "checked" : ""}`}></span>
-                      <span>(N) Non-conforming Product / ปัญหาคุณภาพ</span>
-                    </span>
-                    <span className="checkbox-item">
-                      <span className={`checkbox-box ${car.sourceType === "O" ? "checked" : ""}`}></span>
-                      <span>(O) Others / อื่นๆ {car.sourceDetail ? `(${car.sourceDetail})` : ""}</span>
-                    </span>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2} style={{ minHeight: "50px" }}>
-                  <strong>Defect Details / รายละเอียดข้อบกพร่อง:</strong>
-                  <PrintRichText content={car.defectDetail} />
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2}>
-                  <strong>Non-Conformance Reference (ข้ออ้างอิง/เอกสารอ้างอิง):</strong>
-                  <PrintRichText content={car.nonConformanceRef} marginTop="3px" />
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2} className="text-right" style={{ padding: "4px 8px" }}>
-                  <div style={{ display: "inline-block", textAlign: "center" }}>
-                    <div style={{ minHeight: "34px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      {car.issuerSignaturePath ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={car.issuerSignaturePath} alt="Issuer Signature" className="signature-img" />
-                      ) : (
-                        <div style={{ color: "#aaa", fontSize: "7.5px" }}>(ยังไม่ได้ลงชื่อ / Not signed)</div>
-                      )}
-                    </div>
-                    <div style={{ borderTop: "1px solid #000", width: "160px", margin: "2px auto 0 auto" }}></div>
-                    <div style={{ fontSize: "8px" }}>Issuer Signature / ลายเซ็นผู้พบปัญหา</div>
-                    <div style={{ fontSize: "7.5px" }}>Date / วันที่: {formatDate(car.issuedAt)}</div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {/* 3. Section 2 Header */}
-          <div className="section-title">
-            2. Cause Analysis & Action Plan / การวิเคราะห์สาเหตุและแผนการแก้ไขป้องกัน
-          </div>
-
-          {/* Section 2 Content */}
-          <table style={{ marginBottom: "6px" }}>
-            <tbody>
-              {car.response ? (
-                <>
-                  <tr>
-                    <td style={{ width: "50%" }}>
-                      <strong>Responder (ผู้ตอบกลับ):</strong> {car.response.responder.name || "-"} ({car.response.responderPosition})
-                    </td>
-                    <td style={{ width: "50%" }}>
-                      <strong>Responded Date (วันที่ตอบกลับ):</strong> {formatDate(car.response.respondedAt)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2} style={{ padding: "4px" }}>
-                      <strong>Root Cause Classification / การจำแนกสาเหตุรากเหง้า:</strong>
-                      <div style={{ marginTop: "3px" }}>
-                        <span className="checkbox-item">
-                          <span className={`checkbox-box ${car.response.rootCausePerson ? "checked" : ""}`}></span>
-                          <span>Person / คน</span>
-                        </span>
-                        <span className="checkbox-item">
-                          <span className={`checkbox-box ${car.response.rootCauseMaterial ? "checked" : ""}`}></span>
-                          <span>Material / วัตถุดิบ</span>
-                        </span>
-                        <span className="checkbox-item">
-                          <span className={`checkbox-box ${car.response.rootCauseMachine ? "checked" : ""}`}></span>
-                          <span>Machine / เครื่องจักร</span>
-                        </span>
-                        <span className="checkbox-item">
-                          <span className={`checkbox-box ${car.response.rootCauseMethod ? "checked" : ""}`}></span>
-                          <span>Method / วิธีการ</span>
-                        </span>
-                        <span className="checkbox-item">
-                          <span className={`checkbox-box ${car.response.rootCauseOther ? "checked" : ""}`}></span>
-                          <span>Other / อื่นๆ {car.response.rootCauseOtherDetail ? `(${car.response.rootCauseOtherDetail})` : ""}</span>
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* 5 Whys or Cause Analysis Detail */}
-                  {car.response.responseType === "FIVE_WHY" && car.response.fiveWhys && car.response.fiveWhys.length > 0 ? (
-                    <tr>
-                      <td colSpan={2}>
-                        <strong>5 Whys Analysis / การวิเคราะห์หาสาเหตุด้วย 5 Whys:</strong>
-                        <div style={{ marginTop: "3px", paddingLeft: "8px" }}>
-                          {car.response.fiveWhys.map((why, idx) => (
-                            <div key={idx} style={{ marginBottom: "2px" }}>
-                              <strong>Why {idx + 1}:</strong> {why.question || "-"} ➔ <strong>Ans:</strong> {why.answer || "-"}
-                            </div>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    <tr>
-                      <td colSpan={2}>
-                        <strong>Cause Analysis Details / รายละเอียดการวิเคราะห์สาเหตุ:</strong>
-                        <div style={{ marginTop: "3px", whiteSpace: "pre-wrap" }}>
-                          {car.response.whyAnalysis || car.response.additionalToolDetail || "—"}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-
-                  <tr>
-                    <td colSpan={2}>
-                      <strong>Root Cause Summary / สรุปสาเหตุหลัก:</strong>
-                      <div style={{ marginTop: "3px", whiteSpace: "pre-wrap" }}>{car.response.rootCauseSummary}</div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <strong>Immediate Action / มาตรการแก้ไขเร่งด่วน:</strong>
-                      <div style={{ marginTop: "3px", whiteSpace: "pre-wrap" }}>{car.response.immediateAction}</div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <strong>Preventive Action Plan / มาตรการป้องกันการเกิดซ้ำ:</strong>
-                      <div style={{ marginTop: "3px", whiteSpace: "pre-wrap" }}>{car.response.preventiveAction}</div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Target Completion Date (กำหนดเสร็จสิ้น):</strong> {formatDate(car.response.plannedCompletionDate)}
-                    </td>
-                    <td className="text-right" style={{ padding: "4px 8px" }}>
-                      <div style={{ display: "inline-block", textAlign: "center" }}>
-                        <div style={{ minHeight: "34px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          {car.response.responderSignaturePath ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img src={car.response.responderSignaturePath} alt="Responder Signature" className="signature-img" />
-                          ) : (
-                            <div style={{ color: "#aaa", fontSize: "7.5px" }}>(ยังไม่ได้ลงชื่อ / Not signed)</div>
-                          )}
-                        </div>
-                        <div style={{ borderTop: "1px solid #000", width: "160px", margin: "2px auto 0 auto" }}></div>
-                        <div style={{ fontSize: "8px" }}>Responder Signature / ลายเซ็นผู้รับผิดชอบแก้ไข</div>
-                        <div style={{ fontSize: "7.5px" }}>Date / วันที่: {formatDate(car.response.respondedAt)}</div>
-                      </div>
-                    </td>
-                  </tr>
-                </>
-              ) : (
-                <tr>
-                  <td colSpan={2} className="text-center" style={{ padding: "16px", color: "#666" }}>
-                    (รอการตอบกลับแผนการแก้ไขจากหน่วยงาน / Awaiting response action plan)
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* 4. MR Review of Action Plan Section */}
-          <div className="section-title">
-            3. Management Representative (MR) Plan Review / การตรวจสอบและอนุมัติแผนงานของ MR
-          </div>
-          <table style={{ marginBottom: "6px" }}>
-            <tbody>
-              {car.mrResponseReview ? (
-                <tr>
-                  <td style={{ width: "65%" }}>
-                    <strong>Review Action / ผลการพิจารณาแผน:</strong>{" "}
-                    {car.mrResponseReview.action === "APPROVED" ? (
-                      <strong className="text-emerald-700">APPROVED / อนุมัติแผนงาน</strong>
-                    ) : (
-                      <strong className="text-rose-700">REJECTED / ส่งคืนแก้ไขแผนงาน</strong>
-                    )}
-                    <div style={{ marginTop: "4px" }}>
-                      <strong>Comments / ข้อคิดเห็น:</strong> {car.mrResponseReview.comment || "—"}
-                    </div>
-                  </td>
-                  <td style={{ width: "35%" }} className="text-center">
-                    <div style={{ display: "inline-block", textAlign: "center" }}>
-                      <div style={{ minHeight: "32px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {/* Use custom signature path or placeholder */}
-                        <div style={{ fontSize: "8px", fontWeight: "bold" }}>{car.mrResponseReview.mrUser.name}</div>
-                      </div>
-                      <div style={{ borderTop: "1px solid #000", width: "140px", margin: "2px auto 0 auto" }}></div>
-                      <div style={{ fontSize: "7.5px" }}>MR Signature / ลายเซ็น MR</div>
-                      <div style={{ fontSize: "7.5px" }}>Date / วันที่: {formatDate(car.mrResponseReview.reviewedAt)}</div>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <tr>
-                  <td colSpan={2} className="text-center" style={{ padding: "8px", color: "#666" }}>
-                    (รอ MR ตรวจสอบแผนงาน / Awaiting MR plan review)
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* 5. Section 4 Follow-up & Verification */}
-          <div className="section-title">
-            4. Follow-up & Verification Rounds / การตรวจสอบติดตามผลการดำเนินงาน
-          </div>
-
-          <table style={{ marginBottom: "6px" }}>
-            <thead>
-              <tr className="text-center font-bold bg-gray" style={{ fontSize: "8.5px" }}>
-                <th style={{ width: "8%" }}>Round</th>
-                <th style={{ width: "50%" }}>Findings & Evidence / รายละเอียดการตรวจติดตาม</th>
-                <th style={{ width: "15%" }}>Result / ผลตรวจ</th>
-                <th style={{ width: "27%" }}>Verifier Signature / ผู้ติดตาม</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Render existing verifications up to 2 rounds */}
-              {Array.from({ length: 2 }).map((_, idx) => {
-                const roundNum = idx + 1;
-                const verify = car.verifications.find(v => v.round === roundNum);
-
-                if (verify) {
-                  return (
-                    <tr key={verify.id}>
-                      <td className="text-center font-bold" style={{ verticalAlign: "middle" }}>{roundNum}</td>
-                      <td>
-                        <div style={{ whiteSpace: "pre-wrap" }}>{verify.findings}</div>
-                        {verify.result === "FAILED" && verify.nextDueDate && (
-                          <div style={{ marginTop: "4px", fontSize: "8px", color: "#b91c1c" }}>
-                            <strong>Next due date / กำหนดติดตามครั้งถัดไป:</strong> {formatDate(verify.nextDueDate)}
-                          </div>
-                        )}
-                      </td>
-                      <td className="text-center font-bold" style={{ verticalAlign: "middle" }}>
-                        {verify.result === "PASSED" ? (
-                          <span style={{ color: "#047857" }}>PASSED / ผ่าน</span>
-                        ) : (
-                          <span style={{ color: "#b91c1c" }}>FAILED / ไม่ผ่าน</span>
-                        )}
-                      </td>
-                      <td className="text-center">
-                        <div style={{ minHeight: "26px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          {verify.verifierSignaturePath ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img src={verify.verifierSignaturePath} alt={`Verifier Round ${roundNum}`} className="signature-img" />
-                          ) : (
-                            <span style={{ fontSize: "8px" }}>{verify.verifier.name}</span>
-                          )}
-                        </div>
-                        <div style={{ borderTop: "1px solid #000", width: "100px", margin: "1px auto 0 auto" }}></div>
-                        <div style={{ fontSize: "7.5px" }}>Date: {formatDate(verify.verifiedAt)}</div>
-                      </td>
-                    </tr>
-                  );
-                } else {
-                  return (
-                    <tr key={`empty-${roundNum}`} style={{ height: "36px" }}>
-                      <td className="text-center font-bold" style={{ verticalAlign: "middle", color: "#bbb" }}>{roundNum}</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  );
-                }
-              })}
-            </tbody>
-          </table>
-
-          {/* 6. Section 5 Final Closure */}
-          <div className="section-title">
-            5. CAR Final Closure Sign-off / การปิดงานและยกเลิก CAR โดย MR
-          </div>
-          <table style={{ marginBottom: "2px" }}>
-            <tbody>
-              {car.mrSignature ? (
-                <tr>
-                  <td style={{ width: "65%" }}>
-                    <div className="font-bold text-emerald-800">
-                      STATUS: CLOSED / ปิดงานอย่างเป็นทางการ
-                    </div>
-                    <div style={{ marginTop: "4px" }}>
-                      <strong>Comments / ข้อคิดเห็นท้ายสุด:</strong> {car.mrSignature.comment || "—"}
-                    </div>
-                  </td>
-                  <td style={{ width: "35%" }} className="text-center">
-                    <div style={{ display: "inline-block", textAlign: "center" }}>
-                      <div style={{ minHeight: "32px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {car.mrSignature.mrUser.name ? (
-                          <div style={{ fontSize: "8px", fontWeight: "bold" }}>{car.mrSignature.mrUser.name}</div>
-                        ) : (
-                          <div style={{ color: "#aaa", fontSize: "7.5px" }}>(ยังไม่ได้ลงชื่อ)</div>
-                        )}
-                      </div>
-                      <div style={{ borderTop: "1px solid #000", width: "140px", margin: "2px auto 0 auto" }}></div>
-                      <div style={{ fontSize: "7.5px" }}>MR Signature / ลายเซ็นปิด CAR</div>
-                      <div style={{ fontSize: "7.5px" }}>Date / วันที่: {formatDate(car.mrSignature.signedAt)}</div>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <tr>
-                  <td colSpan={2} className="text-center" style={{ padding: "8px", color: "#666" }}>
-                    (รอการลงนามปิด CAR โดย MR / Awaiting final MR signature to close CAR)
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* Footer prefix metadata */}
-          <div className="footer-note">
-            {footerPrefix} - {primaryTitle}
-          </div>
-
-        </div>
-      </div>
-    </>
+    <span className="checkbox-item">
+      <span className={`checkbox ${checked ? "checked" : ""}`}>{checked ? "✓" : ""}</span>
+      <span>{label}</span>
+    </span>
   );
 }
 
-function splitBilingualLabel(label: string): [string, string] {
-  const parts = label
-    .split("|")
-    .map((part) => part.trim())
-    .filter(Boolean);
+function Signature({
+  image,
+  name,
+  label,
+  date,
+}: {
+  image?: string | null;
+  name?: string | null;
+  label: string;
+  date?: string | null;
+}) {
+  return (
+    <div className="signature">
+      <div className="signature-space">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt={label} />
+        ) : (
+          <span>{name || ""}</span>
+        )}
+      </div>
+      <div className="signature-line" />
+      <div>{label}</div>
+      <div>Date / วันที่: {formatDate(date)}</div>
+    </div>
+  );
+}
 
-  if (parts.length >= 2) {
-    return [parts[0], parts[1]];
-  }
+export default function CarPrintTemplate({ car, footerConfig }: CarPrintTemplateProps) {
+  const response = car.response;
+  const whys = response?.fiveWhys || [];
+  const footerPrefix = footerConfig?.prefix?.trim() || "FM-MR-10 Rev.02";
+  const sourceLabels = { I: "Internal Audit", C: "Customer Complaint", N: "Non-conforming Product", O: "Others" };
+  const statusLabel = car.status === "CLOSED" ? "CLOSED / ปิดแล้ว" : `${car.status} / อยู่ระหว่างดำเนินการ`;
 
-  const single = parts[0] || label.trim() || "Corrective Action Request / Preventive Action (CAR)";
-  return [single, single];
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @page { size: A4 portrait; margin: 8mm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #eef1f4; color: #000; font-family: Arial, "Tahoma", sans-serif; font-size: 8.5px; line-height: 1.18; }
+        .print-shell { padding: 24px 0; }
+        .print-actions { margin: 0 auto 12px; max-width: 194mm; }
+        .car-form { width: 194mm; min-height: 274mm; margin: 0 auto; padding: 4mm; background: #fff; box-shadow: 0 2px 8px #0002; }
+        .car-form table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .car-form td, .car-form th { border: 1px solid #000; padding: 3px 4px; vertical-align: top; word-break: break-word; }
+        .car-form th, .shade { background: #e7e7e7; }
+        .center { text-align: center; } .right { text-align: right; } .bold { font-weight: 700; }
+        .title { font-size: 14px; font-weight: 700; text-align: center; }
+        .subtitle { font-size: 10px; font-weight: 700; text-align: center; }
+        .logo { width: 27mm; height: 14mm; object-fit: contain; }
+        .section-title { margin-top: 4px; padding: 3px 5px; border: 1px solid #000; background: #d9e2f3; font-weight: 700; }
+        .section-title .number { font-size: 11px; margin-right: 4px; }
+        .row-label { font-weight: 700; }
+        .checkbox-item { display: inline-flex; align-items: center; gap: 3px; margin: 1px 8px 1px 0; white-space: nowrap; }
+        .checkbox { display: inline-flex; width: 10px; height: 10px; border: 1px solid #000; align-items: center; justify-content: center; font-size: 9px; line-height: 9px; }
+        .checkbox.checked { font-weight: 700; }
+        .rich-text { white-space: pre-wrap; min-height: 18px; margin-top: 3px; }
+        .rich-text p { margin: 0 0 2px; } .rich-text ul, .rich-text ol { margin: 2px 0 2px 16px; padding: 0; }
+        .empty-value { color: #777; }
+        .why-cell { height: 19mm; } .problem-cell { min-height: 28mm; }
+        .action-cell { min-height: 27mm; }
+        .signature { text-align: center; min-height: 22mm; font-size: 7.5px; }
+        .signature-space { height: 12mm; display: flex; align-items: center; justify-content: center; }
+        .signature-space img { max-width: 38mm; max-height: 11mm; object-fit: contain; }
+        .signature-line { border-top: 1px solid #000; margin: 1px auto 2px; width: 80%; }
+        .process-flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; text-align: center; align-items: center; }
+        .flow-step { border: 1px solid #000; min-height: 13mm; padding: 3px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .flow-arrow { font-size: 13px; }
+        .footer-note { margin-top: 3px; font-size: 7px; display: flex; justify-content: space-between; }
+        .page-break { break-before: page; }
+        @media print { body { background: #fff; } .print-shell { padding: 0; } .print-actions { display: none; } .car-form { width: 100%; min-height: auto; padding: 0; box-shadow: none; } }
+      ` }} />
+
+      <div className="print-shell">
+        <div className="print-actions"><PrintPageActions /></div>
+        <main className="car-form">
+          <table>
+            <tbody>
+              <tr>
+                <td rowSpan={2} style={{ width: "22%", verticalAlign: "middle" }} className="center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="logo" src="/logo/logo.webp" alt="NDC Industrial" />
+                </td>
+                <td rowSpan={2} style={{ width: "48%", verticalAlign: "middle" }}>
+                  <div className="title">(CAR) Corrective Action Notice</div>
+                  <div className="subtitle">ใบแจ้งดำเนินการแก้ไข CAR</div>
+                </td>
+                <td className="bold">CAR NO :</td><td className="bold center">{car.carNo}</td>
+              </tr>
+              <tr><td className="bold">Date / วันที่ :</td><td className="center">{formatDate(car.issuedAt)}</td></tr>
+            </tbody>
+          </table>
+
+          <section className="section-title"><span className="number">1 /</span> (Description of Problem) รายละเอียดปัญหา</section>
+          <table>
+            <tbody>
+              <tr>
+                <td colSpan={2}><span className="row-label">Source of CAR / แหล่งที่มา :</span><br />
+                  <Checkbox checked={car.sourceType === "I"} label={`(I) ${sourceLabels.I}`} />
+                  <Checkbox checked={car.sourceType === "C"} label={`(C) ${sourceLabels.C}`} />
+                  <Checkbox checked={car.sourceType === "N"} label={`(N) ${sourceLabels.N}`} />
+                  <Checkbox checked={car.sourceType === "O"} label={`(O) ${sourceLabels.O}${car.sourceDetail ? `: ${car.sourceDetail}` : ""}`} />
+                </td>
+              </tr>
+              <tr><td style={{ width: "50%" }}><span className="row-label">Issued by / ผู้ออก CAR :</span> {car.issuer.name || "-"}<br />Position: {car.issuerPosition || "-"}</td>
+                <td><span className="row-label">Department / แผนก :</span> {car.issuer.department?.name || "-"}<br /><span className="row-label">To / ถึง :</span> {car.targetDepartment.name}</td></tr>
+              <tr><td><span className="row-label">ISO requirements / ข้อกำหนด :</span><br />{isoOptions.map((iso) => <Checkbox key={iso} checked={car.isoStandards.includes(iso)} label={iso} />)}</td>
+                <td><span className="row-label">Response due date / กำหนดส่งคืน :</span> {formatDate(car.responseDueAt)}<br /><span className="row-label">Re-CAR :</span> {car.reCar ? `Yes (${car.reCarRef?.carNo || "-"})` : "No"}</td></tr>
+              <tr><td colSpan={2} className="problem-cell"><span className="row-label">Description of Problem / รายละเอียดปัญหา :</span><RichText value={car.defectDetail} /></td></tr>
+              <tr><td colSpan={2}><span className="row-label">Reference / เอกสารอ้างอิง :</span><RichText value={car.nonConformanceRef} /></td></tr>
+              <tr><td colSpan={2}><Signature image={car.issuerSignaturePath} name={car.issuer.name} label="Issued by / ผู้ออก CAR" date={car.issuedAt} /></td></tr>
+            </tbody>
+          </table>
+
+          <section className="section-title"><span className="number">2 /</span> (Investigation Root Cause) การสอบสวนหาสาเหตุรากเหง้า <span> (กรุณาตอบกลับภายใน 7 วัน)</span></section>
+          <table>
+            <tbody>
+              <tr><td colSpan={2}><span className="row-label">Why? / คำถาม:</span> {response?.whyAnalysis || "-"}</td></tr>
+              {Array.from({ length: 5 }).map((_, index) => <tr key={index}><td style={{ width: "16%" }} className="bold">Why {index + 1} :</td><td className="why-cell">{whys[index]?.answer || ""}</td></tr>)}
+              <tr><td colSpan={2}><span className="row-label">Root Cause / สาเหตุรากเหง้า :</span><RichText value={response?.rootCauseSummary} /></td></tr>
+              <tr><td colSpan={2}><span className="row-label">Classification / ประเภทสาเหตุ :</span><br />
+                <Checkbox checked={Boolean(response?.rootCausePerson)} label="Person / คน" /><Checkbox checked={Boolean(response?.rootCauseMaterial)} label="Material / วัตถุดิบ" /><Checkbox checked={Boolean(response?.rootCauseMachine)} label="Machine / เครื่องจักร" /><Checkbox checked={Boolean(response?.rootCauseMethod)} label="Method / วิธีการ" /><Checkbox checked={Boolean(response?.rootCauseOther)} label={`Other / อื่นๆ${response?.rootCauseOtherDetail ? `: ${response.rootCauseOtherDetail}` : ""}`} />
+              </td></tr>
+              <tr><td colSpan={2} className="center"><Signature image={response?.responderSignaturePath} name={response?.responder.name} label="Investigator / ผู้สอบสวน" date={response?.respondedAt} /></td></tr>
+            </tbody>
+          </table>
+
+          <section className="section-title"><span className="number">3 / 1</span> (Corrective Preventive Action #1) มาตรการแก้ไขและป้องกันข้อที่ 1</section>
+          <table><tbody>
+            <tr><td className="action-cell"><span className="row-label">Immediate corrective action / การแก้ไขทันที :</span><RichText value={response?.immediateAction} /></td><td style={{ width: "28%" }}><span className="row-label">Due date :</span> {formatDate(response?.plannedCompletionDate)}</td></tr>
+            <tr><td className="action-cell"><span className="row-label">Preventive action / การป้องกันการเกิดซ้ำ :</span><RichText value={response?.preventiveAction} /></td><td><span className="row-label">CAR status :</span><br />{statusLabel}</td></tr>
+          </tbody></table>
+
+          <section className="section-title"><span className="number">4 / 2</span> (Corrective Preventive Action #2) มาตรการแก้ไขและป้องกันข้อที่ 2</section>
+          <table><tbody>
+            <tr><td className="action-cell"><span className="row-label">Additional action / มาตรการเพิ่มเติม :</span><RichText value={response?.additionalToolDetail} /></td><td style={{ width: "28%" }}><span className="row-label">Response date :</span> {formatDate(response?.respondedAt)}</td></tr>
+            <tr><td className="action-cell"><span className="row-label">Action evidence / หลักฐานการดำเนินการ :</span><RichText value={response?.rootCauseSummary} /></td><td><Signature image={response?.responderSignaturePath} name={response?.responder.name} label="Responsible / ผู้รับผิดชอบ" date={response?.respondedAt} /></td></tr>
+          </tbody></table>
+
+          <div className="page-break" />
+          <section className="section-title">CAR No. {car.carNo} / MR Review and Follow-up</section>
+          <table><tbody>
+            <tr><td style={{ width: "55%" }}><span className="row-label">MR CAR :</span> {car.mrResponseReview?.action === "APPROVED" ? "Approved / อนุมัติ" : car.mrResponseReview?.action === "REJECTED" ? "Rejected / ส่งกลับแก้ไข" : "Pending / รอตรวจสอบ"}<br />{car.mrResponseReview?.comment || "-"}</td><td><Signature name={car.mrResponseReview?.mrUser.name} label="MR Review / ผู้ตรวจสอบ MR" date={car.mrResponseReview?.reviewedAt} /></td></tr>
+          </tbody></table>
+
+          <section className="section-title">Follow-up / การติดตามผล</section>
+          <table><thead><tr><th style={{ width: "9%" }}>Round</th><th>Finding / ผลการติดตาม</th><th style={{ width: "18%" }}>Result</th><th style={{ width: "27%" }}>Verifier</th></tr></thead><tbody>
+            {[1, 2].map((round) => { const verification = car.verifications.find((item) => item.round === round); return <tr key={round}><td className="center bold">{round}</td><td>{verification?.findings || ""}</td><td className="center">{verification ? `${verification.result} / ${verification.result === "PASSED" ? "ผ่าน" : "ไม่ผ่าน"}` : ""}</td><td>{verification ? <Signature image={verification.verifierSignaturePath} name={verification.verifier.name} label={`Verifier round ${round}`} date={verification.verifiedAt} /> : null}</td></tr>; })}
+          </tbody></table>
+
+          <table style={{ marginTop: 4 }}><tbody><tr><td style={{ width: "65%" }}><span className="bold">Final status / สถานะสุดท้าย :</span> {statusLabel}<br />{car.mrSignature?.comment || "-"}</td><td><Signature name={car.mrSignature?.mrUser.name} label="MR Final Sign-off / ผู้อนุมัติปิด CAR" date={car.mrSignature?.signedAt} /></td></tr></tbody></table>
+          <div className="footer-note"><span>{footerPrefix}</span><span>CAR No. {car.carNo}</span></div>
+        </main>
+      </div>
+    </>
+  );
 }

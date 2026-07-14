@@ -52,6 +52,7 @@ export const authConfig: NextAuthConfig = {
         session.user.departmentId = token.departmentId as string | undefined;
         session.user.authDepartmentId = token.authDepartmentId as string | undefined;
         session.user.accessToken = token.accessToken as string | undefined;
+        session.user.accessTokenExpiresAt = token.accessTokenExpiresAt as string | undefined;
         session.user.jobTitle = token.jobTitle as string | undefined;
         session.user.jti = token.jti as string | undefined;
         session.user.name = (token.name as string | null | undefined) ?? session.user.name;
@@ -79,6 +80,8 @@ declare module "next-auth" {
       employeeId?: string;
       departmentId?: string;
       accessToken?: string;
+      /** Expiry of the forwarded Auth Center access token, not the local cookie. */
+      accessTokenExpiresAt?: string;
       jobTitle?: string;
       /** Auth Center department code — stable external department key */
       authDepartmentId?: string;

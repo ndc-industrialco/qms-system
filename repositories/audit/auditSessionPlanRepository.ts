@@ -10,7 +10,12 @@ const SESSION_INCLUDE = {
 };
 
 const SESSION_INCLUDE_WITH_APPOINTMENT = {
-  appointment: true,
+  appointment: {
+    include: {
+      members: { orderBy: { orderIndex: "asc" as const } },
+      signoffs: true,
+    },
+  },
   ...SESSION_INCLUDE,
 };
 

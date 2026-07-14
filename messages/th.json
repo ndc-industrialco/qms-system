@@ -1243,5 +1243,33 @@
       "AUDIT_APPOINTMENT": { "label": "การแต่งตั้งผู้ตรวจ", "description": "การอนุมัติการแต่งตั้งผู้ตรวจสอบ" },
       "AUDIT": { "label": "แผนการตรวจ", "description": "การอนุมัติแผนการตรวจติดตาม" }
     }
+  },
+  "audit": {
+    "tabs": {
+      "overview": "ภาพรวม",
+      "schedule": "ตารางเวลา",
+      "departments": "แผนก",
+      "findings": "ข้อค้นพบ",
+      "attachments": "ไฟล์แนบ",
+      "reportSign": "รายงาน & ลงนาม"
+    },
+    "labels": {
+      "planNo": "เลขที่แผน",
+      "auditType": "ประเภทการตรวจสอบ",
+      "mode": "โหมด",
+      "standards": "มาตรฐาน",
+      "preparedBy": "ผู้จัดทำ",
+      "status": "สถานะ",
+      "sourceOrganization": "หน่วยงานตรวจสอบภายนอก",
+      "scope": "ขอบข่าย",
+      "objective": "วัตถุประสงค์",
+      "report": "รายงาน",
+      "auditorTeam": "ทีมผู้ตรวจสอบ",
+      "departments": "แผนกที่กำหนด",
+      "findings": "ข้อค้นพบ",
+      "attachments": "ไฟล์แนบ",
+      "signatures": "ลายเซ็น",
+      "closePlan": "ปิดแผนการตรวจสอบ"
+    }
   }
 }

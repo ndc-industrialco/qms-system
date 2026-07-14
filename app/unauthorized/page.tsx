@@ -14,6 +14,7 @@ function UnauthorizedContent() {
 
   const isNoM365 = reason === "no_m365_account";
   const isInsufficientRole = reason === "insufficient_role";
+  const isSessionExpired = reason === "session_expired";
 
   useEffect(() => {
     document.title = "Unauthorized — QMS System";
@@ -44,6 +45,15 @@ function UnauthorizedContent() {
                 </p>
                 <p className="text-[11px] md:text-xs text-gray-500/70 mt-1">
                   กรุณาติดต่อฝ่าย IT เพื่อขอสิทธิ์การเข้าถึง
+                </p>
+              </>
+            ) : isSessionExpired ? (
+              <>
+                <p className="text-xs md:text-sm text-gray-500 leading-relaxed">
+                  เซสชันการเข้าสู่ระบบหมดอายุแล้ว / Your session has expired.
+                </p>
+                <p className="text-[11px] md:text-xs text-gray-500/70 mt-1">
+                  กรุณาเข้าสู่ระบบใหม่ก่อนดำเนินการต่อ
                 </p>
               </>
             ) : isInsufficientRole ? (

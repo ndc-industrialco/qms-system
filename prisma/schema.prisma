@@ -944,6 +944,7 @@ enum AuditScheduleConfirmStatus {
   PENDING
   CONFIRMED
   UNAVAILABLE
+  SUGGESTED
 }
 
 enum AuditTeamRole {
@@ -1181,6 +1182,12 @@ model AuditSchedule {
   contactEmail          String?                    @map("contact_email")
   confirmStatus         AuditScheduleConfirmStatus @default(PENDING) @map("confirm_status")
   unavailableReason     String?                    @map("unavailable_reason")
+  suggestedStartAt      DateTime?                  @map("suggested_start_at")
+  suggestedEndAt        DateTime?                  @map("suggested_end_at")
+  suggestedReason       String?                    @map("suggested_reason")
+  suggestedByAuthUserId String?                    @map("suggested_by_auth_user_id")
+  suggestedByName       String?                    @map("suggested_by_name")
+  suggestedAt           DateTime?                  @map("suggested_at")
   confirmedAt           DateTime?                  @map("confirmed_at")
   confirmedByAuthUserId String?                    @map("confirmed_by_auth_user_id")
   confirmedByName       String?                    @map("confirmed_by_name")

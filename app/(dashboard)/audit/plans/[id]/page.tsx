@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { AuditPlanService } from "@/services/audit/auditPlanService";
+import { AuditSessionPlanRepository } from "@/repositories/audit/auditSessionPlanRepository";
 import AuditPlanDetailClient from "@/components/audit/AuditPlanDetailClient";
 import type { AuditPlanDetail } from "@/types/audit";
 import type { Metadata } from "next";
@@ -8,6 +9,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "รายละเอียดแผนการตรวจสอบ" };
 
 const auditPlanService = new AuditPlanService();
+const sessionPlanRepo = new AuditSessionPlanRepository();
 
 export default async function AuditPlanDetailPage({
   params,
@@ -29,8 +31,17 @@ export default async function AuditPlanDetailPage({
   const isPrivileged = role === "QMS" || role === "IT" || role === "MR";
   const userId = session.user.authUserId ?? session.user.id;
 
+  let sessionPlanId: string | null = null;
+  if (plan.appointmentId) {
+    const sp = await sessionPlanRepo.findByAppointmentId(plan.appointmentId);
+    if (sp) {
+      sessionPlanId = sp.id;
+    }
+  }
+
   const serialized: AuditPlanDetail = {
     ...plan,
+    sessionPlanId,
     startDate: plan.startDate instanceof Date ? plan.startDate.toISOString() : (plan.startDate ?? null),
     endDate: plan.endDate instanceof Date ? plan.endDate.toISOString() : (plan.endDate ?? null),
     createdAt: plan.createdAt instanceof Date ? plan.createdAt.toISOString() : plan.createdAt,
@@ -61,7 +72,12 @@ export default async function AuditPlanDetailPage({
       departmentName: s.departmentName ?? null,
       contactEmail: s.contactEmail ?? null,
       confirmStatus: (s.confirmStatus ?? "PENDING") as import("@/types/audit").AuditScheduleConfirmStatus,
-      unavailableReason: s.unavailableReason ?? null,
+       unavailableReason: s.unavailableReason ?? null,
+       suggestedStartAt: s.suggestedStartAt instanceof Date ? s.suggestedStartAt.toISOString() : (s.suggestedStartAt ?? null),
+       suggestedEndAt: s.suggestedEndAt instanceof Date ? s.suggestedEndAt.toISOString() : (s.suggestedEndAt ?? null),
+       suggestedReason: s.suggestedReason ?? null,
+       suggestedByName: s.suggestedByName ?? null,
+       suggestedAt: s.suggestedAt instanceof Date ? s.suggestedAt.toISOString() : (s.suggestedAt ?? null),
       confirmedAt: s.confirmedAt instanceof Date ? s.confirmedAt.toISOString() : (s.confirmedAt ?? null),
       confirmedByName: s.confirmedByName ?? null,
       leadAuditorAuthUserId: s.leadAuditorAuthUserId ?? null,

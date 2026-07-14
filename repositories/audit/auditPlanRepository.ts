@@ -38,6 +38,24 @@ export class AuditPlanRepository extends BaseRepository<AuditPlan> {
     });
   }
 
+  async findByAppointmentId(appointmentId: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findFirst({
+      where: { appointmentId },
+      include: {
+        departments: true,
+        auditors: true,
+        schedules: {
+          include: { team: { orderBy: { role: "asc" } } },
+          orderBy: { startAt: "asc" },
+        },
+        announcements: { orderBy: { publishedAt: "desc" } },
+        findings: { orderBy: { findingNo: "asc" } },
+        signoffs: { orderBy: { signedAt: "asc" } },
+        report: true,
+      },
+    });
+  }
+
   async listPaginated(query: AuditPlanListQuery, tx?: Prisma.TransactionClient): Promise<PaginatedResult<AuditPlan>> {
     const where: Prisma.AuditPlanWhereInput = {};
 

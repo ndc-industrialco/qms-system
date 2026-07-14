@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Calendar, Building2, FileText, Paperclip, ClipboardCheck, Plus, Trash2, CheckCircle2, XCircle, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail, Printer, ChevronLeft, ChevronRight } from "lucide-react";
+import { Building2, FileText, Paperclip, Plus, Trash2, CheckCircle2, XCircle, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail, Printer, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,7 +14,7 @@ import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
 import AuditPlanFormModal from "./AuditPlanFormModal";
 import AuditPlanAssignDialog from "./AuditPlanAssignDialog";
 import { useAuditPlanDetail, useAnnouncePlan, useSignPlanInApp, useGenerateReport, useClosePlan, useIssueSignRequest, useSubmitPlan, useCompleteAudit } from "@/hooks/api/use-audit-plan-detail";
-import { useAuditSchedules, useCreateSchedule, useDeleteSchedule, useConfirmSchedule, useSubmitChecklist } from "@/hooks/api/use-audit-schedules";
+import { useAuditSchedules, useCreateSchedule, useDeleteSchedule, useConfirmSchedule, useAcceptSuggestedDate, useSubmitChecklist } from "@/hooks/api/use-audit-schedules";
 import { AuditPersonSearch } from "./AuditPersonSearch";
 import { useAuditAttachments, useDeleteAuditAttachment, useUploadAuditAttachment } from "@/hooks/api/use-audit-attachments";
 import {
@@ -42,17 +42,6 @@ interface Props {
   isPrivileged: boolean;
 }
 
-type TabKey = "overview" | "schedule" | "departments" | "findings" | "attachments" | "report-sign";
-
-const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "overview", label: "ภาพรวม", icon: <ClipboardCheck className="h-4 w-4" /> },
-  { key: "schedule", label: "ตารางเวลา", icon: <Calendar className="h-4 w-4" /> },
-  { key: "departments", label: "แผนก", icon: <Building2 className="h-4 w-4" /> },
-  { key: "findings", label: "ข้อค้นพบ", icon: <FileText className="h-4 w-4" /> },
-  { key: "attachments", label: "ไฟล์แนบ", icon: <Paperclip className="h-4 w-4" /> },
-  { key: "report-sign", label: "รายงาน & ลงนาม", icon: <PenLine className="h-4 w-4" /> },
-];
-
 function formatDateTime(value: string | null | undefined) {
   if (!value) return "-";
   return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
@@ -64,6 +53,7 @@ const CONFIRM_STATUS_CONFIG = {
   PENDING:     { label: "รอยืนยัน",   icon: Clock,         className: "border-amber-200  bg-amber-50  text-amber-700"  },
   CONFIRMED:   { label: "ยืนยันแล้ว", icon: CheckCircle2,  className: "border-emerald-200 bg-emerald-50 text-emerald-700" },
   UNAVAILABLE: { label: "ไม่ว่าง",    icon: AlertTriangle, className: "border-red-200    bg-red-50    text-red-700"    },
+  SUGGESTED:   { label: "เสนอวันใหม่", icon: CalendarDays, className: "border-blue-200 bg-blue-50 text-blue-700" },
 } as const;
 
 type TeamEntry = { authUserId: string; nameSnapshot: string | null; emailSnapshot: string | null; role: AuditTeamRole };
@@ -115,6 +105,7 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
   const createMutation = useCreateSchedule(plan.id);
   const deleteMutation = useDeleteSchedule(plan.id);
   const confirmMutation = useConfirmSchedule(plan.id);
+  const acceptSuggestedMutation = useAcceptSuggestedDate(plan.id);
   const checklistMutation = useSubmitChecklist(plan.id);
 
   // ponytail: resolver cast suppresses coerce.date() input/output type mismatch — pre-existing pattern
@@ -144,10 +135,12 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
 
   function handleUnavailable() {
     if (!unavailableTarget || !unavailableReason.trim()) return;
-    const displayProposed = (proposedStart && proposedEnd)
-      ? ` | เสนอวันเวลาใหม่: ${formatDateTime(proposedStart)} - ${formatDateTime(proposedEnd)}`
-      : "";
-    confirmMutation.mutate({ id: unavailableTarget, input: { status: "UNAVAILABLE", reason: unavailableReason.trim() + displayProposed } }, {
+    const hasSuggestedDate = Boolean(proposedStart && proposedEnd);
+    confirmMutation.mutate({ id: unavailableTarget, input: {
+      status: hasSuggestedDate ? "SUGGESTED" : "UNAVAILABLE",
+      reason: unavailableReason.trim(),
+      ...(hasSuggestedDate ? { suggestedStartAt: new Date(proposedStart), suggestedEndAt: new Date(proposedEnd) } : {}),
+    } }, {
       onSuccess: () => {
         toast.success("บันทึกเรียบร้อย");
         setUnavailableTarget(null);
@@ -365,6 +358,13 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
                           <p className="text-xs font-medium text-red-700">เหตุผล: {s.unavailableReason}</p>
                         </div>
                       )}
+                      {s.confirmStatus === "SUGGESTED" && (
+                        <div className="mt-2 rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 space-y-1">
+                          <p className="text-xs font-medium text-blue-700">เหตุผล: {s.suggestedReason ?? s.unavailableReason ?? "-"}</p>
+                          <p className="text-xs text-blue-700">วันเวลาใหม่: {formatDateTime(s.suggestedStartAt)} — {formatDateTime(s.suggestedEndAt)}</p>
+                          {s.suggestedByName && <p className="text-[11px] text-blue-600">เสนอโดย: {s.suggestedByName}</p>}
+                        </div>
+                      )}
                       {s.team && s.team.length > 0 && (
                         <div className="mt-2 space-y-1">
                           {(["LEAD_AUDITOR", "AUDITOR", "OBSERVER", "AUDITEE"] as AuditTeamRole[])
@@ -410,7 +410,7 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
                           <Clock className="h-3 w-3" />
                           กำหนดส่ง Checklist: {formatDateTime(s.checklistDueAt)}
                         </p>
-                      ) : null}
+                      ) : null}พิ
                     </div>
                     {canManage && (
                       <button type="button" aria-label="ลบ" onClick={() => setDeleteTarget(s.id)}
@@ -445,6 +445,21 @@ function ScheduleTab({ plan, canManage }: { plan: AuditPlanDetail; canManage: bo
                   {s.confirmStatus === "UNAVAILABLE" && canManage && (
                     <div className="flex gap-2 pt-1 border-t border-slate-100">
                       <p className="text-xs text-slate-400 self-center flex-1">QMS/IT แก้ไขวันใหม่เพื่อรีเซ็ตสถานะ</p>
+                    </div>
+                  )}
+                  {s.confirmStatus === "SUGGESTED" && canManage && (
+                    <div className="flex gap-2 pt-1 border-t border-slate-100">
+                      <Button
+                        size="sm"
+                        className="h-8 bg-blue-600 hover:bg-blue-700 text-xs"
+                        disabled={acceptSuggestedMutation.isPending}
+                        onClick={() => acceptSuggestedMutation.mutate(s.id, {
+                          onSuccess: () => toast.success("รับวันใหม่แล้ว ระบบส่งคำเชิญใหม่แล้ว"),
+                          onError: (err) => toast.error(err.message),
+                        })}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" />รับวันใหม่และส่งคำเชิญ
+                      </Button>
                     </div>
                   )}
                   {/* Checklist submit button — shown when confirmed + no checklist yet */}
@@ -1044,7 +1059,6 @@ function AttachmentsTab({ plan, canUpload }: { plan: AuditPlanDetail; canUpload:
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function AuditPlanDetailClient({ plan: initialPlan, userId, userRole, isPrivileged }: Props) {
-  const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [showEdit, setShowEdit] = useState(false);
   const [showClosePlanConfirm, setShowClosePlanConfirm] = useState(false);
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
@@ -1111,14 +1125,6 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
               Print
             </Link>
           </Button>
-          {plan.appointmentId && (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/print/audit/auditor/${plan.appointmentId}`} target="_blank" rel="noreferrer">
-                <Printer className="mr-1.5 h-4 w-4" />
-                พิมพ์เอกสารผู้ตรวจ (Auditor Doc)
-              </Link>
-            </Button>
-          )}
           {canEdit && (
             <Button variant="outline" size="sm" onClick={() => setShowEdit(true)}>แก้ไข</Button>
           )}
@@ -1135,228 +1141,201 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-slate-200">
-        <div className="flex gap-1 overflow-x-auto">
-          {TABS.map((tab) => (
-            <button key={tab.key} type="button" onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
-                activeTab === tab.key
-                  ? "border-primary text-primary"
-                  : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-              )}>
-              {tab.icon}{tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab content */}
-      <div>
-        {/* Overview */}
-        {activeTab === "overview" && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-              <div>
-                <p className="text-xs text-slate-500">เลขที่แผน</p>
-                <p className="text-sm font-semibold text-slate-900 font-mono">{plan.auditNo}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">ประเภทการตรวจสอบ</p>
-                <p className="text-sm font-medium text-slate-900">{AUDIT_TYPE_LABELS[plan.auditType]}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">โหมด</p>
-                <p className="text-sm font-medium text-slate-900">{AUDIT_MODE_LABELS[plan.mode]}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">มาตรฐาน</p>
-                <p className="text-sm font-medium text-slate-900">
-                  {plan.standards?.length ? plan.standards.join(", ") : (plan.standard ?? "-")}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">เจ้าของแผน</p>
-                <p className="text-sm font-medium text-slate-900">{plan.ownerNameSnapshot ?? "-"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">สถานะ</p>
-                <AuditPlanStatusBadge status={plan.status} />
-              </div>
-              {plan.sourceOrganization && (
-                <div className="sm:col-span-2">
-                  <p className="text-xs text-slate-500">หน่วยงานตรวจสอบภายนอก</p>
-                  <p className="text-sm text-slate-800">{plan.sourceOrganization}</p>
-                </div>
-              )}
-              {plan.scope && (
-                <div className="sm:col-span-2">
-                  <p className="text-xs text-slate-500">ขอบข่าย</p>
-                  <p className="text-sm text-slate-800 whitespace-pre-wrap">{plan.scope}</p>
-                </div>
-              )}
-              {plan.objective && (
-                <div className="sm:col-span-2">
-                  <p className="text-xs text-slate-500">วัตถุประสงค์</p>
-                  <p className="text-sm text-slate-800 whitespace-pre-wrap">{plan.objective}</p>
-                </div>
-              )}
-              {plan.report && (
-                <div className="sm:col-span-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                  <p className="text-xs font-semibold text-emerald-700">รายงาน: {plan.report.reportNo}</p>
-                  {plan.report.summary && <p className="text-xs text-emerald-600 mt-1">{plan.report.summary}</p>}
-                  <p className="text-xs text-emerald-500 mt-0.5">สร้างเมื่อ: {formatDateTime(plan.report.generatedAt)}</p>
-                </div>
-              )}
-            </div>
-
+      {/* Tab content - Overview (consolidated from all tabs) */}
+      <div className="space-y-6">
+        {/* Overview Header */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
+          <div>
+            <p className="text-xs text-slate-500">เลขที่แผน</p>
+            <p className="text-sm font-semibold text-slate-900 font-mono">{plan.auditNo}</p>
           </div>
-        )}
-
-        {activeTab === "schedule" && <ScheduleTab plan={plan} canManage={canManageSchedule} />}
+          <div>
+            <p className="text-xs text-slate-500">ประเภทการตรวจสอบ</p>
+            <p className="text-sm font-medium text-slate-900">{AUDIT_TYPE_LABELS[plan.auditType]}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">โหมด</p>
+            <p className="text-sm font-medium text-slate-900">{AUDIT_MODE_LABELS[plan.mode]}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">มาตรฐาน</p>
+            <p className="text-sm font-medium text-slate-900">
+              {plan.standards?.length ? plan.standards.join(", ") : (plan.standard ?? "-")}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">เจ้าของแผน</p>
+            <p className="text-sm font-medium text-slate-900">{plan.ownerNameSnapshot ?? "-"}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">สถานะ</p>
+            <AuditPlanStatusBadge status={plan.status} />
+          </div>
+          {plan.sourceOrganization && (
+            <div className="sm:col-span-2">
+              <p className="text-xs text-slate-500">หน่วยงานตรวจสอบภายนอก</p>
+              <p className="text-sm text-slate-800">{plan.sourceOrganization}</p>
+            </div>
+          )}
+          {plan.scope && (
+            <div className="sm:col-span-2">
+              <p className="text-xs text-slate-500">ขอบข่าย</p>
+              <p className="text-sm text-slate-800 whitespace-pre-wrap">{plan.scope}</p>
+            </div>
+          )}
+          {plan.objective && (
+            <div className="sm:col-span-2">
+              <p className="text-xs text-slate-500">วัตถุประสงค์</p>
+              <p className="text-sm text-slate-800 whitespace-pre-wrap">{plan.objective}</p>
+            </div>
+          )}
+          {plan.report && (
+            <div className="sm:col-span-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+              <p className="text-xs font-semibold text-emerald-700">รายงาน: {plan.report.reportNo}</p>
+              {plan.report.summary && <p className="text-xs text-emerald-600 mt-1">{plan.report.summary}</p>}
+              <p className="text-xs text-emerald-500 mt-0.5">สร้างเมื่อ: {formatDateTime(plan.report.generatedAt)}</p>
+            </div>
+          )}
+        </div>
 
         {/* Departments */}
-        {activeTab === "departments" && (
-          <div className="space-y-3">
-            {plan.departments.length === 0 ? (
-              <p className="text-sm text-slate-400 py-6 text-center">ยังไม่มีแผนกที่กำหนด</p>
-            ) : (
-              plan.departments.map((d) => (
-                <div key={d.id} className="rounded-xl border border-slate-100 bg-white p-3 flex items-center gap-3">
-                  <Building2 className="h-5 w-5 text-slate-400 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-800">{d.departmentName ?? d.departmentId}</p>
-                    {d.departmentCode && <p className="text-xs text-slate-400">{d.departmentCode}</p>}
-                  </div>
-                </div>
-              ))
-            )}
-            {isPrivileged && (
-              <p className="text-xs text-slate-400">การกำหนดแผนกผ่าน API: POST /api/audit/plans/{plan.id}/departments</p>
-            )}
-          </div>
+        {plan.departments.length === 0 ? (
+          <p className="text-sm text-slate-400 py-6 text-center">ยังไม่มีแผนกที่กำหนด</p>
+        ) : (
+          plan.departments.map((d) => (
+            <div key={d.id} className="rounded-xl border border-slate-100 bg-white p-3 flex items-center gap-3">
+              <Building2 className="h-5 w-5 text-slate-400 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-slate-800">{d.departmentName ?? d.departmentId}</p>
+                {d.departmentCode && <p className="text-xs text-slate-400">{d.departmentCode}</p>}
+              </div>
+            </div>
+          ))
         )}
 
-        {activeTab === "findings" && <FindingsTab plan={plan} canUpload={isPrivileged} />}
-        {activeTab === "attachments" && <AttachmentsTab plan={plan} canUpload={isPrivileged} />}
+        {/* Schedule */}
+        <ScheduleTab plan={plan} canManage={canManageSchedule} />
+
+        {/* Findings */}
+        <FindingsTab plan={plan} canUpload={isPrivileged} />
+
+        {/* Attachments */}
+        <AttachmentsTab plan={plan} canUpload={isPrivileged} />
 
         {/* Report & Sign */}
-        {activeTab === "report-sign" && (
-          <div className="space-y-6">
-            {canGenerateReport && (
-              <div className="rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 space-y-4">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-slate-800">รายงานการตรวจสอบ</h3>
-                  {plan.report && !showReportForm && (
-                    <Button size="sm" variant="outline" onClick={() => {
-                      reportForm.reset({ summary: plan.report?.summary ?? "", conclusion: plan.report?.conclusion ?? "" });
-                      setShowReportForm(true);
-                    }}>สร้างรายงานใหม่</Button>
-                  )}
-                </div>
+        <div className="space-y-6">
+          {canGenerateReport && (
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-sm font-semibold text-slate-800">รายงานการตรวจสอบ</h3>
                 {plan.report && !showReportForm && (
-                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 space-y-2">
-                    <p className="text-xs font-semibold text-emerald-700">รายงานเลขที่: {plan.report.reportNo}</p>
-                    <p className="text-xs text-emerald-500">สร้างเมื่อ: {formatDateTime(plan.report.generatedAt)}</p>
-                    {plan.report.summary && <p className="text-sm text-slate-700 whitespace-pre-wrap mt-2">{plan.report.summary}</p>}
-                    {plan.report.conclusion && <p className="text-sm text-slate-700 whitespace-pre-wrap mt-1">{plan.report.conclusion}</p>}
-                    {plan.report.pdfFileUrl && (
-                      <a href={plan.report.pdfFileUrl} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline mt-1">
-                        <FileText className="h-3.5 w-3.5" />ดาวน์โหลด PDF
-                      </a>
-                    )}
-                  </div>
-                )}
-                {(!plan.report || showReportForm) && (
-                  <form id="report-form" onSubmit={reportForm.handleSubmit((data: AuditReportInput) => {
-                    generateMutation.mutate(data, {
-                      onSuccess: () => { toast.success("สร้างรายงานสำเร็จ"); setShowReportForm(false); },
-                      onError: (err) => toast.error(err.message),
-                    });
-                  })} className="space-y-3">
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-slate-600">สรุปการตรวจสอบ</label>
-                      <textarea {...reportForm.register("summary")} rows={4} placeholder="กรอกสรุปการตรวจสอบ..." className={cn(INPUT_CLASS, "resize-none")} />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-slate-600">ข้อสรุป</label>
-                      <textarea {...reportForm.register("conclusion")} rows={4} placeholder="กรอกข้อสรุป..." className={cn(INPUT_CLASS, "resize-none")} />
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                      {plan.report && (
-                        <Button type="button" variant="outline" size="sm" onClick={() => setShowReportForm(false)}>ยกเลิก</Button>
-                      )}
-                      <Button type="submit" size="sm" disabled={generateMutation.isPending}>
-                        {generateMutation.isPending ? "กำลังสร้างรายงาน..." : "สร้างรายงาน"}
-                      </Button>
-                    </div>
-                  </form>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    reportForm.reset({ summary: plan.report?.summary ?? "", conclusion: plan.report?.conclusion ?? "" });
+                    setShowReportForm(true);
+                  }}>สร้างรายงานใหม่</Button>
                 )}
               </div>
-            )}
-            {!canGenerateReport && plan.report && (
-              <div className="rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 space-y-3">
-                <h3 className="text-sm font-semibold text-slate-800">รายงานการตรวจสอบ</h3>
+              {plan.report && !showReportForm && (
                 <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 space-y-2">
                   <p className="text-xs font-semibold text-emerald-700">รายงานเลขที่: {plan.report.reportNo}</p>
                   <p className="text-xs text-emerald-500">สร้างเมื่อ: {formatDateTime(plan.report.generatedAt)}</p>
                   {plan.report.summary && <p className="text-sm text-slate-700 whitespace-pre-wrap mt-2">{plan.report.summary}</p>}
                   {plan.report.conclusion && <p className="text-sm text-slate-700 whitespace-pre-wrap mt-1">{plan.report.conclusion}</p>}
-                </div>
-              </div>
-            )}
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 space-y-4">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h3 className="text-sm font-semibold text-slate-800">ลายเซ็น</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {canSignInApp && (
-                    <Button size="sm" variant="outline" onClick={() => setShowSignInAppConfirm(true)}>
-                      <PenLine className="h-4 w-4 mr-1.5" />ลงนามในระบบ
-                    </Button>
+                  {plan.report.pdfFileUrl && (
+                    <a href={plan.report.pdfFileUrl} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline mt-1">
+                      <FileText className="h-3.5 w-3.5" />ดาวน์โหลด PDF
+                    </a>
                   )}
-                  {canIssueSignRequest && (
-                    <Button size="sm" variant="outline" onClick={() => setShowSignRequestDialog(true)}>
-                      <Send className="h-4 w-4 mr-1.5" />ส่งลิงก์ลงนาม
-                    </Button>
-                  )}
-                </div>
-              </div>
-              {plan.signoffs.length === 0 ? (
-                <p className="text-sm text-slate-400 py-4 text-center">ยังไม่มีการลงนาม</p>
-              ) : (
-                <div className="space-y-2">
-                  {plan.signoffs.map((s) => (
-                    <div key={s.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3 flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                        <PenLine className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-slate-800">{s.signerNameSnapshot ?? s.signerAuthUserId}</p>
-                        <p className="text-xs text-slate-500">{s.signedRole}</p>
-                      </div>
-                      <p className="text-xs text-slate-400 font-mono shrink-0">{formatDateTime(s.signedAt)}</p>
-                    </div>
-                  ))}
                 </div>
               )}
-            </div>
-            {canClosePlan && (
-              <div className="rounded-2xl border border-rose-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5">
-                <div className="flex items-center justify-between gap-3">
+              {(!plan.report || showReportForm) && (
+                <form id="report-form" onSubmit={reportForm.handleSubmit((data: AuditReportInput) => {
+                  generateMutation.mutate(data, {
+                    onSuccess: () => { toast.success("สร้างรายงานสำเร็จ"); setShowReportForm(false); },
+                    onError: (err) => toast.error(err.message),
+                  });
+                })} className="space-y-3">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-800">ปิดแผนการตรวจสอบ</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">การดำเนินการนี้ไม่สามารถยกเลิกได้</p>
+                    <label className="mb-1 block text-xs font-medium text-slate-600">สรุปการตรวจสอบ</label>
+                    <textarea {...reportForm.register("summary")} rows={4} placeholder="กรอกสรุปการตรวจสอบ..." className={cn(INPUT_CLASS, "resize-none")} />
                   </div>
-                  <Button size="sm" variant="destructive" disabled={closePlanMutation.isPending} onClick={() => setShowClosePlanConfirm(true)}>
-                    ปิดแผน
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-600">ข้อสรุป</label>
+                    <textarea {...reportForm.register("conclusion")} rows={4} placeholder="กรอกข้อสรุป..." className={cn(INPUT_CLASS, "resize-none")} />
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    {plan.report && (
+                      <Button type="button" variant="outline" size="sm" onClick={() => setShowReportForm(false)}>ยกเลิก</Button>
+                    )}
+                    <Button type="submit" size="sm" disabled={generateMutation.isPending}>
+                      {generateMutation.isPending ? "กำลังสร้างรายงาน..." : "สร้างรายงาน"}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
+          {!canGenerateReport && plan.report && (
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 space-y-3">
+              <h3 className="text-sm font-semibold text-slate-800">รายงานการตรวจสอบ</h3>
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 space-y-2">
+                <p className="text-xs font-semibold text-emerald-700">รายงานเลขที่: {plan.report.reportNo}</p>
+                <p className="text-xs text-emerald-500">สร้างเมื่อ: {formatDateTime(plan.report.generatedAt)}</p>
+                {plan.report.summary && <p className="text-sm text-slate-700 whitespace-pre-wrap mt-2">{plan.report.summary}</p>}
+                {plan.report.conclusion && <p className="text-sm text-slate-700 whitespace-pre-wrap mt-1">{plan.report.conclusion}</p>}
+              </div>
+            </div>
+          )}
+          <div className="rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 space-y-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h3 className="text-sm font-semibold text-slate-800">ลายเซ็น</h3>
+              <div className="flex gap-2 flex-wrap">
+                {canSignInApp && (
+                  <Button size="sm" variant="outline" onClick={() => setShowSignInAppConfirm(true)}>
+                    <PenLine className="h-4 w-4 mr-1.5" />ลงนามในระบบ
                   </Button>
-                </div>
+                )}
+                {canIssueSignRequest && (
+                  <Button size="sm" variant="outline" onClick={() => setShowSignRequestDialog(true)}>
+                    <Send className="h-4 w-4 mr-1.5" />ส่งลิงก์ลงนาม
+                  </Button>
+                )}
+              </div>
+            </div>
+            {plan.signoffs.length === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">ยังไม่มีการลงนาม</p>
+            ) : (
+              <div className="space-y-2">
+                {plan.signoffs.map((s) => (
+                  <div key={s.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3 flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <PenLine className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-slate-800">{s.signerNameSnapshot ?? s.signerAuthUserId}</p>
+                      <p className="text-xs text-slate-500">{s.signedRole}</p>
+                    </div>
+                    <p className="text-xs text-slate-400 font-mono shrink-0">{formatDateTime(s.signedAt)}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        )}
+          {canClosePlan && (
+            <div className="rounded-2xl border border-rose-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-800">ปิดแผนการตรวจสอบ</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">การดำเนินการนี้ไม่สามารถยกเลิกได้</p>
+                </div>
+                <Button size="sm" variant="destructive" disabled={closePlanMutation.isPending} onClick={() => setShowClosePlanConfirm(true)}>
+                  ปิดแผน
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Edit modal */}

@@ -9,35 +9,7 @@ type AuditAppointmentPrintTemplateProps = {
   auditorConfig?: FooterConfig | null;
 };
 
-// SVG Company Stamp for NDC Industrial Co., Ltd.
-function CompanyStampSvg() {
-  return (
-    <svg viewBox="0 0 100 100" width="80" height="80" style={{ color: "rgba(15, 89, 164, 0.85)", fontFamily: "'Sarabun', sans-serif", display: "block", margin: "0 auto" }}>
-      <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="0.6" strokeDasharray="2,1" />
-      <path id="curve-top" d="M 12 50 A 38 38 0 0 1 88 50" fill="none" stroke="none" />
-      <path id="curve-bottom" d="M 88 50 A 38 38 0 0 1 12 50" fill="none" stroke="none" />
-      <text fontSize="4.6" fontWeight="bold" fill="currentColor">
-        <textPath href="#curve-top" startOffset="50%" textAnchor="middle">
-          บริษัท เอ็นดีซี อินดัสเทรียล จำกัด
-        </textPath>
-      </text>
-      <text fontSize="4.2" fontWeight="bold" fill="currentColor">
-        <textPath href="#curve-bottom" startOffset="50%" textAnchor="middle">
-          NDC INDUSTRIAL CO., LTD.
-        </textPath>
-      </text>
-      {/* Stars on the sides */}
-      <text x="14" y="52" fontSize="5" fill="currentColor" textAnchor="middle">★</text>
-      <text x="86" y="52" fontSize="5" fill="currentColor" textAnchor="middle">★</text>
-      
-      {/* Center logo icon or stylized text */}
-      <text x="50" y="46" fontSize="9" fontWeight="900" textAnchor="middle" fill="currentColor" letterSpacing="0.2">NDC</text>
-      <text x="50" y="54" fontSize="3.8" fontWeight="bold" textAnchor="middle" fill="currentColor" letterSpacing="0.4">Industrial</text>
-      <path d="M 32 58 L 68 58" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1,1" />
-    </svg>
-  );
-}
+
 
 // Translate department names into bilingual form
 function getDeptLabel(dept: string): { th: string; en: string } {
@@ -302,10 +274,9 @@ export default function AuditAppointmentPrintTemplate({
             <table style={{ width: "100%", borderCollapse: "collapse", border: "2px solid #000", borderTop: "none", marginBottom: "15px", color: "#000" }}>
               <tbody>
                 <tr style={{ textAlign: "center", fontWeight: "bold", fontSize: "10px" }}>
-                  <td style={{ border: "2px solid #000", borderTop: "none", borderLeft: "none", width: "25%", padding: "4px", backgroundColor: "#f8fafc" }}>Issued By</td>
-                  <td style={{ border: "2px solid #000", borderTop: "none", width: "25%", padding: "4px", backgroundColor: "#f8fafc" }}>Checked By</td>
-                  <td style={{ border: "2px solid #000", borderTop: "none", width: "25%", padding: "4px", backgroundColor: "#f8fafc" }}>Approved By</td>
-                  <td style={{ border: "2px solid #000", borderTop: "none", borderRight: "none", width: "25%", padding: "4px", backgroundColor: "#f8fafc" }}>Company Stamp</td>
+                  <td style={{ border: "2px solid #000", borderTop: "none", borderLeft: "none", width: "33.33%", padding: "4px", backgroundColor: "#f8fafc" }}>Issued By</td>
+                  <td style={{ border: "2px solid #000", borderTop: "none", width: "33.33%", padding: "4px", backgroundColor: "#f8fafc" }}>Checked By</td>
+                  <td style={{ border: "2px solid #000", borderTop: "none", borderRight: "none", width: "33.33%", padding: "4px", backgroundColor: "#f8fafc" }}>Approved By</td>
                 </tr>
                 <tr style={{ height: "55px", textAlign: "center", verticalAlign: "middle" }}>
                   {/* Issued By (Prepared by Owner) */}
@@ -327,19 +298,13 @@ export default function AuditAppointmentPrintTemplate({
                     <div style={{ fontSize: "9.5px", fontWeight: "500", marginTop: "2px", color: "#0F1059" }}>{reviewerSignoff?.signerNameSnapshot || (appointment.reviewerNameSnapshot ?? "")}</div>
                   </td>
                   {/* Approved By (Approver) */}
-                  <td style={{ border: "2px solid #000", padding: "4px 5px" }}>
+                  <td style={{ border: "2px solid #000", borderRight: "none", padding: "4px 5px" }}>
                     {approverSignoff?.signaturePath ? (
                       <img src={approverSignoff.signaturePath} alt="Approver Signature" style={{ maxHeight: "35px", maxWidth: "90%", display: "block", margin: "0 auto" }} />
                     ) : (
                       <div style={{ height: "35px" }} />
                     )}
                     <div style={{ fontSize: "9.5px", fontWeight: "500", marginTop: "2px", color: "#0F1059" }}>{approverSignoff?.signerNameSnapshot || (appointment.approverNameSnapshot ?? "")}</div>
-                  </td>
-                  {/* Company Stamp */}
-                  <td style={{ border: "2px solid #000", borderRight: "none", padding: "2px", textAlign: "center", verticalAlign: "middle" }}>
-                    {appointment.status === "PUBLISHED" && appointment.showCompanyStamp !== false && (
-                      <CompanyStampSvg />
-                    )}
                   </td>
                 </tr>
                 <tr style={{ fontSize: "9px", color: "#000" }}>
@@ -349,11 +314,8 @@ export default function AuditAppointmentPrintTemplate({
                   <td style={{ border: "2px solid #000", borderBottom: "none", padding: "4px 5px" }}>
                     Date: <span style={{ color: "#0F1059", fontWeight: "bold", fontFamily: "monospace" }}>{formatDateSign(reviewerSignoff?.signedAt)}</span>
                   </td>
-                  <td style={{ border: "2px solid #000", borderBottom: "none", padding: "4px 5px" }}>
-                    Date: <span style={{ color: "#0F1059", fontWeight: "bold", fontFamily: "monospace" }}>{formatDateSign(approverSignoff?.signedAt)}</span>
-                  </td>
                   <td style={{ border: "2px solid #000", borderBottom: "none", borderRight: "none", padding: "4px 5px" }}>
-                    Date: <span style={{ color: "#0F1059", fontWeight: "bold", fontFamily: "monospace" }}>{formatDateSign(approverSignoff?.signedAt || appointment.publishedAt)}</span>
+                    Date: <span style={{ color: "#0F1059", fontWeight: "bold", fontFamily: "monospace" }}>{formatDateSign(approverSignoff?.signedAt)}</span>
                   </td>
                 </tr>
               </tbody>

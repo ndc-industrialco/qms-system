@@ -6,6 +6,7 @@ import { getToken } from "next-auth/jwt";
 import { isJwtBlocked } from "@/lib/jwt-blocklist";
 import { buildAuthCenterLoginUrl } from "@/lib/auth-center-client";
 import { hasQmsRole, type LegacyQmsRole } from "@/lib/qms-roles";
+import { isAuthCenterAccessTokenExpired } from "@/lib/auth-session";
 
 // ioredis requires Node.js TCP sockets and cannot run in Edge Runtime.
 export const runtime = "nodejs";
@@ -68,6 +69,27 @@ export default auth(async (req) => {
   requestHeaders.set("x-request-id", requestId);
 
   if (path.startsWith("/api/")) {
+    if (
+      session?.user &&
+      path !== "/api/auth/signout" &&
+      isAuthCenterAccessTokenExpired(session.user.accessTokenExpiresAt, undefined, session.user.accessToken)
+    ) {
+      logRequest(req.method, path, 401, ip, requestId, session.user.id);
+      return withRequestId(
+        NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: "เซสชันหมดอายุแล้ว กรุณาออกจากระบบและเข้าสู่ระบบใหม่ / Your session has expired. Please sign out and sign in again.",
+              code: "SESSION_EXPIRED",
+            },
+          },
+          { status: 401 },
+        ),
+        requestId,
+      );
+    }
+
     // ponytail: /api/auth/session is a read-only JWT decode hit on every tab focus — no brute-force risk, skip rate limit
     if (path === "/api/auth/session") {
       logRequest(req.method, path, 200, ip, requestId, session?.user?.id);
@@ -100,7 +122,11 @@ export default auth(async (req) => {
   }
 
   if (PUBLIC_PATHS.some((p) => path.startsWith(p))) {
-    if (session?.user && path === "/auth/login") {
+    if (
+      session?.user &&
+      path === "/auth/login" &&
+      !isAuthCenterAccessTokenExpired(session.user.accessTokenExpiresAt, undefined, session.user.accessToken)
+    ) {
       return withRequestId(NextResponse.redirect(new URL("/", req.url)), requestId);
     }
     const res = ["GET", "HEAD"].includes(req.method)
@@ -114,6 +140,13 @@ export default auth(async (req) => {
     const callbackPath = path + nextUrl.search;
     const loginUrl = buildAuthCenterLoginUrl({ state: callbackPath });
     return withRequestId(NextResponse.redirect(loginUrl), requestId);
+  }
+
+  if (isAuthCenterAccessTokenExpired(session.user.accessTokenExpiresAt, undefined, session.user.accessToken)) {
+    logRequest(req.method, path, 401, ip, requestId, session.user.id);
+    const signOutUrl = new URL("/api/auth/signout", req.url);
+    signOutUrl.searchParams.set("callbackUrl", `/unauthorized?reason=session_expired&callbackUrl=${encodeURIComponent(path + nextUrl.search)}`);
+    return withRequestId(NextResponse.redirect(signOutUrl), requestId);
   }
 
   const jti = session.user.jti;

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronLeft, Plus, Trash2, Save, Table2, BarChart3, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, Plus, Trash2, Save, Table2, BarChart3, Users, ChevronDown, ChevronUp, Printer, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -477,12 +477,45 @@ export function AuditSessionPlanClient({
             ))}
           </div>
         </div>
-        {canEdit && (
-          <Button onClick={handleSave} disabled={saving} className="rounded-xl bg-primary hover:bg-[#161875] shrink-0">
-            <Save className="w-4 h-4 mr-1.5" />
-            {saving ? "กำลังบันทึก..." : "บันทึก"}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+          {appointment.sessionPlan && (
+            <>
+              {/* Print buttons */}
+              <Button asChild variant="outline" className="rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50">
+                <a href={`/print/audit/session-plan/${appointment.sessionPlan.id}?type=gantt`} target="_blank" rel="noreferrer">
+                  <Printer className="w-4 h-4 mr-1.5" />
+                  พิมพ์ Gantt (FM-MR-06)
+                </a>
+              </Button>
+              <Button asChild variant="outline" className="rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50">
+                <a href={`/print/audit/session-plan/${appointment.sessionPlan.id}?type=session`} target="_blank" rel="noreferrer">
+                  <Printer className="w-4 h-4 mr-1.5" />
+                  พิมพ์ประกาศตรวจ (FM-MR-07)
+                </a>
+              </Button>
+
+              {/* Excel download buttons */}
+              <Button asChild variant="outline" className="rounded-xl border-emerald-200 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800">
+                <a href={`/api/audit/session-plans/${appointment.sessionPlan.id}/export?type=gantt`} download>
+                  <Download className="w-4 h-4 mr-1.5" />
+                  Excel Gantt
+                </a>
+              </Button>
+              <Button asChild variant="outline" className="rounded-xl border-emerald-200 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800">
+                <a href={`/api/audit/session-plans/${appointment.sessionPlan.id}/export?type=session`} download>
+                  <Download className="w-4 h-4 mr-1.5" />
+                  Excel ประกาศตรวจ
+                </a>
+              </Button>
+            </>
+          )}
+          {canEdit && (
+            <Button onClick={handleSave} disabled={saving} className="rounded-xl bg-primary hover:bg-[#161875] shrink-0">
+              <Save className="w-4 h-4 mr-1.5" />
+              {saving ? "กำลังบันทึก..." : "บันทึก"}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}

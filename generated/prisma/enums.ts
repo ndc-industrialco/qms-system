@@ -268,7 +268,8 @@ export type AuditVerifyResult = (typeof AuditVerifyResult)[keyof typeof AuditVer
 export const AuditScheduleConfirmStatus = {
   PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
-  UNAVAILABLE: 'UNAVAILABLE'
+  UNAVAILABLE: 'UNAVAILABLE',
+  SUGGESTED: 'SUGGESTED'
 } as const
 
 export type AuditScheduleConfirmStatus = (typeof AuditScheduleConfirmStatus)[keyof typeof AuditScheduleConfirmStatus]

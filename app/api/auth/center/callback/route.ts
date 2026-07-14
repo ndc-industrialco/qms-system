@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
         departmentId: user.departmentId,
         authDepartmentId: user.authDepartmentId,
         accessToken: rawToken,
+        accessTokenExpiresAt: user.expiresAt,
         jti: user.jti,
         m365Linked: user.m365Linked,
         authCenterVerified: true,

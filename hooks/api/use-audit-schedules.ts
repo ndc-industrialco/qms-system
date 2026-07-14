@@ -98,6 +98,22 @@ export function useConfirmSchedule(planId: string) {
   });
 }
 
+export function useAcceptSuggestedDate(planId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/audit/schedules/${id}/accept-suggested-date`, { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((json as { message?: string }).message ?? "Failed");
+      return json.data as AuditScheduleRow;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["audit-schedules", planId] });
+      qc.invalidateQueries({ queryKey: ["audit-plan", planId] });
+    },
+  });
+}
+
 export function useDeleteSchedule(planId: string) {
   const qc = useQueryClient();
   return useMutation({

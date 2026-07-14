@@ -1,6 +1,6 @@
 // Re-export base from the canonical error hierarchy used by handleApiError.
 // This ensures `instanceof AppError` checks work across both lib/errors and errors/customErrors.
-export { AppError, UnauthorizedError, ForbiddenError, ValidationError } from '@/errors/customErrors';
+export { AppError, UnauthorizedError, SessionExpiredError, ForbiddenError, ValidationError } from '@/errors/customErrors';
 
 import { AppError } from '@/errors/customErrors';
 

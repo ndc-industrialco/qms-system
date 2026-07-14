@@ -38,6 +38,12 @@ export type AuditScheduleMinAggregateOutputType = {
   contactEmail: string | null
   confirmStatus: $Enums.AuditScheduleConfirmStatus | null
   unavailableReason: string | null
+  suggestedStartAt: Date | null
+  suggestedEndAt: Date | null
+  suggestedReason: string | null
+  suggestedByAuthUserId: string | null
+  suggestedByName: string | null
+  suggestedAt: Date | null
   confirmedAt: Date | null
   confirmedByAuthUserId: string | null
   confirmedByName: string | null
@@ -65,6 +71,12 @@ export type AuditScheduleMaxAggregateOutputType = {
   contactEmail: string | null
   confirmStatus: $Enums.AuditScheduleConfirmStatus | null
   unavailableReason: string | null
+  suggestedStartAt: Date | null
+  suggestedEndAt: Date | null
+  suggestedReason: string | null
+  suggestedByAuthUserId: string | null
+  suggestedByName: string | null
+  suggestedAt: Date | null
   confirmedAt: Date | null
   confirmedByAuthUserId: string | null
   confirmedByName: string | null
@@ -92,6 +104,12 @@ export type AuditScheduleCountAggregateOutputType = {
   contactEmail: number
   confirmStatus: number
   unavailableReason: number
+  suggestedStartAt: number
+  suggestedEndAt: number
+  suggestedReason: number
+  suggestedByAuthUserId: number
+  suggestedByName: number
+  suggestedAt: number
   confirmedAt: number
   confirmedByAuthUserId: number
   confirmedByName: number
@@ -121,6 +139,12 @@ export type AuditScheduleMinAggregateInputType = {
   contactEmail?: true
   confirmStatus?: true
   unavailableReason?: true
+  suggestedStartAt?: true
+  suggestedEndAt?: true
+  suggestedReason?: true
+  suggestedByAuthUserId?: true
+  suggestedByName?: true
+  suggestedAt?: true
   confirmedAt?: true
   confirmedByAuthUserId?: true
   confirmedByName?: true
@@ -148,6 +172,12 @@ export type AuditScheduleMaxAggregateInputType = {
   contactEmail?: true
   confirmStatus?: true
   unavailableReason?: true
+  suggestedStartAt?: true
+  suggestedEndAt?: true
+  suggestedReason?: true
+  suggestedByAuthUserId?: true
+  suggestedByName?: true
+  suggestedAt?: true
   confirmedAt?: true
   confirmedByAuthUserId?: true
   confirmedByName?: true
@@ -175,6 +205,12 @@ export type AuditScheduleCountAggregateInputType = {
   contactEmail?: true
   confirmStatus?: true
   unavailableReason?: true
+  suggestedStartAt?: true
+  suggestedEndAt?: true
+  suggestedReason?: true
+  suggestedByAuthUserId?: true
+  suggestedByName?: true
+  suggestedAt?: true
   confirmedAt?: true
   confirmedByAuthUserId?: true
   confirmedByName?: true
@@ -275,6 +311,12 @@ export type AuditScheduleGroupByOutputType = {
   contactEmail: string | null
   confirmStatus: $Enums.AuditScheduleConfirmStatus
   unavailableReason: string | null
+  suggestedStartAt: Date | null
+  suggestedEndAt: Date | null
+  suggestedReason: string | null
+  suggestedByAuthUserId: string | null
+  suggestedByName: string | null
+  suggestedAt: Date | null
   confirmedAt: Date | null
   confirmedByAuthUserId: string | null
   confirmedByName: string | null
@@ -323,6 +365,12 @@ export type AuditScheduleWhereInput = {
   contactEmail?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFilter<"AuditSchedule"> | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedStartAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
+  suggestedEndAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
+  suggestedReason?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedByAuthUserId?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedByName?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
   confirmedByAuthUserId?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
   confirmedByName?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
@@ -352,6 +400,12 @@ export type AuditScheduleOrderByWithRelationInput = {
   contactEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmStatus?: Prisma.SortOrder
   unavailableReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedStartAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedEndAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedByName?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedByName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -384,6 +438,12 @@ export type AuditScheduleWhereUniqueInput = Prisma.AtLeast<{
   contactEmail?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFilter<"AuditSchedule"> | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedStartAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
+  suggestedEndAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
+  suggestedReason?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedByAuthUserId?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedByName?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
   confirmedByAuthUserId?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
   confirmedByName?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
@@ -413,6 +473,12 @@ export type AuditScheduleOrderByWithAggregationInput = {
   contactEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmStatus?: Prisma.SortOrder
   unavailableReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedStartAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedEndAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedByName?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedByName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -446,6 +512,12 @@ export type AuditScheduleScalarWhereWithAggregatesInput = {
   contactEmail?: Prisma.StringNullableWithAggregatesFilter<"AuditSchedule"> | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusWithAggregatesFilter<"AuditSchedule"> | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.StringNullableWithAggregatesFilter<"AuditSchedule"> | string | null
+  suggestedStartAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AuditSchedule"> | Date | string | null
+  suggestedEndAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AuditSchedule"> | Date | string | null
+  suggestedReason?: Prisma.StringNullableWithAggregatesFilter<"AuditSchedule"> | string | null
+  suggestedByAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"AuditSchedule"> | string | null
+  suggestedByName?: Prisma.StringNullableWithAggregatesFilter<"AuditSchedule"> | string | null
+  suggestedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AuditSchedule"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AuditSchedule"> | Date | string | null
   confirmedByAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"AuditSchedule"> | string | null
   confirmedByName?: Prisma.StringNullableWithAggregatesFilter<"AuditSchedule"> | string | null
@@ -472,6 +544,12 @@ export type AuditScheduleCreateInput = {
   contactEmail?: string | null
   confirmStatus?: $Enums.AuditScheduleConfirmStatus
   unavailableReason?: string | null
+  suggestedStartAt?: Date | string | null
+  suggestedEndAt?: Date | string | null
+  suggestedReason?: string | null
+  suggestedByAuthUserId?: string | null
+  suggestedByName?: string | null
+  suggestedAt?: Date | string | null
   confirmedAt?: Date | string | null
   confirmedByAuthUserId?: string | null
   confirmedByName?: string | null
@@ -501,6 +579,12 @@ export type AuditScheduleUncheckedCreateInput = {
   contactEmail?: string | null
   confirmStatus?: $Enums.AuditScheduleConfirmStatus
   unavailableReason?: string | null
+  suggestedStartAt?: Date | string | null
+  suggestedEndAt?: Date | string | null
+  suggestedReason?: string | null
+  suggestedByAuthUserId?: string | null
+  suggestedByName?: string | null
+  suggestedAt?: Date | string | null
   confirmedAt?: Date | string | null
   confirmedByAuthUserId?: string | null
   confirmedByName?: string | null
@@ -528,6 +612,12 @@ export type AuditScheduleUpdateInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -557,6 +647,12 @@ export type AuditScheduleUncheckedUpdateInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -585,6 +681,12 @@ export type AuditScheduleCreateManyInput = {
   contactEmail?: string | null
   confirmStatus?: $Enums.AuditScheduleConfirmStatus
   unavailableReason?: string | null
+  suggestedStartAt?: Date | string | null
+  suggestedEndAt?: Date | string | null
+  suggestedReason?: string | null
+  suggestedByAuthUserId?: string | null
+  suggestedByName?: string | null
+  suggestedAt?: Date | string | null
   confirmedAt?: Date | string | null
   confirmedByAuthUserId?: string | null
   confirmedByName?: string | null
@@ -611,6 +713,12 @@ export type AuditScheduleUpdateManyMutationInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -638,6 +746,12 @@ export type AuditScheduleUncheckedUpdateManyInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -675,6 +789,12 @@ export type AuditScheduleCountOrderByAggregateInput = {
   contactEmail?: Prisma.SortOrder
   confirmStatus?: Prisma.SortOrder
   unavailableReason?: Prisma.SortOrder
+  suggestedStartAt?: Prisma.SortOrder
+  suggestedEndAt?: Prisma.SortOrder
+  suggestedReason?: Prisma.SortOrder
+  suggestedByAuthUserId?: Prisma.SortOrder
+  suggestedByName?: Prisma.SortOrder
+  suggestedAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   confirmedByAuthUserId?: Prisma.SortOrder
   confirmedByName?: Prisma.SortOrder
@@ -702,6 +822,12 @@ export type AuditScheduleMaxOrderByAggregateInput = {
   contactEmail?: Prisma.SortOrder
   confirmStatus?: Prisma.SortOrder
   unavailableReason?: Prisma.SortOrder
+  suggestedStartAt?: Prisma.SortOrder
+  suggestedEndAt?: Prisma.SortOrder
+  suggestedReason?: Prisma.SortOrder
+  suggestedByAuthUserId?: Prisma.SortOrder
+  suggestedByName?: Prisma.SortOrder
+  suggestedAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   confirmedByAuthUserId?: Prisma.SortOrder
   confirmedByName?: Prisma.SortOrder
@@ -729,6 +855,12 @@ export type AuditScheduleMinOrderByAggregateInput = {
   contactEmail?: Prisma.SortOrder
   confirmStatus?: Prisma.SortOrder
   unavailableReason?: Prisma.SortOrder
+  suggestedStartAt?: Prisma.SortOrder
+  suggestedEndAt?: Prisma.SortOrder
+  suggestedReason?: Prisma.SortOrder
+  suggestedByAuthUserId?: Prisma.SortOrder
+  suggestedByName?: Prisma.SortOrder
+  suggestedAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   confirmedByAuthUserId?: Prisma.SortOrder
   confirmedByName?: Prisma.SortOrder
@@ -820,6 +952,12 @@ export type AuditScheduleCreateWithoutPlanInput = {
   contactEmail?: string | null
   confirmStatus?: $Enums.AuditScheduleConfirmStatus
   unavailableReason?: string | null
+  suggestedStartAt?: Date | string | null
+  suggestedEndAt?: Date | string | null
+  suggestedReason?: string | null
+  suggestedByAuthUserId?: string | null
+  suggestedByName?: string | null
+  suggestedAt?: Date | string | null
   confirmedAt?: Date | string | null
   confirmedByAuthUserId?: string | null
   confirmedByName?: string | null
@@ -847,6 +985,12 @@ export type AuditScheduleUncheckedCreateWithoutPlanInput = {
   contactEmail?: string | null
   confirmStatus?: $Enums.AuditScheduleConfirmStatus
   unavailableReason?: string | null
+  suggestedStartAt?: Date | string | null
+  suggestedEndAt?: Date | string | null
+  suggestedReason?: string | null
+  suggestedByAuthUserId?: string | null
+  suggestedByName?: string | null
+  suggestedAt?: Date | string | null
   confirmedAt?: Date | string | null
   confirmedByAuthUserId?: string | null
   confirmedByName?: string | null
@@ -904,6 +1048,12 @@ export type AuditScheduleScalarWhereInput = {
   contactEmail?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFilter<"AuditSchedule"> | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedStartAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
+  suggestedEndAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
+  suggestedReason?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedByAuthUserId?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedByName?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
+  suggestedAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"AuditSchedule"> | Date | string | null
   confirmedByAuthUserId?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
   confirmedByName?: Prisma.StringNullableFilter<"AuditSchedule"> | string | null
@@ -930,6 +1080,12 @@ export type AuditScheduleCreateWithoutTeamInput = {
   contactEmail?: string | null
   confirmStatus?: $Enums.AuditScheduleConfirmStatus
   unavailableReason?: string | null
+  suggestedStartAt?: Date | string | null
+  suggestedEndAt?: Date | string | null
+  suggestedReason?: string | null
+  suggestedByAuthUserId?: string | null
+  suggestedByName?: string | null
+  suggestedAt?: Date | string | null
   confirmedAt?: Date | string | null
   confirmedByAuthUserId?: string | null
   confirmedByName?: string | null
@@ -958,6 +1114,12 @@ export type AuditScheduleUncheckedCreateWithoutTeamInput = {
   contactEmail?: string | null
   confirmStatus?: $Enums.AuditScheduleConfirmStatus
   unavailableReason?: string | null
+  suggestedStartAt?: Date | string | null
+  suggestedEndAt?: Date | string | null
+  suggestedReason?: string | null
+  suggestedByAuthUserId?: string | null
+  suggestedByName?: string | null
+  suggestedAt?: Date | string | null
   confirmedAt?: Date | string | null
   confirmedByAuthUserId?: string | null
   confirmedByName?: string | null
@@ -1000,6 +1162,12 @@ export type AuditScheduleUpdateWithoutTeamInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1028,6 +1196,12 @@ export type AuditScheduleUncheckedUpdateWithoutTeamInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1054,6 +1228,12 @@ export type AuditScheduleCreateManyPlanInput = {
   contactEmail?: string | null
   confirmStatus?: $Enums.AuditScheduleConfirmStatus
   unavailableReason?: string | null
+  suggestedStartAt?: Date | string | null
+  suggestedEndAt?: Date | string | null
+  suggestedReason?: string | null
+  suggestedByAuthUserId?: string | null
+  suggestedByName?: string | null
+  suggestedAt?: Date | string | null
   confirmedAt?: Date | string | null
   confirmedByAuthUserId?: string | null
   confirmedByName?: string | null
@@ -1080,6 +1260,12 @@ export type AuditScheduleUpdateWithoutPlanInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1107,6 +1293,12 @@ export type AuditScheduleUncheckedUpdateWithoutPlanInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1134,6 +1326,12 @@ export type AuditScheduleUncheckedUpdateManyWithoutPlanInput = {
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmStatus?: Prisma.EnumAuditScheduleConfirmStatusFieldUpdateOperationsInput | $Enums.AuditScheduleConfirmStatus
   unavailableReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedEndAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suggestedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   confirmedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1192,6 +1390,12 @@ export type AuditScheduleSelect<ExtArgs extends runtime.Types.Extensions.Interna
   contactEmail?: boolean
   confirmStatus?: boolean
   unavailableReason?: boolean
+  suggestedStartAt?: boolean
+  suggestedEndAt?: boolean
+  suggestedReason?: boolean
+  suggestedByAuthUserId?: boolean
+  suggestedByName?: boolean
+  suggestedAt?: boolean
   confirmedAt?: boolean
   confirmedByAuthUserId?: boolean
   confirmedByName?: boolean
@@ -1222,6 +1426,12 @@ export type AuditScheduleSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   contactEmail?: boolean
   confirmStatus?: boolean
   unavailableReason?: boolean
+  suggestedStartAt?: boolean
+  suggestedEndAt?: boolean
+  suggestedReason?: boolean
+  suggestedByAuthUserId?: boolean
+  suggestedByName?: boolean
+  suggestedAt?: boolean
   confirmedAt?: boolean
   confirmedByAuthUserId?: boolean
   confirmedByName?: boolean
@@ -1250,6 +1460,12 @@ export type AuditScheduleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   contactEmail?: boolean
   confirmStatus?: boolean
   unavailableReason?: boolean
+  suggestedStartAt?: boolean
+  suggestedEndAt?: boolean
+  suggestedReason?: boolean
+  suggestedByAuthUserId?: boolean
+  suggestedByName?: boolean
+  suggestedAt?: boolean
   confirmedAt?: boolean
   confirmedByAuthUserId?: boolean
   confirmedByName?: boolean
@@ -1278,6 +1494,12 @@ export type AuditScheduleSelectScalar = {
   contactEmail?: boolean
   confirmStatus?: boolean
   unavailableReason?: boolean
+  suggestedStartAt?: boolean
+  suggestedEndAt?: boolean
+  suggestedReason?: boolean
+  suggestedByAuthUserId?: boolean
+  suggestedByName?: boolean
+  suggestedAt?: boolean
   confirmedAt?: boolean
   confirmedByAuthUserId?: boolean
   confirmedByName?: boolean
@@ -1291,7 +1513,7 @@ export type AuditScheduleSelectScalar = {
   auditeeNotifyDept?: boolean
 }
 
-export type AuditScheduleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "sessionTitle" | "location" | "agenda" | "startAt" | "endAt" | "calendarEventId" | "departmentId" | "departmentName" | "contactEmail" | "confirmStatus" | "unavailableReason" | "confirmedAt" | "confirmedByAuthUserId" | "confirmedByName" | "leadAuditorAuthUserId" | "leadAuditorNameSnapshot" | "leadAuditorEmailSnapshot" | "checklistDueAt" | "checklistSubmittedAt" | "checklistSubmittedByUserId" | "checklistSubmittedByName" | "auditeeNotifyDept", ExtArgs["result"]["auditSchedule"]>
+export type AuditScheduleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "sessionTitle" | "location" | "agenda" | "startAt" | "endAt" | "calendarEventId" | "departmentId" | "departmentName" | "contactEmail" | "confirmStatus" | "unavailableReason" | "suggestedStartAt" | "suggestedEndAt" | "suggestedReason" | "suggestedByAuthUserId" | "suggestedByName" | "suggestedAt" | "confirmedAt" | "confirmedByAuthUserId" | "confirmedByName" | "leadAuditorAuthUserId" | "leadAuditorNameSnapshot" | "leadAuditorEmailSnapshot" | "checklistDueAt" | "checklistSubmittedAt" | "checklistSubmittedByUserId" | "checklistSubmittedByName" | "auditeeNotifyDept", ExtArgs["result"]["auditSchedule"]>
 export type AuditScheduleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   plan?: boolean | Prisma.AuditPlanDefaultArgs<ExtArgs>
   team?: boolean | Prisma.AuditSchedule$teamArgs<ExtArgs>
@@ -1324,6 +1546,12 @@ export type $AuditSchedulePayload<ExtArgs extends runtime.Types.Extensions.Inter
     contactEmail: string | null
     confirmStatus: $Enums.AuditScheduleConfirmStatus
     unavailableReason: string | null
+    suggestedStartAt: Date | null
+    suggestedEndAt: Date | null
+    suggestedReason: string | null
+    suggestedByAuthUserId: string | null
+    suggestedByName: string | null
+    suggestedAt: Date | null
     confirmedAt: Date | null
     confirmedByAuthUserId: string | null
     confirmedByName: string | null
@@ -1773,6 +2001,12 @@ export interface AuditScheduleFieldRefs {
   readonly contactEmail: Prisma.FieldRef<"AuditSchedule", 'String'>
   readonly confirmStatus: Prisma.FieldRef<"AuditSchedule", 'AuditScheduleConfirmStatus'>
   readonly unavailableReason: Prisma.FieldRef<"AuditSchedule", 'String'>
+  readonly suggestedStartAt: Prisma.FieldRef<"AuditSchedule", 'DateTime'>
+  readonly suggestedEndAt: Prisma.FieldRef<"AuditSchedule", 'DateTime'>
+  readonly suggestedReason: Prisma.FieldRef<"AuditSchedule", 'String'>
+  readonly suggestedByAuthUserId: Prisma.FieldRef<"AuditSchedule", 'String'>
+  readonly suggestedByName: Prisma.FieldRef<"AuditSchedule", 'String'>
+  readonly suggestedAt: Prisma.FieldRef<"AuditSchedule", 'DateTime'>
   readonly confirmedAt: Prisma.FieldRef<"AuditSchedule", 'DateTime'>
   readonly confirmedByAuthUserId: Prisma.FieldRef<"AuditSchedule", 'String'>
   readonly confirmedByName: Prisma.FieldRef<"AuditSchedule", 'String'>

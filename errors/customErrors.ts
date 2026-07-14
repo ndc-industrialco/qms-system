@@ -22,6 +22,13 @@ export class UnauthorizedError extends AppError {
   }
 }
 
+export class SessionExpiredError extends UnauthorizedError {
+  constructor() {
+    super("เซสชันหมดอายุแล้ว กรุณาออกจากระบบและเข้าสู่ระบบใหม่ / Your session has expired. Please sign out and sign in again.");
+    this.errorCode = "SESSION_EXPIRED";
+  }
+}
+
 export class ForbiddenError extends AppError {
   constructor(message: string = "Access forbidden") {
     super(message, 403, "FORBIDDEN");

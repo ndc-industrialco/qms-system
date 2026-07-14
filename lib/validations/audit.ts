@@ -82,8 +82,28 @@ export const auditScheduleCreateSchema = z.object({
 export const auditScheduleUpdateSchema = auditScheduleCreateSchema.partial();
 
 export const auditScheduleConfirmSchema = z.object({
-  status: z.enum(["CONFIRMED", "UNAVAILABLE"]),
-  reason: z.string().optional(),
+  status: z.enum(["CONFIRMED", "UNAVAILABLE", "SUGGESTED"]),
+  reason: z.string().trim().optional(),
+  suggestedStartAt: z.coerce.date().optional(),
+  suggestedEndAt: z.coerce.date().optional(),
+}).superRefine((value, ctx) => {
+  if (value.status === "UNAVAILABLE" && !value.reason) {
+    ctx.addIssue({ code: "custom", path: ["reason"], message: "Reason is required" });
+  }
+  if (value.status === "SUGGESTED") {
+    if (!value.reason) {
+      ctx.addIssue({ code: "custom", path: ["reason"], message: "Reason is required" });
+    }
+    if (!value.suggestedStartAt) {
+      ctx.addIssue({ code: "custom", path: ["suggestedStartAt"], message: "Suggested start time is required" });
+    }
+    if (!value.suggestedEndAt) {
+      ctx.addIssue({ code: "custom", path: ["suggestedEndAt"], message: "Suggested end time is required" });
+    }
+    if (value.suggestedStartAt && value.suggestedEndAt && value.suggestedEndAt <= value.suggestedStartAt) {
+      ctx.addIssue({ code: "custom", path: ["suggestedEndAt"], message: "Suggested end time must be after start time" });
+    }
+  }
 });
 
 // ─── Finding ─────────────────────────────────────────────────────────────────

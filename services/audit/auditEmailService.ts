@@ -195,6 +195,13 @@ export async function sendAuditAnnouncementEmail(opts: {
     if (items) body += `<div style="margin-top:16px"><p style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin:0 0 6px">Audit Team</p><ul style="margin:0;padding-left:18px">${items}</ul></div>`;
   }
 
+  const printUrl = getAppUrl(`/print/audit/plan/${opts.planId}`);
+  body += `<div style="margin-top:20px;text-align:center">
+    <a href="${esc(printUrl)}" target="_blank" style="display:inline-block;padding:10px 20px;background:#fff;color:#0f1059;border:2px solid #0f1059;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:.3px">
+      Print Session Plan (FM-MR-07) / พิมพ์กำหนดการตรวจ
+    </a>
+  </div>`;
+
   await sendMail({
     to: opts.recipients,
     senderAccessToken: opts.senderAccessToken,
@@ -265,14 +272,17 @@ export async function sendScheduleStatusEmail(opts: {
   auditNo: string;
   sessionTitle: string;
   departmentName: string;
-  status: "CONFIRMED" | "UNAVAILABLE";
+  status: "CONFIRMED" | "UNAVAILABLE" | "SUGGESTED";
   confirmedBy: string;
   reason?: string | null;
+  suggestedStartAt?: string | null;
+  suggestedEndAt?: string | null;
   planId: string;
   senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/qms/audit/${opts.planId}`);
   const isConfirmed = opts.status === "CONFIRMED";
+  const isSuggested = opts.status === "SUGGESTED";
   const rows: { label: string; value: string }[] = [
     { label: "Audit No.", value: opts.auditNo },
     { label: "Plan", value: opts.planTitle },
@@ -281,15 +291,19 @@ export async function sendScheduleStatusEmail(opts: {
     { label: isConfirmed ? "Confirmed by" : "Reported by", value: opts.confirmedBy },
   ];
   if (opts.reason) rows.push({ label: "Reason", value: opts.reason });
+  if (isSuggested && opts.suggestedStartAt && opts.suggestedEndAt) {
+    rows.push({ label: "Suggested start", value: fmtDateTime(opts.suggestedStartAt) });
+    rows.push({ label: "Suggested end", value: fmtDateTime(opts.suggestedEndAt) });
+  }
 
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
-    subject: `[Audit] ${isConfirmed ? "Confirmed" : "Unavailable"} — ${opts.departmentName} — ${opts.auditNo}`,
+    subject: `[Audit] ${isConfirmed ? "Confirmed" : isSuggested ? "New date suggested" : "Unavailable"} — ${opts.departmentName} — ${opts.auditNo}`,
     bodyHtml: layout({
-      badgeColor: isConfirmed ? "#10b981" : "#ef4444",
-      badgeText: isConfirmed ? "Confirmed" : "Unavailable",
-      title: isConfirmed ? "Department Confirmed Schedule" : "Department Unavailable",
+      badgeColor: isConfirmed ? "#10b981" : isSuggested ? "#2563eb" : "#ef4444",
+      badgeText: isConfirmed ? "Confirmed" : isSuggested ? "New Date Suggested" : "Unavailable",
+      title: isConfirmed ? "Department Confirmed Schedule" : isSuggested ? "Department Suggested a New Date" : "Department Unavailable",
       subtitle: opts.auditNo,
       rows,
       actionLabel: "View Audit Plan",
@@ -1165,6 +1179,11 @@ export async function sendAuditSignRequestEmail(opts: {
       ],
       body: `<div style="margin:16px 0 0;padding:14px 16px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
         <strong>Your signature is required</strong> to proceed with the audit plan approval workflow.
+      </div>
+      <div style="margin-top:16px;text-align:center">
+        <a href="${esc(getAppUrl(`/print/audit/plan/${opts.planId}`))}" target="_blank" style="display:inline-block;padding:8px 16px;background:#fff;color:#0f1059;border:1.5px solid #0f1059;text-decoration:none;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.3px">
+          Print Session Plan (FM-MR-07) / พิมพ์กำหนดการตรวจ
+        </a>
       </div>`,
       actionLabel: roleLabel === "Approver" ? "Review & Approve" : "Review & Sign",
       actionUrl: url,

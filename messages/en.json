@@ -1243,5 +1243,33 @@
       "AUDIT_APPOINTMENT": { "label": "Audit Appointment", "description": "Audit Appointment Approval" },
       "AUDIT": { "label": "Audit Plan", "description": "Audit Plan Approval" }
     }
+  },
+  "audit": {
+    "tabs": {
+      "overview": "Overview",
+      "schedule": "Schedule",
+      "departments": "Departments",
+      "findings": "Findings",
+      "attachments": "Attachments",
+      "reportSign": "Report & Sign"
+    },
+    "labels": {
+      "planNo": "Plan No.",
+      "auditType": "Audit Type",
+      "mode": "Mode",
+      "standards": "Standards",
+      "preparedBy": "Prepared By",
+      "status": "Status",
+      "sourceOrganization": "External Audit Organization",
+      "scope": "Scope",
+      "objective": "Objective",
+      "report": "Report",
+      "auditorTeam": "Auditor Team",
+      "departments": "Assigned Departments",
+      "findings": "Findings",
+      "attachments": "Attachments",
+      "signatures": "Signatures",
+      "closePlan": "Close Audit Plan"
+    }
   }
 }

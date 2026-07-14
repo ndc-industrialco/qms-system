@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
       { header: "End Date",   key: "endDate",   width: 16 },
       { header: "Scope",      key: "scope",     width: 24 },
       { header: "Objective",  key: "objective", width: 24 },
-      { header: "Owner",      key: "owner",     width: 24 },
+{ header: "Prepare (ผู้จัดทำ)", key: "owner", width: 24 },
       { header: "Reviewer",   key: "reviewer",  width: 24 },
       { header: "Approver",   key: "approver",  width: 24 },
       { header: "Created At", key: "createdAt", width: 16 },

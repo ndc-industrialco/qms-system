@@ -2,7 +2,8 @@ import NextAuth from "next-auth";
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 import { authConfig } from "@/lib/auth.config";
-import { ForbiddenError, UnauthorizedError } from "@/lib/errors";
+import { ForbiddenError, SessionExpiredError, UnauthorizedError } from "@/lib/errors";
+import { isAuthCenterAccessTokenExpired } from "@/lib/auth-session";
 import { hasQmsRole, normalizeQmsRole, type AnyQmsRole } from "@/lib/qms-roles";
 
 // Edge-safe NextAuth instance — decodes JWT without any DB access.
@@ -18,6 +19,9 @@ export async function getSession() {
 export async function requireAuth() {
   const session = await auth();
   if (!session?.user) throw new UnauthorizedError();
+  if (isAuthCenterAccessTokenExpired(session.user.accessTokenExpiresAt, undefined, session.user.accessToken)) {
+    throw new SessionExpiredError();
+  }
   return session;
 }
 
@@ -40,6 +44,9 @@ export async function requireAuthEdge(req: NextRequest) {
   });
 
   if (!token) throw new UnauthorizedError();
+  if (isAuthCenterAccessTokenExpired(token.accessTokenExpiresAt as string | undefined, undefined, token.accessToken as string | undefined)) {
+    throw new SessionExpiredError();
+  }
 
   return {
     user: {
@@ -51,6 +58,7 @@ export async function requireAuthEdge(req: NextRequest) {
       departmentId: token.departmentId as string | undefined,
       authDepartmentId: token.authDepartmentId as string | undefined,
       accessToken: token.accessToken as string | undefined,
+      accessTokenExpiresAt: token.accessTokenExpiresAt as string | undefined,
     },
   };
 }
