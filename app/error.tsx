@@ -12,6 +12,18 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error(error);
+    const isUnauthorized =
+      error.digest === "UNAUTHORIZED" ||
+      error.digest === "SESSION_EXPIRED" ||
+      error.message?.includes("UNAUTHORIZED") ||
+      error.message?.includes("Unauthorized") ||
+      error.message?.includes("unauthorized") ||
+      error.message?.includes("401");
+
+    if (isUnauthorized) {
+      const currentPath = window.location.pathname + window.location.search;
+      window.location.href = `/api/auth/signout?callbackUrl=${encodeURIComponent(currentPath)}`;
+    }
   }, [error]);
 
   return (

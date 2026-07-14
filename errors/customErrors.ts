@@ -1,4 +1,5 @@
 export class AppError extends Error {
+  public digest?: string;
   constructor(
     public message: string,
     public statusCode: number = 500,
@@ -6,6 +7,7 @@ export class AppError extends Error {
     public details?: unknown
   ) {
     super(message);
+    this.digest = errorCode;
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
