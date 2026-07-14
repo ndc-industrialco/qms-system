@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Building2, FileText, Paperclip, Plus, Trash2, CheckCircle2, XCircle, PenLine, Send, Megaphone, Clock, AlertTriangle, Mail, Printer, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import { useAuditPlanDetail, useAnnouncePlan, useSignPlanInApp, useGenerateRepor
 import { useAuditSchedules, useCreateSchedule, useDeleteSchedule, useConfirmSchedule, useAcceptSuggestedDate, useSubmitChecklist } from "@/hooks/api/use-audit-schedules";
 import { AuditPersonSearch } from "./AuditPersonSearch";
 import { useAuditAttachments, useDeleteAuditAttachment, useUploadAuditAttachment } from "@/hooks/api/use-audit-attachments";
+import { useDeleteAuditPlan } from "@/hooks/api/use-audit-plans";
+import { canDeleteAuditPlan } from "@/lib/audit/permissions";
 import {
   AUDIT_TYPE_LABELS,
   AUDIT_MODE_LABELS,
@@ -1067,6 +1070,8 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
   const [showReportForm, setShowReportForm] = useState(false);
   const [showAnnounceDialog, setShowAnnounceDialog] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const router = useRouter();
 
   const { data: plan = initialPlan } = useAuditPlanDetail(initialPlan.id, initialPlan);
 
@@ -1077,6 +1082,7 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
   const completeMutation = useCompleteAudit(plan.id);
   const issueSignRequestMutation = useIssueSignRequest(plan.id);
   const announceMutation = useAnnouncePlan(plan.id);
+  const deletePlanMutation = useDeleteAuditPlan();
 
   const canSubmit = isPrivileged && plan.status === "DRAFT";
   const canEdit = isPrivileged && (plan.status === "DRAFT" || plan.status === "PLANNED");
@@ -1091,6 +1097,7 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
     isPrivileged || plan.auditors.some((a) => a.assigneeAuthUserId === userId) || plan.ownerAuthUserId === userId
   );
   const canIssueSignRequest = isPrivileged && plan.status === "READY_TO_CLOSE";
+  const canDelete = canDeleteAuditPlan(userRole);
 
   const reportForm = useForm<AuditReportInput>({
     resolver: zodResolver(auditReportSchema),
@@ -1128,6 +1135,11 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
           {canEdit && (
             <Button variant="outline" size="sm" onClick={() => setShowEdit(true)}>แก้ไข</Button>
           )}
+          {canDelete && (
+            <Button variant="destructive" size="sm" onClick={() => setShowDeleteConfirm(true)}>
+              ลบแผน
+            </Button>
+          )}
           {canComplete && (
             <Button size="sm" variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={() => setShowCompleteConfirm(true)}>
               <CheckCircle2 className="h-4 w-4 mr-1.5" />Audit เสร็จสิ้น
@@ -1140,6 +1152,35 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
           )}
         </div>
       </div>
+
+      <Dialog open={showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(false)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>ยืนยันการลบ Audit Plan</DialogTitle></DialogHeader>
+          <p className="text-sm text-slate-600">
+            คุณต้องการลบแผน <span className="font-mono font-semibold text-slate-800">{plan.auditNo}</span> ถาวรใช่หรือไม่?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>ยกเลิก</Button>
+            <Button
+              variant="destructive"
+              disabled={deletePlanMutation.isPending}
+              onClick={() => deletePlanMutation.mutate(
+                { id: plan.id },
+                {
+                  onSuccess: () => {
+                    toast.success("ลบ Audit Plan สำเร็จ");
+                    router.push("/audit/plans");
+                    router.refresh();
+                  },
+                  onError: (err) => toast.error(err.message),
+                }
+              )}
+            >
+              {deletePlanMutation.isPending ? "กำลังลบ..." : "ยืนยันลบ"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Tab content - Overview (consolidated from all tabs) */}
       <div className="space-y-6">

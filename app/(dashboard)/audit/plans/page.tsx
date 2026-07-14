@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { Metadata } from "next";
+import { canDeleteAuditPlan } from "@/lib/audit/permissions";
 
 export const metadata: Metadata = { title: "แผนการตรวจสอบ - QMS" };
 
@@ -17,6 +18,7 @@ export default async function AuditPlansPage() {
   const role = session.user.role;
   const isPrivileged = role === "QMS" || role === "IT" || role === "MR";
   const canEdit = role === "QMS" || role === "IT" || role === "MR";
+  const canDelete = canDeleteAuditPlan(role);
 
   const raw = await auditPlanService.listPlans({ page: 1, limit: 20 });
   const initialData = {
@@ -50,6 +52,7 @@ export default async function AuditPlansPage() {
         initialData={initialData}
         isPrivileged={isPrivileged}
         canEdit={canEdit}
+        canDelete={canDelete}
       />
     </div>
   );

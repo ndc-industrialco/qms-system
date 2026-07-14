@@ -28,6 +28,7 @@ interface Props {
   initialData?: AuditPlanListResponse;
   isPrivileged?: boolean;
   canEdit?: boolean;
+  canDelete?: boolean;
 }
 
 const PAGE_SIZE = 20;
@@ -71,7 +72,7 @@ function TableSkeleton() {
   );
 }
 
-export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivileged = false, canEdit = false }: Props) {
+export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivileged = false, canEdit = false, canDelete = false }: Props) {
   const [cancelTarget, setCancelTarget] = useState<AuditPlanSummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AuditPlanSummary | null>(null);
 
@@ -221,7 +222,7 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                       ยกเลิก
                     </button>
                   )}
-                  {canEdit && (plan.status === "DRAFT" || plan.status === "CANCELLED") && (
+                  {canDelete && (
                     <button
                       type="button"
                       onClick={() => setDeleteTarget(plan)}
@@ -286,7 +287,7 @@ export default function AuditPlanListTable({ initialData, isPrivileged: _isPrivi
                               onClick={() => setCancelTarget(plan)}
                             />
                           )}
-                          {canEdit && (plan.status === "DRAFT" || plan.status === "CANCELLED") && (
+                          {canDelete && (
                             <ActionIconButton
                               tone="delete"
                               label="ลบ"

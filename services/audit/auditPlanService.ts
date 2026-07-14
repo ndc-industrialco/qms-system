@@ -16,6 +16,7 @@ import { sendScheduleInviteEmail, sendScheduleStatusEmail } from "./auditEmailSe
 import { NotificationService } from "@/services/notificationService";
 import { getDocNoFormat, buildLikePrefix, renderDocNo } from "@/lib/docNoConfig";
 import { logger } from "@/lib/logger";
+import { canDeleteAuditPlan } from "@/lib/audit/permissions";
 import type { AuditPlanListQuery } from "@/repositories/audit/auditPlanRepository";
 
 const EDITABLE_STATUSES = new Set(["DRAFT", "PENDING_REVIEW", "PENDING_APPROVAL", "PLANNED"]);
@@ -147,10 +148,9 @@ export class AuditPlanService {
   ) {
     const plan = await this.repo.findById(id);
     if (!plan) throw new NotFoundError("Audit plan not found");
-    if (plan.status !== "DRAFT" && plan.status !== "CANCELLED") {
-      throw new ValidationError("Only DRAFT or CANCELLED plans can be deleted");
+    if (!canDeleteAuditPlan(actor.role)) {
+      throw new ForbiddenError("Only QMS, MR, or IT can delete audit plans");
     }
-    this.assertOwnerOrPrivileged(plan.ownerAuthUserId, actor);
 
     await db.$transaction(async (tx) => {
       await tx.auditPlanDepartment.deleteMany({ where: { planId: id } });
