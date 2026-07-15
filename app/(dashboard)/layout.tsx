@@ -1,9 +1,19 @@
 
 import { requireAuth } from "@/lib/auth";
+import { SessionExpiredError } from "@/lib/errors";
+import { redirect } from "next/navigation";
 import DashboardShell from "@/components/layout/DashboardShell";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await requireAuth();
+  let session: Awaited<ReturnType<typeof requireAuth>>;
+  try {
+    session = await requireAuth();
+  } catch (error) {
+    if (error instanceof SessionExpiredError) {
+      redirect("/unauthorized?reason=session_expired");
+    }
+    throw error;
+  }
 
   return (
     <DashboardShell

@@ -22,7 +22,8 @@ export default function DashboardError({
 
     if (isUnauthorized) {
       const currentPath = window.location.pathname + window.location.search;
-      window.location.href = `/api/auth/signout?callbackUrl=${encodeURIComponent(currentPath)}`;
+      const callbackUrl = `/unauthorized?reason=session_expired&callbackUrl=${encodeURIComponent(currentPath)}`;
+      window.location.href = `/api/auth/signout?callbackUrl=${encodeURIComponent(callbackUrl)}`;
     }
   }, [error]);
 

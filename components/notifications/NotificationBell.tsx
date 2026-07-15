@@ -85,6 +85,15 @@ export function NotificationBell() {
     queryKey: ["notifications"],
     queryFn: async () => {
       const res = await fetch("/api/notifications");
+      if (res.status === 401) {
+        const payload = await res.json().catch(() => null) as {
+          error?: { code?: string };
+        } | null;
+        if (payload?.error?.code === "SESSION_EXPIRED") {
+          window.location.assign("/unauthorized?reason=session_expired");
+        }
+        throw new Error("Session expired");
+      }
       if (!res.ok) throw new Error("Failed to fetch notifications");
       return res.json();
     },
