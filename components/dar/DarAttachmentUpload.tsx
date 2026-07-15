@@ -201,7 +201,7 @@ function InlinePreviewCard({
 function DropZone({ uploading, onFiles }: { uploading: boolean; onFiles: (f: FileList) => void }) {
   return (
     <label
-      className="flex flex-col items-center justify-center w-full border-2 border-dashed border-slate-100 rounded-lg p-5 cursor-pointer hover:border-primary transition-colors duration-150 bg-base-100"
+      className="flex flex-col items-center justify-center w-full border-2 border-dashed border-slate-100 rounded-lg p-5 cursor-pointer hover:border-primary transition-colors duration-150 bg-slate-50"
       onDrop={(e) => { e.preventDefault(); if (e.dataTransfer.files.length) onFiles(e.dataTransfer.files); }}
       onDragOver={(e) => e.preventDefault()}
     >
@@ -240,7 +240,7 @@ function FileRow({
       <div className="flex-1 min-w-0">
         <button
           type="button"
-          className="text-[14px] font-medium text-base-content hover:text-primary truncate block w-full text-left"
+          className="text-[14px] font-medium text-slate-700 hover:text-primary truncate block w-full text-left"
           onClick={onPreview}
         >
           {fileName}
