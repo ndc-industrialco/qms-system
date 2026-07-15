@@ -191,7 +191,7 @@ export async function GET(
     const [naming, footerConfig] = await Promise.all([
       qmsConfigService.getExportNamingMeta("AUDIT_PLAN", {
         label: isGantt ? "Internal Audit Plan (FM-MR-06)" : "Internal Audit Program (FM-MR-07)",
-        fileBaseName: isGantt ? "FM-MR-06-audit-gantt-plan" : "FM-MR-07-audit-program",
+        fileBaseName: "AUDIT_PLAN",
         worksheetName: isGantt ? "Gantt Plan" : "Sessions",
       }),
       qmsConfigService.getSingleFooterConfig("AUDIT_PLAN").catch(() => null),

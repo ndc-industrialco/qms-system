@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
 
     const naming = await qmsConfigService.getExportNamingMeta("KPI_ANNUAL", {
       label: "Annual Quality Objectives",
-      fileBaseName: "FM-MR-01",
+      fileBaseName: "KPI_ANNUAL",
       worksheetName: "FM-MR-01",
     });
 
@@ -481,7 +481,7 @@ export async function GET(req: NextRequest) {
     return new Response(buffer as BodyInit, {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": 'attachment; filename="FM-MR-01.xlsx"',
+        "Content-Disposition": `attachment; filename="${naming.fileBaseName}.xlsx"`,
         "Cache-Control": "no-store",
       },
     });

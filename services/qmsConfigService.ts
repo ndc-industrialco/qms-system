@@ -65,14 +65,16 @@ export class QmsConfigService {
     const label = (config.label || fallback.label).trim();
     const prefix = config.prefix.trim();
     const worksheetSeed = (fallback.worksheetName || label || fallback.label).trim();
-    const filenameSeed = [prefix, label || fallback.fileBaseName].filter(Boolean).join(" ").trim() || fallback.fileBaseName;
+    // Export filenames are stable module identifiers. Footer prefix/label are
+    // presentation metadata and must not rename downloaded files.
+    const filenameSeed = moduleKey.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "_") || fallback.fileBaseName;
 
     return {
       moduleKey,
       prefix,
       label,
       worksheetName: this.toWorksheetName(worksheetSeed),
-      fileBaseName: this.toFileBaseName(filenameSeed || fallback.fileBaseName),
+      fileBaseName: filenameSeed,
     };
   }
 

@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
 
     const buffer = await wb.xlsx.writeBuffer();
     const date   = new Date().toISOString().slice(0, 10);
-    const filename = `audit-log-${date}.xlsx`;
+    const filename = `AUDIT_LOG-${date}.xlsx`;
 
     return new Response(buffer as BodyInit, {
       status: 200,

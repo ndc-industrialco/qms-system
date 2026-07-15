@@ -654,6 +654,7 @@ export function buildBilingualAppointmentLetterHtml(opts: {
   });
 
   const logoUrl = getAppUrl("/logo/logo.webp");
+  const companyStampUrl = getAppUrl("/logo/stamp-company.png");
 
   return `
 <div style="border: 2px solid #000; padding: 15px 20px; box-sizing: border-box; background-color: #fff; font-family: 'Sarabun', 'Segoe UI', Arial, sans-serif;">
@@ -736,14 +737,10 @@ export function buildBilingualAppointmentLetterHtml(opts: {
           `}
           <div style="font-size: 9.5px; font-weight: 500; margin-top: 2px; color: #0F1059;">${esc(approverSignoff?.signerNameSnapshot || opts.approverName || "")}</div>
         </td>
-        <!-- Company Stamp (CSS based) -->
+        <!-- Company Stamp -->
         <td style="border: 2px solid #000; border-right: none; padding: 2px; text-align: center; vertical-align: middle;">
           ${(opts.status === "PUBLISHED" && opts.showCompanyStamp !== false) ? `
-            <div style="border: 2px double #0f59a4; border-radius: 50%; width: 55px; height: 55px; margin: 0 auto; color: #0f59a4; text-align: center; box-sizing: border-box; padding-top: 6px; font-family: sans-serif;">
-              <div style="font-size: 5px; font-weight: bold; line-height: 1;">บริษัท เอ็นดีซี</div>
-              <div style="font-size: 9px; font-weight: 900; margin: 1px 0; line-height: 1;">NDC</div>
-              <div style="font-size: 4px; font-weight: bold; letter-spacing: 0.3px; line-height: 1;">INDUSTRIAL</div>
-            </div>
+            <img src="${companyStampUrl}" alt="NDC Industrial Company Stamp" style="width: 55px; height: 55px; object-fit: contain; display: block; margin: 0 auto;" />
           ` : ""}
         </td>
       </tr>
