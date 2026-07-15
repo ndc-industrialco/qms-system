@@ -15,10 +15,37 @@ export async function GET(req: NextRequest) {
 
     const grantRole = role === "MR" ? "QMS_MR" : "QMS_QMS";
     const configKey = role === "MR" ? "CURRENT_MR_AUTH_USER_ID" : "CURRENT_QMS_AUTH_USER_ID";
+    const moduleParam = req.nextUrl.searchParams.get("module");
+
+    const { SystemConfigRepository } = await import("@/repositories/systemConfigRepository");
+    const configRepo = new SystemConfigRepository();
+    let defaultAuthUserId: string | null = null;
+
+    const approvalRole = role as ApprovalConfigRole;
+    if (moduleParam && isApprovalConfigModuleKey(moduleParam)) {
+      for (const key of getApprovalConfigLookupKeys(moduleParam, approvalRole, "AUTH_USER_ID")) {
+        defaultAuthUserId = await configRepo.findValueByKey(key);
+        if (defaultAuthUserId) break;
+      }
+    } else {
+      defaultAuthUserId = await configRepo.findValueByKey(configKey);
+    }
 
     let grants = await db.localRoleGrant.findMany({ where: { role: grantRole } });
 
-    // Seed from SystemConfig if table is empty (first-run migration)
+    // Ensure the configured module signer is available for the picker and can
+    // be selected automatically, even when LocalRoleGrant has not been seeded.
+    if (defaultAuthUserId && !grants.some((grant) => grant.authUserId === defaultAuthUserId)) {
+      await db.localRoleGrant.upsert({
+        where: { authUserId_role: { authUserId: defaultAuthUserId, role: grantRole } },
+        update: {},
+        create: { authUserId: defaultAuthUserId, role: grantRole },
+      });
+      grants = await db.localRoleGrant.findMany({ where: { role: grantRole } });
+    }
+
+    // Keep the legacy first-run fallback for deployments without a
+    // module-specific or global configured signer.
     if (grants.length === 0) {
       const config = await db.systemConfig.findUnique({ where: { configKey } });
       if (config?.configValue) {
@@ -29,21 +56,6 @@ export async function GET(req: NextRequest) {
         });
         grants = await db.localRoleGrant.findMany({ where: { role: grantRole } });
       }
-    }
-
-    const moduleParam = req.nextUrl.searchParams.get("module");
-    let defaultAuthUserId: string | null = null;
-    const { SystemConfigRepository } = await import("@/repositories/systemConfigRepository");
-    const configRepo = new SystemConfigRepository();
-
-    const approvalRole = role as ApprovalConfigRole;
-    if (moduleParam && isApprovalConfigModuleKey(moduleParam)) {
-      for (const key of getApprovalConfigLookupKeys(moduleParam, approvalRole, "AUTH_USER_ID")) {
-        defaultAuthUserId = await configRepo.findValueByKey(key);
-        if (defaultAuthUserId) break;
-      }
-    } else {
-      defaultAuthUserId = await configRepo.findValueByKey(configKey);
     }
 
     let authCenterUsers: Array<{
