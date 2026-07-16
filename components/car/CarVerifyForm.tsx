@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { carVerifySchema, type CarVerifyInput } from "@/lib/validations/car";
 import { INPUT_CLASS } from "@/lib/styles";
 import SignaturePad from "@/components/shared/SignaturePad";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { CarStatus } from "@/types/car";
 import type { SignatureType } from "@/types/dar";
@@ -204,11 +205,12 @@ export default function CarVerifyForm({ carId, currentStatus, defaultPosition = 
         <label className="block text-sm font-medium text-slate-700 mb-1">
           {t("car.verify.findingsLabel")}
         </label>
-        <textarea
-          {...register("findings")}
-          rows={4}
+        <RichTextEditor
+          value={watch("findings") ?? ""}
+          onChange={(html) => setValue("findings", html, { shouldValidate: true, shouldDirty: true })}
           placeholder={t("car.verify.findingsPlaceholder")}
-          className={cn(INPUT_CLASS, "resize-none")}
+          minHeight={150}
+          error={!!errors.findings}
         />
         {errors.findings && <p className="mt-1 text-xs text-rose-500">{errors.findings.message}</p>}
 

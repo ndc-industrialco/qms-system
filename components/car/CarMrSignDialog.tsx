@@ -405,16 +405,30 @@ export default function CarMrSignDialog({ carId, car, token, savedSignatureUrl, 
             )}
 
             {car.verifications.length > 0 && (
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-5">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-emerald-700">ผลการตรวจติดตาม</p>
-                {car.verifications.map((v) => (
-                  <div key={v.id} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">รอบที่ {v.round} — {v.verifier.name ?? "-"}</span>
-                    <span className={`font-semibold ${v.result === "PASSED" ? "text-emerald-700" : "text-rose-700"}`}>
-                      {v.result === "PASSED" ? "ผ่าน" : "ไม่ผ่าน"}
-                    </span>
-                  </div>
-                ))}
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-5 shadow-[0_8px_24px_rgb(16,185,129,0.05)]">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">ผลการตรวจติดตาม</p>
+                  <span className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">{car.verifications.length} รอบ</span>
+                </div>
+                <div className="space-y-3">
+                  {car.verifications.map((v) => (
+                    <div key={v.id} className="rounded-xl border border-emerald-100 bg-white/85 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">รอบที่ {v.round}</p>
+                          <p className="mt-1 text-xs text-slate-500">{v.verifier.name ?? "-"} · {fmt(v.verifiedAt)}</p>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${v.result === "PASSED" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                          {v.result === "PASSED" ? "ผ่าน" : "ไม่ผ่าน"}
+                        </span>
+                      </div>
+                      <div className="mt-4 border-t border-slate-100 pt-3">
+                        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">รายละเอียดการตรวจสอบ</p>
+                        <RichTextView content={v.findings} className="max-w-[72ch] text-sm leading-7" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
