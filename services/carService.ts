@@ -13,7 +13,7 @@ import { getDocNoFormat, renderDocNo } from "@/lib/docNoConfig";
 import type { CarCreateInput, CarUpdateInput, CarRespondInput, CarVerifyInput, CarReviewResponseInput, CarListQuery } from "@/lib/validations/car";
 import type { CarStatus, CarSourceType, VerificationResult } from "@/generated/prisma/client";
 import type { CarListScope } from "@/types/car";
-import { sendCarIssuedEmail, sendCarReminderEmail, sendCarRespondedEmail, sendCarMrReviewRequestEmail, sendCarPlanApprovedEmail, sendCarPlanRejectedEmail, sendCarVerifyPassEmail, sendCarVerify2DateRequestEmail, sendCarVerify2NotifyEmail, sendCarReCarEmail } from "@/services/carEmailService";
+import { sendCarIssuedEmail, sendCarReminderEmail, sendCarRespondedEmail, sendCarMrReviewRequestEmail, sendCarPlanApprovedEmail, sendCarPlanRejectedEmail, sendCarVerifyPassEmail, sendCarVerify2DateRequestEmail, sendCarVerify2NotifyEmail, sendCarReCarEmail, sendCarClosedEmail } from "@/services/carEmailService";
 import { CarReminderService } from "@/services/carReminderService";
 import { notifyCarUser, canReceiveEmail } from "@/services/carNotificationService";
 import type { PaginatedResult } from "@/repositories/baseRepository";
@@ -1427,7 +1427,98 @@ export class CarService {
     return this.mapDetail(detail);
   }
 
-  async closeCar(id: string, token: string, comment: string | null | undefined, signaturePath?: string | null, attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null): Promise<CarDetail> {
+  /** Notify everyone involved in a CAR (issuer, responder, verifiers, target dept, QMS) that it has been closed. */
+  private async notifyCarClosed(
+    car: {
+      carNo: string;
+      issuerAuthUserId: string | null;
+      targetDepartmentId?: string | null;
+      targetAuthDepartmentId?: string | null;
+      targetDepartmentName?: string | null;
+      defectDetail?: string | null;
+      isoStandards?: string[] | null;
+      targetEmailGroups?: string[] | null;
+      targetEmailGroupsCc?: string[] | null;
+      response?: { responderAuthUserId: string | null } | null;
+      verifications?: { verifierAuthUserId: string | null }[];
+    },
+    id: string,
+    accessToken?: string | null,
+  ): Promise<void> {
+    const targetDeptCode = car.targetAuthDepartmentId ?? car.targetDepartmentId ?? null;
+    const [qmsEmail, deptInfo] = await Promise.all([
+      this.configRepo.findValueByKey("CURRENT_QMS_EMAIL").catch(() => null),
+      targetDeptCode ? getDepartmentByCode(targetDeptCode, accessToken).catch(() => null) : Promise.resolve(null),
+    ]);
+    const deptEmailGroup = deptInfo?.emailGroup ?? null;
+    const deptEmails = [...new Set([...(car.targetEmailGroups ?? []), ...(deptEmailGroup ? [deptEmailGroup] : [])])];
+    const emailCc = car.targetEmailGroupsCc ?? [];
+
+    const notifyAuthUserIds = [...new Set([
+      car.issuerAuthUserId,
+      car.response?.responderAuthUserId,
+      ...(car.verifications ?? []).map((v) => v.verifierAuthUserId),
+    ].filter(Boolean) as string[])];
+
+    for (const uid of notifyAuthUserIds) {
+      notifyCarUser({
+        recipientAuthUserId: uid,
+        event: "CLOSED",
+        carNo: car.carNo,
+        carId: id,
+        targetDepartmentName: car.targetDepartmentName ?? undefined,
+        defectDetail: car.defectDetail ?? undefined,
+        isoStandards: car.isoStandards ?? undefined,
+      });
+    }
+
+    const snapshots = await Promise.all(notifyAuthUserIds.map((uid) => this.getIdentitySnapshot(uid).catch(() => null)));
+    const personalEmails = snapshots
+      .filter((s): s is IdentitySnapshot => !!s && !!s.email && canReceiveEmail(s.m365Linked))
+      .map((s) => s.email as string);
+
+    const emailedSoFar = new Set([...personalEmails, ...deptEmails]);
+    const emailTargets = [...new Set([...emailedSoFar, ...(qmsEmail ? [qmsEmail] : [])])];
+    if (emailTargets.length > 0) {
+      sendCarClosedEmail({ carId: id, carNo: car.carNo, recipients: emailTargets, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
+        logger.error("[CarService.notifyCarClosed] Email failed", err)
+      );
+    }
+
+    // Best-effort: also reach every current member of the target department (membership may have
+    // changed since the CAR was issued), skipping anyone already notified above.
+    if (targetDeptCode && accessToken) {
+      getAuthCenterDepartmentMembers(targetDeptCode, { accessToken })
+        .then(async (deptResult) => {
+          const members = deptResult?.members ?? [];
+          const memberAuthIds = [...new Set(members.map((m) => m.id).filter((uid): uid is string => !!uid && !notifyAuthUserIds.includes(uid)))];
+          const memberEmails = [...new Set(members.map((m) => m.email).filter((e): e is string => !!e && !emailedSoFar.has(e)))];
+
+          await Promise.all(
+            memberAuthIds.map((recipientAuthUserId) =>
+              notifyCarUser({
+                recipientAuthUserId,
+                event: "CLOSED",
+                carNo: car.carNo,
+                carId: id,
+                targetDepartmentName: car.targetDepartmentName ?? undefined,
+                defectDetail: car.defectDetail ?? undefined,
+                isoStandards: car.isoStandards ?? undefined,
+              }).catch(() => {})
+            )
+          );
+
+          if (memberEmails.length > 0) {
+            sendCarClosedEmail({ carId: id, carNo: car.carNo, recipients: memberEmails, cc: emailCc, senderAccessToken: accessToken }).catch((err) =>
+              logger.error("[CarService.notifyCarClosed] Member email failed", err)
+            );
+          }
+        })
+        .catch((err) => logger.error("[CarService.notifyCarClosed] Department member notification failed", { carId: id, error: String(err) }));
+    }
+  }
+
+  async closeCar(id: string, token: string, comment: string | null | undefined, signaturePath?: string | null, attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null, accessToken?: string | null): Promise<CarDetail> {
     const { ActionTokenRepository } = await import("@/repositories/actionTokenRepository");
     const tokenRepo = new ActionTokenRepository();
     const tokenData = await tokenRepo.findByToken(token);
@@ -1489,10 +1580,9 @@ export class CarService {
       }
     });
 
-    // In-app notification for issuer
-    if (car.issuerAuthUserId) {
-      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "CLOSED", carNo: car.carNo, carId: id });
-    }
+    await this.notifyCarClosed(car, id, accessToken).catch((err) =>
+      logger.error("[CarService.closeCar] Notification failed", { carId: id, error: String(err) })
+    );
 
     const detail = await this.carRepo.findDetailById(id);
     if (!detail) throw new NotFoundError("CAR");
@@ -1506,6 +1596,7 @@ export class CarService {
     mrAuthUserId?: string | null,
     signaturePath?: string | null,
     attachments?: { fileName: string; spItemId: string; spWebUrl: string }[] | null,
+    accessToken?: string | null,
   ): Promise<CarDetail> {
     const car = await this.carRepo.findForClose(id);
     if (!car) throw new NotFoundError("CAR");
@@ -1558,9 +1649,9 @@ export class CarService {
       }
     });
 
-    if (car.issuerAuthUserId) {
-      notifyCarUser({ recipientAuthUserId: car.issuerAuthUserId, event: "CLOSED", carNo: car.carNo, carId: id });
-    }
+    await this.notifyCarClosed(car, id, accessToken).catch((err) =>
+      logger.error("[CarService.closeCarAuthenticated] Notification failed", { carId: id, error: String(err) })
+    );
 
     const detail = await this.carRepo.findDetailById(id);
     if (!detail) throw new NotFoundError("CAR");

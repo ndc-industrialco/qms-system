@@ -544,7 +544,21 @@ export class CarRepository extends BaseRepository<CarMaster> {
   async findForClose(id: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id },
-      select: { id: true, status: true, carNo: true, issuerAuthUserId: true },
+      select: {
+        id: true,
+        status: true,
+        carNo: true,
+        issuerAuthUserId: true,
+        targetDepartmentId: true,
+        targetAuthDepartmentId: true,
+        targetDepartmentName: true,
+        defectDetail: true,
+        isoStandards: true,
+        targetEmailGroups: true,
+        targetEmailGroupsCc: true,
+        response: { select: { responderAuthUserId: true } },
+        verifications: { select: { verifierAuthUserId: true } },
+      },
     });
   }
 

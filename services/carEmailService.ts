@@ -554,6 +554,45 @@ export async function sendCarPlanApprovedEmail(opts: {
   }
 }
 
+// ─── CAR closed ────────────────────────────────────────────────────────────────
+export async function sendCarClosedEmail(opts: {
+  carId: string;
+  carNo: string;
+  recipients: string[];
+  cc?: string[];
+  senderAccessToken?: string | null;
+}): Promise<void> {
+  const url = getAppUrl(`/car/${opts.carId}`);
+
+  const html = carMailHtml({
+    carNo: opts.carNo,
+    statusBadgeTh: "ปิด CAR แล้ว",
+    statusBadgeEn: "CAR Closed",
+    greeting: {
+      th: "เรียน ผู้ที่เกี่ยวข้อง,",
+      en: "Dear Concerned Party,",
+    },
+    intro: {
+      th: `CAR ${opts.carNo} ได้รับการลงนามปิดโดยผู้แทนฝ่ายบริหาร (MR) แล้ว การดำเนินการแก้ไขได้รับการยืนยันครบถ้วน`,
+      en: `CAR ${opts.carNo} has been signed off and closed by the Management Representative (MR). All corrective actions have been confirmed complete.`,
+    },
+    closingTh: "ขอบคุณสำหรับความร่วมมือ",
+    closingEn: "Thank you for your cooperation.",
+    actionLabel: "ดู CAR / View CAR",
+    actionUrl: url,
+  });
+
+  for (const to of opts.recipients) {
+    await sendMail({
+      to,
+      cc: opts.cc,
+      subject: `[CAR] ปิด CAR แล้ว / CAR Closed – ${opts.carNo}`,
+      bodyHtml: html,
+      senderAccessToken: opts.senderAccessToken,
+    });
+  }
+}
+
 // ─── Plan rejected ─────────────────────────────────────────────────────────────
 export async function sendCarPlanRejectedEmail(opts: {
   carId: string;
