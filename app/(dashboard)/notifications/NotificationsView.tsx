@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
 import { getModuleMeta } from "@/lib/module-colors";
+import { useT } from "@/lib/i18n";
+import { useLocale } from "@/lib/locale-context";
 
 interface NotificationItem {
   id: string;
@@ -59,20 +61,20 @@ function getActionPath(item: NotificationItem): string | null {
   return null;
 }
 
-function relativeTime(dateStr: string): string {
+function relativeTime(dateStr: string, t: any, locale: "th" | "en"): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1)  return "เมื่อกี้";
-  if (m < 60) return `${m} นาทีที่แล้ว`;
+  if (m < 1)  return t("notifications.justNow");
+  if (m < 60) return t("notifications.minutesAgo", { count: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} ชั่วโมงที่แล้ว`;
+  if (h < 24) return t("notifications.hoursAgo", { count: h });
   const d = Math.floor(h / 24);
-  if (d < 7)  return `${d} วันที่แล้ว`;
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(dateStr));
+  if (d < 7)  return t("notifications.daysAgo", { count: d });
+  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", { dateStyle: "medium" }).format(new Date(dateStr));
 }
 
-function fullDate(dateStr: string): string {
-  return new Intl.DateTimeFormat("th-TH", { dateStyle: "full", timeStyle: "short" }).format(new Date(dateStr));
+function fullDate(dateStr: string, locale: "th" | "en"): string {
+  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", { dateStyle: "full", timeStyle: "short" }).format(new Date(dateStr));
 }
 
 // Body format:
@@ -144,6 +146,8 @@ function HtmlFrame({ html, itemId }: { html: string; itemId: string }) {
 }
 
 function NotificationDetail({ item }: { item: NotificationItem }) {
+  const t = useT();
+  const locale = useLocale();
   const mod = getModuleMeta(item.module);
   const actionPath = getActionPath(item);
   const { thLine, enLine, rows } = parseBody(item.body);
@@ -154,7 +158,7 @@ function NotificationDetail({ item }: { item: NotificationItem }) {
     <div className="flex flex-col gap-0">
       {/* Action bar */}
       <div className={cn("flex items-center justify-between gap-2 mb-3", hasHtml && "px-4 pt-4 sm:px-6 sm:pt-5")}>
-        <p className="text-xs text-slate-400">{fullDate(item.createdAt)}</p>
+        <p className="text-xs text-slate-400">{fullDate(item.createdAt, locale)}</p>
         {actionPath && (
           <Link
             href={actionPath}
@@ -162,7 +166,7 @@ function NotificationDetail({ item }: { item: NotificationItem }) {
             style={{ background: mod.brand }}
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            เปิดรายการ
+            {t("notifications.openItem")}
           </Link>
         )}
       </div>
@@ -221,6 +225,8 @@ function NotifRow({
   onCheck: (e: React.MouseEvent) => void;
   onDelete: () => void;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const mod = getModuleMeta(n.module);
   const { thLine } = parseBody(n.body);
 
@@ -253,7 +259,7 @@ function NotifRow({
             {mod.label}
           </span>
           <span className={cn("text-[10px]", isActive ? "text-white/50" : "text-slate-400")}>
-            {relativeTime(n.createdAt)}
+            {relativeTime(n.createdAt, t, locale)}
           </span>
         </div>
         <p className={cn("truncate text-xs font-semibold leading-snug", isActive ? "text-white" : "text-slate-900")}>
@@ -274,7 +280,7 @@ function NotifRow({
             ? "text-white/50 hover:bg-white/10 hover:text-white"
             : "text-slate-300 hover:bg-red-50 hover:text-red-500"
         )}
-        title="ลบ"
+        title={t("notifications.delete")}
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
@@ -285,6 +291,8 @@ function NotifRow({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NotificationsView() {
+  const t = useT();
+  const locale = useLocale();
   const qc = useQueryClient();
   const searchParams = useSearchParams();
 
@@ -383,7 +391,7 @@ export default function NotificationsView() {
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
 
-      <PageHeader title="การแจ้งเตือน" subtitle="Notifications" className="shrink-0 mb-3 mx-4 mt-4" />
+      <PageHeader titleKey="notifications.title" subtitleKey="notifications.subtitle" className="shrink-0 mb-3 mx-4 mt-4" />
 
       {/* ── Top bar ── */}
       <div className="shrink-0 border-b border-slate-100 bg-white">
@@ -414,7 +422,7 @@ export default function NotificationsView() {
                 className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">ลบที่เลือก</span>
+                <span className="hidden sm:inline">{t("notifications.deleteSelected")}</span>
                 <span>({checkedCount})</span>
               </button>
             )}
@@ -426,7 +434,7 @@ export default function NotificationsView() {
                 onChange={(e) => setModuleFilter(e.target.value)}
                 className="bg-transparent text-xs text-slate-700 focus:outline-none"
               >
-                <option value="ALL">ทุกระบบ</option>
+                <option value="ALL">{t("notifications.allSystems")}</option>
                 {modules.map((m) => (
                   <option key={m} value={m}>{getModuleMeta(m).label}</option>
                 ))}
@@ -442,7 +450,7 @@ export default function NotificationsView() {
                   : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               )}
             >
-              ยังไม่อ่าน
+              {t("notifications.unread")}
             </button>
 
             {unreadCount > 0 && (
@@ -452,7 +460,7 @@ export default function NotificationsView() {
                 className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">อ่านทั้งหมด</span>
+                <span className="hidden sm:inline">{t("notifications.markAllRead")}</span>
               </button>
             )}
           </div>
@@ -483,7 +491,7 @@ export default function NotificationsView() {
           {!isLoading && filtered.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-2 py-20 text-slate-400">
               <Bell className="h-10 w-10 opacity-20" />
-              <p className="text-sm">ไม่มีการแจ้งเตือน</p>
+              <p className="text-sm">{t("notifications.empty")}</p>
             </div>
           )}
 
@@ -496,7 +504,7 @@ export default function NotificationsView() {
                   onChange={toggleCheckAll}
                   className="h-3.5 w-3.5 cursor-pointer rounded accent-[#0f1059]"
                 />
-                <span className="text-[11px] text-slate-400">เลือกทั้งหมด ({filtered.length})</span>
+                <span className="text-[11px] text-slate-400">{t("notifications.selectAll", { count: filtered.length })}</span>
               </div>
               <div className="flex flex-col gap-0.5 p-2 pt-0.5">
                 {filtered.map((n) => (
@@ -523,7 +531,7 @@ export default function NotificationsView() {
           {!selected ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-slate-300">
               <Bell className="h-16 w-16 opacity-15" />
-              <p className="text-sm">เลือกการแจ้งเตือนเพื่อดูรายละเอียด</p>
+              <p className="text-sm">{t("notifications.selectToView")}</p>
             </div>
           ) : (
             <div className={cn(selected.htmlBody ? "p-0" : "mx-auto max-w-2xl p-4 sm:p-6")}>

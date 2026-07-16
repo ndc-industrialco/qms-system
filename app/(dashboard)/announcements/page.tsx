@@ -4,7 +4,7 @@ import AnnouncementsClient from "./AnnouncementsClient";
 import { AnnouncementRepository } from "@/repositories/announcementRepository";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "ประกาศ - QMS" };
+export const metadata: Metadata = { title: "ประกาศ / Announcements - QMS" };
 
 export const revalidate = 60; // ISR: revalidate every 60 seconds
 
@@ -58,7 +58,7 @@ export default async function AnnouncementsPage() {
 
   return (
     <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 pb-10 pt-6 px-4 sm:px-6 lg:px-8">
-      <PageHeader title="ประกาศ" subtitle="Announcements" />
+      <PageHeader titleKey="announcement.allTitle" />
       <AnnouncementsClient initialData={initialData} />
     </div>
   );

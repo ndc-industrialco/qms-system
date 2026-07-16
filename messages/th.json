@@ -468,7 +468,9 @@
   },
   "error": {
     "title": "เกิดข้อผิดพลาด",
-    "retryBtn": "ลองใหม่อีกครั้ง"
+    "desc": "กรุณาลองใหม่อีกครั้ง หากปัญหายังคงอยู่ กรุณาติดต่อผู้ดูแลระบบ",
+    "retryBtn": "ลองอีกครั้ง",
+    "goHome": "กลับหน้าหลัก"
   },
   "kpi": {
     "metaCard": {
@@ -1012,10 +1014,14 @@
       "title": "CAR — คำขอการแก้ไข",
       "subtitle": "Corrective Action Requests",
       "userTitle": "CAR ของแผนก",
-      "userSubtitle": "คำขอการแก้ไขที่เกี่ยวข้องกับแผนกของคุณ"
+      "userSubtitle": "คำขอการแก้ไขที่เกี่ยวข้องกับแผนกของคุณ",
+      "noDeptWarning": "บัญชีของคุณยังไม่ได้ผูกกับแผนก",
+      "allCarsTitle": "CAR ทั้งหมด",
+      "allCarsSubtitle": "Corrective Action Requests จากทุกแผนก"
     },
     "list": {
       "empty": "ไม่พบ CAR",
+      "emptyAll": "ไม่มี CAR ในระบบ",
       "searchPlaceholder": "ค้นหา CAR No., รายละเอียด, แผนก...",
       "filterStatus": "สถานะ",
       "filterType": "ประเภท",
@@ -1169,6 +1175,23 @@
       "labelNextDue": "กำหนดรอบ 2:",
       "reCarTitle": "Re-CAR ที่เกี่ยวข้อง:"
     }
+  },
+  "notifications": {
+    "title": "การแจ้งเตือน",
+    "subtitle": "การแจ้งเตือนระบบ QMS",
+    "deleteSelected": "ลบที่เลือก",
+    "allSystems": "ทุกระบบ",
+    "unread": "ยังไม่อ่าน",
+    "markAllRead": "อ่านทั้งหมด",
+    "empty": "ไม่มีการแจ้งเตือน",
+    "selectAll": "เลือกทั้งหมด ({count})",
+    "selectToView": "เลือกการแจ้งเตือนเพื่อดูรายละเอียด",
+    "openItem": "เปิดรายการ",
+    "delete": "ลบ",
+    "justNow": "เมื่อกี้",
+    "minutesAgo": "{count} นาทีที่แล้ว",
+    "hoursAgo": "{count} ชั่วโมงที่แล้ว",
+    "daysAgo": "{count} วันที่แล้ว"
   },
   "FooterConfig": {
     "pageTitle": "ตั้งค่า Footer (ชื่อเอกสาร)",

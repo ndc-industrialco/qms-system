@@ -10,6 +10,7 @@ import { CAR_SOURCE_LABELS, type CarListResponse } from "@/types/car";
 import { fmtDate } from "@/lib/format";
 import Pagination from "@/components/common/Pagination";
 import RichTextView from "@/components/shared/RichTextView";
+import { useT } from "@/lib/i18n";
 
 const PAGE_SIZE = 20;
 
@@ -29,6 +30,7 @@ function CompactRichText({ content }: { content: string }) {
 }
 
 export default function AllDeptCarSection({ initialData }: { initialData: CarListResponse }) {
+  const t = useT();
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
@@ -52,7 +54,7 @@ export default function AllDeptCarSection({ initialData }: { initialData: CarLis
   }
 
   if (cars.length === 0) {
-    return <p className="text-sm text-slate-400 py-8 text-center">ไม่มี CAR ในระบบ</p>;
+    return <p className="text-sm text-slate-400 py-8 text-center">{t("car.list.emptyAll")}</p>;
   }
 
   return (
@@ -77,13 +79,13 @@ export default function AllDeptCarSection({ initialData }: { initialData: CarLis
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>เลขที่ CAR</TableHead>
-                <TableHead>ประเภท</TableHead>
-                <TableHead>แผนก</TableHead>
-                <TableHead>รายละเอียด</TableHead>
-                <TableHead className="text-center">สถานะ</TableHead>
-                <TableHead className="text-center">วันที่ออก</TableHead>
-                <TableHead className="text-center">ครบกำหนด</TableHead>
+                <TableHead>{t("car.list.colCarNo")}</TableHead>
+                <TableHead>{t("car.list.colType")}</TableHead>
+                <TableHead>{t("car.list.colDept")}</TableHead>
+                <TableHead>{t("car.list.colDetail")}</TableHead>
+                <TableHead className="text-center">{t("car.list.colStatus")}</TableHead>
+                <TableHead className="text-center">{t("car.list.colIssuedAt")}</TableHead>
+                <TableHead className="text-center">{t("car.list.colDueAt")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

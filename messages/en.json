@@ -468,7 +468,9 @@
   },
   "error": {
     "title": "Something went wrong",
-    "retryBtn": "Try Again"
+    "desc": "Please try again. If the problem persists, please contact your administrator.",
+    "retryBtn": "Retry",
+    "goHome": "Go to Dashboard"
   },
   "kpi": {
     "metaCard": {
@@ -1012,10 +1014,14 @@
       "title": "CAR — Corrective Action Requests",
       "subtitle": "Corrective Action Requests",
       "userTitle": "Department CARs",
-      "userSubtitle": "CARs related to your department"
+      "userSubtitle": "CARs related to your department",
+      "noDeptWarning": "Your account is not linked to a department.",
+      "allCarsTitle": "All CARs",
+      "allCarsSubtitle": "Corrective Action Requests from all departments"
     },
     "list": {
       "empty": "No CARs found",
+      "emptyAll": "No CARs in the system",
       "searchPlaceholder": "Search CAR No., detail, department...",
       "filterStatus": "Status",
       "filterType": "Type",
@@ -1169,6 +1175,23 @@
       "labelNextDue": "Round 2 due:",
       "reCarTitle": "Related Re-CARs:"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "QMS Notifications",
+    "deleteSelected": "Delete Selected",
+    "allSystems": "All Systems",
+    "unread": "Unread",
+    "markAllRead": "Mark All Read",
+    "empty": "No notifications",
+    "selectAll": "Select All ({count})",
+    "selectToView": "Select a notification to view details",
+    "openItem": "Open Item",
+    "delete": "Delete",
+    "justNow": "just now",
+    "minutesAgo": "{count}m ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago"
   },
   "FooterConfig": {
     "pageTitle": "Footer Config",

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale } from "@/lib/locale-context";
+import { useT } from "@/lib/i18n";
 import AnnouncementViewModal from "@/components/announcements/AnnouncementViewModal";
 import type { AnnouncementRow } from "@/services/announcementService";
 import { CalendarDays, Link as LinkIcon } from "lucide-react";
@@ -47,6 +48,7 @@ function toRow(a: PublicAnnouncement): AnnouncementRow {
 
 export default function AnnouncementsClient({ initialData }: Props) {
   const locale = useLocale();
+  const t = useT();
   const [viewItem, setViewItem] = useState<AnnouncementRow | null>(null);
 
   const { data } = useQuery<{ data: PublicAnnouncement[] }>({
@@ -65,7 +67,7 @@ export default function AnnouncementsClient({ initialData }: Props) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-6">
-        <p className="text-slate-400 text-sm">ไม่มีประกาศในขณะนี้</p>
+        <p className="text-slate-400 text-sm">{t("announcement.empty")}</p>
       </div>
     );
   }

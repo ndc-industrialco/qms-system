@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { useT } from "@/lib/i18n";
 
 export default function DashboardError({
   error,
@@ -10,6 +11,7 @@ export default function DashboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useT();
   useEffect(() => {
     console.error(error);
     const isUnauthorized =
@@ -34,14 +36,11 @@ export default function DashboardError({
       </div>
 
       <p className="text-slate-800 font-semibold text-base mb-1">
-        เกิดข้อผิดพลาด / Something went wrong
+        {t("error.title")}
       </p>
 
-      <p className="text-slate-400 text-sm mb-1">
-        กรุณาลองใหม่อีกครั้ง หากปัญหายังคงอยู่ กรุณาติดต่อผู้ดูแลระบบ
-      </p>
       <p className="text-slate-400 text-sm mb-6">
-        Please try again or contact your administrator.
+        {t("error.desc")}
       </p>
 
       {error.digest && (
@@ -55,13 +54,13 @@ export default function DashboardError({
           onClick={reset}
           className="h-11 min-w-[44px] bg-[#0F1059] text-white rounded-xl px-6 py-2 text-sm font-medium hover:bg-[#161875] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F1059] focus-visible:ring-offset-2"
         >
-          ลองอีกครั้ง / Retry
+          {t("error.retryBtn")}
         </button>
         <Link
           href="/"
           className="h-11 min-w-[44px] inline-flex items-center justify-center bg-white text-slate-700 border border-slate-200 rounded-xl px-6 py-2 text-sm font-medium hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F1059] focus-visible:ring-offset-2"
         >
-          กลับหน้าหลัก / Dashboard
+          {t("error.goHome")}
         </Link>
       </div>
     </div>

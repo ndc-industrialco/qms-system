@@ -11,8 +11,10 @@ import { carListQuerySchema } from "@/lib/validations/car";
 import type { Metadata } from "next";
 import { UnauthorizedError } from "@/lib/errors";
 import { redirect } from "next/navigation";
+import LocalizedText from "@/components/common/LocalizedText";
+import LocalizedPageTitle from "@/components/common/LocalizedPageTitle";
 
-export const metadata: Metadata = { title: "CAR ของแผนก" };
+export const metadata: Metadata = { title: "CAR ของแผนก / Department CARs - QMS" };
 
 const carService = new CarService();
 const qmsConfigService = new QmsConfigService();
@@ -70,12 +72,12 @@ export default async function UserCarListPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
-        title="CAR ของแผนก"
-        subtitle="Corrective Action Requests สำหรับแผนกของคุณ"
+        titleKey="car.page.userTitle"
+        subtitleKey="car.page.userSubtitle"
         actions={hasScope ? <CarFormModalTrigger issuerName={issuerName} defaultIssuerPosition={issuerPosition} footerConfig={footerConfig} /> : undefined}
       />
       {!hasScope || !cars ? (
-        <p className="text-sm text-gray-500">บัญชีของคุณยังไม่ได้ผูกกับแผนก</p>
+        <p className="text-sm text-gray-500"><LocalizedText textKey="car.page.noDeptWarning" /></p>
       ) : (
         <CarListTable
           initialData={cars}
@@ -88,8 +90,7 @@ export default async function UserCarListPage({
 
       <div className="mt-10">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">CAR ทั้งหมด</h2>
-          <p className="text-sm text-slate-500">Corrective Action Requests จากทุกแผนก</p>
+          <LocalizedPageTitle titleKey="car.page.allCarsTitle" subtitleKey="car.page.allCarsSubtitle" />
         </div>
         <AllDeptCarSection initialData={carsAll} />
       </div>
