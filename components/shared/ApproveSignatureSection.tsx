@@ -249,6 +249,7 @@ export default function ApproveSignatureSection({
   const [mode, setMode] = useState<SigMode>("DRAW");
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(savedSignatureUrl ?? null);
   const [resolvedType, setResolvedType] = useState<SignatureType | null>(savedSignatureType ?? null);
+  const [isUsingSaved, setIsUsingSaved] = useState(false);
 
   // Always fetch fresh from the API so stale SSR props never hide the saved signature
   useEffect(() => {
@@ -278,56 +279,78 @@ export default function ApproveSignatureSection({
 
       {/* Saved signature shortcut */}
       {resolvedUrl && resolvedType && (
-        <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+        <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
+          isUsingSaved 
+            ? "border-emerald-200 bg-emerald-50/60 ring-2 ring-emerald-500/20" 
+            : "border-emerald-100 bg-emerald-50"
+        }`}>
           <div className="bg-white border border-emerald-200 rounded-lg p-1.5 shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={resolvedUrl} alt="ลายมือชื่อที่บันทึก" className="h-8 object-contain" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-emerald-800">ลายมือชื่อที่บันทึกไว้</p>
+            <p className="text-sm font-medium text-emerald-800">
+              {isUsingSaved ? "กำลังใช้งานลายเซ็นที่บันทึกไว้" : "ลายมือชื่อที่บันทึกไว้"}
+            </p>
           </div>
           <button
             type="button"
-            onClick={() => onSignatureChange(resolvedUrl, resolvedType)}
-            className="shrink-0 h-8 px-3 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+            onClick={() => {
+              if (isUsingSaved) {
+                setIsUsingSaved(false);
+                onSignatureChange(null, mode);
+              } else {
+                setIsUsingSaved(true);
+                onSignatureChange(resolvedUrl, resolvedType);
+              }
+            }}
+            className={`shrink-0 h-8 px-3 text-xs font-medium rounded-lg transition-colors ${
+              isUsingSaved
+                ? "bg-slate-500 text-white hover:bg-slate-600"
+                : "bg-emerald-600 text-white hover:bg-emerald-700"
+            }`}
           >
-            ใช้
+            {isUsingSaved ? "เซ็นใหม่" : "ใช้"}
           </button>
         </div>
       )}
 
-      {/* Mode tab pill bar */}
-      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
-        {tabs.map((tab) => (
-          <button key={tab.key} type="button"
-            onClick={() => { setMode(tab.key); onSignatureChange(null, tab.key); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 h-8 text-xs font-medium rounded-lg transition-all ${
-              mode === tab.key
-                ? "bg-white shadow-sm text-primary"
-                : "text-slate-500 hover:text-slate-700"
-            }`}>
-            {tab.icon}
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
-      </div>
+      {!isUsingSaved && (
+        <>
+          {/* Mode tab pill bar */}
+          <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
+            {tabs.map((tab) => (
+              <button key={tab.key} type="button"
+                onClick={() => { setMode(tab.key); onSignatureChange(null, tab.key); }}
+                className={`flex-1 flex items-center justify-center gap-1.5 h-8 text-xs font-medium rounded-lg transition-all ${
+                  mode === tab.key
+                    ? "bg-white shadow-sm text-primary"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}>
+                {tab.icon}
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
+          </div>
 
-      {/* Mode content */}
-      <div>
-        {mode === "DRAW"  && <DrawPad  onChange={handleChange} />}
-        {mode === "TYPE"  && <TypePad  onChange={handleChange} />}
-        {mode === "IMAGE" && <ImagePad onChange={handleChange} />}
-      </div>
+          {/* Mode content */}
+          <div>
+            {mode === "DRAW"  && <DrawPad  onChange={handleChange} />}
+            {mode === "TYPE"  && <TypePad  onChange={handleChange} />}
+            {mode === "IMAGE" && <ImagePad onChange={handleChange} />}
+          </div>
 
-      {/* Save to profile */}
-      <label className="flex items-center gap-2 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          className="w-4 h-4 rounded border-slate-300 text-primary"
-          onChange={(e) => onSaveChange(e.target.checked)}
-        />
-        <span className="text-xs text-slate-500">บันทึกลายมือชื่อนี้ไว้ใช้ครั้งต่อไป</span>
-      </label>
+          {/* Save to profile */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              className="w-4 h-4 rounded border-slate-300 text-primary"
+              onChange={(e) => onSaveChange(e.target.checked)}
+            />
+            <span className="text-xs text-slate-500">บันทึกลายมือชื่อนี้ไว้ใช้ครั้งต่อไป</span>
+          </label>
+        </>
+      )}
 
     </div>
   );

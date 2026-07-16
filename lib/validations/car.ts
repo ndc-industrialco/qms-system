@@ -104,7 +104,7 @@ export const carVerifySchema = z.object({
 export const carCloseSchema = z.object({
   token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format").optional(),
   comment: z.string().optional(),
-  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(204800).optional(),
+  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(524288).optional(),
   signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
   saveToProfile: z.boolean().optional(),
   attachments: z.array(
@@ -124,7 +124,7 @@ export const carReviewResponseSchema = z.object({
   token: z.string().regex(/^[0-9a-f]{64}$/, "Invalid token format").optional(),
   action: z.enum(["APPROVED", "REJECTED"]),
   comment: z.string().optional(),
-  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(204800).optional(),
+  signaturePath: z.string().regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).max(524288).optional(),
   signatureType: z.enum(["DRAW", "TYPE", "IMAGE"]).optional(),
   saveToProfile: z.boolean().optional(),
   qmsAuthUserId: z.string().optional(),
