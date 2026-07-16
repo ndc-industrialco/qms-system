@@ -747,6 +747,7 @@
       "description": "คำอธิบาย",
       "docType": "ประเภทเอกสาร",
       "status": "สถานะ",
+      "distribution": "การแจกจ่าย",
       "effectiveDate": "วันที่มีผลบังคับใช้",
       "fileName": "ชื่อไฟล์",
       "fileSize": "ขนาดไฟล์",

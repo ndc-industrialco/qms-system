@@ -747,6 +747,7 @@
       "description": "Description",
       "docType": "Document Type",
       "status": "Status",
+      "distribution": "Distribution",
       "effectiveDate": "Effective Date",
       "fileName": "File Name",
       "fileSize": "File Size",
