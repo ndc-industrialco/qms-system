@@ -53,7 +53,7 @@ async function createReCar(carId: string): Promise<{ newCarId: string; newCarNo:
   return json.data;
 }
 
-async function setVerify2DueDate(carId: string, nextDueDate: string): Promise<void> {
+async function setVerify2DueDate(carId: string, nextDueDate: string, fallbackErrorMsg?: string): Promise<void> {
   const res = await fetch(`/api/car/${carId}/verify2-due-date`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -61,7 +61,7 @@ async function setVerify2DueDate(carId: string, nextDueDate: string): Promise<vo
   });
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
-    throw new Error(json.message ?? "Failed to save verification round 2 date");
+    throw new Error(json.message ?? fallbackErrorMsg ?? "Failed to save verification round 2 date");
   }
 }
 
@@ -177,12 +177,12 @@ export default function CarDetailClient({
   });
 
   const verify2DueDateMutation = useMutation({
-    mutationFn: () => setVerify2DueDate(car.id, verify2DueDate),
+    mutationFn: () => setVerify2DueDate(car.id, verify2DueDate, t("car.detail.verify2DateError")),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["car", car.id] });
       qc.invalidateQueries({ queryKey: ["cars"] });
       setVerify2DueDateValue("");
-      toast.success("Saved verification round 2 date");
+      toast.success(t("car.detail.verify2DateSuccess"));
     },
     onError: (err) => toast.error((err as Error).message, { duration: Infinity }),
   });
@@ -392,13 +392,13 @@ export default function CarDetailClient({
 
           {canSetVerify2DueDate && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-              <h2 className="text-base font-semibold text-amber-900">Set Verification Round 2 Date</h2>
+              <h2 className="text-base font-semibold text-amber-900">{t("car.detail.verify2DateTitle")}</h2>
               <p className="mt-1 text-sm text-amber-800">
-                QMS recorded Verification 1 as failed. Please set the completion date for the second follow-up.
+                {t("car.detail.verify2DateDesc")}
               </p>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="flex-1">
-                  <label className="mb-1 block text-sm font-medium text-amber-900">Completion date</label>
+                  <label className="mb-1 block text-sm font-medium text-amber-900">{t("car.detail.verify2DateLabel")}</label>
                   <input
                     type="date"
                     value={verify2DueDate}
@@ -411,7 +411,7 @@ export default function CarDetailClient({
                   onClick={() => verify2DueDateMutation.mutate()}
                   disabled={!verify2DueDate || verify2DueDateMutation.isPending}
                 >
-                  {verify2DueDateMutation.isPending ? "Saving..." : "Save Date"}
+                  {verify2DueDateMutation.isPending ? t("car.detail.verify2DateBtnSaving") : t("car.detail.verify2DateBtnSave")}
                 </Button>
               </div>
             </div>

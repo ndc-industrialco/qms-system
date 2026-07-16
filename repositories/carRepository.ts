@@ -534,7 +534,7 @@ export class CarRepository extends BaseRepository<CarMaster> {
         },
         verifications: {
           where: { round: 1 },
-          select: { id: true, result: true, nextDueDate: true },
+          select: { id: true, result: true, nextDueDate: true, verifierAuthUserId: true },
           take: 1,
         },
       },

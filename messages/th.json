@@ -1084,7 +1084,14 @@
       "labelWhyAnalysis": "5 Why Analysis",
       "labelRootCause": "สรุปสาเหตุที่แท้จริง",
       "labelImmediateAction": "การแก้ไขเบื้องต้น",
-      "labelPreventiveAction": "การป้องกัน"
+      "labelPreventiveAction": "การป้องกัน",
+      "verify2DateTitle": "กำหนดวันแล้วเสร็จรอบที่สอง",
+      "verify2DateDesc": "QMS บันทึกผลการตรวจสอบรอบแรกเป็นไม่ผ่าน กรุณากำหนดวันเสร็จสิ้นของการติดตามรอบที่สอง",
+      "verify2DateLabel": "วันเสร็จสิ้นตามกำหนด",
+      "verify2DateBtnSave": "บันทึกวันที่",
+      "verify2DateBtnSaving": "กำลังบันทึก...",
+      "verify2DateSuccess": "บันทึกกำหนดวันแล้วเสร็จรอบที่สองเรียบร้อยแล้ว",
+      "verify2DateError": "ไม่สามารถบันทึกกำหนดวันแล้วเสร็จรอบที่สองได้"
     },
     "form": {
       "createTitle": "สร้าง CAR ใหม่",

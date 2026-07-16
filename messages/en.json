@@ -1084,7 +1084,14 @@
       "labelWhyAnalysis": "5 Why Analysis",
       "labelRootCause": "Root Cause Summary",
       "labelImmediateAction": "Immediate Action",
-      "labelPreventiveAction": "Preventive Action"
+      "labelPreventiveAction": "Preventive Action",
+      "verify2DateTitle": "Set Verification Round 2 Date",
+      "verify2DateDesc": "QMS recorded Verification 1 as failed. Please set the completion date for the second follow-up.",
+      "verify2DateLabel": "Completion date",
+      "verify2DateBtnSave": "Save Date",
+      "verify2DateBtnSaving": "Saving...",
+      "verify2DateSuccess": "Saved verification round 2 date",
+      "verify2DateError": "Failed to save verification round 2 date"
     },
     "form": {
       "createTitle": "Create New CAR",

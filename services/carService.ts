@@ -13,7 +13,7 @@ import { getDocNoFormat, renderDocNo } from "@/lib/docNoConfig";
 import type { CarCreateInput, CarUpdateInput, CarRespondInput, CarVerifyInput, CarReviewResponseInput, CarListQuery } from "@/lib/validations/car";
 import type { CarStatus, CarSourceType, VerificationResult } from "@/generated/prisma/client";
 import type { CarListScope } from "@/types/car";
-import { sendCarIssuedEmail, sendCarReminderEmail, sendCarRespondedEmail, sendCarMrReviewRequestEmail, sendCarPlanApprovedEmail, sendCarPlanRejectedEmail, sendCarVerifyPassEmail, sendCarVerify2DateRequestEmail, sendCarReCarEmail } from "@/services/carEmailService";
+import { sendCarIssuedEmail, sendCarReminderEmail, sendCarRespondedEmail, sendCarMrReviewRequestEmail, sendCarPlanApprovedEmail, sendCarPlanRejectedEmail, sendCarVerifyPassEmail, sendCarVerify2DateRequestEmail, sendCarVerify2NotifyEmail, sendCarReCarEmail } from "@/services/carEmailService";
 import { CarReminderService } from "@/services/carReminderService";
 import { notifyCarUser, canReceiveEmail } from "@/services/carNotificationService";
 import type { PaginatedResult } from "@/repositories/baseRepository";
@@ -1149,8 +1149,14 @@ export class CarService {
     const mrUserForVerify = mrVerifyAuthUserId ? { authUserId: mrVerifyAuthUserId } : null;
     const mrVerifySnapshot = mrUserForVerify ? await this.getIdentitySnapshot(mrUserForVerify.authUserId) : null;
     const mrVerifyEmailResolved = mrVerifySnapshot?.email ?? null;
+    const targetDeptCode = car.targetAuthDepartmentId ?? car.targetDepartmentId;
+    let deptEmailGroup: string | null = null;
+    if (targetDeptCode && (input.result === "FAILED" && input.round === 1)) {
+      const deptInfo = await getDepartmentByCode(targetDeptCode, accessToken).catch(() => null);
+      deptEmailGroup = deptInfo?.emailGroup ?? null;
+    }
     const deptEmails = (input.result === "FAILED" && input.round === 1)
-      ? (car.targetEmailGroups ?? [])
+      ? [...new Set([...(car.targetEmailGroups ?? []), ...(deptEmailGroup ? [deptEmailGroup] : [])])]
       : [];
     const emailCc = car.targetEmailGroupsCc ?? [];
     const verifierSnapshot = await this.getIdentitySnapshot(verifierId);
@@ -1244,6 +1250,50 @@ export class CarService {
       if (car.response?.responderAuthUserId) {
         notifyCarUser({ recipientAuthUserId: car.response.responderAuthUserId, event: "VERIFY_FAILED_DEPT", carNo: car.carNo, carId: id, targetDepartmentName: verifyDept, defectDetail: verifyDefect, isoStandards: verifyIso });
       }
+
+      // Best-effort: also notify all current dept members and send emails to them if token is available
+      if (targetDeptCode && accessToken) {
+        getAuthCenterDepartmentMembers(targetDeptCode, { accessToken })
+          .then(async (deptResult) => {
+            const members = deptResult?.members ?? [];
+            const recipientAuthIds = [...new Set(members.map((m) => m.id).filter((uid): uid is string => !!uid && uid !== car.response?.responderAuthUserId))];
+            const memberEmails = [...new Set(members.map((m) => m.email).filter(Boolean) as string[])];
+
+            // In-app notifications
+            await Promise.all(
+              recipientAuthIds.map((recipientAuthUserId) =>
+                notifyCarUser({
+                  recipientAuthUserId,
+                  event: "VERIFY_FAILED_DEPT",
+                  carNo: car.carNo,
+                  carId: id,
+                  targetDepartmentName: verifyDept,
+                  defectDetail: verifyDefect,
+                  isoStandards: verifyIso,
+                }).catch(() => {})
+              )
+            );
+
+            // Email notifications to each dept member who didn't receive the email group email
+            if (accessToken) {
+              const alreadyEmailed = new Set(deptEmails);
+              for (const email of memberEmails) {
+                if (!alreadyEmailed.has(email)) {
+                  sendCarVerify2DateRequestEmail({
+                    carId: id,
+                    carNo: car.carNo,
+                    targetEmail: email,
+                    cc: emailCc,
+                    senderAccessToken: accessToken,
+                  }).catch((err) =>
+                    logger.error("[CarService.verifyCar] Member email failed", { email, error: err instanceof Error ? err.message : String(err) })
+                  );
+                }
+              }
+            }
+          })
+          .catch((err) => logger.error("[CarService.verifyCar] Department member notification failed", { carId: id, error: String(err) }));
+      }
     } else if (input.result === "FAILED" && input.round === 2) {
       // Notify issuer that re-CAR is required
       if (car.issuerAuthUserId) {
@@ -1268,6 +1318,7 @@ export class CarService {
     actorDepartmentId?: string | null,
     actorAuthDepartmentId?: string | null,
     actorRole?: string | null,
+    accessToken?: string | null,
   ): Promise<CarDetail> {
     const car = await this.carRepo.findForVerify2DueDate(id);
     if (!car) throw new NotFoundError("CAR");
@@ -1293,10 +1344,30 @@ export class CarService {
       throw new ValidationError("Invalid verification round 2 date.");
     }
 
+    const [qmsEmail, verifierSnapshot, issuerSnapshot, responderSnapshot] = await Promise.all([
+      this.configRepo.findValueByKey("CURRENT_QMS_EMAIL").catch(() => null),
+      verify1.verifierAuthUserId ? this.getIdentitySnapshot(verify1.verifierAuthUserId).catch(() => null) : Promise.resolve(null),
+      car.issuerAuthUserId ? this.getIdentitySnapshot(car.issuerAuthUserId).catch(() => null) : Promise.resolve(null),
+      car.response?.responderAuthUserId ? this.getIdentitySnapshot(car.response.responderAuthUserId).catch(() => null) : Promise.resolve(null),
+    ]);
+
+    const targetDeptCode = car.targetAuthDepartmentId ?? car.targetDepartmentId;
+    const deptInfo = targetDeptCode ? await getDepartmentByCode(targetDeptCode, accessToken).catch(() => null) : null;
+    const deptEmailGroup = deptInfo?.emailGroup ?? null;
+    const deptEmails = [...new Set([...(car.targetEmailGroups ?? []), ...(deptEmailGroup ? [deptEmailGroup] : [])])];
+
     await db.$transaction(async (tx) => {
       const result = await this.carRepo.updateVerificationNextDueDate(id, 1, nextDueDate, tx);
       if (result.count === 0) {
         throw new ValidationError("Unable to update verification round 2 date.");
+      }
+
+      const dbNotifRecipients = [...new Set([
+        ...(qmsEmail ? [qmsEmail] : []),
+        ...(verifierSnapshot?.email ? [verifierSnapshot.email] : [])
+      ].filter(Boolean) as string[])];
+      for (const r of dbNotifRecipients) {
+        await this.carRepo.createNotificationLog({ carMasterId: id, type: "VERIFY_2_SCHEDULED", recipient: r }, tx);
       }
 
       await AuditService.record({
@@ -1310,7 +1381,12 @@ export class CarService {
       }, tx);
     });
 
-    const notifyTargets = [car.issuerAuthUserId, car.response?.responderAuthUserId].filter(Boolean) as string[];
+    const notifyTargets = [
+      car.issuerAuthUserId,
+      car.response?.responderAuthUserId,
+      verify1.verifierAuthUserId,
+    ].filter(Boolean) as string[];
+
     for (const uid of [...new Set(notifyTargets)]) {
       notifyCarUser({
         recipientAuthUserId: uid,
@@ -1322,6 +1398,28 @@ export class CarService {
         isoStandards: car.isoStandards,
         nextDueDate: input.nextDueDate,
       });
+    }
+
+    const emailCc = car.targetEmailGroupsCc ?? [];
+    const emailTargets = [...new Set([
+      ...(qmsEmail ? [qmsEmail] : []),
+      ...(verifierSnapshot?.email ? [verifierSnapshot.email] : []),
+      ...(issuerSnapshot?.email ? [issuerSnapshot.email] : []),
+      ...(responderSnapshot?.email ? [responderSnapshot.email] : []),
+      ...deptEmails
+    ].filter(Boolean) as string[])];
+
+    for (const email of emailTargets) {
+      sendCarVerify2NotifyEmail({
+        carId: id,
+        carNo: car.carNo,
+        targetEmail: email,
+        nextDueDate: input.nextDueDate,
+        cc: emailCc,
+        senderAccessToken: accessToken,
+      }).catch((err) =>
+        logger.error("[CarService.setVerify2DueDate] Email failed", { email, error: String(err) })
+      );
     }
 
     const detail = await this.carRepo.findDetailById(id);

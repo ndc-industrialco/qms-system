@@ -24,6 +24,7 @@ export async function POST(
       session.user.departmentId,
       session.user.authDepartmentId,
       session.user.role,
+      session.user.accessToken,
     );
 
     return sendSuccess(car, "CAR verification round 2 date saved successfully");
