@@ -4,10 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CheckCircle2, ClipboardCheck, Calendar, FileText, Users, ChevronRight, Paperclip, Building2, Crown, User, Eye, RotateCcw } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, FileText, Users, ChevronRight, Paperclip, Building2, Crown, User, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import ApproveSuccessScreen from "@/components/shared/ApproveSuccessScreen";
+import AuditPlanPrintHeaderCard from "./AuditPlanPrintHeaderCard";
 import { Textarea } from "@/components/ui/textarea";
 import KpiSignatureDialog from "@/components/kpi/KpiSignatureDialog";
 import { FilePreviewModal, type FilePreviewTarget } from "@/components/common/FilePreviewModal";
@@ -50,6 +51,8 @@ export type AuditPlanForApprove = {
   scope: string | null;
   objective: string | null;
   summary: string | null;
+  standards?: string[] | null;
+  standard?: string | null;
   ownerNameSnapshot: string | null;
   reviewerNameSnapshot: string | null;
   approverNameSnapshot: string | null;
@@ -230,36 +233,27 @@ export default function AuditPlanApproveClient({ plan, mode }: Props) {
   // ── Detail Card ───────────────────────────────────────────────────────────────
   const DetailContent = (
     <div className="space-y-4">
-      {/* Main Info */}
-      <div className="rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-mono text-sm font-semibold text-slate-500">{plan.auditNo}</span>
-              <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700">
-                {typeLabel}
-              </span>
-            </div>
-            <h2 className="text-lg font-bold text-slate-900 leading-snug">{plan.title}</h2>
-          </div>
-          <span className="shrink-0 inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-            {copy.bannerSub}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 border-t border-slate-100 pt-4">
-          <InfoRow icon={<Users className="w-3.5 h-3.5" />} label="ผู้จัดทำ / Preparer" value={plan.ownerNameSnapshot} />
-          <InfoRow icon={<Users className="w-3.5 h-3.5" />} label="ผู้ตรวจสอบ / Reviewer" value={plan.reviewerNameSnapshot} />
-          <InfoRow icon={<Users className="w-3.5 h-3.5" />} label="ผู้อนุมัติ / Approver" value={plan.approverNameSnapshot} />
-          {plan.startDate && (
-            <InfoRow
-              icon={<Calendar className="w-3.5 h-3.5" />}
-              label="ช่วงเวลาตรวจสอบ"
-              value={`${fmtDate(plan.startDate)} – ${fmtDate(plan.endDate)}`}
-            />
-          )}
-        </div>
+      {/* Main Info — print-style document card */}
+      <div className="flex items-center justify-between gap-3">
+        <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700">
+          {typeLabel}
+        </span>
+        <span className="shrink-0 inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+          {copy.bannerSub}
+        </span>
       </div>
+      <AuditPlanPrintHeaderCard
+        auditNo={plan.auditNo}
+        title={plan.title}
+        standards={plan.standards}
+        standard={plan.standard}
+        startDate={plan.startDate}
+        endDate={plan.endDate}
+        ownerNameSnapshot={plan.ownerNameSnapshot}
+        reviewerNameSnapshot={plan.reviewerNameSnapshot}
+        approverNameSnapshot={plan.approverNameSnapshot}
+        signoffs={plan.signoffs}
+      />
 
       {/* Scope / Objective */}
       {(plan.scope || plan.objective) && (
@@ -544,26 +538,6 @@ export default function AuditPlanApproveClient({ plan, mode }: Props) {
       {previewTarget && (
         <FilePreviewModal target={previewTarget} onClose={() => setPreviewTarget(null)} />
       )}
-    </div>
-  );
-}
-
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon?: React.ReactNode;
-  label: string;
-  value: string | null | undefined;
-}) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="flex items-center gap-1 text-xs text-slate-400">
-        {icon}
-        {label}
-      </span>
-      <span className="text-sm font-medium text-slate-800">{value || "-"}</span>
     </div>
   );
 }

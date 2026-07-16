@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/formatters";
 import { INPUT_CLASS } from "@/lib/styles";
 import AuditPlanStatusBadge from "./AuditPlanStatusBadge";
+import AuditPlanPrintHeaderCard from "./AuditPlanPrintHeaderCard";
 import AuditPlanFormModal from "./AuditPlanFormModal";
 import AuditPlanAssignDialog from "./AuditPlanAssignDialog";
 import { useAuditPlanDetail, useAnnouncePlan, useSignPlanInApp, useGenerateReport, useClosePlan, useIssueSignRequest, useSubmitPlan, useCompleteAudit } from "@/hooks/api/use-audit-plan-detail";
@@ -1184,12 +1185,21 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
 
       {/* Tab content - Overview (consolidated from all tabs) */}
       <div className="space-y-6">
-        {/* Overview Header */}
+        {/* Overview Header — print-style document card */}
+        <AuditPlanPrintHeaderCard
+          auditNo={plan.auditNo}
+          title={plan.title}
+          standards={plan.standards}
+          standard={plan.standard}
+          startDate={plan.startDate}
+          endDate={plan.endDate}
+          ownerNameSnapshot={plan.ownerNameSnapshot}
+          reviewerNameSnapshot={plan.reviewerNameSnapshot}
+          approverNameSnapshot={plan.approverNameSnapshot}
+          signoffs={plan.signoffs}
+        />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-          <div>
-            <p className="text-xs text-slate-500">เลขที่แผน</p>
-            <p className="text-sm font-semibold text-slate-900 font-mono">{plan.auditNo}</p>
-          </div>
           <div>
             <p className="text-xs text-slate-500">ประเภทการตรวจสอบ</p>
             <p className="text-sm font-medium text-slate-900">{AUDIT_TYPE_LABELS[plan.auditType]}</p>
@@ -1197,16 +1207,6 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
           <div>
             <p className="text-xs text-slate-500">โหมด</p>
             <p className="text-sm font-medium text-slate-900">{AUDIT_MODE_LABELS[plan.mode]}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500">มาตรฐาน</p>
-            <p className="text-sm font-medium text-slate-900">
-              {plan.standards?.length ? plan.standards.join(", ") : (plan.standard ?? "-")}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500">เจ้าของแผน</p>
-            <p className="text-sm font-medium text-slate-900">{plan.ownerNameSnapshot ?? "-"}</p>
           </div>
           <div>
             <p className="text-xs text-slate-500">สถานะ</p>

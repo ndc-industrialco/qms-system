@@ -197,6 +197,7 @@ export type AuditSignoffRow = {
   id: string;
   signerAuthUserId: string;
   signerNameSnapshot: string | null;
+  signaturePath: string | null;
   signedRole: string;
   signedAt: string;
 };

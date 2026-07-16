@@ -6,6 +6,11 @@
 import { logger } from "@/lib/logger";
 import ExcelJS from "exceljs";
 import { QmsConfigService } from "@/services/qmsConfigService";
+import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
+import { AuditSessionPlanRepository } from "@/repositories/audit/auditSessionPlanRepository";
+
+const auditPlanRepo = new AuditPlanRepository();
+const auditSessionPlanRepo = new AuditSessionPlanRepository();
 
 export interface MailAttachment {
   name: string;
@@ -145,6 +150,264 @@ export function layout(opts: {
 </div>`;
 }
 
+// ─── Audit plan: embeddable print-style block (FM-MR-07 look, for email bodies) ─
+
+function planFormatBilingualDate(value: Date | string | null | undefined): { th: string; en: string } {
+  if (!value) return { th: "-", en: "-" };
+  const d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return { th: "-", en: "-" };
+  const monthsTh = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return {
+    th: `${d.getDate()} ${monthsTh[d.getMonth()]} ${d.getFullYear() + 543}`,
+    en: `${d.getDate()}-${monthsEn[d.getMonth()]}-${d.getFullYear()}`,
+  };
+}
+
+function planFormatBilingualTime(start: string, end: string): string {
+  const s = (start || "").trim();
+  const e = (end || "").trim();
+  if (!s && !e) return "-";
+  return `${s} - ${e} น.`;
+}
+
+function planFormatShortName(fullName: string): string {
+  if (!fullName) return "";
+  let name = fullName.trim();
+  if (name.includes("/")) name = name.split("/")[1]?.trim() || name.split("/")[0]?.trim();
+  let prefix = "";
+  let rest = name;
+  for (const pf of ["mr.", "ms.", "mrs.", "นาย", "นางสาว", "นาง"]) {
+    if (name.toLowerCase().startsWith(pf)) {
+      prefix = pf.toUpperCase().replace("นาย", "MR.").replace("นางสาว", "MS.").replace("นาง", "MRS.");
+      if (!prefix.endsWith(".")) prefix += ".";
+      rest = name.substring(pf.length).trim();
+      break;
+    }
+  }
+  const parts = rest.split(/\s+/);
+  if (parts.length >= 2) {
+    return `${prefix ? prefix + " " : ""}${parts[0].toUpperCase()} ${parts[parts.length - 1].substring(0, 1).toUpperCase()}.`;
+  }
+  return name.toUpperCase();
+}
+
+interface PlanPrintSession {
+  auditDate: Date | string;
+  startTime: string;
+  endTime: string;
+  department: string;
+  remark: string | null;
+  teamMembers: { role: string; name: string }[];
+}
+
+interface PlanPrintGanttRow {
+  department: string;
+  processes: string[];
+  planWeeks: string[];
+  actualWeeks: string[];
+}
+
+interface PlanPrintSignoff {
+  signedRole: string;
+  signerNameSnapshot: string | null;
+  signaturePath: string | null;
+  signedAt: Date | string;
+}
+
+export interface AuditPlanPrintData {
+  auditNo: string;
+  title: string;
+  standards?: string[] | null;
+  standard?: string | null;
+  ownerNameSnapshot: string | null;
+  reviewerNameSnapshot: string | null;
+  approverNameSnapshot: string | null;
+  signoffs: PlanPrintSignoff[];
+  sessions?: PlanPrintSession[];
+  ganttRows?: PlanPrintGanttRow[];
+}
+
+export function buildAuditPlanPrintHtml(data: AuditPlanPrintData): string {
+  const logoUrl = getAppUrl("/logo/logo.webp");
+  const standardsLabel = data.standards?.length ? data.standards.join(", ") : (data.standard ?? "-");
+  const reviewerSignoff = data.signoffs.find((s) => s.signedRole === "REVIEWER");
+  const approverSignoff = data.signoffs.find((s) => s.signedRole === "APPROVER");
+
+  const headerHtml = `
+  <table style="width:100%;border-collapse:collapse;border:2px solid #000;color:#000;font-family:'Sarabun','Segoe UI',Arial,sans-serif;">
+    <tbody>
+      <tr>
+        <td style="width:18%;border:2px solid #000;padding:8px 5px;text-align:center;vertical-align:middle;">
+          <img src="${logoUrl}" alt="NDC INDUSTRIAL" style="max-height:28px;object-fit:contain;display:block;margin:0 auto 3px;" />
+          <div style="font-size:8px;font-weight:900;letter-spacing:1px;">INDUSTRIAL</div>
+        </td>
+        <td style="border:2px solid #000;padding:8px 10px;text-align:center;vertical-align:middle;">
+          <div style="font-size:13px;font-weight:bold;">แผนการตรวจติดตามภายใน / Internal Audit Plan</div>
+          <div style="font-size:11px;color:#444;margin-top:2px;">${esc(data.auditNo)} · ${esc(data.title)}</div>
+        </td>
+        <td style="width:24%;border:2px solid #000;padding:6px 8px;font-size:10px;vertical-align:middle;">
+          <div>มาตรฐาน / Standard: <strong>${esc(standardsLabel)}</strong></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>`;
+
+  let sessionsHtml = "";
+  if (data.sessions?.length) {
+    const rows = data.sessions
+      .map((s) => {
+        const dateInfo = planFormatBilingualDate(s.auditDate);
+        const timeStr = planFormatBilingualTime(s.startTime, s.endTime);
+        const leads = s.teamMembers.filter((m) => m.role === "LEAD_AUDITOR").map((m) => planFormatShortName(m.name));
+        const auditors = s.teamMembers.filter((m) => m.role === "AUDITOR").map((m) => planFormatShortName(m.name));
+        const observers = s.teamMembers.filter((m) => m.role === "OBSERVER").map((m) => planFormatShortName(m.name));
+        const teamParts = [...leads, ...auditors, observers.length ? `(Obs: ${observers.join(", ")})` : ""].filter(Boolean);
+        return `<tr>
+          <td style="border:1.2px solid #000;padding:4px 6px;line-height:1.3;"><div style="font-weight:600;">${esc(dateInfo.th)}</div><div style="font-size:8.5px;color:#555;">${esc(dateInfo.en)}</div></td>
+          <td style="border:1.2px solid #000;padding:4px 6px;text-align:center;">${esc(timeStr)}</td>
+          <td style="border:1.2px solid #000;padding:4px 6px;font-weight:600;">${esc(s.department)}</td>
+          <td style="border:1.2px solid #000;padding:4px 6px;">${esc(teamParts.join(", ") || "-")}</td>
+          <td style="border:1.2px solid #000;padding:4px 6px;font-size:8.5px;color:#444;">${esc(s.remark || "-")}</td>
+        </tr>`;
+      })
+      .join("");
+    sessionsHtml = `
+    <div style="margin-top:12px;font-size:11px;font-weight:bold;">ตารางการตรวจติดตาม / Audit Schedule</div>
+    <table style="width:100%;border-collapse:collapse;border:1.5px solid #000;color:#000;font-size:9.5px;margin-top:4px;">
+      <thead>
+        <tr style="background:#f1f5f9;text-align:center;font-weight:bold;">
+          <th style="border:1.2px solid #000;padding:5px 4px;">วันที่ / Date</th>
+          <th style="border:1.2px solid #000;padding:5px 4px;">เวลา / Time</th>
+          <th style="border:1.2px solid #000;padding:5px 4px;">หน่วยงาน / Department</th>
+          <th style="border:1.2px solid #000;padding:5px 4px;">ทีมตรวจ / Team</th>
+          <th style="border:1.2px solid #000;padding:5px 4px;">หมายเหตุ / Remark</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  let ganttHtml = "";
+  if (data.ganttRows?.length) {
+    const rows = data.ganttRows
+      .map(
+        (r) => `<tr>
+          <td style="border:1.2px solid #000;padding:4px 6px;font-weight:600;">${esc(r.department)}</td>
+          <td style="border:1.2px solid #000;padding:4px 6px;font-size:9px;">${r.processes.map((p) => esc(p)).join(", ") || "-"}</td>
+          <td style="border:1.2px solid #000;padding:4px 6px;font-size:9px;color:#0059a4;">${r.planWeeks.length} weeks</td>
+          <td style="border:1.2px solid #000;padding:4px 6px;font-size:9px;color:#16a34a;">${r.actualWeeks.length} weeks</td>
+        </tr>`
+      )
+      .join("");
+    ganttHtml = `
+    <div style="margin-top:12px;font-size:11px;font-weight:bold;">แผน Gantt / Gantt Plan</div>
+    <table style="width:100%;border-collapse:collapse;border:1.5px solid #000;color:#000;font-size:9.5px;margin-top:4px;">
+      <thead>
+        <tr style="background:#f1f5f9;text-align:center;font-weight:bold;">
+          <th style="border:1.2px solid #000;padding:5px 4px;">หน่วยงาน / Department</th>
+          <th style="border:1.2px solid #000;padding:5px 4px;">กระบวนการ / Process</th>
+          <th style="border:1.2px solid #000;padding:5px 4px;">Plan</th>
+          <th style="border:1.2px solid #000;padding:5px 4px;">Actual</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  const signatureBlocks = [
+    { label: "Prepared by", name: data.ownerNameSnapshot, signaturePath: null as string | null, date: null as Date | string | null },
+    { label: "Reviewed by", name: reviewerSignoff?.signerNameSnapshot ?? data.reviewerNameSnapshot, signaturePath: reviewerSignoff?.signaturePath ?? null, date: reviewerSignoff?.signedAt ?? null },
+    { label: "Approved by", name: approverSignoff?.signerNameSnapshot ?? data.approverNameSnapshot, signaturePath: approverSignoff?.signaturePath ?? null, date: approverSignoff?.signedAt ?? null },
+  ];
+
+  const signatureHtml = `
+  <table style="width:100%;border-collapse:collapse;border:2px solid #000;color:#000;margin-top:14px;">
+    <tbody>
+      <tr style="text-align:center;font-weight:bold;font-size:9.5px;background:#f8fafc;">
+        ${signatureBlocks.map((b) => `<td style="border:2px solid #000;padding:3px;width:${100 / signatureBlocks.length}%;">${b.label}</td>`).join("")}
+      </tr>
+      <tr style="height:48px;text-align:center;vertical-align:middle;">
+        ${signatureBlocks
+          .map(
+            (b) => `<td style="border:2px solid #000;padding:3px 4px;">
+          ${b.signaturePath ? `<img src="${b.signaturePath}" alt="${esc(b.label)}" style="max-height:30px;max-width:90%;display:block;margin:0 auto;" />` : `<div style="height:30px;"></div>`}
+          <div style="font-size:9px;font-weight:bold;margin-top:1px;color:#0F1059;">${esc(b.name || "-")}</div>
+        </td>`
+          )
+          .join("")}
+      </tr>
+      <tr style="font-size:8.5px;">
+        ${signatureBlocks.map((b) => `<td style="border:2px solid #000;padding:3px 5px;">Date: <span style="color:#0F1059;font-weight:bold;font-family:monospace;">${formatDateSign(b.date)}</span></td>`).join("")}
+      </tr>
+    </tbody>
+  </table>`;
+
+  return `<div style="font-family:'Sarabun','Segoe UI',Arial,sans-serif;">${headerHtml}${sessionsHtml}${ganttHtml}${signatureHtml}</div>`;
+}
+
+export async function getAuditPlanPrintHtml(planId: string): Promise<string | null> {
+  const plan = await auditPlanRepo.findDetailById(planId);
+  if (!plan) return null;
+
+  let sessions: PlanPrintSession[] | undefined;
+  let ganttRows: PlanPrintGanttRow[] | undefined;
+
+  if (plan.appointmentId) {
+    const sessionPlan = await auditSessionPlanRepo.findByAppointmentId(plan.appointmentId);
+    if (sessionPlan) {
+      sessions = sessionPlan.sessions.map((s) => ({
+        auditDate: s.auditDate,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        department: s.department,
+        remark: s.remark,
+        teamMembers: s.teamMembers.map((tm) => ({ role: tm.role, name: tm.name })),
+      }));
+      ganttRows = sessionPlan.ganttRows.map((r) => ({
+        department: r.department,
+        processes: r.processes,
+        planWeeks: r.planWeeks,
+        actualWeeks: r.actualWeeks,
+      }));
+    }
+  }
+
+  if (!sessions?.length && plan.schedules.length) {
+    sessions = plan.schedules.map((s) => {
+      const start = new Date(s.startAt);
+      const end = new Date(s.endAt);
+      const timeOf = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      return {
+        auditDate: s.startAt,
+        startTime: timeOf(start),
+        endTime: timeOf(end),
+        department: s.departmentName || s.sessionTitle,
+        remark: s.unavailableReason,
+        teamMembers: s.team.map((tm) => ({ role: tm.role, name: tm.nameSnapshot || "" })),
+      };
+    });
+  }
+
+  return buildAuditPlanPrintHtml({
+    auditNo: plan.auditNo,
+    title: plan.title,
+    standards: plan.standards,
+    standard: plan.standard,
+    ownerNameSnapshot: plan.ownerNameSnapshot,
+    reviewerNameSnapshot: plan.reviewerNameSnapshot,
+    approverNameSnapshot: plan.approverNameSnapshot,
+    signoffs: plan.signoffs.map((s) => ({
+      signedRole: s.signedRole,
+      signerNameSnapshot: s.signerNameSnapshot,
+      signaturePath: s.signaturePath,
+      signedAt: s.signedAt,
+    })),
+    sessions,
+    ganttRows,
+  });
+}
+
 // ─── Announcement ─────────────────────────────────────────────────────────────
 
 export async function sendAuditAnnouncementEmail(opts: {
@@ -195,12 +458,10 @@ export async function sendAuditAnnouncementEmail(opts: {
     if (items) body += `<div style="margin-top:16px"><p style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin:0 0 6px">Audit Team</p><ul style="margin:0;padding-left:18px">${items}</ul></div>`;
   }
 
-  const printUrl = getAppUrl(`/print/audit/plan/${opts.planId}`);
-  body += `<div style="margin-top:20px;text-align:center">
-    <a href="${esc(printUrl)}" target="_blank" style="display:inline-block;padding:10px 20px;background:#fff;color:#0f1059;border:2px solid #0f1059;text-decoration:none;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:.3px">
-      Print Session Plan (FM-MR-07) / พิมพ์กำหนดการตรวจ
-    </a>
-  </div>`;
+  const printHtml = await getAuditPlanPrintHtml(opts.planId).catch(() => null);
+  if (printHtml) {
+    body += `<div style="margin-top:20px">${printHtml}</div>`;
+  }
 
   await sendMail({
     to: opts.recipients,
@@ -245,6 +506,11 @@ export async function sendScheduleInviteEmail(opts: {
   ];
   if (opts.location) rows.push({ label: "Location", value: opts.location });
 
+  const printHtml = await getAuditPlanPrintHtml(opts.planId).catch(() => null);
+  const noticeHtml = `<div style="margin:16px 0 0;padding:14px 16px;background:#fefce8;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
+        Please log in to <strong>confirm your availability</strong> for the scheduled audit date. If you are unavailable, indicate the reason so QMS can reschedule accordingly.
+      </div>${printHtml ? `<div style="margin-top:20px">${printHtml}</div>` : ""}`;
+
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
@@ -255,9 +521,7 @@ export async function sendScheduleInviteEmail(opts: {
       title: "Audit Schedule — Pending Confirmation",
       subtitle: `${opts.auditNo} · ${opts.departmentName}`,
       rows,
-      body: `<div style="margin:16px 0 0;padding:14px 16px;background:#fefce8;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
-        Please log in to <strong>confirm your availability</strong> for the scheduled audit date. If you are unavailable, indicate the reason so QMS can reschedule accordingly.
-      </div>`,
+      body: noticeHtml,
       actionLabel: "Confirm My Schedule",
       actionUrl: url,
     }),
@@ -296,6 +560,8 @@ export async function sendScheduleStatusEmail(opts: {
     rows.push({ label: "Suggested end", value: fmtDateTime(opts.suggestedEndAt) });
   }
 
+  const printHtml = await getAuditPlanPrintHtml(opts.planId).catch(() => null);
+
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
@@ -306,6 +572,7 @@ export async function sendScheduleStatusEmail(opts: {
       title: isConfirmed ? "Department Confirmed Schedule" : isSuggested ? "Department Suggested a New Date" : "Department Unavailable",
       subtitle: opts.auditNo,
       rows,
+      body: printHtml ? `<div style="margin-top:12px">${printHtml}</div>` : undefined,
       actionLabel: "View Audit Plan",
       actionUrl: url,
     }),
@@ -326,6 +593,7 @@ export async function sendAuditRejectionEmail(opts: {
 }): Promise<void> {
   const url = getAppUrl(`/qms/audit/${opts.planId}`);
   const roleLabel = opts.rejectedRole === "APPROVER" ? "Approver" : "Reviewer";
+  const printHtml = await getAuditPlanPrintHtml(opts.planId).catch(() => null);
 
   await sendMail({
     to: [opts.to],
@@ -344,7 +612,7 @@ export async function sendAuditRejectionEmail(opts: {
       body: `<div style="margin:16px 0 0;padding:14px 16px;background:#fff1f2;border-left:3px solid #f43f5e;border-radius:0 6px 6px 0">
         <p style="font-size:11px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px">Reason for Return</p>
         <p style="font-size:13px;color:#0f172a;line-height:1.7;margin:0;white-space:pre-wrap">${esc(opts.reason)}</p>
-      </div>`,
+      </div>${printHtml ? `<div style="margin-top:20px">${printHtml}</div>` : ""}`,
       actionLabel: "Revise & Resubmit",
       actionUrl: url,
     }),
@@ -363,6 +631,7 @@ export async function sendAuditApprovedEmail(opts: {
   attachments?: MailAttachment[];
 }): Promise<void> {
   const url = getAppUrl(`/qms/audit/${opts.planId}`);
+  const printHtml = await getAuditPlanPrintHtml(opts.planId).catch(() => null);
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
@@ -378,6 +647,7 @@ export async function sendAuditApprovedEmail(opts: {
         { label: "Title", value: opts.planTitle },
         { label: "Approved by", value: opts.approverName },
       ],
+      body: printHtml ? `<div style="margin-top:12px">${printHtml}</div>` : undefined,
       actionLabel: "View Audit Plan",
       actionUrl: url,
     }),
@@ -411,6 +681,8 @@ export async function sendDeptScheduleApprovalEmail(opts: {
   if (opts.location) rows.push({ label: "Location", value: opts.location });
   if (opts.leadAuditorName) rows.push({ label: "Lead Auditor", value: opts.leadAuditorName });
 
+  const deptPrintHtml = await getAuditPlanPrintHtml(opts.planId).catch(() => null);
+
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
@@ -423,7 +695,7 @@ export async function sendDeptScheduleApprovalEmail(opts: {
       rows,
       body: `<div style="margin:16px 0 0;padding:14px 16px;background:#fefce8;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
         Please log in to <strong>confirm your availability</strong> for this audit session. If you are unavailable, provide a reason so QMS can reschedule.
-      </div>`,
+      </div>${deptPrintHtml ? `<div style="margin-top:20px">${deptPrintHtml}</div>` : ""}`,
       actionLabel: "Confirm My Schedule",
       actionUrl: url,
     }),
@@ -443,6 +715,7 @@ export async function sendChecklistReceivedEmail(opts: {
   senderAccessToken?: string | null;
 }): Promise<void> {
   const url = getAppUrl(`/audit/plans/${opts.planId}`);
+  const printHtml = await getAuditPlanPrintHtml(opts.planId).catch(() => null);
   await sendMail({
     to: [opts.to],
     senderAccessToken: opts.senderAccessToken,
@@ -459,6 +732,7 @@ export async function sendChecklistReceivedEmail(opts: {
         { label: "Session", value: opts.sessionTitle },
         { label: "Submitted by", value: opts.submittedBy },
       ],
+      body: printHtml ? `<div style="margin-top:12px">${printHtml}</div>` : undefined,
       actionLabel: "View Audit Plan",
       actionUrl: url,
     }),
@@ -1158,6 +1432,7 @@ export async function sendAuditSignRequestEmail(opts: {
     ? getAppUrl(`/approve/audit/${opts.planId}/${rolePath}?token=${encodeURIComponent(opts.token)}`)
     : getAppUrl(`/approve/audit/${opts.planId}/${rolePath}`);
   const roleLabel = opts.signedRole === "APPROVER" ? "Approver" : opts.signedRole === "REVIEWER" ? "Reviewer" : opts.signedRole;
+  const printHtml = await getAuditPlanPrintHtml(opts.planId).catch(() => null);
 
   await sendMail({
     to: [opts.to],
@@ -1176,12 +1451,7 @@ export async function sendAuditSignRequestEmail(opts: {
       ],
       body: `<div style="margin:16px 0 0;padding:14px 16px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0;font-size:13px;color:#92400e;line-height:1.6">
         <strong>Your signature is required</strong> to proceed with the audit plan approval workflow.
-      </div>
-      <div style="margin-top:16px;text-align:center">
-        <a href="${esc(getAppUrl(`/print/audit/plan/${opts.planId}`))}" target="_blank" style="display:inline-block;padding:8px 16px;background:#fff;color:#0f1059;border:1.5px solid #0f1059;text-decoration:none;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.3px">
-          Print Session Plan (FM-MR-07) / พิมพ์กำหนดการตรวจ
-        </a>
-      </div>`,
+      </div>${printHtml ? `<div style="margin-top:20px">${printHtml}</div>` : ""}`,
       actionLabel: roleLabel === "Approver" ? "Review & Approve" : "Review & Sign",
       actionUrl: url,
     }),

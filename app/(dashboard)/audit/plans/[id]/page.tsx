@@ -124,6 +124,7 @@ export default async function AuditPlanDetailPage({
       id: s.id,
       signerAuthUserId: s.signedByAuthUserId,
       signerNameSnapshot: (s as { signerNameSnapshot?: string | null }).signerNameSnapshot ?? null,
+      signaturePath: (s as { signaturePath?: string | null }).signaturePath ?? null,
       signedRole: s.signedRole,
       signedAt: s.signedAt instanceof Date ? s.signedAt.toISOString() : s.signedAt,
     })),

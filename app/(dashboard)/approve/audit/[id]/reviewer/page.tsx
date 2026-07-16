@@ -48,6 +48,8 @@ export default async function AuditPlanReviewerPage({
           scope: plan.scope ?? null,
           objective: plan.objective ?? null,
           summary: plan.summary ?? null,
+          standards: plan.standards,
+          standard: plan.standard ?? null,
           ownerNameSnapshot: plan.ownerNameSnapshot ?? null,
           reviewerNameSnapshot: plan.reviewerNameSnapshot ?? null,
           approverNameSnapshot: plan.approverNameSnapshot ?? null,
