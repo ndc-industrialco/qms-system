@@ -50,17 +50,30 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
   hideClose?: boolean
+  disableOutsideClick?: boolean
 }
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, hideClose, ...props }, ref) => (
+>(({ side = "right", className, children, hideClose, disableOutsideClick = true, onPointerDownOutside, onInteractOutside, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
       className={cn(sheetVariants({ side }), className)}
+      onPointerDownOutside={(e) => {
+        onPointerDownOutside?.(e);
+        if (disableOutsideClick) {
+          e.preventDefault();
+        }
+      }}
+      onInteractOutside={(e) => {
+        onInteractOutside?.(e);
+        if (disableOutsideClick) {
+          e.preventDefault();
+        }
+      }}
       {...props}
     >
       {/* Mobile drag handle for bottom sheets */}

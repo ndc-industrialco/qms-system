@@ -52,7 +52,6 @@ export default function AnnouncementDeleteModal({ item, open, onClose, onDeleted
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-black/30"
-        onClick={() => !loading && onClose()}
       />
 
       <div className="relative z-10 bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] w-full max-w-md">

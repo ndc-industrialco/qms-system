@@ -283,7 +283,7 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
     return () => { document.body.style.overflow = prev; };
   }, []);
   return (
-    <div className="fixed inset-0 z-122 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-122 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       <div
         className="relative z-123 w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"

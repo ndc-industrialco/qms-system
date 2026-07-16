@@ -349,7 +349,7 @@ function Stepper({ current, max, onGoto }: { current: number; max: number; onGot
 
 function SignatureModal({ onConfirm, onCancel }: { onConfirm: (dataUrl: string) => void; onCancel: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="w-full max-w-lg mx-4 rounded-2xl border border-slate-100 bg-white shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4">
           <h2 className="text-base font-bold text-slate-800">ลงลายมือชื่อผู้จัดทำ</h2>

@@ -28,8 +28,11 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { overlayClassName?: string }
->(({ className, overlayClassName, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    overlayClassName?: string
+    disableOutsideClick?: boolean
+  }
+>(({ className, overlayClassName, children, disableOutsideClick = true, onPointerDownOutside, onInteractOutside, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay className={overlayClassName} />
     <DialogPrimitive.Content
@@ -38,6 +41,18 @@ const DialogContent = React.forwardRef<
         "fixed left-[50%] top-[5%] z-[121] grid w-full max-w-lg translate-x-[-50%] translate-y-0 gap-4 border border-slate-100 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl max-h-[85vh] overflow-y-auto",
         className
       )}
+      onPointerDownOutside={(e) => {
+        onPointerDownOutside?.(e);
+        if (disableOutsideClick) {
+          e.preventDefault();
+        }
+      }}
+      onInteractOutside={(e) => {
+        onInteractOutside?.(e);
+        if (disableOutsideClick) {
+          e.preventDefault();
+        }
+      }}
       {...props}
     >
       {children}

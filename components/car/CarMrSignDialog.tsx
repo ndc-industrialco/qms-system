@@ -196,7 +196,7 @@ function SignModal({ carId, car, token, savedSignatureUrl, savedSignatureType, o
   }, []);
 
   return (
-    <div className="fixed inset-0 z-122 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-122 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       <div
         className="relative z-123 w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
