@@ -49,24 +49,24 @@ async function submitSignoff(
 function Field({ label, value, multiline }: { label: string; value: string; multiline?: boolean }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-1 text-sm font-medium text-slate-800 ${multiline ? "whitespace-pre-wrap" : ""}`}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">{label}</p>
+      <p className={`mt-1.5 text-sm font-medium leading-6 text-slate-800 ${multiline ? "whitespace-pre-wrap" : ""}`}>
         {value || "—"}
       </p>
     </div>
   );
 }
 
-// ── Approval timeline ─────────────────────────────────────────────────────────
-
-function RichField({ label, value }: { label: string; value: string | null | undefined }) {
+function ReadingBlock({ label, children, tone = "slate" }: { label: string; children: React.ReactNode; tone?: "slate" | "blue" }) {
   return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <RichTextView content={value} className="mt-1 text-sm font-medium text-slate-800" />
-    </div>
+    <section className={`rounded-xl border px-4 py-3.5 ${tone === "blue" ? "border-blue-100 bg-blue-50/45" : "border-slate-100 bg-slate-50/75"}`}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">{label}</p>
+      <div className="rich-view mt-2 max-w-[70ch] text-sm leading-7 text-slate-700">{children}</div>
+    </section>
   );
 }
+
+// ── Approval timeline ─────────────────────────────────────────────────────────
 
 function ApprovalTimeline({ car }: { car: CarDetail }) {
   const steps = [
@@ -367,12 +367,12 @@ export default function CarMrSignDialog({ carId, car, token, savedSignatureUrl, 
         </nav>
 
         {/* 2-column body */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_21rem]">
 
           {/* Left — CAR info */}
-          <div className="lg:col-span-2 space-y-5">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="min-w-0 space-y-5">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgb(15,16,89,0.045)] lg:p-6">
+              <div className="mb-5 flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-5">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">เลขที่ CAR</p>
                   <p className="mt-1 font-mono text-2xl font-bold text-slate-900">{car.carNo}</p>
@@ -381,29 +381,31 @@ export default function CarMrSignDialog({ carId, car, token, savedSignatureUrl, 
                   {car.targetDepartment.name}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <RichField label="ประเด็น / Issue" value={car.defectDetail} />
-                <RichField label="อ้างอิง / Reference" value={car.nonConformanceRef} />
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <ReadingBlock label="ประเด็น / Issue" tone="blue"><RichTextView content={car.defectDetail} /></ReadingBlock>
+                <ReadingBlock label="อ้างอิง / Reference"><RichTextView content={car.nonConformanceRef} /></ReadingBlock>
               </div>
             </div>
 
             {car.response && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center gap-2">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgb(15,16,89,0.045)] lg:p-6">
+                <div className="mb-5 flex items-center gap-2 border-b border-slate-100 pb-4">
                   <ClipboardList className="h-4 w-4 text-slate-500" />
                   <h3 className="text-sm font-bold text-slate-700">แผนการดำเนินการแก้ไข</h3>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <Field label="ผู้ตอบกลับ" value={car.response.responder.name ?? "-"} />
                   <Field label="วันที่แผนกำหนดเสร็จ" value={fmt(car.response.plannedCompletionDate)} />
-                  <Field label="การดำเนินการทันที" value={car.response.immediateAction} multiline />
-                  <Field label="การดำเนินการป้องกัน" value={car.response.preventiveAction} multiline />
+                </div>
+                <div className="mt-5 space-y-3 border-t border-slate-100 pt-5">
+                  <ReadingBlock label="การดำเนินการทันที"><span className="whitespace-pre-wrap">{car.response.immediateAction || "—"}</span></ReadingBlock>
+                  <ReadingBlock label="การดำเนินการป้องกัน"><span className="whitespace-pre-wrap">{car.response.preventiveAction || "—"}</span></ReadingBlock>
                 </div>
               </div>
             )}
 
             {car.verifications.length > 0 && (
-              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-6">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-emerald-700">ผลการตรวจติดตาม</p>
                 {car.verifications.map((v) => (
                   <div key={v.id} className="flex items-center justify-between text-sm">
@@ -419,7 +421,7 @@ export default function CarMrSignDialog({ carId, car, token, savedSignatureUrl, 
 
           {/* Right — timeline + action button */}
           <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="lg:sticky lg:top-5 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgb(15,16,89,0.06)]">
               <h3 className="mb-4 text-sm font-bold text-slate-700 flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-slate-400" />
                 ขั้นตอนการอนุมัติ
@@ -427,7 +429,7 @@ export default function CarMrSignDialog({ carId, car, token, savedSignatureUrl, 
               <ApprovalTimeline car={car} />
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+            <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/60 p-5 shadow-[0_8px_24px_rgb(16,185,129,0.08)] space-y-3">
               <h3 className="text-sm font-bold text-slate-700">ขั้นตอนของคุณ: ลงนามปิด CAR</h3>
               <button
                 type="button"

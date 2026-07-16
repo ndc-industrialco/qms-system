@@ -68,9 +68,18 @@ async function setVerify2DueDate(carId: string, nextDueDate: string): Promise<vo
 function InfoField({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={className}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <div className="mt-1 text-sm font-medium text-slate-900">{children}</div>
+      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">{label}</p>
+      <div className="mt-1.5 text-sm font-medium leading-6 text-slate-900">{children}</div>
     </div>
+  );
+}
+
+function LongField({ label, children, tone = "slate", className = "" }: { label: string; children: React.ReactNode; tone?: "slate" | "blue"; className?: string }) {
+  return (
+    <section className={`rounded-xl border px-4 py-3.5 ${tone === "blue" ? "border-blue-100 bg-blue-50/45" : "border-slate-100 bg-slate-50/75"} ${className}`}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">{label}</p>
+      <div className="rich-view mt-2 max-w-[72ch] text-sm leading-7 text-slate-700">{children}</div>
+    </section>
   );
 }
 
@@ -309,13 +318,13 @@ export default function CarDetailClient({
       </div>
 
       {/* 2-column body */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_21rem]">
 
         {/* Left — main content */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="min-w-0 space-y-5">
 
           {/* Details card */}
-          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(15,16,89,0.045)]">
             <CardHeader
               icon={FileText}
               title="รายละเอียด CAR"
@@ -325,7 +334,7 @@ export default function CarDetailClient({
                 </span>
               }
             />
-            <div className="grid grid-cols-1 gap-x-6 gap-y-4 p-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-5 p-5 sm:grid-cols-2 lg:p-6">
               <InfoField label={t("car.detail.labelType")}>
                 {CAR_SOURCE_LABELS[car.sourceType] ?? car.sourceType}
                 {car.sourceDetail && <p className="mt-0.5 text-xs font-normal text-slate-500">{car.sourceDetail}</p>}
@@ -347,15 +356,15 @@ export default function CarDetailClient({
                   fmtDate(car.responseDueAt)
                 )}
               </InfoField>
-              <div className="border-t border-slate-100 pt-4 sm:col-span-2">
-                <InfoField label={t("car.detail.labelDefect")}>
+              <div className="border-t border-slate-100 pt-5 sm:col-span-2">
+                <LongField label={t("car.detail.labelDefect")} tone="blue">
                   <RichTextView content={car.defectDetail} />
-                </InfoField>
+                </LongField>
               </div>
               <div className="sm:col-span-2">
-                <InfoField label={t("car.detail.labelNonConformance")}>
+                <LongField label={t("car.detail.labelNonConformance")}>
                   <RichTextView content={car.nonConformanceRef} />
-                </InfoField>
+                </LongField>
               </div>
             </div>
           </div>
@@ -373,7 +382,7 @@ export default function CarDetailClient({
             </div>
           )}
           {showRespond && (
-            <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(15,16,89,0.045)]">
               <CardHeader icon={Send} title={t("car.detail.respondFormTitle")} />
               <div className="p-5">
                 <CarRespondForm carId={car.id} defaultPosition={userJobTitle ?? ""} onSuccess={() => setShowRespond(false)} />
@@ -444,11 +453,13 @@ export default function CarDetailClient({
                 {car.response.responseType === "FIVE_WHY" && car.response.fiveWhys && car.response.fiveWhys.length > 0 && (
                   <div className="border-t border-slate-100 pt-4">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">5 Whys Analysis</p>
-                    <div className="space-y-2">
+                    <div className="relative space-y-3 pl-10">
                       {car.response.fiveWhys.map((w, i) => (
-                        <div key={i} className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm">
-                          <p className="mb-1 text-xs font-medium text-slate-500">Why {i + 1}: {w.question}</p>
-                          <p className="text-slate-800">{w.answer || <span className="text-slate-400">—</span>}</p>
+                        <div key={i} className="relative rounded-xl border border-slate-200/80 bg-slate-50/80 p-4 text-sm leading-7">
+                          <span className="absolute -left-10 top-4 flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white shadow-sm">{i + 1}</span>
+                          <p className="mb-1 text-xs font-semibold text-slate-500">Why {i + 1}</p>
+                          <p className="text-slate-500">{w.question}</p>
+                          <p className="mt-2 whitespace-pre-wrap text-slate-800">{w.answer || <span className="text-slate-400">—</span>}</p>
                         </div>
                       ))}
                     </div>
@@ -456,15 +467,9 @@ export default function CarDetailClient({
                 )}
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
-                  <InfoField label={t("car.detail.labelRootCause")} className="sm:col-span-2">
-                    <span className="whitespace-pre-wrap">{car.response.rootCauseSummary}</span>
-                  </InfoField>
-                  <InfoField label={t("car.detail.labelImmediateAction")}>
-                    <span className="whitespace-pre-wrap">{car.response.immediateAction}</span>
-                  </InfoField>
-                  <InfoField label={t("car.detail.labelPreventiveAction")}>
-                    <span className="whitespace-pre-wrap">{car.response.preventiveAction}</span>
-                  </InfoField>
+                  <LongField label={t("car.detail.labelRootCause")} tone="blue" className="sm:col-span-2"><span className="whitespace-pre-wrap">{car.response.rootCauseSummary || "—"}</span></LongField>
+                  <LongField label={t("car.detail.labelImmediateAction")}><span className="whitespace-pre-wrap">{car.response.immediateAction || "—"}</span></LongField>
+                  <LongField label={t("car.detail.labelPreventiveAction")}><span className="whitespace-pre-wrap">{car.response.preventiveAction || "—"}</span></LongField>
                 </div>
 
                 {car.response.responderSignaturePath && (
