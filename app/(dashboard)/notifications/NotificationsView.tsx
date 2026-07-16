@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import PageHeader from "@/components/common/PageHeader";
 import { getModuleMeta } from "@/lib/module-colors";
-import { useT } from "@/lib/i18n";
+import { useT, type TranslationKey } from "@/lib/i18n";
 import { useLocale } from "@/lib/locale-context";
 
 interface NotificationItem {
@@ -61,7 +61,11 @@ function getActionPath(item: NotificationItem): string | null {
   return null;
 }
 
-function relativeTime(dateStr: string, t: any, locale: "th" | "en"): string {
+function relativeTime(
+  dateStr: string,
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
+  locale: "th" | "en"
+): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
   if (m < 1)  return t("notifications.justNow");
@@ -292,7 +296,6 @@ function NotifRow({
 
 export default function NotificationsView() {
   const t = useT();
-  const locale = useLocale();
   const qc = useQueryClient();
   const searchParams = useSearchParams();
 
