@@ -1197,6 +1197,15 @@ export default function AuditPlanDetailClient({ plan: initialPlan, userId, userR
           reviewerNameSnapshot={plan.reviewerNameSnapshot}
           approverNameSnapshot={plan.approverNameSnapshot}
           signoffs={plan.signoffs}
+          sessions={plan.schedules.map((s) => ({
+            id: s.id,
+            startAt: s.startAt,
+            endAt: s.endAt,
+            departmentName: s.departmentName,
+            sessionTitle: s.sessionTitle,
+            remark: s.unavailableReason,
+            team: s.team.map((tm) => ({ role: tm.role, name: tm.nameSnapshot })),
+          }))}
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">

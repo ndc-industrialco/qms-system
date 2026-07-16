@@ -42,6 +42,16 @@ type Attachment = {
   fileUrl: string | null;
 };
 
+type ScheduleSession = {
+  id: string;
+  startAt: string;
+  endAt: string;
+  departmentName: string | null;
+  sessionTitle: string;
+  remark: string | null;
+  team: { role: string; name: string | null }[];
+};
+
 export type AuditPlanForApprove = {
   id: string;
   auditNo: string;
@@ -61,6 +71,7 @@ export type AuditPlanForApprove = {
   signoffs: Signoff[];
   auditors: Auditor[];
   departments: Department[];
+  schedules?: ScheduleSession[];
   attachments: Attachment[];
 };
 
@@ -253,6 +264,7 @@ export default function AuditPlanApproveClient({ plan, mode }: Props) {
         reviewerNameSnapshot={plan.reviewerNameSnapshot}
         approverNameSnapshot={plan.approverNameSnapshot}
         signoffs={plan.signoffs}
+        sessions={plan.schedules}
       />
 
       {/* Scope / Objective */}

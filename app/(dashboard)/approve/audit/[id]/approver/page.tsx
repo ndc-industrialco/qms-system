@@ -21,6 +21,7 @@ export default async function AuditPlanApproverPage({
         signoffs: { orderBy: { signedAt: "asc" } },
         auditors: { orderBy: { assignedAt: "asc" } },
         departments: { orderBy: { departmentName: "asc" } },
+        schedules: { include: { team: true }, orderBy: { startAt: "asc" } },
       },
     }),
     db.auditAttachment.findMany({
@@ -69,6 +70,15 @@ export default async function AuditPlanApproverPage({
           departments: plan.departments.map((d) => ({
             departmentName: d.departmentName ?? null,
             departmentCode: d.departmentCode ?? null,
+          })),
+          schedules: plan.schedules.map((s) => ({
+            id: s.id,
+            startAt: s.startAt.toISOString(),
+            endAt: s.endAt.toISOString(),
+            departmentName: s.departmentName ?? null,
+            sessionTitle: s.sessionTitle,
+            remark: s.unavailableReason ?? null,
+            team: s.team.map((tm) => ({ role: tm.role, name: tm.nameSnapshot ?? null })),
           })),
           attachments: attachments.map((a) => ({
             id: a.id,
