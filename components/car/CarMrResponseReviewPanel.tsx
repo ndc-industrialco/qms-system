@@ -657,12 +657,14 @@ export default function CarMrResponseReviewPanel({
             </div>
 
             {car.response ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="mb-5 flex items-center gap-2">
-                  <ClipboardList className="h-4 w-4 text-slate-500" />
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/60 px-6 py-3.5">
+                  <ClipboardList className="h-4 w-4 text-slate-400" />
                   <h3 className="text-sm font-bold text-slate-700">แผนการดำเนินการแก้ไข / Corrective Action Plan</h3>
                 </div>
-                <ResponseDetail response={car.response} />
+                <div className="p-6">
+                  <ResponseDetail response={car.response} />
+                </div>
               </div>
             ) : (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-700">
@@ -673,17 +675,17 @@ export default function CarMrResponseReviewPanel({
 
           {/* Right — timeline + action buttons in one card */}
           <div>
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col">
+              <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/60 px-5 py-3.5">
+                <ShieldCheck className="h-4 w-4 text-slate-400" />
+                <h3 className="text-sm font-bold text-slate-700">ขั้นตอนการอนุมัติ</h3>
+              </div>
               <div className="p-5 flex-1">
-                <h3 className="mb-4 text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-slate-400" />
-                  ขั้นตอนการอนุมัติ
-                </h3>
                 <ApprovalTimeline car={car} />
               </div>
 
               {/* Sticky action footer */}
-              <div className="border-t border-slate-100 px-4 py-3">
+              <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3">
                 <p className="text-xs text-slate-500 mb-2">ขั้นตอนของคุณ: ผู้แทนฝ่ายบริหาร</p>
                 <div className="flex gap-2">
                   <button

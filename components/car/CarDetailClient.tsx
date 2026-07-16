@@ -9,7 +9,7 @@ import { useT } from "@/lib/i18n";
 import RichTextView from "@/components/shared/RichTextView";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Button } from "@/components/ui/button";
-import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck, ChevronRight, Printer, Paperclip } from "lucide-react";
+import { Send, ClipboardCheck, BellRing, FileText, Download, Eye, CheckCircle2, ShieldCheck, ChevronRight, Printer, Paperclip, ClipboardList, History, AlertTriangle } from "lucide-react";
 import CarStatusBadge from "./CarStatusBadge";
 import CarTimeline from "./CarTimeline";
 import CarIssueDialog from "./CarIssueDialog";
@@ -63,6 +63,27 @@ async function setVerify2DueDate(carId: string, nextDueDate: string): Promise<vo
     const json = await res.json().catch(() => ({}));
     throw new Error(json.message ?? "Failed to save verification round 2 date");
   }
+}
+
+function InfoField({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <div className={className}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <div className="mt-1 text-sm font-medium text-slate-900">{children}</div>
+    </div>
+  );
+}
+
+function CardHeader({ icon: Icon, title, extra }: { icon: React.ElementType; title: string; extra?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-3.5">
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4 text-slate-400" />
+        <h2 className="text-sm font-bold text-slate-700">{title}</h2>
+      </div>
+      {extra}
+    </div>
+  );
 }
 
 function MrRejectReviewCard({ review }: { review: NonNullable<CarDetail["mrResponseReview"]> }) {
@@ -294,41 +315,48 @@ export default function CarDetailClient({
         <div className="lg:col-span-2 space-y-5">
 
           {/* Details card */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-            <div>
-              <p className="text-xs text-slate-500">{t("car.detail.labelType")}</p>
-              <p className="text-sm font-medium text-slate-900">{CAR_SOURCE_LABELS[car.sourceType] ?? car.sourceType}</p>
-              {car.sourceDetail && <p className="text-xs text-slate-500 mt-0.5">{car.sourceDetail}</p>}
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">{t("car.detail.labelTargetDept")}</p>
-              <p className="text-sm font-medium text-slate-900">{car.targetDepartment.name}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">{t("car.detail.labelIssuer")}</p>
-              <p className="text-sm font-medium text-slate-900">{car.issuer.name} ({car.issuerPosition})</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">{t("car.detail.labelIso")}</p>
-              <p className="text-sm font-medium text-slate-900">{car.isoStandards.join(", ") || "—"}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">{t("car.detail.labelIssuedAt")}</p>
-              <p className="text-sm font-medium">{fmtDate(car.issuedAt)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">{t("car.detail.labelDueAt")}</p>
-              <p className={`text-sm font-medium ${car.responseDueAt && new Date(car.responseDueAt) < new Date() && car.status === "ISSUED" ? "text-rose-600" : ""}`}>
-                {fmtDate(car.responseDueAt)}
-              </p>
-            </div>
-            <div className="sm:col-span-2">
-              <p className="text-xs text-slate-500">{t("car.detail.labelDefect")}</p>
-              <RichTextView content={car.defectDetail} />
-            </div>
-            <div className="sm:col-span-2">
-              <p className="text-xs text-slate-500">{t("car.detail.labelNonConformance")}</p>
-              <RichTextView content={car.nonConformanceRef} />
+          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <CardHeader
+              icon={FileText}
+              title="รายละเอียด CAR"
+              extra={
+                <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                  {car.targetDepartment.name}
+                </span>
+              }
+            />
+            <div className="grid grid-cols-1 gap-x-6 gap-y-4 p-5 sm:grid-cols-2">
+              <InfoField label={t("car.detail.labelType")}>
+                {CAR_SOURCE_LABELS[car.sourceType] ?? car.sourceType}
+                {car.sourceDetail && <p className="mt-0.5 text-xs font-normal text-slate-500">{car.sourceDetail}</p>}
+              </InfoField>
+              <InfoField label={t("car.detail.labelTargetDept")}>{car.targetDepartment.name}</InfoField>
+              <InfoField label={t("car.detail.labelIssuer")}>{car.issuer.name} ({car.issuerPosition})</InfoField>
+              <InfoField label={t("car.detail.labelIso")}>{car.isoStandards.join(", ") || "—"}</InfoField>
+              <InfoField label={t("car.detail.labelIssuedAt")}>{fmtDate(car.issuedAt)}</InfoField>
+              <InfoField label={t("car.detail.labelDueAt")}>
+                {car.responseDueAt && new Date(car.responseDueAt) < new Date() && car.status === "ISSUED" ? (
+                  <span className="inline-flex items-center gap-1.5 text-rose-600">
+                    {fmtDate(car.responseDueAt)}
+                    <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold">
+                      <AlertTriangle className="h-3 w-3" />
+                      เกินกำหนด
+                    </span>
+                  </span>
+                ) : (
+                  fmtDate(car.responseDueAt)
+                )}
+              </InfoField>
+              <div className="border-t border-slate-100 pt-4 sm:col-span-2">
+                <InfoField label={t("car.detail.labelDefect")}>
+                  <RichTextView content={car.defectDetail} />
+                </InfoField>
+              </div>
+              <div className="sm:col-span-2">
+                <InfoField label={t("car.detail.labelNonConformance")}>
+                  <RichTextView content={car.nonConformanceRef} />
+                </InfoField>
+              </div>
             </div>
           </div>
 
@@ -345,9 +373,11 @@ export default function CarDetailClient({
             </div>
           )}
           {showRespond && (
-            <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-              <h2 className="text-base font-semibold text-slate-800 mb-4">{t("car.detail.respondFormTitle")}</h2>
-              <CarRespondForm carId={car.id} defaultPosition={userJobTitle ?? ""} onSuccess={() => setShowRespond(false)} />
+            <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <CardHeader icon={Send} title={t("car.detail.respondFormTitle")} />
+              <div className="p-5">
+                <CarRespondForm carId={car.id} defaultPosition={userJobTitle ?? ""} onSuccess={() => setShowRespond(false)} />
+              </div>
             </div>
           )}
 
@@ -380,121 +410,125 @@ export default function CarDetailClient({
 
           {/* Verify form (QMS) */}
           {showVerify && (
-            <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-              <h2 className="text-base font-semibold text-slate-800 mb-4">
-                {t("car.detail.verifyTitle", { round: String(car.status === "VERIFY_2" ? 2 : 1) })}
-              </h2>
+            <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <CardHeader
+                icon={ClipboardCheck}
+                title={t("car.detail.verifyTitle", { round: String(car.status === "VERIFY_2" ? 2 : 1) })}
+              />
+              <div className="p-5">
               <CarVerifyForm
                 carId={car.id}
                 currentStatus={car.status}
                 defaultPosition={userJobTitle ?? ""}
                 onSuccess={() => setShowVerify(false)}
               />
+              </div>
             </div>
           )}
 
           {/* Response detail */}
           {car.response && (
-            <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5 space-y-3">
-              <h2 className="text-base font-semibold text-slate-800">{t("car.detail.responseTitle")}</h2>
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <div>
-                  <dt className="text-xs text-slate-500">{t("car.detail.labelResponder")}</dt>
-                  <dd className="text-slate-800">{car.response.responder.name} ({car.response.responderPosition})</dd>
+            <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <CardHeader icon={ClipboardList} title={t("car.detail.responseTitle")} />
+              <div className="space-y-4 p-5">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                  <InfoField label={t("car.detail.labelResponder")}>
+                    {car.response.responder.name} ({car.response.responderPosition})
+                  </InfoField>
+                  <InfoField label={t("car.detail.labelRespondedAt")}>{fmtDate(car.response.respondedAt)}</InfoField>
+                  <InfoField label={t("car.detail.labelPlannedDate")}>
+                    <span className="text-blue-700">{fmtDate(car.response.plannedCompletionDate)}</span>
+                  </InfoField>
                 </div>
-                <div>
-                  <dt className="text-xs text-slate-500">{t("car.detail.labelRespondedAt")}</dt>
-                  <dd className="text-slate-800">{fmtDate(car.response.respondedAt)}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-slate-500">{t("car.detail.labelPlannedDate")}</dt>
-                  <dd className="text-slate-800">{fmtDate(car.response.plannedCompletionDate)}</dd>
-                </div>
+
                 {car.response.responseType === "FIVE_WHY" && car.response.fiveWhys && car.response.fiveWhys.length > 0 && (
-                  <div className="sm:col-span-2">
-                    <dt className="text-xs text-slate-500 mb-2">5 Whys Analysis</dt>
-                    <dd className="space-y-2">
+                  <div className="border-t border-slate-100 pt-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">5 Whys Analysis</p>
+                    <div className="space-y-2">
                       {car.response.fiveWhys.map((w, i) => (
                         <div key={i} className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm">
-                          <p className="font-medium text-slate-600 text-xs mb-1">Why {i + 1}: {w.question}</p>
+                          <p className="mb-1 text-xs font-medium text-slate-500">Why {i + 1}: {w.question}</p>
                           <p className="text-slate-800">{w.answer || <span className="text-slate-400">—</span>}</p>
                         </div>
                       ))}
-                    </dd>
+                    </div>
                   </div>
                 )}
-                <div className="sm:col-span-2">
-                  <dt className="text-xs text-slate-500">{t("car.detail.labelRootCause")}</dt>
-                  <dd className="text-slate-800">{car.response.rootCauseSummary}</dd>
+
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+                  <InfoField label={t("car.detail.labelRootCause")} className="sm:col-span-2">
+                    <span className="whitespace-pre-wrap">{car.response.rootCauseSummary}</span>
+                  </InfoField>
+                  <InfoField label={t("car.detail.labelImmediateAction")}>
+                    <span className="whitespace-pre-wrap">{car.response.immediateAction}</span>
+                  </InfoField>
+                  <InfoField label={t("car.detail.labelPreventiveAction")}>
+                    <span className="whitespace-pre-wrap">{car.response.preventiveAction}</span>
+                  </InfoField>
                 </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs text-slate-500">{t("car.detail.labelImmediateAction")}</dt>
-                  <dd className="text-slate-800 whitespace-pre-wrap">{car.response.immediateAction}</dd>
-                </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs text-slate-500">{t("car.detail.labelPreventiveAction")}</dt>
-                  <dd className="text-slate-800 whitespace-pre-wrap">{car.response.preventiveAction}</dd>
-                </div>
+
                 {car.response.responderSignaturePath && (
-                  <div className="sm:col-span-2">
-                    <dt className="text-xs text-slate-500 mb-1">ลายเซ็นผู้ตอบกลับ</dt>
-                    <dd>
+                  <div className="border-t border-slate-100 pt-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">ลายเซ็นผู้ตอบกลับ</p>
+                    <div className="flex w-36 items-center justify-center rounded-xl border border-slate-200 bg-white p-3">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={car.response.responderSignaturePath} alt="ลายเซ็น" className="h-12 object-contain border border-slate-100 rounded-lg p-1 bg-white" />
-                    </dd>
+                      <img src={car.response.responderSignaturePath} alt="ลายเซ็น" className="h-10 w-full object-contain" />
+                    </div>
                   </div>
                 )}
-              </dl>
 
-              {/* Attachments */}
-              {car.response.attachments.length > 0 && (
-                <div className="pt-2 border-t border-slate-100">
-                  <p className="text-xs text-slate-500 mb-2">ไฟล์แนบ</p>
-                  <ul className="space-y-1">
-                    {car.response.attachments.map((a) => (
-                      <li key={a.id} className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                        <FileText className="h-4 w-4 shrink-0 text-slate-400" />
-                        <span className="flex-1 truncate text-sm text-slate-700">{a.fileName}</span>
-                        <span className="shrink-0 text-xs text-slate-400">{Math.round(a.fileSize / 1024)} KB</span>
-                        <button
-                          onClick={() => setPreviewFile(a)}
-                          className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <a href={`/api/sharepoint/get-file?itemId=${a.spItemId}`} target="_blank" rel="noopener noreferrer"
-                          className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600">
-                          <Download className="h-4 w-4" />
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Upload — target dept while ISSUED (responding), or QMS/MR/IT always */}
-              {((userDepartmentId === car.targetDepartment.id && car.status === "ISSUED") ||
-                userRole === "QMS" ||
-                userRole === "MR" ||
-                userRole === "IT") &&
-                car.status !== "CLOSED" &&
-                car.status !== "CANCELLED" && (
-                  <div className="pt-2 border-t border-slate-100">
-                    <CarAttachmentUpload
-                      carResponseId={car.response.id}
-                      onUploaded={() => qc.invalidateQueries({ queryKey: ["car", car.id] })}
-                    />
+                {/* Attachments */}
+                {car.response.attachments.length > 0 && (
+                  <div className="border-t border-slate-100 pt-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">ไฟล์แนบ</p>
+                    <ul className="space-y-1.5">
+                      {car.response.attachments.map((a) => (
+                        <li key={a.id} className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                          <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span className="flex-1 truncate text-sm text-slate-700">{a.fileName}</span>
+                          <span className="shrink-0 text-xs text-slate-400">{Math.round(a.fileSize / 1024)} KB</span>
+                          <button
+                            onClick={() => setPreviewFile(a)}
+                            className="shrink-0 rounded p-1 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <a href={`/api/sharepoint/get-file?itemId=${a.spItemId}`} target="_blank" rel="noopener noreferrer"
+                            className="shrink-0 rounded p-1 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600">
+                            <Download className="h-4 w-4" />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
+
+                {/* Upload — target dept while ISSUED (responding), or QMS/MR/IT always */}
+                {((userDepartmentId === car.targetDepartment.id && car.status === "ISSUED") ||
+                  userRole === "QMS" ||
+                  userRole === "MR" ||
+                  userRole === "IT") &&
+                  car.status !== "CLOSED" &&
+                  car.status !== "CANCELLED" && (
+                    <div className="border-t border-slate-100 pt-4">
+                      <CarAttachmentUpload
+                        carResponseId={car.response.id}
+                        onUploaded={() => qc.invalidateQueries({ queryKey: ["car", car.id] })}
+                      />
+                    </div>
+                  )}
+              </div>
             </div>
           )}
         </div>
 
         {/* Right — timeline (sticky) */}
         <div className="lg:sticky lg:top-6 lg:self-start">
-          <div className="rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-5">
-            <h2 className="text-base font-semibold text-slate-800 mb-4">{t("car.detail.timelineTitle")}</h2>
-            <CarTimeline car={car} />
+          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <CardHeader icon={History} title={t("car.detail.timelineTitle")} />
+            <div className="p-5">
+              <CarTimeline car={car} />
+            </div>
           </div>
         </div>
       </div>
