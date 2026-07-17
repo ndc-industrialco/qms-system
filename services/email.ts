@@ -268,6 +268,156 @@ export function makeMasterObjectivesTable(objectives: KpiObjectiveRow[], revisio
   `;
 }
 
+// ─── FM-MR-01: embeddable print-style block (Annual Quality Objectives, matches /print/qms/kpi/fm-mr-01) ─
+
+export interface FmMr01PrintObjective {
+  objective: string;
+  target: number;
+  unit: string | null;
+  calculationFormula: string | null;
+  actionPlanGuidelines: string | null;
+  frequency: string | null;
+  referenceDocuments: string | null;
+  responsibleNameSnapshot?: string | null;
+  responsibleEmployeeId?: string | null;
+  responsibleEmailSnapshot?: string | null;
+  revisionChangeType?: string | null;
+}
+
+export interface FmMr01PrintDept {
+  department: string;
+  objectives: FmMr01PrintObjective[];
+  removedObjectives?: FmMr01PrintObjective[];
+}
+
+export interface FmMr01PrintSignoff {
+  label: string;
+  name: string | null;
+  signaturePath: string | null;
+  date: string;
+}
+
+export interface FmMr01PrintData {
+  year: number;
+  footerPrefix: string;
+  footerLabel: string;
+  logoUrl: string;
+  departments: FmMr01PrintDept[];
+  signatures: FmMr01PrintSignoff[];
+}
+
+export function buildFmMr01PrintHtml(data: FmMr01PrintData): string {
+  const responsibleCell = (o: FmMr01PrintObjective): string => {
+    if (!o.responsibleNameSnapshot && !o.responsibleEmailSnapshot) return "-";
+    const name = esc(o.responsibleNameSnapshot || o.responsibleEmailSnapshot || "");
+    return o.responsibleEmployeeId ? `${name}<br/>(#${esc(o.responsibleEmployeeId)})` : name;
+  };
+
+  let tbodyRows = "";
+  for (const dept of data.departments) {
+    const objectives = dept.objectives ?? [];
+    const removed = dept.removedObjectives ?? [];
+    const totalRows = objectives.length + removed.length;
+    if (totalRows === 0) continue;
+
+    objectives.forEach((obj, i) => {
+      const isHighlighted = obj.revisionChangeType === "UPDATED" || obj.revisionChangeType === "ADDED";
+      const cellBg = isHighlighted ? "background-color:#e2f0d9;" : "";
+      const boldItalic = isHighlighted ? "font-weight:bold;font-style:italic;" : "";
+      const underline = obj.revisionChangeType === "ADDED" ? "text-decoration:underline;" : "";
+      const deptCell = i === 0
+        ? `<td rowspan="${totalRows}" style="vertical-align:top;font-weight:bold;border:1px solid #000;padding:4px 5px;text-align:center;">${esc(dept.department)}</td>`
+        : "";
+      tbodyRows += `
+        <tr style="font-size:9px;${boldItalic}${underline}">
+          ${deptCell}
+          <td style="border:1px solid #000;padding:4px 5px;${cellBg}"><div><strong>${esc(obj.objective)} ${obj.target} ${esc(obj.unit || "")}</strong></div></td>
+          <td style="border:1px solid #000;padding:4px 5px;white-space:pre-line;${cellBg}">${esc(obj.calculationFormula || "")}</td>
+          <td style="border:1px solid #000;padding:4px 5px;white-space:pre-line;${cellBg}">${esc(obj.actionPlanGuidelines || "")}</td>
+          <td style="border:1px solid #000;padding:4px 5px;text-align:center;${cellBg}">${esc(obj.frequency || "")}</td>
+          <td style="border:1px solid #000;padding:4px 5px;text-align:center;${cellBg}">${esc(obj.referenceDocuments || "-")}</td>
+          <td style="border:1px solid #000;padding:4px 5px;text-align:center;${cellBg}">${responsibleCell(obj)}</td>
+        </tr>`;
+    });
+
+    removed.forEach((obj) => {
+      tbodyRows += `
+        <tr style="font-size:9px;font-weight:bold;font-style:italic;color:#b91c1c;">
+          <td style="border:1px solid #000;padding:4px 5px;background-color:#fee2e2;">${esc(obj.objective)} ${obj.target} ${esc(obj.unit || "")} (Deleted)</td>
+          <td style="border:1px solid #000;padding:4px 5px;background-color:#fee2e2;">${esc(obj.calculationFormula || "")}</td>
+          <td style="border:1px solid #000;padding:4px 5px;background-color:#fee2e2;">${esc(obj.actionPlanGuidelines || "")}</td>
+          <td style="border:1px solid #000;padding:4px 5px;text-align:center;background-color:#fee2e2;">${esc(obj.frequency || "")}</td>
+          <td style="border:1px solid #000;padding:4px 5px;text-align:center;background-color:#fee2e2;">${esc(obj.referenceDocuments || "-")}</td>
+          <td style="border:1px solid #000;padding:4px 5px;text-align:center;background-color:#fee2e2;">${responsibleCell(obj)}</td>
+        </tr>`;
+    });
+  }
+
+  if (!tbodyRows) {
+    tbodyRows = `<tr><td colspan="7" style="text-align:center;border:1px solid #000;padding:16px;color:#94a3b8;">ไม่มีข้อมูลสำหรับปี ${data.year} / No data for ${data.year}</td></tr>`;
+  }
+
+  const headerHtml = `
+  <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
+    <tbody>
+      <tr>
+        <td style="width:20%;text-align:left;padding:4px;">
+          <img src="${esc(data.logoUrl)}" alt="Logo" style="height:30px;object-fit:contain;display:block;" />
+        </td>
+        <td style="width:60%;text-align:center;">
+          <div style="font-weight:bold;font-size:14px;color:#0F1059;">วัตถุประสงค์คุณภาพ สิ่งแวดล้อม อาชีวอนามัยและความปลอดภัย ${data.year}</div>
+          <div style="font-weight:bold;font-size:12px;color:#0F1059;">Quality, Environment, Occupational Health and Safety Objectives ${data.year}</div>
+        </td>
+        <td style="width:20%;padding:4px;font-size:9px;">
+          <div><strong>แผนงานประจำปี</strong></div>
+          <div>Annual Work Plan</div>
+          <div><strong>${esc(data.footerPrefix)}</strong></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>`;
+
+  const objectivesHtml = `
+  <table style="width:100%;border-collapse:collapse;margin-bottom:12px;">
+    <thead>
+      <tr style="font-size:9.5px;background-color:#f3f4f6;font-weight:bold;">
+        <th style="width:15%;border:1px solid #000;padding:4px 5px;text-align:center;">หน่วยงาน<br/>Departments</th>
+        <th style="width:25%;border:1px solid #000;padding:4px 5px;text-align:center;">วัตถุประสงค์และเป้าหมาย<br/>Objectives and Targets</th>
+        <th style="width:12%;border:1px solid #000;padding:4px 5px;text-align:center;">สูตรการคำนวณ<br/>Calculation Formula</th>
+        <th style="width:20%;border:1px solid #000;padding:4px 5px;text-align:center;">แนวทางแผนการดำเนินงาน<br/>Action Plan Guidelines</th>
+        <th style="width:8%;border:1px solid #000;padding:4px 5px;text-align:center;">ความถี่ในการวัดผล<br/>Measurement Frequency</th>
+        <th style="width:10%;border:1px solid #000;padding:4px 5px;text-align:center;">เอกสารอ้างอิง<br/>Reference Documents</th>
+        <th style="width:10%;border:1px solid #000;padding:4px 5px;text-align:center;">ผู้รับผิดชอบ<br/>Responsible Person</th>
+      </tr>
+    </thead>
+    <tbody>${tbodyRows}</tbody>
+  </table>`;
+
+  const signatureHtml = `
+  <table style="width:100%;border-collapse:collapse;table-layout:fixed;margin-top:14px;">
+    <tbody>
+      <tr>
+        ${data.signatures
+          .map(
+            (s) => `<td style="width:${100 / data.signatures.length}%;border:1px solid #000;padding:8px 6px;text-align:center;vertical-align:top;">
+          <div style="font-weight:bold;">${esc(s.label)}</div>
+          <div style="height:44px;margin:4px 0;">
+            ${s.signaturePath ? `<img src="${esc(s.signaturePath)}" alt="${esc(s.label)}" style="max-height:42px;max-width:90%;display:block;margin:0 auto;" />` : `<span style="color:#94a3b8;">ยังไม่ได้ลงชื่อ / Unsigned</span>`}
+          </div>
+          <div style="font-weight:bold;">(${esc(s.name || "-")})</div>
+          <div style="font-size:8px;color:#475569;margin-top:4px;">วันที่ / Date: ${esc(s.date)}</div>
+        </td>`
+          )
+          .join("")}
+      </tr>
+    </tbody>
+  </table>`;
+
+  const footerHtml = `<div style="font-size:8px;text-align:right;margin-top:6px;color:#000;">${esc(data.footerPrefix)} ${esc(data.footerLabel)}</div>`;
+
+  return `<div style="font-family:'Sarabun','Segoe UI',Arial,sans-serif;color:#000;">${headerHtml}${objectivesHtml}${signatureHtml}${footerHtml}</div>`;
+}
+
 function makeObjectivesTable(objectives: KpiObjectiveRow[]): string {
   if (objectives.length === 0) return "";
   
@@ -566,6 +716,7 @@ export async function sendKpiObjectiveReviewerAssignedEmail(opts: {
   year: number;
   actionToken: string;
   senderAccessToken?: string | null;
+  printHtml?: string;
 }) {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
@@ -582,7 +733,7 @@ export async function sendKpiObjectiveReviewerAssignedEmail(opts: {
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
         { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(opts.objectives.length) },
       ],
-      extraHtml: makeObjectivesTable(opts.objectives),
+      extraHtml: opts.printHtml ?? makeObjectivesTable(opts.objectives),
       actionLabelTh: "ตรวจสอบ KPI",
       actionLabelEn: "Review KPI",
       actionUrl: url,
@@ -598,6 +749,7 @@ export async function sendKpiObjectiveApproverRequestEmail(opts: {
   year: number;
   actionToken: string;
   senderAccessToken?: string | null;
+  printHtml?: string;
 }) {
   const url = getAppUrl(`/approve?token=${encodeURIComponent(opts.actionToken)}`);
   await sendMail({
@@ -613,7 +765,7 @@ export async function sendKpiObjectiveApproverRequestEmail(opts: {
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
         ...(opts.objectives ? [{ labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(opts.objectives.length) }] : []),
       ],
-      extraHtml: opts.objectives ? makeObjectivesTable(opts.objectives) : undefined,
+      extraHtml: opts.printHtml ?? (opts.objectives ? makeObjectivesTable(opts.objectives) : undefined),
       actionLabelTh: "อนุมัติ KPI",
       actionLabelEn: "Approve KPI",
       actionUrl: url,
@@ -662,6 +814,7 @@ export async function sendKpiResultEmail(opts: {
   objectives?: KpiObjectiveRow[];
   senderAccessToken?: string | null;
   actionUrl?: string;
+  printHtml?: string;
 }) {
   const isSystemMaster = opts.departmentName === "SYSTEM_MASTER" || opts.departmentName.includes("FM-MR-01");
   const url = opts.actionUrl ?? (isSystemMaster
@@ -684,7 +837,7 @@ export async function sendKpiResultEmail(opts: {
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
         ...(opts.objectives ? [{ labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(opts.objectives.length) }] : []),
       ],
-      extraHtml: opts.objectives ? makeObjectivesTable(opts.objectives) : undefined,
+      extraHtml: opts.printHtml ?? (opts.objectives ? makeObjectivesTable(opts.objectives) : undefined),
       actionLabelTh: isSystemMaster ? "เปิดดูแผนงาน" : "เปิด KPI",
       actionLabelEn: isSystemMaster ? "Open Plan" : "Open KPI",
       actionUrl: url,
@@ -699,6 +852,7 @@ export async function sendKpiRecallEmail(opts: {
   preparerName: string;
   kpiId: string;
   senderAccessToken?: string | null;
+  printHtml?: string;
 }) {
   const url = getAppUrl(`/qms/kpi`);
   await sendMail({
@@ -714,6 +868,7 @@ export async function sendKpiRecallEmail(opts: {
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
         { labelTh: "หมายเหตุ", labelEn: "Note", value: "KPI ถูกเรียกคืนกลับเป็นแบบร่าง งานที่มอบหมายถูกยกเลิก / KPI has been recalled to Draft. Your assignment has been cancelled." },
       ],
+      extraHtml: opts.printHtml,
       actionLabelTh: "เปิด KPI",
       actionLabelEn: "Open KPI",
       actionUrl: url,
@@ -729,6 +884,7 @@ export async function sendKpiRejectedPreparerEmail(opts: {
   kpiId: string;
   objectives?: KpiObjectiveRow[];
   senderAccessToken?: string | null;
+  printHtml?: string;
 }) {
   const url = getAppUrl(`/qms/kpi`);
   await sendMail({
@@ -744,7 +900,7 @@ export async function sendKpiRejectedPreparerEmail(opts: {
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
         { labelTh: "หมายเหตุ", labelEn: "Note", value: "กรุณาแก้ไขและส่งตรวจสอบใหม่ / Please revise and resubmit." },
       ],
-      extraHtml: opts.objectives ? makeObjectivesTable(opts.objectives) : undefined,
+      extraHtml: opts.printHtml ?? (opts.objectives ? makeObjectivesTable(opts.objectives) : undefined),
       actionLabelTh: "แก้ไข KPI",
       actionLabelEn: "Edit KPI",
       actionUrl: url,
@@ -952,6 +1108,7 @@ export async function sendKpiAnnouncementEmail(opts: {
   senderAccessToken?: string | null;
   kpiId?: string;
   attachment?: { name: string; contentType: string; contentBytes: string };
+  printHtml?: string;
 }) {
   const url = getAppUrl(`/qms/kpi`);
   const attachments = opts.attachment ? [opts.attachment] : undefined;
@@ -969,6 +1126,7 @@ export async function sendKpiAnnouncementEmail(opts: {
         { labelTh: "หน่วยงาน", labelEn: "Department", value: opts.departmentName },
         { labelTh: "ปี", labelEn: "Year", value: String(opts.year) },
       ],
+      extraHtml: opts.printHtml,
       actionLabelTh: "เปิด KPI",
       actionLabelEn: "Open KPI",
       actionUrl: url,

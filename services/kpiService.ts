@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { QmsConfigService } from '@/services/qmsConfigService';
 import { NotificationService } from '@/services/notificationService';
-import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail, sendKpiAnnouncementEmail, sendMail } from '@/services/email';
+import { sendKpiObjectiveReviewerAssignedEmail, sendKpiRecallEmail, sendKpiObjectiveApproverRequestEmail, sendKpiResultEmail, sendKpiRejectedPreparerEmail, makeBilingualMail, sendKpiAnnouncementEmail, sendMail, buildFmMr01PrintHtml, type FmMr01PrintObjective } from '@/services/email';
 import { ActionTokenService } from '@/services/actionTokenService';
 import { DepartmentService } from '@/services/departmentService';
 import { logger } from '@/lib/logger';
@@ -562,6 +562,11 @@ export class KpiService {
 
     // Send notification outside transaction — idempotent via NotificationService
     if (dto.reviewerEmail && reviewerToken) {
+      const isSystemMaster = updated.department === 'SYSTEM_MASTER';
+      const printHtml = isSystemMaster
+        ? await this.getFmMr01PrintHtml(await this.kpiRepo.findByIdWithRelations(id)).catch(() => null)
+        : null;
+
       NotificationService.sendEmailOnce(
         `KPI:${id}:SUBMITTED:reviewer:${dto.reviewerUserId}:${reviewerToken.substring(0, 16)}`,
         () => sendKpiObjectiveReviewerAssignedEmail({
@@ -573,6 +578,7 @@ export class KpiService {
           year: updated.yearly,
           actionToken: reviewerToken,
           senderAccessToken,
+          printHtml: printHtml ?? undefined,
         }),
         dto.reviewerEmail,
         'KPI Review Request',
@@ -590,6 +596,7 @@ export class KpiService {
               { labelTh: "ปี", labelEn: "Year", value: String(updated.yearly) },
               { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(updated.objectives.length) },
             ],
+            extraHtml: printHtml ?? undefined,
             actionLabelTh: "ตรวจสอบ KPI",
             actionLabelEn: "Review KPI",
             actionUrl: reviewerToken ? `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/approve?token=${encodeURIComponent(reviewerToken)}` : undefined,
@@ -665,6 +672,11 @@ export class KpiService {
 
     // Notify approver
     if (kpi.approverUserId && approverToken) {
+      const isSystemMaster = kpi.department === 'SYSTEM_MASTER';
+      const printHtml = isSystemMaster
+        ? await this.getFmMr01PrintHtml(kpi).catch(() => null)
+        : null;
+
       NotificationService.sendEmailOnce(
         `KPI:${id}:REVIEWED:approver:${kpi.approverUserId}`,
         () => sendKpiObjectiveApproverRequestEmail({
@@ -675,6 +687,7 @@ export class KpiService {
           year: kpi.yearly,
           actionToken: approverToken,
           senderAccessToken: actor.accessToken,
+          printHtml: printHtml ?? undefined,
         }),
         kpi.approverEmail ?? '',
         'KPI Approval Request',
@@ -691,6 +704,7 @@ export class KpiService {
               { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
               { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(kpi.objectives.length) },
             ],
+            extraHtml: printHtml ?? undefined,
             actionLabelTh: "อนุมัติ KPI",
             actionLabelEn: "Approve KPI",
             actionUrl: approverToken ? `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/approve?token=${encodeURIComponent(approverToken)}` : undefined,
@@ -779,6 +793,9 @@ export class KpiService {
       const actionUrl = isSystemMaster
         ? `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/print/qms/kpi/fm-mr-01?year=${kpi.yearly}&mode=review`
         : `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`;
+      const printHtml = isSystemMaster
+        ? await this.getFmMr01PrintHtml(kpi).catch(() => null)
+        : null;
 
       NotificationService.sendEmailOnce(
         `KPI:${id}:APPROVED:preparer:${preparerAuthId}`,
@@ -792,6 +809,7 @@ export class KpiService {
           objectives: kpi.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
           senderAccessToken: actor.accessToken,
           actionUrl,
+          printHtml: printHtml ?? undefined,
         }),
         preparer?.email ?? '',
         'KPI Approved',
@@ -809,6 +827,7 @@ export class KpiService {
               { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
               { labelTh: "จำนวนตัวชี้วัด", labelEn: "Objective Count", value: String(kpi.objectives.length) },
             ],
+            extraHtml: printHtml ?? undefined,
             actionLabelTh: isSystemMaster ? "เปิดดูแผนงาน" : "เปิด KPI",
             actionLabelEn: isSystemMaster ? "Open Plan" : "Open KPI",
             actionUrl,
@@ -879,6 +898,10 @@ export class KpiService {
 
     // Send notifications outside transaction — idempotent via NotificationService
     if (notifyUserIds.length > 0) {
+      const isSystemMaster = kpi.department === 'SYSTEM_MASTER';
+      const printHtml = isSystemMaster
+        ? await this.getFmMr01PrintHtml(kpi).catch(() => null)
+        : null;
       const snapshots = await Promise.all(notifyUserIds.map((uid) => getUserSnapshot(uid)));
       for (let i = 0; i < notifyUserIds.length; i++) {
         const u = snapshots[i];
@@ -893,6 +916,7 @@ export class KpiService {
             preparerName: actor.name ?? '',
             kpiId: id,
             senderAccessToken: actor.accessToken,
+            printHtml: printHtml ?? undefined,
           }),
           u.email,
           'KPI Recalled',
@@ -909,6 +933,7 @@ export class KpiService {
                 { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
                 { labelTh: "หมายเหตุ", labelEn: "Note", value: "KPI ถูกเรียกคืนกลับเป็นแบบร่าง งานที่มอบหมายถูกยกเลิก / KPI has been recalled to Draft. Your assignment has been cancelled." },
               ],
+              extraHtml: printHtml ?? undefined,
               actionLabelTh: "เปิด KPI",
               actionLabelEn: "Open KPI",
               actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`,
@@ -985,6 +1010,11 @@ export class KpiService {
     if (rejectPreparerAuthId) {
       const preparer = await getUserSnapshot(rejectPreparerAuthId);
       if (preparer?.email) {
+        const isSystemMaster = kpi.department === 'SYSTEM_MASTER';
+        const printHtml = isSystemMaster
+          ? await this.getFmMr01PrintHtml(kpi).catch(() => null)
+          : null;
+
         NotificationService.sendEmailOnce(
           `KPI:${id}:REJECTED:preparer:${rejectPreparerAuthId}`,
           () => sendKpiRejectedPreparerEmail({
@@ -995,6 +1025,7 @@ export class KpiService {
             kpiId: id,
             objectives: kpi.objectives.map((o) => ({ objective: o.objective, target: o.target, unit: o.unit })),
             senderAccessToken: actor.accessToken,
+            printHtml: printHtml ?? undefined,
           }),
           preparer.email,
           'KPI Rejected',
@@ -1011,6 +1042,7 @@ export class KpiService {
                 { labelTh: "ปี", labelEn: "Year", value: String(kpi.yearly) },
                 { labelTh: "หมายเหตุ", labelEn: "Note", value: "กรุณาแก้ไขและส่งตรวจสอบใหม่ / Please revise and resubmit." },
               ],
+              extraHtml: printHtml ?? undefined,
               actionLabelTh: "แก้ไข KPI",
               actionLabelEn: "Edit KPI",
               actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/qms/kpi/${id}`,
@@ -1123,6 +1155,11 @@ export class KpiService {
 
     if (body?.toGroupEmails?.length) {
       try {
+        const printHtml = isSystemMaster
+          ? await this.getFmMr01PrintHtml(kpi).catch(() => null)
+          : null;
+        const announceExtraHtml = [body.wysiwygContent, printHtml].filter(Boolean).join('<div style="margin-top:16px"></div>') || undefined;
+
         await sendMail({
           to: body.toGroupEmails.map(email => ({ name: email, email })),
           cc: body.ccGroupEmails?.map(email => ({ name: email, email })),
@@ -1134,7 +1171,7 @@ export class KpiService {
               { labelTh: 'ประเภทเอกสาร', labelEn: 'Doc Type', value: displayDept },
               { labelTh: 'ปี', labelEn: 'Year', value: String(kpi.yearly) },
             ],
-            extraHtml: body.wysiwygContent || undefined,
+            extraHtml: announceExtraHtml,
             actionLabelTh: 'เปิดดูแผนงาน',
             actionLabelEn: 'Open Plan',
             actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/print/qms/kpi/fm-mr-01?year=${kpi.yearly}&mode=review`,
@@ -1175,6 +1212,7 @@ export class KpiService {
                   { labelTh: 'หน่วยงาน', labelEn: 'Department', value: dept.name },
                   { labelTh: 'ปี', labelEn: 'Year', value: String(kpi.yearly) },
                 ],
+                extraHtml: printHtml ?? undefined,
                 actionLabelTh: 'เปิดดูแผนงาน',
                 actionLabelEn: 'Open Plan',
                 actionUrl: `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/print/qms/kpi/fm-mr-01?year=${kpi.yearly}&mode=review`,
@@ -1207,6 +1245,9 @@ export class KpiService {
       }
 
       const emailSubject = `[ประกาศ] KPI ${displayDept} ปี ${kpi.yearly} / KPI Announcement`;
+      const deptPrintHtml = isSystemMaster
+        ? await this.getFmMr01PrintHtml(kpi).catch(() => null)
+        : null;
       for (const member of deptMembers) {
         if (!member.email) continue;
         NotificationService.sendEmailOnce(
@@ -1219,6 +1260,7 @@ export class KpiService {
             kpiId: id,
             senderAccessToken,
             attachment: attachment ?? undefined,
+            printHtml: deptPrintHtml ?? undefined,
           }),
           member.email,
           emailSubject,
@@ -1233,6 +1275,7 @@ export class KpiService {
                 { labelTh: 'หน่วยงาน/เอกสาร', labelEn: 'Department/Doc', value: displayDept },
                 { labelTh: 'ปี', labelEn: 'Year', value: String(kpi.yearly) },
               ],
+              extraHtml: deptPrintHtml ?? undefined,
             }),
             module: 'KPI',
             resourceId: id,
@@ -1462,12 +1505,17 @@ export class KpiService {
     };
   }
 
-  private async generateAnnouncementPdf(kpi: Awaited<ReturnType<KpiRepository['findByIdWithRelations']>>) {
+  /**
+   * Builds the FM-MR-01 print-style block (same look as /print/qms/kpi/fm-mr-01)
+   * for embedding in emails/PDFs — header, objectives table grouped by department, signature block, footer.
+   */
+  async getFmMr01PrintHtml(
+    kpi: Awaited<ReturnType<KpiRepository['findByIdWithRelations']>>,
+    opts?: { logoUrl?: string },
+  ): Promise<string | null> {
     if (!kpi) return null;
-
     const year = kpi.yearly;
-    
-    // Fetch all KPIs for the same year with revision comparison payload
+
     const filteredKpis = await this.kpiRepo.findForExport({ yearly: year }).then((rows) =>
       Promise.all(
         rows
@@ -1476,125 +1524,59 @@ export class KpiService {
       ),
     );
 
-    // Fetch master signatures
     const signatures = await this.approvalSignatureRepo.findByDocument('KPI', kpi.id);
-    
-    // Fetch footer configuration
     const qmsConfigService = new QmsConfigService();
     const footerConfig = await qmsConfigService.getSingleFooterConfig('KPI_ANNUAL');
     const footerLabel = footerConfig?.label?.trim() || 'วัตถุประสงค์คุณภาพประจำปี';
     const revisionNo = await this.getMasterRevisionNumber(year);
     const footerPrefix = formatKpiAnnualRevisionTag(footerConfig?.prefix, revisionNo);
 
-    // Signatures mapping for the printout block
     const preparerSig = signatures.find(s => s.step === 'PREPARER' && s.action === 'APPROVED');
     const reviewerSig = signatures.find(s => s.step === 'REVIEWER' && s.action === 'APPROVED');
     const approverSig = signatures.find(s => s.step === 'APPROVER' && s.action === 'APPROVED');
-
     const formatDate = (dateVal?: Date | string | null) => {
       if (!dateVal) return '-';
       const d = new Date(dateVal);
       return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
-    const preparerDate = formatDate(preparerSig?.actionDate);
-    const reviewerDate = formatDate(reviewerSig?.actionDate);
-    const approverDate = formatDate(approverSig?.actionDate);
+    return buildFmMr01PrintHtml({
+      year,
+      footerPrefix,
+      footerLabel,
+      logoUrl: opts?.logoUrl ?? `${(process.env.NEXTAUTH_URL ?? '').replace(/\/+$/, '')}/logo/logo.webp`,
+      departments: filteredKpis
+        .filter((ak): ak is NonNullable<typeof ak> => !!ak)
+        .map((ak) => ({
+          department: ak.department,
+          objectives: ak.objectives ?? [],
+          removedObjectives: ((ak as { removedObjectives?: Array<{ originalObjective: FmMr01PrintObjective }> }).removedObjectives ?? [])
+            .map((r) => r.originalObjective),
+        })),
+      signatures: [
+        { label: 'ผู้จัดทำ / Prepared By', name: kpi.prepare, signaturePath: preparerSig?.signaturePath ?? null, date: formatDate(preparerSig?.actionDate) },
+        { label: 'ผู้ตรวจสอบ / Reviewed By', name: kpi.reviewer, signaturePath: reviewerSig?.signaturePath ?? null, date: formatDate(reviewerSig?.actionDate) },
+        { label: 'ผู้อนุมัติ / Approved By', name: kpi.approver, signaturePath: approverSig?.signaturePath ?? null, date: formatDate(approverSig?.actionDate) },
+      ],
+    });
+  }
 
-    // Load NDC logo to base64 to embed directly in the HTML
+  private async generateAnnouncementPdf(kpi: Awaited<ReturnType<KpiRepository['findByIdWithRelations']>>) {
+    if (!kpi) return null;
+
+    // Load NDC logo to base64 so puppeteer can render it offline
     const logoPath = path.join(process.cwd(), 'public', 'logo', 'logo.webp');
-    let logoBase64 = '';
+    let logoUrl = '';
     try {
       if (fs.existsSync(logoPath)) {
-        logoBase64 = `data:image/webp;base64,${fs.readFileSync(logoPath).toString('base64')}`;
+        logoUrl = `data:image/webp;base64,${fs.readFileSync(logoPath).toString('base64')}`;
       }
     } catch (err) {
       logger.warn('[generateAnnouncementPdf] Logo load failed', { err });
     }
 
-    // Build the objectives table HTML rows
-    let tbodyRows = '';
-    if (filteredKpis.length > 0) {
-      for (const ak of filteredKpis) {
-        const objectives = ak.objectives || [];
-        const removedObjectives = (ak as { removedObjectives?: Array<{ id: string; originalObjective: {
-          objective: string;
-          target: number;
-          unit: string | null;
-          frequency: string;
-          calculationFormula: string;
-          actionPlanGuidelines: string;
-          referenceDocuments: string | null;
-          responsibleNameSnapshot?: string | null;
-          responsibleEmployeeId?: string | null;
-          responsibleEmailSnapshot?: string | null;
-        } }> }).removedObjectives || [];
-        const totalRows = objectives.length + removedObjectives.length;
-        for (let i = 0; i < objectives.length; i++) {
-          const obj = objectives[i];
-          const isHighlighted = obj.revisionChangeType === 'UPDATED' || obj.revisionChangeType === 'ADDED';
-          const cellBg = isHighlighted ? 'background-color: #e2f0d9;' : '';
-          const boldItalic = isHighlighted ? 'font-weight: bold; font-style: italic;' : '';
-          const underline = obj.revisionChangeType === 'ADDED' ? 'text-decoration: underline;' : '';
-          
-          let deptCell = '';
-          if (i === 0) {
-            deptCell = `<td rowspan="${totalRows}" style="vertical-align: top; font-weight: bold; border: 1px solid #000; padding: 4px 5px; text-align: center;">${ak.department}</td>`;
-          }
-          
-          let responsibleText = '-';
-          if (obj.responsibleNameSnapshot || obj.responsibleEmailSnapshot) {
-            responsibleText = `${obj.responsibleNameSnapshot || obj.responsibleEmailSnapshot}`;
-            if (obj.responsibleEmployeeId) {
-              responsibleText += `<br/>(#${obj.responsibleEmployeeId})`;
-            }
-          }
-
-          tbodyRows += `
-            <tr style="font-size: 9px; ${boldItalic} ${underline}">
-              ${deptCell}
-              <td style="border: 1px solid #000; padding: 4px 5px; ${cellBg}">
-                <div><strong>${obj.objective} ${obj.target} ${obj.unit || ''}</strong></div>
-              </td>
-              <td style="border: 1px solid #000; padding: 4px 5px; white-space: pre-line; ${cellBg}">${obj.calculationFormula || ''}</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; white-space: pre-line; ${cellBg}">${obj.actionPlanGuidelines || ''}</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${obj.frequency || ''}</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${obj.referenceDocuments || '-'}</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; ${cellBg}">${responsibleText}</td>
-            </tr>
-          `;
-        }
-
-        for (const removed of removedObjectives) {
-          let responsibleText = '-';
-          if (removed.originalObjective.responsibleNameSnapshot || removed.originalObjective.responsibleEmailSnapshot) {
-            responsibleText = `${removed.originalObjective.responsibleNameSnapshot || removed.originalObjective.responsibleEmailSnapshot}`;
-            if (removed.originalObjective.responsibleEmployeeId) {
-              responsibleText += `<br/>(#${removed.originalObjective.responsibleEmployeeId})`;
-            }
-          }
-
-          tbodyRows += `
-            <tr style="font-size: 9px; font-weight: bold; font-style: italic; color: #b91c1c;">
-              <td style="border: 1px solid #000; padding: 4px 5px; background-color: #fee2e2;">${removed.originalObjective.objective} ${removed.originalObjective.target} ${removed.originalObjective.unit || ''} (Deleted)</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; background-color: #fee2e2;">${removed.originalObjective.calculationFormula || ''}</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; background-color: #fee2e2;">${removed.originalObjective.actionPlanGuidelines || ''}</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; background-color: #fee2e2;">${removed.originalObjective.frequency}</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; background-color: #fee2e2;">${removed.originalObjective.referenceDocuments || '-'}</td>
-              <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; background-color: #fee2e2;">${responsibleText}</td>
-            </tr>
-          `;
-        }
-      }
-    } else {
-      tbodyRows = `
-        <tr>
-          <td colspan="7" style="text-align: center; border: 1px solid #000; padding: 16px; color: #94a3b8;">
-            ไม่มีข้อมูลสำหรับปี ${year} / No data for ${year}
-          </td>
-        </tr>
-      `;
-    }
+    const fragment = await this.getFmMr01PrintHtml(kpi, { logoUrl });
+    if (!fragment) return null;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -1602,127 +1584,11 @@ export class KpiService {
       <head>
         <meta charset="utf-8">
         <style>
-          @page {
-            size: A4 landscape;
-            margin: 10mm 8mm 8mm 8mm;
-          }
-          body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 10px;
-            color: #000;
-            line-height: 1.2;
-            background-color: #fff;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 4px;
-          }
-          td, th {
-            border: 1px solid #000;
-            padding: 4px 5px;
-            vertical-align: middle;
-          }
-          th {
-            background-color: #f3f4f6;
-            font-weight: bold;
-          }
-          .text-center {
-            text-align: center;
-          }
-          .font-bold {
-            font-weight: bold;
-          }
-          .signature-box {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 24px;
-            margin-bottom: 12px;
-          }
+          @page { size: A4 landscape; margin: 10mm 8mm 8mm 8mm; }
+          body { margin: 0; padding: 0; font-size: 10px; line-height: 1.2; background-color: #fff; }
         </style>
       </head>
-      <body>
-        <!-- Header Block -->
-        <table style="margin-bottom: 8px;">
-          <tbody>
-            <tr>
-              <td style="width: 20%; text-align: left; padding: 4px;">
-                <div style="display: flex; align-items: center; justify-content: flex-start; padding: 2px;">
-                  ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="height: 30px; object-fit: contain;" />` : ''}
-                </div>
-              </td>
-              <td style="width: 60%; text-align: center;">
-                <div class="font-bold" style="font-size: 14px; color: #0F1059;">วัตถุประสงค์คุณภาพ สิ่งแวดล้อม อาชีวอนามัยและความปลอดภัย ${year}</div>
-                <div class="font-bold" style="font-size: 12px; color: #0F1059;">Quality, Environment, Occupational Health and Safety Objectives ${year}</div>
-              </td>
-              <td style="width: 20%; padding: 4px; font-size: 9px;">
-                <div><strong>แผนงานประจำปี</strong></div>
-                <div>Annual Work Plan</div>
-                <div><strong>${footerPrefix}</strong></div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Objectives Table -->
-        <table style="margin-bottom: 12px;">
-          <thead>
-            <tr style="font-size: 9.5px;">
-              <th style="width: 15%;" class="text-center">หน่วยงาน<br/>Departments</th>
-              <th style="width: 25%;" class="text-center">วัตถุประสงค์และเป้าหมาย<br/>Objectives and Targets</th>
-              <th style="width: 12%;" class="text-center">สูตรการคำนวณ<br/>Calculation Formula</th>
-              <th style="width: 20%;" class="text-center">แนวทางแผนการดำเนินงาน<br/>Action Plan Guidelines</th>
-              <th style="width: 8%;" class="text-center">ความถี่ในการวัดผล<br/>Measurement Frequency</th>
-              <th style="width: 10%;" class="text-center">เอกสารอ้างอิง<br/>Reference Documents</th>
-              <th style="width: 10%;" class="text-center">ผู้รับผิดชอบ<br/>Responsible Person</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tbodyRows}
-          </tbody>
-        </table>
-
-        <!-- Bottom Signatures Block -->
-        <div class="signature-box">
-          <table style="width: 48%; border-collapse: collapse; table-layout: fixed;">
-            <tbody>
-              <tr>
-                <td style="width: 33%; border: 1px solid #000; padding: 8px 6px; text-align: center; vertical-align: top;">
-                  <div class="font-bold">ผู้จัดทำ / Prepared By</div>
-                  <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
-                    ${preparerSig?.signaturePath ? `<img src="${preparerSig.signaturePath}" alt="Preparer Signature" style="max-height: 42px; object-fit: contain;" />` : '<span style="color: #94a3b8;">ยังไม่ได้ลงชื่อ / Unsigned</span>'}
-                  </div>
-                  <div class="font-bold">(${kpi.prepare})</div>
-                  <div style="font-size: 8px; color: #475569; margin-top: 4px;">วันที่ / Date: ${preparerDate}</div>
-                </td>
-                <td style="width: 33%; border: 1px solid #000; padding: 8px 6px; text-align: center; vertical-align: top;">
-                  <div class="font-bold">ผู้ตรวจสอบ / Reviewed By</div>
-                  <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
-                    ${reviewerSig?.signaturePath ? `<img src="${reviewerSig.signaturePath}" alt="Reviewer Signature" style="max-height: 42px; object-fit: contain;" />` : '<span style="color: #94a3b8;">ยังไม่ได้ลงชื่อ / Unsigned</span>'}
-                  </div>
-                  <div class="font-bold">(${kpi.reviewer})</div>
-                  <div style="font-size: 8px; color: #475569; margin-top: 4px;">วันที่ / Date: ${reviewerDate}</div>
-                </td>
-                <td style="width: 33%; border: 1px solid #000; padding: 8px 6px; text-align: center; vertical-align: top;">
-                  <div class="font-bold">ผู้อนุมัติ / Approved By</div>
-                  <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
-                    ${approverSig?.signaturePath ? `<img src="${approverSig.signaturePath}" alt="Approver Signature" style="max-height: 42px; object-fit: contain;" />` : '<span style="color: #94a3b8;">ยังไม่ได้ลงชื่อ / Unsigned</span>'}
-                  </div>
-                  <div class="font-bold">(${kpi.approver})</div>
-                  <div style="font-size: 8px; color: #475569; margin-top: 4px;">วันที่ / Date: ${approverDate}</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Footer -->
-        <div style="font-size: 8px; text-align: right; margin-top: 6px; font-family: Arial, sans-serif; color: #000;">
-          ${footerPrefix} ${footerLabel}
-        </div>
-      </body>
+      <body>${fragment}</body>
       </html>
     `;
 
