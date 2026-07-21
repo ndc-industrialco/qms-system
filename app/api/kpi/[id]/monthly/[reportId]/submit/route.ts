@@ -2,7 +2,7 @@ import { NotificationService } from '@/services/notificationService';
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { requireAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { sendKpiMonthlyApprovalRequestEmail, makeBilingualMail } from '@/services/email';
@@ -13,7 +13,7 @@ const service = new KpiMonthlyService();
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   try {
-    const session = await requireAuth();
+    const session = await requireRole('QMS', 'MR', 'IT');
     const { reportId } = await params;
     const body = await _req.json().catch(() => ({}));
     const updated = await service.submitReport(reportId, {

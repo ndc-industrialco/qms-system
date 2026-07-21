@@ -20,6 +20,7 @@ type Props = {
   onCancel: () => void;
   loading?: boolean;
   danger?: boolean;
+  children?: React.ReactNode;
 };
 
 export default function ConfirmModal({
@@ -31,6 +32,7 @@ export default function ConfirmModal({
   onCancel,
   loading = false,
   danger = true,
+  children,
 }: Props) {
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) onCancel() }}>
@@ -46,6 +48,8 @@ export default function ConfirmModal({
           </div>
           <DialogDescription className="text-left mt-2">{message}</DialogDescription>
         </DialogHeader>
+
+        {children}
 
         <DialogFooter className="mt-4">
           <Button

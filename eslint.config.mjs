@@ -16,7 +16,7 @@ const ndcRules = require("./eslint-rules/index.js");
 
 const eslintConfig = [
   {
-    ignores: [".next/**", "generated/**", "node_modules/**", "next-env.d.ts", "docs/**", ".claude/**"],
+    ignores: [".next/**", "generated/**", "node_modules/**", "next-env.d.ts", "docs/**", ".claude/**", "public/**"],
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {

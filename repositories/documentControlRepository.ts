@@ -60,6 +60,7 @@ const DOC_SELECT = {
           requestDate: true,
         },
       },
+      distribution: { select: { id: true, linkToDocumentControl: true } },
     },
     orderBy: { createdAt: 'desc' as const },
   },
@@ -108,6 +109,91 @@ export class DocumentControlRepository extends BaseRepository<DocumentControl> {
 
   async findByDocNumber(docNumber: string, tx?: Prisma.TransactionClient): Promise<DocumentControlWithRelations | null> {
     return this.delegate(tx).findUnique({ where: { docNumber }, select: DOC_SELECT });
+  }
+
+  // --- Revision lookups for the Distribution feature ---
+  async findRevisionForDistribution(revisionId: string, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).documentControlRevision.findUnique({
+      where: { id: revisionId },
+      select: {
+        id: true, documentControlId: true, darMasterId: true, spItemId: true, fileName: true, mimeType: true,
+        documentControl: { select: { docNumber: true, docName: true } },
+      },
+    });
+  }
+
+  async findCandidateRevisionsByDarId(
+    darId: string,
+    filter?: { authDepartmentId?: string | null; departmentName?: string | null; categoryName?: string | null },
+    tx?: Prisma.TransactionClient,
+  ) {
+    const categoryName = filter?.categoryName?.trim();
+    const departmentName = filter?.departmentName?.trim();
+    const departmentFilter = filter?.authDepartmentId
+      ? { OR: [{ authDepartmentId: filter.authDepartmentId }, ...(departmentName ? [{ departmentName }] : [])] }
+      : departmentName
+        ? { departmentName }
+        : undefined;
+
+    return this.getClient(tx).documentControlRevision.findMany({
+      where: {
+        distribution: null,
+        documentControl: {
+          ...(departmentFilter ?? {}),
+          ...(categoryName ? { category: { name: { equals: categoryName, mode: "insensitive" } } } : {}),
+        },
+        OR: [{ darMasterId: darId }, { darMasterId: null }],
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true, revision: true, fileName: true, mimeType: true, createdAt: true,
+        darMasterId: true,
+        documentControl: { select: { docNumber: true, docName: true, departmentName: true, authDepartmentId: true, category: { select: { name: true } } } },
+      },
+    });
+  }
+
+  async findRevisionWithDocument(revisionId: string, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).documentControlRevision.findUnique({
+      where: { id: revisionId },
+      select: { id: true, documentControlId: true, darMasterId: true, spDriveId: true, spItemId: true, spWebUrl: true, spDownloadUrl: true, spFolderPath: true, fileName: true, fileSize: true, mimeType: true, revision: true, documentControl: { select: { docNumber: true, docName: true, departmentId: true, authDepartmentId: true, departmentName: true, categoryId: true } } },
+    });
+  }
+
+  async findRevisionsForDocument(documentControlId: string, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).documentControlRevision.findMany({
+      where: { documentControlId },
+      select: { revision: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async deleteRevision(documentControlId: string, revisionId: string, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).documentControlRevision.delete({
+      where: { id: revisionId, documentControlId },
+    });
+  }
+
+  async findDocControlDepartment(authDepartmentId: string | null, departmentName: string | null, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).docControlDept.findFirst({ where: { OR: [{ authDeptCode: authDepartmentId ?? "" }, { name: departmentName ?? "" }] } });
+  }
+
+  async findCategoryByDepartmentAndName(departmentId: string, name: string, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).documentCategory.findFirst({ where: { departmentId, name: { equals: name, mode: "insensitive" } } });
+  }
+
+  async findOrCreateCategory(departmentId: string, name: string, departmentName: string, authDepartmentId: string | null, tx?: Prisma.TransactionClient) {
+    const existing = await this.findCategoryByDepartmentAndName(departmentId, name, tx);
+    return existing ?? this.getClient(tx).documentCategory.create({ data: { departmentId, name, departmentName, authDepartmentId, description: "สร้างจาก Distribution setup" } });
+  }
+
+  async linkRevisionToDar(revisionId: string, darId: string, tx?: Prisma.TransactionClient) {
+    return this.getClient(tx).documentControlRevision.update({ where: { id: revisionId }, data: { darMasterId: darId } });
+  }
+
+  async createDocumentFromDar(data: { docNumber: string; docName: string; revision: string; description: string; departmentId: string; authDepartmentId: string | null; departmentName: string; categoryId: string; createdById: string; createdByAuthUserId: string | null; createdByName: string | null; spDriveId: string | null; spItemId: string; spWebUrl: string | null; fileName: string; mimeType: string }, darId: string, tx: Prisma.TransactionClient) {
+    const doc = await tx.documentControl.create({ data: { ...data, status: "ACTIVE" } });
+    return tx.documentControlRevision.create({ data: { documentControlId: doc.id, revision: data.revision, status: "ACTIVE", spDriveId: data.spDriveId, spItemId: data.spItemId, spWebUrl: data.spWebUrl, fileName: data.fileName, mimeType: data.mimeType, createdById: data.createdById, createdByAuthUserId: data.createdByAuthUserId, createdByName: data.createdByName, darMasterId: darId } });
   }
 
   async updateRevisionPaths(

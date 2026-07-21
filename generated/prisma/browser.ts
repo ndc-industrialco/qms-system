@@ -73,6 +73,11 @@ export type DarDistribution = Prisma.DarDistributionModel
  */
 export type DarAttachment = Prisma.DarAttachmentModel
 /**
+ * Model DarAttachmentAction
+ * 
+ */
+export type DarAttachmentAction = Prisma.DarAttachmentActionModel
+/**
  * Model DarApproval
  * 
  */
@@ -137,6 +142,16 @@ export type DocumentCategory = Prisma.DocumentCategoryModel
  * 
  */
 export type DocumentControlRevision = Prisma.DocumentControlRevisionModel
+/**
+ * Model DocumentDistribution
+ * 
+ */
+export type DocumentDistribution = Prisma.DocumentDistributionModel
+/**
+ * Model DocumentDistributionTarget
+ * 
+ */
+export type DocumentDistributionTarget = Prisma.DocumentDistributionTargetModel
 /**
  * Model AuditLog
  * 

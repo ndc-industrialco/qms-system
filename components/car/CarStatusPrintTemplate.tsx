@@ -2,6 +2,7 @@
 
 import PrintPageActions from "@/components/shared/PrintPageActions";
 import { CAR_STATUS_LABELS, type CarStatus } from "@/types/car";
+import { sanitizeRichTextHtml } from "@/lib/sanitizeRichText";
 
 interface StatusRow {
   id: string;
@@ -30,7 +31,7 @@ function PrintRichText({ content }: { content: string }) {
   if (!content) return <span>-</span>;
 
   if (isHtmlContent(content)) {
-    return <div className="print-rich-text" dangerouslySetInnerHTML={{ __html: content }} />;
+    return <div className="print-rich-text" dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(content) }} />;
   }
 
   return <>{content}</>;

@@ -145,6 +145,8 @@ model DarMaster {
   qmsProcessing           QmsProcessing?
   documentRevisions       DocumentControlRevision[]
   rejectionHistory        DarRejectionHistory[]
+  attachmentActions       DarAttachmentAction[]
+  documentDistributions   DocumentDistribution[]
 
   @@index([status])
   @@index([requesterId])
@@ -185,6 +187,7 @@ model DarAttachment {
   spWebUrl      String
   spDownloadUrl String
   folderPath    String
+  remark               String?   @db.Text
   darMasterId          String
   uploadedById         String
   uploadedByAuthUserId String?   @map("uploaded_by_auth_user_id")
@@ -196,6 +199,24 @@ model DarAttachment {
   @@index([darMasterId])
   @@index([spItemId])
   @@map("DarAttachment")
+}
+
+model DarAttachmentAction {
+  id              String    @id @default(uuid())
+  darMasterId     String    @map("dar_master_id")
+  darMaster       DarMaster @relation(fields: [darMasterId], references: [id], onDelete: Cascade)
+  attachmentId    String?   @map("attachment_id")
+  fileName        String    @map("file_name")
+  action          String
+  remark          String?   @db.Text
+  actorId         String    @map("actor_id")
+  actorAuthUserId String?   @map("actor_auth_user_id")
+  actorName       String?   @map("actor_name")
+  actorRole       String    @map("actor_role")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([darMasterId])
+  @@map("dar_attachment_actions")
 }
 
 model DarApproval {
@@ -605,10 +626,53 @@ model DocumentControlRevision {
   documentControl DocumentControl @relation(fields: [documentControlId], references: [id], onDelete: Cascade)
   darMasterId     String?          @map("dar_master_id")
   darMaster       DarMaster?       @relation(fields: [darMasterId], references: [id], onDelete: SetNull)
+  distribution    DocumentDistribution?
 
   @@index([documentControlId])
   @@index([status])
   @@map("DocumentControlRevision")
+}
+
+model DocumentDistribution {
+  id                     String    @id @default(uuid())
+  darMasterId            String    @map("dar_master_id")
+  darMaster              DarMaster @relation(fields: [darMasterId], references: [id])
+  revisionId             String    @unique @map("revision_id")
+  revision               DocumentControlRevision @relation(fields: [revisionId], references: [id])
+  stampImageKey          String    @map("stamp_image_key")
+  stampImageBox          Json      @map("stamp_image_box")
+  dateFieldBox           Json      @map("date_field_box")
+  copyToFieldBox         Json      @map("copy_to_field_box")
+  basePdfSpItemId        String?   @map("base_pdf_sp_item_id")
+  basePdfSpWebUrl        String?   @map("base_pdf_sp_web_url")
+  status                 String    @default("PUBLISHED")
+  linkToDocumentControl  Boolean   @default(true) @map("link_to_document_control")
+  publishedById          String    @map("published_by_id")
+  publishedByAuthUserId  String?   @map("published_by_auth_user_id")
+  publishedByName        String?   @map("published_by_name")
+  publishedAt            DateTime  @default(now()) @map("published_at")
+  targets                DocumentDistributionTarget[]
+
+  @@index([darMasterId])
+  @@map("document_distributions")
+}
+
+model DocumentDistributionTarget {
+  id               String   @id @default(uuid())
+  distributionId   String   @map("distribution_id")
+  distribution     DocumentDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  departmentId     String   @map("department_id")
+  departmentCode   String   @map("department_code")
+  departmentName   String   @map("department_name")
+  downloadedAt     DateTime? @map("downloaded_at")
+  downloadedById   String?  @map("downloaded_by_id")
+  downloadedByName String?  @map("downloaded_by_name")
+  finalPdfSpItemId String?  @map("final_pdf_sp_item_id")
+  finalPdfSpWebUrl String?  @map("final_pdf_sp_web_url")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@unique([distributionId, departmentId])
+  @@map("document_distribution_targets")
 }
 
 enum DocControlStatus {

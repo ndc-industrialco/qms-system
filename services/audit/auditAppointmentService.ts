@@ -3,6 +3,7 @@
  */
 import { db } from "@/lib/db";
 import { AuditService } from "@/services/auditService";
+import { notifyApprovalConfigQms } from "@/services/approvalConfigNotifier";
 import { AuditAppointmentRepository } from "@/repositories/audit/auditAppointmentRepository";
 import { NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
@@ -647,6 +648,12 @@ export class AuditAppointmentService {
           ).catch((err) => logger.warn("[appointment] member publish notify failed", { memberId: m.authUserId, error: String(err) }))
         )
     );
+
+    notifyApprovalConfigQms("AUDIT_APPOINTMENT", {
+      title: `ประกาศแต่งตั้งผู้ตรวจติดตาม — ${updated.appointmentNo}`,
+      body: `การแต่งตั้ง "${updated.title}" (ปี ${updated.year}) ได้รับการอนุมัติและประกาศใช้แล้ว`,
+      module: "AUDIT", resourceId: id, resourceType: "AUDIT_APPOINTMENT",
+    }).catch(() => {});
 
     return updated;
   }

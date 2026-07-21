@@ -8,13 +8,15 @@ import { Trash2 } from "lucide-react";
 import { ActionPillButton } from "@/components/common/ActionButtons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import type { DarStatus } from "@/types/dar";
 
 interface Props {
   darId: string;
   darNo: string | null;
+  darStatus?: DarStatus;
 }
 
-export default function QmsDarActions({ darId, darNo }: Props) {
+export default function QmsDarActions({ darId, darNo, darStatus }: Props) {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +49,16 @@ export default function QmsDarActions({ darId, darNo }: Props) {
         >
           <Link href={`/dar/${darId}/edit`} />
         </ActionPillButton>
+
+        {darStatus === "COMPLETED" && (
+          <ActionPillButton
+            tone="edit"
+            label="แจกจ่ายเอกสาร"
+            asChild
+          >
+            <Link href={`/qms/distribution/publish/${darId}`} />
+          </ActionPillButton>
+        )}
 
         <ActionPillButton
           tone="delete"

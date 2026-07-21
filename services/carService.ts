@@ -14,6 +14,7 @@ import type { CarCreateInput, CarUpdateInput, CarRespondInput, CarVerifyInput, C
 import type { CarStatus, CarSourceType, VerificationResult } from "@/generated/prisma/client";
 import type { CarListScope } from "@/types/car";
 import { sendCarIssuedEmail, sendCarReminderEmail, sendCarRespondedEmail, sendCarMrReviewRequestEmail, sendCarPlanApprovedEmail, sendCarPlanRejectedEmail, sendCarVerifyPassEmail, sendCarVerify2DateRequestEmail, sendCarVerify2NotifyEmail, sendCarReCarEmail, sendCarClosedEmail } from "@/services/carEmailService";
+import { notifyApprovalConfigQms } from "@/services/approvalConfigNotifier";
 import { CarReminderService } from "@/services/carReminderService";
 import { notifyCarUser, canReceiveEmail } from "@/services/carNotificationService";
 import type { PaginatedResult } from "@/repositories/baseRepository";
@@ -1484,6 +1485,13 @@ export class CarService {
         logger.error("[CarService.notifyCarClosed] Email failed", err)
       );
     }
+
+    // In-app notification to the QMS person configured in approval-config (module-specific key).
+    notifyApprovalConfigQms("CAR", {
+      title: "CAR ปิดเรียบร้อย",
+      body: `CAR ${car.carNo} ได้รับการปิดเรียบร้อยแล้ว`,
+      module: "CAR", resourceId: id, resourceType: "CAR",
+    }).catch(() => {});
 
     // Best-effort: also reach every current member of the target department (membership may have
     // changed since the CAR was issued), skipping anyone already notified above.

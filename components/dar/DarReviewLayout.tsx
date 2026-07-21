@@ -101,6 +101,7 @@ export default function DarReviewLayout({
             savedSignatureType={savedSignatureType}
             readOnly
             hideApprovalPanel
+            allowAttachmentEdit={canAct}
           />
         </div>
 

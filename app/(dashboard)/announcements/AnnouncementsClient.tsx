@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocale } from "@/lib/locale-context";
 import { useT } from "@/lib/i18n";
 import AnnouncementViewModal from "@/components/announcements/AnnouncementViewModal";
+import RichTextView from "@/components/shared/RichTextView";
 import type { AnnouncementRow } from "@/services/announcementService";
 import { CalendarDays, Link as LinkIcon } from "lucide-react";
 import { SOURCE_BRAND_COLORS } from "@/lib/module-colors";
@@ -108,9 +109,10 @@ export default function AnnouncementsClient({ initialData }: Props) {
                   <h3 className="text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors leading-snug">
                     {a.title}
                   </h3>
-                  <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
-                    {a.content}
-                  </p>
+                  <RichTextView
+                    content={a.content}
+                    className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed"
+                  />
                 </div>
                 {a.spWebUrl && (
                   <a

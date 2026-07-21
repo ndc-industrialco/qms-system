@@ -42,6 +42,7 @@ interface Props {
   isQms?: boolean;
   readOnly?: boolean;
   hideApprovalPanel?: boolean;
+  allowAttachmentEdit?: boolean;
 }
 
 const card =
@@ -105,11 +106,13 @@ export default function DarReadOnlyDetail({
   isQms = false,
   readOnly = false,
   hideApprovalPanel = false,
+  allowAttachmentEdit = false,
 }: Props) {
   const t = useT();
   const locale = useLocale();
   const isDraft = dar.status === "DRAFT";
   const canManageDar = isQms || isDraft;
+  const attachmentsEditable = allowAttachmentEdit || (!readOnly && canManageDar);
   const rejected = dar.approvals.find((approval) => approval.action === "REJECTED");
   const [previewTarget, setPreviewTarget] = useState<FilePreviewTarget | null>(null);
 
@@ -307,7 +310,7 @@ export default function DarReadOnlyDetail({
               Export PDF
             </Link>
             {isQms ? (
-              <QmsDarActions darId={dar.id} darNo={dar.darNo} />
+              <QmsDarActions darId={dar.id} darNo={dar.darNo} darStatus={dar.status} />
             ) : isDraft ? (
               <DarDraftActions darId={dar.id} previousReviewer={previousReviewer} />
             ) : null}
@@ -494,11 +497,40 @@ export default function DarReadOnlyDetail({
             mode="saved"
             darId={dar.id}
             initialAttachments={dar.attachments}
-            canEdit={!readOnly && !!currentUserId && canManageDar}
-            readOnly={readOnly}
+            canEdit={!!currentUserId && attachmentsEditable}
+            readOnly={!attachmentsEditable}
           />
         </div>
       </div>
+
+      {dar.attachmentActions.length > 0 ? (
+        <div className={card}>
+          <div className={cardHead}>
+            <div className="flex items-center gap-2">
+              <History className="h-4 w-4 text-blue-500" />
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">
+                {isTh ? "ประวัติการแก้ไขไฟล์แนบ" : "Attachment Edit History"}
+              </h2>
+            </div>
+          </div>
+          <div className={cardBody}>
+            <ul className="flex flex-col gap-2">
+              {dar.attachmentActions.map((h) => (
+                <li key={h.id} className="rounded-lg bg-slate-50 px-3 py-2 text-[13px]">
+                  <p className="text-slate-700">
+                    <span className={h.action === "DELETE" ? "text-error font-semibold" : "text-success font-semibold"}>
+                      {h.action === "DELETE" ? (isTh ? "ลบ" : "Deleted") : (isTh ? "เพิ่ม" : "Added")}
+                    </span>{" "}
+                    &ldquo;{h.fileName}&rdquo; {isTh ? "โดย" : "by"} {h.actorName ?? "-"} ({h.actorRole})
+                  </p>
+                  {h.remark && <p className="text-slate-500 mt-0.5">{isTh ? "หมายเหตุ" : "Remark"}: {h.remark}</p>}
+                  <p className="text-slate-400 text-[11px] mt-0.5">{fmtDate(h.createdAt)}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : null}
 
       {rejectionHistoryEntries.length > 0 ? (
         <div className={card}>

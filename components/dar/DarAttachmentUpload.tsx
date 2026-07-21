@@ -227,11 +227,11 @@ function DropZone({ uploading, onFiles }: { uploading: boolean; onFiles: (f: Fil
 // ── File row ──────────────────────────────────────────────────────────────────
 function FileRow({
   fileName, fileSize, mimeType, spWebUrl: _spWebUrl, spDownloadUrl: _spDownloadUrl, folderPath,
-  label, onPreview, onDelete, deleting,
+  label, remark, onPreview, onDelete, deleting,
 }: {
   fileName: string; fileSize: number; mimeType: string;
   spWebUrl: string; spDownloadUrl: string; folderPath: string;
-  label?: string; onPreview: () => void; onDelete?: () => void; deleting?: boolean;
+  label?: string; remark?: string | null; onPreview: () => void; onDelete?: () => void; deleting?: boolean;
   spItemId?: string;
 }) {
   return (
@@ -250,6 +250,7 @@ function FileRow({
           {label && <> · <span className="text-warning">{label}</span></>}
         </p>
         <p className="text-[11px] text-neutral opacity-50 truncate">{folderPath}</p>
+        {remark && <p className="text-[11px] text-info mt-0.5">หมายเหตุ: {remark}</p>}
       </div>
       <div className="flex items-center gap-1 shrink-0">
         {/* Preview */}
@@ -285,6 +286,8 @@ export default function DarAttachmentUpload(props: Props) {
   const [tempItems, setTempItems] = useState<TempItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<FilePreviewTarget | null>(null);
+  const [uploadRemark, setUploadRemark] = useState("");
+  const [deleteRemark, setDeleteRemark] = useState("");
 
   // Keep a ref to the latest callback so the effect below never goes stale
   const onTempItemsChangeRef = useRef(props.mode === "temp" ? props.onTempItemsChange : undefined);
@@ -307,6 +310,7 @@ export default function DarAttachmentUpload(props: Props) {
         const safeName = encodeURIComponent(file.name);
         form.append("file", file, safeName);
         form.append("filename", file.name);
+        if (props.mode === "saved" && uploadRemark.trim()) form.append("remark", uploadRemark.trim());
         try {
           if (props.mode === "saved") {
             const res = await fetch(`/api/dar/${props.darId}/attachments`, { method: "POST", body: form });
@@ -332,6 +336,7 @@ export default function DarAttachmentUpload(props: Props) {
         else setTempItems((prev) => [...prev, r.data as TempItem]);
       });
       if (errors.length) setError(errors.join("\n"));
+      else setUploadRemark("");
     },
     onError: (err) => setError(err instanceof Error ? err.message : "อัปโหลดล้มเหลว"),
   });
@@ -349,9 +354,13 @@ export default function DarAttachmentUpload(props: Props) {
   }
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, remark }: { id: string; remark: string }) => {
       const darId = props.mode === "saved" ? props.darId : "";
-      const res = await fetch(`/api/dar/${darId}/attachments/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/dar/${darId}/attachments/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ remark: remark.trim() || null }),
+      });
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error || "ลบไม่สำเร็จ");
       return id;
@@ -365,7 +374,8 @@ export default function DarAttachmentUpload(props: Props) {
     if (props.mode !== "saved") return;
     setConfirmDeleteId(null);
     setDeletingId(id);
-    deleteMutation.mutate(id);
+    deleteMutation.mutate({ id, remark: deleteRemark });
+    setDeleteRemark("");
   }
 
   function handleDeleteTemp(localId: string) {
@@ -384,6 +394,15 @@ export default function DarAttachmentUpload(props: Props) {
   return (
     <>
       <div className="flex flex-col gap-3">
+        {canEdit && props.mode === "saved" && (
+          <textarea
+            value={uploadRemark}
+            onChange={(e) => setUploadRemark(e.target.value)}
+            placeholder="หมายเหตุสำหรับไฟล์ที่จะอัปโหลด (ถ้ามี)"
+            rows={2}
+            className="w-full text-[13px] rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        )}
         {canEdit && <DropZone uploading={uploadMutation.isPending} onFiles={handleFiles} />}
 
         {error && (
@@ -412,6 +431,7 @@ export default function DarAttachmentUpload(props: Props) {
                   <FileRow key={a.id}
                     fileName={a.fileName} fileSize={a.fileSize} mimeType={a.mimeType}
                     spWebUrl={a.spWebUrl} spDownloadUrl={a.spDownloadUrl} folderPath={a.folderPath}
+                    remark={a.remark}
                     onPreview={() => setPreview({ fileName: a.fileName, mimeType: a.mimeType, sharePointItemId: a.spItemId, spDownloadUrl: a.spDownloadUrl, fileUrl: a.spWebUrl })}
                     onDelete={props.mode === "saved" && props.canEdit ? () => setConfirmDeleteId(a.id) : undefined}
                     deleting={deletingId === a.id}
@@ -445,8 +465,16 @@ export default function DarAttachmentUpload(props: Props) {
           loading={deletingId === confirmDeleteId}
           danger
           onConfirm={() => executeDeleteSaved(confirmDeleteId)}
-          onCancel={() => setConfirmDeleteId(null)}
-        />
+          onCancel={() => { setConfirmDeleteId(null); setDeleteRemark(""); }}
+        >
+          <textarea
+            value={deleteRemark}
+            onChange={(e) => setDeleteRemark(e.target.value)}
+            placeholder="หมายเหตุการลบไฟล์ (ถ้ามี)"
+            rows={2}
+            className="w-full text-[13px] rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        </ConfirmModal>
       )}
     </>
   );

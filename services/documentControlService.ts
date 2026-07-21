@@ -90,7 +90,7 @@ export class DocumentControlService {
   async listDocuments(
     page: number,
     limit: number,
-    filters?: { search?: string; categoryId?: string; status?: string; sortBy?: string; sortOrder?: string },
+    filters?: { search?: string; categoryId?: string; departmentId?: string; status?: string; sortBy?: string; sortOrder?: string },
   ) {
     const where: Prisma.DocumentControlWhereInput = {};
 
@@ -103,6 +103,9 @@ export class DocumentControlService {
 
     if (filters?.categoryId) {
       where.categoryId = filters.categoryId;
+    }
+    if (filters?.departmentId) {
+      where.departmentId = filters.departmentId;
     }
 
     if (filters?.status) {
@@ -378,10 +381,44 @@ export class DocumentControlService {
     return this._formatDocDetail(updatedDoc);
   }
 
+  async nextRevision(documentControlId: string): Promise<string> {
+    const revisions = await this.repo.findRevisionsForDocument(documentControlId);
+    const numeric = revisions
+      .map((item) => ({ raw: item.revision.trim(), value: Number(item.revision) }))
+      .filter((item) => Number.isInteger(item.value) && item.value >= 0);
+    if (numeric.length) {
+      const next = Math.max(...numeric.map((item) => item.value)) + 1;
+      const width = Math.max(...numeric.map((item) => /^0\d+$/.test(item.raw) ? item.raw.length : 0));
+      return String(next).padStart(width, "0");
+    }
+    const alpha = revisions.map((item) => item.revision.trim().toUpperCase()).filter((value) => /^[A-Z]$/.test(value)).map((value) => value.charCodeAt(0));
+    if (alpha.length) return String.fromCharCode(Math.max(...alpha) + 1);
+    return "1";
+  }
+
+  async deleteRevision(documentControlId: string, revisionId: string, actorRole: string) {
+    if (!['QMS', 'IT'].includes(actorRole)) throw new ValidationError('Only QMS or IT can delete a revision');
+
+    const doc = await this.repo.findDetailById(documentControlId);
+    if (!doc) throw new NotFoundError('Document');
+    const revision = doc.revisions.find((item) => item.id === revisionId);
+    if (!revision) throw new NotFoundError('Revision');
+    if (revision.status === 'ACTIVE') throw new ValidationError('The active revision cannot be deleted');
+    if (revision.distribution) throw new ValidationError('A distributed revision cannot be deleted');
+
+    if (revision.spItemId) await deleteSpItem(revision.spItemId);
+    await this.repo.deleteRevision(documentControlId, revisionId);
+    return { id: revisionId };
+  }
+
   async deleteDocument(id: string, actorUserId?: string) {
     const doc = await this.repo.findDetailById(id);
     if (!doc) {
       throw new NotFoundError('Document');
+    }
+
+    if (doc.revisions.some((revision) => revision.distribution)) {
+      throw new ValidationError('Published documents cannot be deleted. Remove the distribution first.');
     }
 
     if (doc.spFolderPath) {

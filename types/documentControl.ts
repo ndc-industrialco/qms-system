@@ -56,6 +56,7 @@ export interface DocumentControlRevisionDetail {
   createdAt: string;
   darMasterId?: string | null;
   darMaster?: { id: string; darNo: string | null; objective: string } | null;
+  distribution?: { id: string; linkToDocumentControl: boolean } | null;
 }
 
 export interface DocumentControlDetail extends DocumentControlSummary {

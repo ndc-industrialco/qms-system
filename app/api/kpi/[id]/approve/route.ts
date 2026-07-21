@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { KpiService } from '@/services/kpiService';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { sendKpiResultEmail, makeBilingualMail } from '@/services/email';
+import { notifyApprovalConfigQms } from '@/services/approvalConfigNotifier';
 
 const service = new KpiService();
 
@@ -78,6 +79,12 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       session.user.accessToken,
       { title: 'KPI ได้รับการอนุมัติ', body: `KPI ${updated.department} ${updated.yearly} ได้รับการอนุมัติ`, module: 'KPI', resourceId: id, resourceType: 'KPI' },
     ).catch(() => {});
+
+    await notifyApprovalConfigQms('KPI', {
+      title: 'KPI ได้รับการอนุมัติ',
+      body: `${displayDept} ปี ${updated.yearly} ได้รับการอนุมัติ`,
+      module: 'KPI', resourceId: id, resourceType: 'KPI',
+    });
 
     return sendSuccess(updated, 'KPI approved successfully');
   } catch (error) {

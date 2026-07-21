@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireRole } from '@/lib/auth';
 import { createCorrectiveActionSchema } from '@/schemas/kpiSchema';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 
@@ -20,7 +20,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ det
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ detailId: string }> }) {
   try {
-    await requireAuth();
+    await requireRole('QMS', 'MR', 'IT');
     const { detailId } = await params;
     const body = createCorrectiveActionSchema.omit({ monthlyDetailId: true }).parse(await request.json());
     const created = await service.addCorrectiveAction({ ...body, monthlyDetailId: detailId, dueDate: new Date(body.dueDate) });

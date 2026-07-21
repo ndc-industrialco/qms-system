@@ -25,6 +25,8 @@ The rules here are grounded in the live repository sources:
   Loading, empty, error, confirmation, notification, and attachment/download behavior.
 - `06-module-patterns-and-exceptions.md`
   Cross-module reusable patterns, approved/conditional exceptions, drift found by the audit, and rollout guidance for other apps.
+- `07-text-card-standard.md`
+  Standard Text Card specification (shadow, border, rounded-2xl) with copy-paste implementations for HTML/CSS, Tailwind v3/v4, React/Next.js, and Vue 3.
 
 ## How To Use In Another System
 

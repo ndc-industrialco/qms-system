@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
       limit: searchParams.get('limit') || undefined,
       search: searchParams.get('search') || undefined,
       categoryId: searchParams.get('categoryId') || undefined,
+      departmentId: searchParams.get('departmentId') || undefined,
       status: searchParams.get('status') || undefined,
       sortBy: searchParams.get('sortBy') || undefined,
       sortOrder: searchParams.get('sortOrder') || undefined,
@@ -25,6 +26,7 @@ export async function GET(req: NextRequest) {
     const result = await docService.listDocuments(parsed.page, parsed.limit, {
       search: parsed.search,
       categoryId: parsed.categoryId,
+      departmentId: parsed.departmentId,
       status: parsed.status,
       sortBy: parsed.sortBy,
       sortOrder: parsed.sortOrder,

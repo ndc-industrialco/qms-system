@@ -15,6 +15,7 @@ import {
   House,
   Megaphone,
   Search,
+  Send,
   Settings,
   ShieldCheck,
   User,
@@ -73,6 +74,12 @@ function getSections(
       labelEn: "Document Control",
       href: "/qms/document-controls",
       icon: <FolderOpen className="h-4.5 w-4.5 shrink-0" />,
+    },
+    {
+      labelTh: "เอกสารรอรับทราบ",
+      labelEn: "Pending Documents",
+      href: "/distribution",
+      icon: <Send className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "วัตถุประสงค์ KPI",
@@ -143,6 +150,12 @@ function getSections(
       labelEn: "Manage DAR",
       href: "/qms/dar",
       icon: <ShieldCheck className="h-4.5 w-4.5 shrink-0" />,
+    },
+    {
+      labelTh: "การแจกจ่ายเอกสาร",
+      labelEn: "Document Distribution",
+      href: "/qms/distribution",
+      icon: <Send className="h-4.5 w-4.5 shrink-0" />,
     },
     {
       labelTh: "CAR (คำร้องขอแก้ไข)",

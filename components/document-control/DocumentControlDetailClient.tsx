@@ -59,6 +59,7 @@ export function DocumentControlDetailClient({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [revisionToDelete, setRevisionToDelete] = useState<DocumentControlRevisionDetail | null>(null);
   const [previewTarget, setPreviewTarget] = useState<FilePreviewTarget | null>(null);
 
   const { data: downloadLogsData, refetch: refetchLogs } = useQuery<DownloadLogRow[]>({
@@ -96,6 +97,21 @@ export function DocumentControlDetailClient({
     onSuccess: () => {
       toast.success(t('documentControl.messages.deleteSuccess'));
       router.push('/qms/document-controls');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const deleteRevisionMutation = useMutation({
+    mutationFn: async (revisionId: string) => {
+      const res = await fetch(`/api/document-controls/${document.id}/revisions/${revisionId}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error?.message ?? json.error ?? 'Failed to delete revision');
+      return json;
+    },
+    onSuccess: () => {
+      toast.success('Revision deleted');
+      setRevisionToDelete(null);
+      router.refresh();
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -254,7 +270,7 @@ export function DocumentControlDetailClient({
                 <tbody>
                   {document.revisions.map((rev) => {
                     const revisionPreviewTarget =
-                      document.status === 'ACTIVE'
+                      document.status === 'ACTIVE' && rev.status === 'ACTIVE'
                         ? buildPreviewTarget(rev.fileName, rev.mimeType, rev.spItemId, rev.spDownloadUrl)
                         : null;
 
@@ -281,6 +297,14 @@ export function DocumentControlDetailClient({
                           ) : (
                             '-'
                           )}
+                          {rev.distribution?.linkToDocumentControl && (
+                            <a
+                              href={`/qms/distribution/${rev.distribution.id}`}
+                              className="ml-2 inline-block text-[10px] font-semibold text-info bg-info/10 rounded-full px-2 py-0.5 hover:underline"
+                            >
+                              แจกจ่ายแล้ว
+                            </a>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-slate-500">{rev.createdBy?.name || '-'}</td>
                         <td className="px-4 py-3 font-mono text-xs text-slate-500">{formatDate(rev.createdAt)}</td>
@@ -304,6 +328,11 @@ export function DocumentControlDetailClient({
                                 className="h-9 text-primary hover:bg-slate-100"
                               >
                                 {t('documentControl.button.download')}
+                              </Button>
+                            )}
+                            {canDelete && rev.status !== 'ACTIVE' && (
+                              <Button size="sm" variant="ghost" onClick={() => setRevisionToDelete(rev)} className="h-9 text-rose-600 hover:bg-rose-50">
+                                Delete
                               </Button>
                             )}
                           </div>
@@ -402,6 +431,19 @@ export function DocumentControlDetailClient({
           danger
           onConfirm={() => deleteMutation.mutate()}
           onCancel={() => setShowDeleteDialog(false)}
+        />
+      )}
+
+      {revisionToDelete && (
+        <ConfirmModal
+          title="Delete revision"
+          message={`Delete revision ${revisionToDelete.revision}? This cannot be undone.`}
+          confirmLabel={deleteRevisionMutation.isPending ? t('common.loading') : t('common.delete')}
+          cancelLabel={t('common.cancel')}
+          loading={deleteRevisionMutation.isPending}
+          danger
+          onConfirm={() => deleteRevisionMutation.mutate(revisionToDelete.id)}
+          onCancel={() => setRevisionToDelete(null)}
         />
       )}
 

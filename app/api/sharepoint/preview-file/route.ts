@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getFileInfo } from "@/lib/sharepoint";
+import { assertSpItemTracked } from "@/lib/spItemAccess";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { z } from "zod";
 
@@ -14,7 +15,7 @@ function encodeFilename(name: string) {
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAuth();
+    const session = await requireAuth();
 
     const parsed = querySchema.safeParse({
       itemId: req.nextUrl.searchParams.get("itemId"),
@@ -22,6 +23,8 @@ export async function GET(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: "itemId is required" }, { status: 400 });
     }
+
+    await assertSpItemTracked(parsed.data.itemId, session.user.role);
 
     const info = await getFileInfo(parsed.data.itemId);
     if (!info.downloadUrl) {

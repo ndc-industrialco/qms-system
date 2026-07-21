@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import type { Announcement } from "@/generated/prisma/client";
 import { LocaleContext } from "@/lib/locale-context";
 import { useT } from "@/lib/i18n";
+import RichTextView from "@/components/shared/RichTextView";
 
 const SOURCE_ACCENT: Record<string, string> = {
   QMS: "#38BDF8", IT: "#A78BFA", HR: "#F472B6", GA: "#34D399", SAFETY: "#FB923C",
@@ -61,7 +62,11 @@ export default function HeroBanner({ announcements }: { announcements: Announcem
               style={{ color: textCol, textShadow: `0 0 60px ${accent}22` }}>
               {slide.title}
             </h1>
-            <p className="text-sm leading-relaxed max-w-xl line-clamp-2" style={{ color: `${textCol}99` }}>{slide.content}</p>
+            <RichTextView
+              content={slide.content}
+              className="text-sm leading-relaxed max-w-xl line-clamp-2"
+              style={{ color: `${textCol}99` }}
+            />
             {slide.spWebUrl && (
               <a href={slide.spWebUrl} target="_blank" rel="noopener noreferrer"
                 className="mt-5 h-11 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider w-fit px-4 rounded-xl transition-all duration-150 hover:scale-[1.04]"

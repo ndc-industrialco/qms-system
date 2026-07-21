@@ -6,6 +6,7 @@
 
 import { db } from "@/lib/db";
 import { AuditService } from "@/services/auditService";
+import { notifyApprovalConfigQms } from "@/services/approvalConfigNotifier";
 import { AuditPlanRepository } from "@/repositories/audit/auditPlanRepository";
 
 const planRepo = new AuditPlanRepository();
@@ -322,6 +323,12 @@ export async function approvePlan(planId: string, actor: Actor) {
       logger.error("[auditWorkflow] approved reviewer-notify failed", { planId, error: String(err) });
     });
   }
+
+  notifyApprovalConfigQms("AUDIT", {
+    title: `แผนการตรวจติดตามได้รับการอนุมัติ — ${updated.auditNo}`,
+    body: `แผน "${updated.title}" ได้รับการอนุมัติเรียบร้อยแล้ว`,
+    module: "AUDIT", resourceId: planId, resourceType: "AUDIT",
+  }).catch(() => {});
 
   return updated;
 }

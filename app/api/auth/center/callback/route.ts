@@ -24,6 +24,9 @@ export async function GET(req: NextRequest) {
     const user = await handleAuthCenterCallback(rawToken);
     const loginAt = new Date().toISOString();
 
+    // Cookie must expire with the Auth Center token, not outlive it.
+    const maxAge = Math.max(0, Math.floor((Date.parse(user.expiresAt) - Date.now()) / 1000));
+
     const isProduction = process.env.NODE_ENV === "production";
     // Must match the cookie name configured in auth.config.ts cookies.sessionToken.name
     const cookieName = isProduction
@@ -52,7 +55,7 @@ export async function GET(req: NextRequest) {
       },
       secret: process.env.AUTH_SECRET!,
       salt: cookieName,
-      maxAge: 60 * 60 * 24 * 30, // 30 days — matches Auth Center token TTL
+      maxAge,
     });
 
     const cookieStore = await cookies();
@@ -61,7 +64,7 @@ export async function GET(req: NextRequest) {
       secure: isProduction,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge,
     });
 
     try {

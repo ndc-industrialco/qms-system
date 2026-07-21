@@ -69,8 +69,20 @@ export default auth(async (req) => {
   requestHeaders.set("x-request-id", requestId);
 
   if (path.startsWith("/api/")) {
+    // API consumers (including PDF iframes) must receive a machine-readable
+    // 401 instead of being redirected to the app root/Auth Center HTML page.
+    if (!session?.user) {
+      logRequest(req.method, path, 401, ip, requestId);
+      return withRequestId(
+        NextResponse.json(
+          { success: false, error: { message: "Unauthorized", code: "UNAUTHORIZED" } },
+          { status: 401 },
+        ),
+        requestId,
+      );
+    }
+
     if (
-      session?.user &&
       path !== "/api/auth/signout" &&
       isAuthCenterAccessTokenExpired(session.user.accessTokenExpiresAt, undefined, session.user.accessToken)
     ) {
@@ -177,6 +189,7 @@ export default auth(async (req) => {
 
   if (
     path.startsWith("/qms/") &&
+    !path.startsWith("/qms/distribution") &&
     !path.startsWith("/qms/document-controls") &&
     !path.startsWith("/qms/kpi") &&
     !hasQmsRole(role, "QMS", "MR", "IT", "QMS_QMS", "QMS_MR", "QMS_IT")
@@ -195,5 +208,5 @@ export default auth(async (req) => {
 });
 
 export const config = {
-  matcher: "/((?!_next/static|_next/image|favicon.ico|api/sharepoint/upload-file|api/sharepoint/preview-file|api/dar/attachments/temp|api/announcements|api/audit/attachments/upload|api/audit/schedules/[^/]+/submit-checklist|api/car/response/[^/]+/attachments|api/dar/[^/]+/attachments|api/document-controls/[^/]+/upload|api/kpi/[^/]+/monthly/[^/]+/attachment|.*\\.png|.*\\.webp|.*\\.jpg|.*\\.jpeg|.*\\.svg).*)",
+  matcher: "/((?!_next/static|_next/image|favicon.ico|api/auth/center/callback|api/sharepoint/upload-file|api/sharepoint/preview-file|api/distribution/[^/]+/preview|api/dar/attachments/temp|api/announcements|api/audit/attachments/upload|api/audit/schedules/[^/]+/submit-checklist|api/car/response/[^/]+/attachments|api/dar/[^/]+/attachments|api/document-controls/[^/]+/upload|api/kpi/[^/]+/monthly/[^/]+/attachment|.*\\.png|.*\\.webp|.*\\.jpg|.*\\.jpeg|.*\\.svg).*)",
 };

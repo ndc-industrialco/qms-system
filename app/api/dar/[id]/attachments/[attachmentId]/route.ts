@@ -13,12 +13,16 @@ type Params = { params: Promise<{ id: string; attachmentId: string }> };
 
 const darService = new DarService();
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     const session = await requireAuth();
     const { id: darId, attachmentId } = paramSchema.parse(await params);
+    const remark = await req
+      .json()
+      .then((body: { remark?: string | null }) => body?.remark ?? null)
+      .catch(() => null);
 
-    await darService.deleteAttachment(darId, attachmentId, session.user.id, session.user.role);
+    await darService.deleteAttachment(darId, attachmentId, session.user.id, session.user.role, remark);
 
     return NextResponse.json({ data: null, error: null });
   } catch (err) {

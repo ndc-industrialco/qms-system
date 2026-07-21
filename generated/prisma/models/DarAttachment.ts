@@ -43,6 +43,7 @@ export type DarAttachmentMinAggregateOutputType = {
   spWebUrl: string | null
   spDownloadUrl: string | null
   folderPath: string | null
+  remark: string | null
   darMasterId: string | null
   uploadedById: string | null
   uploadedByAuthUserId: string | null
@@ -59,6 +60,7 @@ export type DarAttachmentMaxAggregateOutputType = {
   spWebUrl: string | null
   spDownloadUrl: string | null
   folderPath: string | null
+  remark: string | null
   darMasterId: string | null
   uploadedById: string | null
   uploadedByAuthUserId: string | null
@@ -75,6 +77,7 @@ export type DarAttachmentCountAggregateOutputType = {
   spWebUrl: number
   spDownloadUrl: number
   folderPath: number
+  remark: number
   darMasterId: number
   uploadedById: number
   uploadedByAuthUserId: number
@@ -101,6 +104,7 @@ export type DarAttachmentMinAggregateInputType = {
   spWebUrl?: true
   spDownloadUrl?: true
   folderPath?: true
+  remark?: true
   darMasterId?: true
   uploadedById?: true
   uploadedByAuthUserId?: true
@@ -117,6 +121,7 @@ export type DarAttachmentMaxAggregateInputType = {
   spWebUrl?: true
   spDownloadUrl?: true
   folderPath?: true
+  remark?: true
   darMasterId?: true
   uploadedById?: true
   uploadedByAuthUserId?: true
@@ -133,6 +138,7 @@ export type DarAttachmentCountAggregateInputType = {
   spWebUrl?: true
   spDownloadUrl?: true
   folderPath?: true
+  remark?: true
   darMasterId?: true
   uploadedById?: true
   uploadedByAuthUserId?: true
@@ -236,6 +242,7 @@ export type DarAttachmentGroupByOutputType = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  remark: string | null
   darMasterId: string
   uploadedById: string
   uploadedByAuthUserId: string | null
@@ -275,6 +282,7 @@ export type DarAttachmentWhereInput = {
   spWebUrl?: Prisma.StringFilter<"DarAttachment"> | string
   spDownloadUrl?: Prisma.StringFilter<"DarAttachment"> | string
   folderPath?: Prisma.StringFilter<"DarAttachment"> | string
+  remark?: Prisma.StringNullableFilter<"DarAttachment"> | string | null
   darMasterId?: Prisma.StringFilter<"DarAttachment"> | string
   uploadedById?: Prisma.StringFilter<"DarAttachment"> | string
   uploadedByAuthUserId?: Prisma.StringNullableFilter<"DarAttachment"> | string | null
@@ -292,6 +300,7 @@ export type DarAttachmentOrderByWithRelationInput = {
   spWebUrl?: Prisma.SortOrder
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
+  remark?: Prisma.SortOrderInput | Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   uploadedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -312,6 +321,7 @@ export type DarAttachmentWhereUniqueInput = Prisma.AtLeast<{
   spWebUrl?: Prisma.StringFilter<"DarAttachment"> | string
   spDownloadUrl?: Prisma.StringFilter<"DarAttachment"> | string
   folderPath?: Prisma.StringFilter<"DarAttachment"> | string
+  remark?: Prisma.StringNullableFilter<"DarAttachment"> | string | null
   darMasterId?: Prisma.StringFilter<"DarAttachment"> | string
   uploadedById?: Prisma.StringFilter<"DarAttachment"> | string
   uploadedByAuthUserId?: Prisma.StringNullableFilter<"DarAttachment"> | string | null
@@ -329,6 +339,7 @@ export type DarAttachmentOrderByWithAggregationInput = {
   spWebUrl?: Prisma.SortOrder
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
+  remark?: Prisma.SortOrderInput | Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   uploadedByAuthUserId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -353,6 +364,7 @@ export type DarAttachmentScalarWhereWithAggregatesInput = {
   spWebUrl?: Prisma.StringWithAggregatesFilter<"DarAttachment"> | string
   spDownloadUrl?: Prisma.StringWithAggregatesFilter<"DarAttachment"> | string
   folderPath?: Prisma.StringWithAggregatesFilter<"DarAttachment"> | string
+  remark?: Prisma.StringNullableWithAggregatesFilter<"DarAttachment"> | string | null
   darMasterId?: Prisma.StringWithAggregatesFilter<"DarAttachment"> | string
   uploadedById?: Prisma.StringWithAggregatesFilter<"DarAttachment"> | string
   uploadedByAuthUserId?: Prisma.StringNullableWithAggregatesFilter<"DarAttachment"> | string | null
@@ -369,6 +381,7 @@ export type DarAttachmentCreateInput = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  remark?: string | null
   uploadedById: string
   uploadedByAuthUserId?: string | null
   uploadedByName?: string | null
@@ -385,6 +398,7 @@ export type DarAttachmentUncheckedCreateInput = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  remark?: string | null
   darMasterId: string
   uploadedById: string
   uploadedByAuthUserId?: string | null
@@ -401,6 +415,7 @@ export type DarAttachmentUpdateInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -417,6 +432,7 @@ export type DarAttachmentUncheckedUpdateInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   darMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -433,6 +449,7 @@ export type DarAttachmentCreateManyInput = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  remark?: string | null
   darMasterId: string
   uploadedById: string
   uploadedByAuthUserId?: string | null
@@ -449,6 +466,7 @@ export type DarAttachmentUpdateManyMutationInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -464,6 +482,7 @@ export type DarAttachmentUncheckedUpdateManyInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   darMasterId?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -490,6 +509,7 @@ export type DarAttachmentCountOrderByAggregateInput = {
   spWebUrl?: Prisma.SortOrder
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
+  remark?: Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   uploadedByAuthUserId?: Prisma.SortOrder
@@ -510,6 +530,7 @@ export type DarAttachmentMaxOrderByAggregateInput = {
   spWebUrl?: Prisma.SortOrder
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
+  remark?: Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   uploadedByAuthUserId?: Prisma.SortOrder
@@ -526,6 +547,7 @@ export type DarAttachmentMinOrderByAggregateInput = {
   spWebUrl?: Prisma.SortOrder
   spDownloadUrl?: Prisma.SortOrder
   folderPath?: Prisma.SortOrder
+  remark?: Prisma.SortOrder
   darMasterId?: Prisma.SortOrder
   uploadedById?: Prisma.SortOrder
   uploadedByAuthUserId?: Prisma.SortOrder
@@ -588,6 +610,7 @@ export type DarAttachmentCreateWithoutDarMasterInput = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  remark?: string | null
   uploadedById: string
   uploadedByAuthUserId?: string | null
   uploadedByName?: string | null
@@ -603,6 +626,7 @@ export type DarAttachmentUncheckedCreateWithoutDarMasterInput = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  remark?: string | null
   uploadedById: string
   uploadedByAuthUserId?: string | null
   uploadedByName?: string | null
@@ -647,6 +671,7 @@ export type DarAttachmentScalarWhereInput = {
   spWebUrl?: Prisma.StringFilter<"DarAttachment"> | string
   spDownloadUrl?: Prisma.StringFilter<"DarAttachment"> | string
   folderPath?: Prisma.StringFilter<"DarAttachment"> | string
+  remark?: Prisma.StringNullableFilter<"DarAttachment"> | string | null
   darMasterId?: Prisma.StringFilter<"DarAttachment"> | string
   uploadedById?: Prisma.StringFilter<"DarAttachment"> | string
   uploadedByAuthUserId?: Prisma.StringNullableFilter<"DarAttachment"> | string | null
@@ -663,6 +688,7 @@ export type DarAttachmentCreateManyDarMasterInput = {
   spWebUrl: string
   spDownloadUrl: string
   folderPath: string
+  remark?: string | null
   uploadedById: string
   uploadedByAuthUserId?: string | null
   uploadedByName?: string | null
@@ -678,6 +704,7 @@ export type DarAttachmentUpdateWithoutDarMasterInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -693,6 +720,7 @@ export type DarAttachmentUncheckedUpdateWithoutDarMasterInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -708,6 +736,7 @@ export type DarAttachmentUncheckedUpdateManyWithoutDarMasterInput = {
   spWebUrl?: Prisma.StringFieldUpdateOperationsInput | string
   spDownloadUrl?: Prisma.StringFieldUpdateOperationsInput | string
   folderPath?: Prisma.StringFieldUpdateOperationsInput | string
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedById?: Prisma.StringFieldUpdateOperationsInput | string
   uploadedByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -725,6 +754,7 @@ export type DarAttachmentSelect<ExtArgs extends runtime.Types.Extensions.Interna
   spWebUrl?: boolean
   spDownloadUrl?: boolean
   folderPath?: boolean
+  remark?: boolean
   darMasterId?: boolean
   uploadedById?: boolean
   uploadedByAuthUserId?: boolean
@@ -742,6 +772,7 @@ export type DarAttachmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   spWebUrl?: boolean
   spDownloadUrl?: boolean
   folderPath?: boolean
+  remark?: boolean
   darMasterId?: boolean
   uploadedById?: boolean
   uploadedByAuthUserId?: boolean
@@ -759,6 +790,7 @@ export type DarAttachmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   spWebUrl?: boolean
   spDownloadUrl?: boolean
   folderPath?: boolean
+  remark?: boolean
   darMasterId?: boolean
   uploadedById?: boolean
   uploadedByAuthUserId?: boolean
@@ -776,6 +808,7 @@ export type DarAttachmentSelectScalar = {
   spWebUrl?: boolean
   spDownloadUrl?: boolean
   folderPath?: boolean
+  remark?: boolean
   darMasterId?: boolean
   uploadedById?: boolean
   uploadedByAuthUserId?: boolean
@@ -783,7 +816,7 @@ export type DarAttachmentSelectScalar = {
   createdAt?: boolean
 }
 
-export type DarAttachmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "fileSize" | "mimeType" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "folderPath" | "darMasterId" | "uploadedById" | "uploadedByAuthUserId" | "uploadedByName" | "createdAt", ExtArgs["result"]["darAttachment"]>
+export type DarAttachmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "fileSize" | "mimeType" | "spItemId" | "spWebUrl" | "spDownloadUrl" | "folderPath" | "remark" | "darMasterId" | "uploadedById" | "uploadedByAuthUserId" | "uploadedByName" | "createdAt", ExtArgs["result"]["darAttachment"]>
 export type DarAttachmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   darMaster?: boolean | Prisma.DarMasterDefaultArgs<ExtArgs>
 }
@@ -808,6 +841,7 @@ export type $DarAttachmentPayload<ExtArgs extends runtime.Types.Extensions.Inter
     spWebUrl: string
     spDownloadUrl: string
     folderPath: string
+    remark: string | null
     darMasterId: string
     uploadedById: string
     uploadedByAuthUserId: string | null
@@ -1245,6 +1279,7 @@ export interface DarAttachmentFieldRefs {
   readonly spWebUrl: Prisma.FieldRef<"DarAttachment", 'String'>
   readonly spDownloadUrl: Prisma.FieldRef<"DarAttachment", 'String'>
   readonly folderPath: Prisma.FieldRef<"DarAttachment", 'String'>
+  readonly remark: Prisma.FieldRef<"DarAttachment", 'String'>
   readonly darMasterId: Prisma.FieldRef<"DarAttachment", 'String'>
   readonly uploadedById: Prisma.FieldRef<"DarAttachment", 'String'>
   readonly uploadedByAuthUserId: Prisma.FieldRef<"DarAttachment", 'String'>

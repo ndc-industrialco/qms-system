@@ -1,65 +1,9 @@
 import { logger } from "@/lib/logger";
 import { fetchSharePointAttachment } from "./email";
 
-export function esc(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-const RICH_TEXT_TAGS = new Set([
-  "p",
-  "br",
-  "strong",
-  "b",
-  "em",
-  "i",
-  "u",
-  "s",
-  "ul",
-  "ol",
-  "li",
-  "blockquote",
-  "a",
-]);
-
-const VOID_RICH_TEXT_TAGS = new Set(["br"]);
-
-function hasHtml(value: string): boolean {
-  return /<[a-z][\s\S]*>/i.test(value);
-}
-
-function sanitizeHref(value: string): string | null {
-  const trimmed = value.trim();
-  if (/^(https?:|mailto:|\/)/i.test(trimmed)) return trimmed;
-  return null;
-}
-
-export function sanitizeRichTextHtml(value: string): string {
-  const withoutUnsafeBlocks = value
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/<(script|style)[\s\S]*?>[\s\S]*?<\/\1>/gi, "");
-
-  return withoutUnsafeBlocks.replace(/<\/?([a-z0-9]+)([^>]*)>/gi, (raw, tagName: string, attrs: string) => {
-    const tag = tagName.toLowerCase();
-    if (!RICH_TEXT_TAGS.has(tag)) return esc(raw);
-
-    const isClosing = raw.startsWith("</");
-    if (isClosing) return VOID_RICH_TEXT_TAGS.has(tag) ? "" : `</${tag}>`;
-
-    if (tag === "a") {
-      const hrefMatch = attrs.match(/\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
-      const href = sanitizeHref(hrefMatch?.[1] ?? hrefMatch?.[2] ?? hrefMatch?.[3] ?? "");
-      if (!href) return "<a>";
-      return `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">`;
-    }
-
-    return VOID_RICH_TEXT_TAGS.has(tag) ? `<${tag}>` : `<${tag}>`;
-  });
-}
+// Sanitizer lives in lib/sanitizeRichText.ts so on-screen render sinks share the same allowlist.
+import { esc, hasHtml, sanitizeRichTextHtml } from "@/lib/sanitizeRichText";
+export { esc, sanitizeRichTextHtml };
 
 export function richTextToEmailHtml(value: string | null | undefined): string {
   if (!value) return "";

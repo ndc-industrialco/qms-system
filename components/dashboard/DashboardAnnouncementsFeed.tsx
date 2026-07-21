@@ -3,6 +3,7 @@
 import type { Announcement } from "@/generated/prisma/client";
 import { useT } from "@/lib/i18n";
 import { useLocale } from "@/lib/locale-context";
+import RichTextView from "@/components/shared/RichTextView";
 
 const SOURCE_COLORS: Record<string, string> = {
   QMS: "#0F1059", IT: "#1D6A8A", HR: "#7C3AED", GA: "#059669", SAFETY: "#DC2626",
@@ -47,7 +48,7 @@ export default function DashboardAnnouncementsFeed({ announcements, onView }: Pr
                 <h3 className="text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors truncate leading-snug">
                   {a.title}
                 </h3>
-                <p className="text-xs text-slate-600 line-clamp-2 mt-1 leading-relaxed">{a.content}</p>
+                <RichTextView content={a.content} className="text-xs text-slate-600 line-clamp-2 mt-1 leading-relaxed" />
               </div>
 
               {a.spWebUrl && (

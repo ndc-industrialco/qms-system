@@ -2,6 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getFileInfo, getOfficePreviewUrl } from "@/lib/sharepoint";
+import { assertSpItemTracked } from "@/lib/spItemAccess";
 import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
@@ -23,7 +24,7 @@ const Schema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAuth();
+    const session = await requireAuth();
     const parsed = Schema.safeParse({ itemId: req.nextUrl.searchParams.get("itemId") });
 
     if (!parsed.success) {
@@ -31,6 +32,8 @@ export async function GET(req: NextRequest) {
     }
 
     const itemId = parsed.data.itemId;
+    // Authorize before the cache short-circuit — the cache key is per-item (shared across users).
+    await assertSpItemTracked(itemId, session.user.role);
     const cacheKey = `sp:file-info:${itemId}`;
 
     try {

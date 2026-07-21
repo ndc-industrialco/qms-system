@@ -75,14 +75,25 @@ Canonical source:
 
 ## 3. Card
 
-Use `components/ui/card.tsx` for:
+Canonical source:
+
+- `components/ui/card.tsx`
+- Comprehensive cross-system spec: [`07-text-card-standard.md`](file:///D:/NDC_042/NextJS/qms-system/docs/uxui/07-text-card-standard.md)
+
+### Base Design Tokens
+- Shape: `rounded-2xl` (`16px`)
+- Border: `border border-slate-100` (`#F1F5F9`)
+- Shadow: `shadow-[0_8px_30px_rgb(0,0,0,0.04)]`
+- Surface: `bg-white`
+
+Use for:
 
 - content sections
 - form groups
 - detail blocks
 - dashboard blocks
 
-Do not create parallel card shells with different border/shadow/radius unless the file documents why.
+Do not create parallel card shells with different border/shadow/radius unless the file documents why. See `07-text-card-standard.md` for copy-paste implementations in Vanilla HTML/CSS, Tailwind, React, and Vue.
 
 ## 4. Dialog
 

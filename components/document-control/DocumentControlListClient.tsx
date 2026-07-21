@@ -26,6 +26,7 @@ interface DocumentControlListClientProps {
   department: { id: string; name: string };
   category: { id: string; name: string };
   canCreate: boolean;
+  canDelete: boolean;
 }
 
 interface DocumentListResponse {
@@ -43,7 +44,7 @@ const STATUS_SELECT_STYLES: Record<string, string> = {
   OBSOLETE: 'bg-amber-50 text-amber-700 border-amber-200',
 };
 
-export function DocumentControlListClient({ department, category, canCreate }: DocumentControlListClientProps) {
+export function DocumentControlListClient({ department, category, canCreate, canDelete }: DocumentControlListClientProps) {
   const t = useT();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
@@ -409,7 +410,7 @@ export function DocumentControlListClient({ department, category, canCreate }: D
         open={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         canEdit={canCreate}
-        canDelete={canCreate}
+        canDelete={canDelete}
         canViewAuditLog={canCreate}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['documents', category.id] })}
       />

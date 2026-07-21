@@ -10,6 +10,7 @@ import { DepartmentRepository } from "@/repositories/departmentRepository";
 import { ApprovalSignatureRepository } from "@/repositories/approvalSignatureRepository";
 import { QmsProcessingRepository } from "@/repositories/qmsProcessingRepository";
 import { NotFoundError, ValidationError, ForbiddenError, AppError } from "@/errors/customErrors";
+import { notifyApprovalConfigQms } from "@/services/approvalConfigNotifier";
 import { uploadFileToDar, deleteSpItem } from "@/services/sharepoint";
 import { getFileInfo } from "@/lib/sharepoint";
 import type { DarDetail, DarSummary, CreateDarInput, DarApprovalRow, ReviewerCandidate, DarAttachmentRow, TempAttachmentInput } from "@/types/dar";
@@ -204,8 +205,19 @@ export class DarService {
         spWebUrl: a.spWebUrl,
         spDownloadUrl: a.spDownloadUrl,
         folderPath: a.folderPath,
+        remark: a.remark ?? null,
         createdAt: a.createdAt.toISOString(),
         uploadedBy: { id: a.uploadedById, name: a.uploadedByName ?? null },
+      })),
+      attachmentActions: master.attachmentActions.map((h: DarDetailRaw["attachmentActions"][number]) => ({
+        id: h.id,
+        attachmentId: h.attachmentId,
+        fileName: h.fileName,
+        action: h.action as "ADD" | "DELETE",
+        remark: h.remark ?? null,
+        actorName: h.actorName ?? null,
+        actorRole: h.actorRole,
+        createdAt: h.createdAt.toISOString(),
       })),
       qmsProcessing: master.qmsProcessing
         ? {
@@ -854,6 +866,11 @@ export class DarService {
           module: 'DAR', resourceId: darId, resourceType: 'DAR',
         }).catch(() => {});
       }
+      notifyApprovalConfigQms('DAR', {
+        title: 'DAR เสร็จสมบูรณ์',
+        body: `DAR ${dar.darNo ?? darId} เสร็จสมบูรณ์แล้ว`,
+        module: 'DAR', resourceId: darId, resourceType: 'DAR',
+      }).catch(() => {});
     }
 
     return detail!;
@@ -1071,7 +1088,8 @@ export class DarService {
     darId: string,
     file: File,
     uploaderId: string,
-    uploaderRole: string
+    uploaderRole: string,
+    remark?: string | null
   ): Promise<DarAttachmentRow> {
     const dar = await this.darRepo.findDarForAttachmentUpload(darId);
     if (!dar) throw new NotFoundError("DAR");
@@ -1104,6 +1122,8 @@ export class DarService {
       docType: dar.docType as Parameters<typeof uploadFileToDar>[0]["docType"],
     });
 
+    const trimmedRemark = remark?.trim() || null;
+
     let attachment;
     try {
       attachment = await this.darRepo.createAttachment({
@@ -1114,6 +1134,7 @@ export class DarService {
         spWebUrl: sp.spWebUrl,
         spDownloadUrl: sp.spDownloadUrl,
         folderPath: sp.folderPath,
+        remark: trimmedRemark,
         darMasterId: darId,
         uploadedById: uploaderId,
         uploadedByName: uploaderSnapshot?.name ?? null,
@@ -1128,6 +1149,17 @@ export class DarService {
       throw dbErr;
     }
 
+    await this.darRepo.createAttachmentAction({
+      darMasterId: darId,
+      attachmentId: attachment.id,
+      fileName: attachment.fileName,
+      action: "ADD",
+      remark: trimmedRemark,
+      actorId: uploaderId,
+      actorName: uploaderSnapshot?.name ?? null,
+      actorRole: uploaderRole,
+    });
+
     return {
       id: attachment.id,
       fileName: attachment.fileName,
@@ -1137,6 +1169,7 @@ export class DarService {
       spWebUrl: attachment.spWebUrl,
       spDownloadUrl: attachment.spDownloadUrl,
       folderPath: attachment.folderPath,
+      remark: trimmedRemark,
       createdAt: attachment.createdAt.toISOString(),
       uploadedBy: { id: uploaderId, name: uploaderSnapshot?.name ?? null },
     };
@@ -1146,7 +1179,8 @@ export class DarService {
     darId: string,
     attachmentId: string,
     userId: string,
-    userRole: string
+    userRole: string,
+    remark?: string | null
   ): Promise<void> {
     const attachment = await this.darRepo.findAttachmentById(attachmentId);
     if (!attachment || attachment.darMasterId !== darId) throw new NotFoundError("ไฟล์แนบ");
@@ -1156,7 +1190,8 @@ export class DarService {
 
     const isPrivileged = isPrivilegedQmsRole(userRole);
     const isOwner = attachment.uploadedById === userId || dar.requesterId === userId;
-    if (!isPrivileged && !isOwner) throw new ForbiddenError();
+    const isAssigned = dar.approvals.some((a) => a.assignedUserId === userId);
+    if (!isPrivileged && !isOwner && !isAssigned) throw new ForbiddenError();
 
     if (!isPrivileged && (dar.status === "COMPLETED" || dar.status === "CANCELLED")) {
       throw new ValidationError("ไม่สามารถลบไฟล์ในคำขอที่เสร็จสิ้นหรือยกเลิกแล้ว");
@@ -1167,6 +1202,18 @@ export class DarService {
     } catch (spErr) {
       logger.error("[DarService.deleteAttachment] SharePoint delete failed (continuing)", spErr);
     }
+
+    const actorSnapshot = await this.getIdentitySnapshot(userId);
+    await this.darRepo.createAttachmentAction({
+      darMasterId: darId,
+      attachmentId: null,
+      fileName: attachment.fileName,
+      action: "DELETE",
+      remark: remark?.trim() || null,
+      actorId: userId,
+      actorName: actorSnapshot?.name ?? null,
+      actorRole: userRole,
+    });
 
     await this.darRepo.deleteAttachmentById(attachmentId);
   }

@@ -322,6 +322,7 @@ export type DocumentControlRevisionWhereInput = {
   darMasterId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
   documentControl?: Prisma.XOR<Prisma.DocumentControlScalarRelationFilter, Prisma.DocumentControlWhereInput>
   darMaster?: Prisma.XOR<Prisma.DarMasterNullableScalarRelationFilter, Prisma.DarMasterWhereInput> | null
+  distribution?: Prisma.XOR<Prisma.DocumentDistributionNullableScalarRelationFilter, Prisma.DocumentDistributionWhereInput> | null
 }
 
 export type DocumentControlRevisionOrderByWithRelationInput = {
@@ -345,6 +346,7 @@ export type DocumentControlRevisionOrderByWithRelationInput = {
   darMasterId?: Prisma.SortOrderInput | Prisma.SortOrder
   documentControl?: Prisma.DocumentControlOrderByWithRelationInput
   darMaster?: Prisma.DarMasterOrderByWithRelationInput
+  distribution?: Prisma.DocumentDistributionOrderByWithRelationInput
 }
 
 export type DocumentControlRevisionWhereUniqueInput = Prisma.AtLeast<{
@@ -371,6 +373,7 @@ export type DocumentControlRevisionWhereUniqueInput = Prisma.AtLeast<{
   darMasterId?: Prisma.StringNullableFilter<"DocumentControlRevision"> | string | null
   documentControl?: Prisma.XOR<Prisma.DocumentControlScalarRelationFilter, Prisma.DocumentControlWhereInput>
   darMaster?: Prisma.XOR<Prisma.DarMasterNullableScalarRelationFilter, Prisma.DarMasterWhereInput> | null
+  distribution?: Prisma.XOR<Prisma.DocumentDistributionNullableScalarRelationFilter, Prisma.DocumentDistributionWhereInput> | null
 }, "id">
 
 export type DocumentControlRevisionOrderByWithAggregationInput = {
@@ -442,6 +445,7 @@ export type DocumentControlRevisionCreateInput = {
   createdAt?: Date | string
   documentControl: Prisma.DocumentControlCreateNestedOneWithoutRevisionsInput
   darMaster?: Prisma.DarMasterCreateNestedOneWithoutDocumentRevisionsInput
+  distribution?: Prisma.DocumentDistributionCreateNestedOneWithoutRevisionInput
 }
 
 export type DocumentControlRevisionUncheckedCreateInput = {
@@ -463,6 +467,7 @@ export type DocumentControlRevisionUncheckedCreateInput = {
   createdByName?: string | null
   createdAt?: Date | string
   darMasterId?: string | null
+  distribution?: Prisma.DocumentDistributionUncheckedCreateNestedOneWithoutRevisionInput
 }
 
 export type DocumentControlRevisionUpdateInput = {
@@ -484,6 +489,7 @@ export type DocumentControlRevisionUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentControl?: Prisma.DocumentControlUpdateOneRequiredWithoutRevisionsNestedInput
   darMaster?: Prisma.DarMasterUpdateOneWithoutDocumentRevisionsNestedInput
+  distribution?: Prisma.DocumentDistributionUpdateOneWithoutRevisionNestedInput
 }
 
 export type DocumentControlRevisionUncheckedUpdateInput = {
@@ -505,6 +511,7 @@ export type DocumentControlRevisionUncheckedUpdateInput = {
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   darMasterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distribution?: Prisma.DocumentDistributionUncheckedUpdateOneWithoutRevisionNestedInput
 }
 
 export type DocumentControlRevisionCreateManyInput = {
@@ -649,6 +656,11 @@ export type DocumentControlRevisionSumOrderByAggregateInput = {
   fileSize?: Prisma.SortOrder
 }
 
+export type DocumentControlRevisionScalarRelationFilter = {
+  is?: Prisma.DocumentControlRevisionWhereInput
+  isNot?: Prisma.DocumentControlRevisionWhereInput
+}
+
 export type DocumentControlRevisionCreateNestedManyWithoutDarMasterInput = {
   create?: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDarMasterInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput> | Prisma.DocumentControlRevisionCreateWithoutDarMasterInput[] | Prisma.DocumentControlRevisionUncheckedCreateWithoutDarMasterInput[]
   connectOrCreate?: Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput | Prisma.DocumentControlRevisionCreateOrConnectWithoutDarMasterInput[]
@@ -733,6 +745,20 @@ export type DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlNest
   deleteMany?: Prisma.DocumentControlRevisionScalarWhereInput | Prisma.DocumentControlRevisionScalarWhereInput[]
 }
 
+export type DocumentControlRevisionCreateNestedOneWithoutDistributionInput = {
+  create?: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDistributionInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDistributionInput>
+  connectOrCreate?: Prisma.DocumentControlRevisionCreateOrConnectWithoutDistributionInput
+  connect?: Prisma.DocumentControlRevisionWhereUniqueInput
+}
+
+export type DocumentControlRevisionUpdateOneRequiredWithoutDistributionNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDistributionInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDistributionInput>
+  connectOrCreate?: Prisma.DocumentControlRevisionCreateOrConnectWithoutDistributionInput
+  upsert?: Prisma.DocumentControlRevisionUpsertWithoutDistributionInput
+  connect?: Prisma.DocumentControlRevisionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentControlRevisionUpdateToOneWithWhereWithoutDistributionInput, Prisma.DocumentControlRevisionUpdateWithoutDistributionInput>, Prisma.DocumentControlRevisionUncheckedUpdateWithoutDistributionInput>
+}
+
 export type DocumentControlRevisionCreateWithoutDarMasterInput = {
   id?: string
   revision: string
@@ -751,6 +777,7 @@ export type DocumentControlRevisionCreateWithoutDarMasterInput = {
   createdByName?: string | null
   createdAt?: Date | string
   documentControl: Prisma.DocumentControlCreateNestedOneWithoutRevisionsInput
+  distribution?: Prisma.DocumentDistributionCreateNestedOneWithoutRevisionInput
 }
 
 export type DocumentControlRevisionUncheckedCreateWithoutDarMasterInput = {
@@ -771,6 +798,7 @@ export type DocumentControlRevisionUncheckedCreateWithoutDarMasterInput = {
   createdByAuthUserId?: string | null
   createdByName?: string | null
   createdAt?: Date | string
+  distribution?: Prisma.DocumentDistributionUncheckedCreateNestedOneWithoutRevisionInput
 }
 
 export type DocumentControlRevisionCreateOrConnectWithoutDarMasterInput = {
@@ -841,6 +869,7 @@ export type DocumentControlRevisionCreateWithoutDocumentControlInput = {
   createdByName?: string | null
   createdAt?: Date | string
   darMaster?: Prisma.DarMasterCreateNestedOneWithoutDocumentRevisionsInput
+  distribution?: Prisma.DocumentDistributionCreateNestedOneWithoutRevisionInput
 }
 
 export type DocumentControlRevisionUncheckedCreateWithoutDocumentControlInput = {
@@ -861,6 +890,7 @@ export type DocumentControlRevisionUncheckedCreateWithoutDocumentControlInput = 
   createdByName?: string | null
   createdAt?: Date | string
   darMasterId?: string | null
+  distribution?: Prisma.DocumentDistributionUncheckedCreateNestedOneWithoutRevisionInput
 }
 
 export type DocumentControlRevisionCreateOrConnectWithoutDocumentControlInput = {
@@ -887,6 +917,106 @@ export type DocumentControlRevisionUpdateWithWhereUniqueWithoutDocumentControlIn
 export type DocumentControlRevisionUpdateManyWithWhereWithoutDocumentControlInput = {
   where: Prisma.DocumentControlRevisionScalarWhereInput
   data: Prisma.XOR<Prisma.DocumentControlRevisionUpdateManyMutationInput, Prisma.DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlInput>
+}
+
+export type DocumentControlRevisionCreateWithoutDistributionInput = {
+  id?: string
+  revision: string
+  effectiveDate?: Date | string | null
+  status?: $Enums.DocControlStatus
+  spDriveId?: string | null
+  spItemId?: string | null
+  spWebUrl?: string | null
+  spDownloadUrl?: string | null
+  spFolderPath?: string | null
+  fileName?: string | null
+  fileSize?: number | null
+  mimeType?: string | null
+  createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
+  createdAt?: Date | string
+  documentControl: Prisma.DocumentControlCreateNestedOneWithoutRevisionsInput
+  darMaster?: Prisma.DarMasterCreateNestedOneWithoutDocumentRevisionsInput
+}
+
+export type DocumentControlRevisionUncheckedCreateWithoutDistributionInput = {
+  id?: string
+  documentControlId: string
+  revision: string
+  effectiveDate?: Date | string | null
+  status?: $Enums.DocControlStatus
+  spDriveId?: string | null
+  spItemId?: string | null
+  spWebUrl?: string | null
+  spDownloadUrl?: string | null
+  spFolderPath?: string | null
+  fileName?: string | null
+  fileSize?: number | null
+  mimeType?: string | null
+  createdById: string
+  createdByAuthUserId?: string | null
+  createdByName?: string | null
+  createdAt?: Date | string
+  darMasterId?: string | null
+}
+
+export type DocumentControlRevisionCreateOrConnectWithoutDistributionInput = {
+  where: Prisma.DocumentControlRevisionWhereUniqueInput
+  create: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDistributionInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDistributionInput>
+}
+
+export type DocumentControlRevisionUpsertWithoutDistributionInput = {
+  update: Prisma.XOR<Prisma.DocumentControlRevisionUpdateWithoutDistributionInput, Prisma.DocumentControlRevisionUncheckedUpdateWithoutDistributionInput>
+  create: Prisma.XOR<Prisma.DocumentControlRevisionCreateWithoutDistributionInput, Prisma.DocumentControlRevisionUncheckedCreateWithoutDistributionInput>
+  where?: Prisma.DocumentControlRevisionWhereInput
+}
+
+export type DocumentControlRevisionUpdateToOneWithWhereWithoutDistributionInput = {
+  where?: Prisma.DocumentControlRevisionWhereInput
+  data: Prisma.XOR<Prisma.DocumentControlRevisionUpdateWithoutDistributionInput, Prisma.DocumentControlRevisionUncheckedUpdateWithoutDistributionInput>
+}
+
+export type DocumentControlRevisionUpdateWithoutDistributionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.StringFieldUpdateOperationsInput | string
+  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
+  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentControl?: Prisma.DocumentControlUpdateOneRequiredWithoutRevisionsNestedInput
+  darMaster?: Prisma.DarMasterUpdateOneWithoutDocumentRevisionsNestedInput
+}
+
+export type DocumentControlRevisionUncheckedUpdateWithoutDistributionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  documentControlId?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.StringFieldUpdateOperationsInput | string
+  effectiveDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumDocControlStatusFieldUpdateOperationsInput | $Enums.DocControlStatus
+  spDriveId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spWebUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spDownloadUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  spFolderPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fileSize?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  darMasterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type DocumentControlRevisionCreateManyDarMasterInput = {
@@ -927,6 +1057,7 @@ export type DocumentControlRevisionUpdateWithoutDarMasterInput = {
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentControl?: Prisma.DocumentControlUpdateOneRequiredWithoutRevisionsNestedInput
+  distribution?: Prisma.DocumentDistributionUpdateOneWithoutRevisionNestedInput
 }
 
 export type DocumentControlRevisionUncheckedUpdateWithoutDarMasterInput = {
@@ -947,6 +1078,7 @@ export type DocumentControlRevisionUncheckedUpdateWithoutDarMasterInput = {
   createdByAuthUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  distribution?: Prisma.DocumentDistributionUncheckedUpdateOneWithoutRevisionNestedInput
 }
 
 export type DocumentControlRevisionUncheckedUpdateManyWithoutDarMasterInput = {
@@ -1007,6 +1139,7 @@ export type DocumentControlRevisionUpdateWithoutDocumentControlInput = {
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   darMaster?: Prisma.DarMasterUpdateOneWithoutDocumentRevisionsNestedInput
+  distribution?: Prisma.DocumentDistributionUpdateOneWithoutRevisionNestedInput
 }
 
 export type DocumentControlRevisionUncheckedUpdateWithoutDocumentControlInput = {
@@ -1027,6 +1160,7 @@ export type DocumentControlRevisionUncheckedUpdateWithoutDocumentControlInput = 
   createdByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   darMasterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  distribution?: Prisma.DocumentDistributionUncheckedUpdateOneWithoutRevisionNestedInput
 }
 
 export type DocumentControlRevisionUncheckedUpdateManyWithoutDocumentControlInput = {
@@ -1072,6 +1206,7 @@ export type DocumentControlRevisionSelect<ExtArgs extends runtime.Types.Extensio
   darMasterId?: boolean
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
   darMaster?: boolean | Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>
+  distribution?: boolean | Prisma.DocumentControlRevision$distributionArgs<ExtArgs>
 }, ExtArgs["result"]["documentControlRevision"]>
 
 export type DocumentControlRevisionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1145,6 +1280,7 @@ export type DocumentControlRevisionOmit<ExtArgs extends runtime.Types.Extensions
 export type DocumentControlRevisionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
   darMaster?: boolean | Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>
+  distribution?: boolean | Prisma.DocumentControlRevision$distributionArgs<ExtArgs>
 }
 export type DocumentControlRevisionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   documentControl?: boolean | Prisma.DocumentControlDefaultArgs<ExtArgs>
@@ -1160,6 +1296,7 @@ export type $DocumentControlRevisionPayload<ExtArgs extends runtime.Types.Extens
   objects: {
     documentControl: Prisma.$DocumentControlPayload<ExtArgs>
     darMaster: Prisma.$DarMasterPayload<ExtArgs> | null
+    distribution: Prisma.$DocumentDistributionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1576,6 +1713,7 @@ export interface Prisma__DocumentControlRevisionClient<T, Null = never, ExtArgs 
   readonly [Symbol.toStringTag]: "PrismaPromise"
   documentControl<T extends Prisma.DocumentControlDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControlDefaultArgs<ExtArgs>>): Prisma.Prisma__DocumentControlClient<runtime.Types.Result.GetResult<Prisma.$DocumentControlPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   darMaster<T extends Prisma.DocumentControlRevision$darMasterArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControlRevision$darMasterArgs<ExtArgs>>): Prisma.Prisma__DarMasterClient<runtime.Types.Result.GetResult<Prisma.$DarMasterPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  distribution<T extends Prisma.DocumentControlRevision$distributionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentControlRevision$distributionArgs<ExtArgs>>): Prisma.Prisma__DocumentDistributionClient<runtime.Types.Result.GetResult<Prisma.$DocumentDistributionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2040,6 +2178,25 @@ export type DocumentControlRevision$darMasterArgs<ExtArgs extends runtime.Types.
    */
   include?: Prisma.DarMasterInclude<ExtArgs> | null
   where?: Prisma.DarMasterWhereInput
+}
+
+/**
+ * DocumentControlRevision.distribution
+ */
+export type DocumentControlRevision$distributionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentDistribution
+   */
+  select?: Prisma.DocumentDistributionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentDistribution
+   */
+  omit?: Prisma.DocumentDistributionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentDistributionInclude<ExtArgs> | null
+  where?: Prisma.DocumentDistributionWhereInput
 }
 
 /**

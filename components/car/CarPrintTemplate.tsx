@@ -3,6 +3,7 @@
 import type { CarDetail } from "@/types/car";
 import type { FooterConfig } from "@/services/qmsConfigService";
 import PrintPageActions from "@/components/shared/PrintPageActions";
+import { sanitizeRichTextHtml } from "@/lib/sanitizeRichText";
 
 interface CarPrintTemplateProps {
   car: CarDetail;
@@ -23,7 +24,7 @@ function formatDate(value: string | null | undefined) {
 function RichText({ value, className = "" }: { value: string | null | undefined; className?: string }) {
   if (!value) return <span className="empty-value">-</span>;
   if (hasHtml(value)) {
-    return <div className={`rich-text ${className}`} dangerouslySetInnerHTML={{ __html: value }} />;
+    return <div className={`rich-text ${className}`} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(value) }} />;
   }
   return <div className={`rich-text ${className}`}>{value}</div>;
 }

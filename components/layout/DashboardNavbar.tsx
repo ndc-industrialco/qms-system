@@ -32,10 +32,12 @@ function getNavItems(role: UserRole): NavItem[] {
   const userItems: NavItem[] = [
     { labelTh: "หน้าหลัก", labelEn: "Dashboard", href: "/" },
     { labelTh: "คำขอเอกสาร", labelEn: "My Requests", href: "/dar" },
+    { labelTh: "เอกสารรอรับทราบ", labelEn: "Pending Documents", href: "/distribution" },
   ];
   const qmsItems: NavItem[] = [
     { labelTh: "จัดการข่าวสาร", labelEn: "Manage Announcements", href: "/qms/announcements" },
     { labelTh: "จัดการ DAR", labelEn: "Manage DAR", href: "/qms/dar" },
+    { labelTh: "การแจกจ่ายเอกสาร", labelEn: "Document Distribution", href: "/qms/distribution" },
     { labelTh: "SharePoint Files", labelEn: "SharePoint Files", href: "/qms/sharepoint" },
   ];
   const itItems: NavItem[] = [

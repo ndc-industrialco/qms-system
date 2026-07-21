@@ -44,6 +44,9 @@ export class DarRepository extends BaseRepository<DarMaster> {
         requesterDepartmentName: true,
         departmentId: true,
         authDepartmentId: true,
+        spDriveId: true,
+        spItemId: true,
+        spWebUrl: true,
         items: {
           orderBy: { itemNo: "asc" },
           select: {
@@ -91,10 +94,25 @@ export class DarRepository extends BaseRepository<DarMaster> {
             spWebUrl: true,
             spDownloadUrl: true,
             folderPath: true,
+            remark: true,
             darMasterId: true,
             uploadedById: true,
             uploadedByAuthUserId: true,
             uploadedByName: true,
+            createdAt: true,
+          },
+        },
+        attachmentActions: {
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            attachmentId: true,
+            fileName: true,
+            action: true,
+            remark: true,
+            actorId: true,
+            actorName: true,
+            actorRole: true,
             createdAt: true,
           },
         },
@@ -339,7 +357,7 @@ export class DarRepository extends BaseRepository<DarMaster> {
   async findAttachmentById(attachmentId: string, tx?: Prisma.TransactionClient) {
     return this.getClient(tx).darAttachment.findUnique({
       where: { id: attachmentId },
-      select: { id: true, spItemId: true, uploadedById: true, darMasterId: true },
+      select: { id: true, spItemId: true, fileName: true, uploadedById: true, darMasterId: true },
     });
   }
 
@@ -354,6 +372,13 @@ export class DarRepository extends BaseRepository<DarMaster> {
     return this.getClient(tx).darAttachment.create({ data });
   }
 
+  async createAttachmentAction(
+    data: Prisma.DarAttachmentActionUncheckedCreateInput,
+    tx?: Prisma.TransactionClient
+  ) {
+    return this.getClient(tx).darAttachmentAction.create({ data });
+  }
+
   async findDarForAttachmentUpload(darId: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id: darId },
@@ -366,10 +391,21 @@ export class DarRepository extends BaseRepository<DarMaster> {
     });
   }
 
+  async findDarNoAndStatus(darId: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({
+      where: { id: darId },
+      select: { id: true, darNo: true, status: true },
+    });
+  }
+
+  async findDistributionSetup(darId: string, tx?: Prisma.TransactionClient) {
+    return this.delegate(tx).findUnique({ where: { id: darId }, select: { requesterDepartmentName: true, authDepartmentId: true, departmentId: true, docType: true } });
+  }
+
   async findDarStatusAndRequester(darId: string, tx?: Prisma.TransactionClient) {
     return this.delegate(tx).findUnique({
       where: { id: darId },
-      select: { requesterId: true, status: true },
+      select: { requesterId: true, status: true, approvals: { select: { assignedUserId: true } } },
     });
   }
 

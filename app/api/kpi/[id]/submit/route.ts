@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { requireAuth } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { submitKpiObjectivesSchema } from '@/schemas/kpiSchema';
 import { KpiService } from '@/services/kpiService';
 
@@ -9,7 +9,7 @@ const service = new KpiService();
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await requireAuth();
+    const session = await requireRole('QMS', 'MR', 'IT');
     const { id } = await params;
     const body = submitKpiObjectivesSchema.parse(await request.json());
     const updated = await service.submitObjectives(

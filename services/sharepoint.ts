@@ -415,6 +415,45 @@ export async function deleteTempFolder(tempId: string): Promise<void> {
   });
 }
 
+// ── PDF rendition ─────────────────────────────────────────────────────────────
+// ponytail: Graph's format=pdf conversion caps around 2MB source files; fine
+// for QMS documents, but large source files will fail here.
+
+export async function getFilePdfRendition(spItemId: string): Promise<Buffer> {
+  return withGraph(async (token, driveId) => {
+    const res = await graphFetch(
+      `https://graph.microsoft.com/v1.0/drives/${driveId}/items/${spItemId}/content?format=pdf`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`Graph PDF rendition ${res.status}: ${t}`);
+    }
+    return Buffer.from(await res.arrayBuffer());
+  });
+}
+
+// ── Distribution upload ───────────────────────────────────────────────────────
+
+export async function uploadFileToDistribution(opts: {
+  fileBuffer: Uint8Array;
+  fileName: string;
+  mimeType: string;
+  darNo: string;
+  suffix: string; // e.g. "base" or a department code, to keep filenames distinct per copy
+}): Promise<SpUploadResult> {
+  return withGraph(async (token, driveId) => {
+    const folderPath = `Distribution/${opts.darNo.replace(/[/\\:*?"<>|]/g, "_")}`;
+    const folderId = await ensureFolderPath(driveId, token, folderPath);
+    const safeBase = opts.fileName.replace(/[/\\:*?"<>|]/g, "_");
+    const uploadName = `${opts.darNo}_${opts.suffix}_${safeBase}`;
+    if (opts.fileBuffer.length <= 4 * 1024 * 1024) {
+      return simpleUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+    }
+    return resumableUpload({ token, driveId, folderId, uploadName, fileBuffer: opts.fileBuffer, mimeType: opts.mimeType, folderPath });
+  });
+}
+
 // ── Delete file ───────────────────────────────────────────────────────────────
 
 export async function deleteSpItem(spItemId: string): Promise<void> {

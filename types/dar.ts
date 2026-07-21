@@ -63,8 +63,20 @@ export type DarAttachmentRow = {
   spWebUrl: string;
   spDownloadUrl: string;
   folderPath: string;
+  remark?: string | null;
   createdAt: string;
   uploadedBy: { id: string; name: string | null };
+};
+
+export type DarAttachmentActionRow = {
+  id: string;
+  attachmentId: string | null;
+  fileName: string;
+  action: "ADD" | "DELETE";
+  remark: string | null;
+  actorName: string | null;
+  actorRole: string;
+  createdAt: string;
 };
 
 export type DarRequester = {
@@ -136,6 +148,7 @@ export type DarDetail = {
   approvals: DarApprovalRow[];
   rejectionHistory: DarRejectionHistoryRow[];
   attachments: DarAttachmentRow[];
+  attachmentActions: DarAttachmentActionRow[];
   qmsProcessing: {
     chkHasAttachment: boolean;
     chkPrintAndValidate: boolean;

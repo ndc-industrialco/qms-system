@@ -62,6 +62,7 @@ export const ModelName = {
   DarItem: 'DarItem',
   DarDistribution: 'DarDistribution',
   DarAttachment: 'DarAttachment',
+  DarAttachmentAction: 'DarAttachmentAction',
   DarApproval: 'DarApproval',
   DarRejectionHistory: 'DarRejectionHistory',
   ApprovalSignature: 'ApprovalSignature',
@@ -75,6 +76,8 @@ export const ModelName = {
   DocumentControl: 'DocumentControl',
   DocumentCategory: 'DocumentCategory',
   DocumentControlRevision: 'DocumentControlRevision',
+  DocumentDistribution: 'DocumentDistribution',
+  DocumentDistributionTarget: 'DocumentDistributionTarget',
   AuditLog: 'AuditLog',
   NotificationLog: 'NotificationLog',
   Notification: 'Notification',
@@ -289,6 +292,7 @@ export const DarAttachmentScalarFieldEnum = {
   spWebUrl: 'spWebUrl',
   spDownloadUrl: 'spDownloadUrl',
   folderPath: 'folderPath',
+  remark: 'remark',
   darMasterId: 'darMasterId',
   uploadedById: 'uploadedById',
   uploadedByAuthUserId: 'uploadedByAuthUserId',
@@ -297,6 +301,23 @@ export const DarAttachmentScalarFieldEnum = {
 } as const
 
 export type DarAttachmentScalarFieldEnum = (typeof DarAttachmentScalarFieldEnum)[keyof typeof DarAttachmentScalarFieldEnum]
+
+
+export const DarAttachmentActionScalarFieldEnum = {
+  id: 'id',
+  darMasterId: 'darMasterId',
+  attachmentId: 'attachmentId',
+  fileName: 'fileName',
+  action: 'action',
+  remark: 'remark',
+  actorId: 'actorId',
+  actorAuthUserId: 'actorAuthUserId',
+  actorName: 'actorName',
+  actorRole: 'actorRole',
+  createdAt: 'createdAt'
+} as const
+
+export type DarAttachmentActionScalarFieldEnum = (typeof DarAttachmentActionScalarFieldEnum)[keyof typeof DarAttachmentActionScalarFieldEnum]
 
 
 export const DarApprovalScalarFieldEnum = {
@@ -575,6 +596,44 @@ export const DocumentControlRevisionScalarFieldEnum = {
 } as const
 
 export type DocumentControlRevisionScalarFieldEnum = (typeof DocumentControlRevisionScalarFieldEnum)[keyof typeof DocumentControlRevisionScalarFieldEnum]
+
+
+export const DocumentDistributionScalarFieldEnum = {
+  id: 'id',
+  darMasterId: 'darMasterId',
+  revisionId: 'revisionId',
+  stampImageKey: 'stampImageKey',
+  stampImageBox: 'stampImageBox',
+  dateFieldBox: 'dateFieldBox',
+  copyToFieldBox: 'copyToFieldBox',
+  basePdfSpItemId: 'basePdfSpItemId',
+  basePdfSpWebUrl: 'basePdfSpWebUrl',
+  status: 'status',
+  linkToDocumentControl: 'linkToDocumentControl',
+  publishedById: 'publishedById',
+  publishedByAuthUserId: 'publishedByAuthUserId',
+  publishedByName: 'publishedByName',
+  publishedAt: 'publishedAt'
+} as const
+
+export type DocumentDistributionScalarFieldEnum = (typeof DocumentDistributionScalarFieldEnum)[keyof typeof DocumentDistributionScalarFieldEnum]
+
+
+export const DocumentDistributionTargetScalarFieldEnum = {
+  id: 'id',
+  distributionId: 'distributionId',
+  departmentId: 'departmentId',
+  departmentCode: 'departmentCode',
+  departmentName: 'departmentName',
+  downloadedAt: 'downloadedAt',
+  downloadedById: 'downloadedById',
+  downloadedByName: 'downloadedByName',
+  finalPdfSpItemId: 'finalPdfSpItemId',
+  finalPdfSpWebUrl: 'finalPdfSpWebUrl',
+  createdAt: 'createdAt'
+} as const
+
+export type DocumentDistributionTargetScalarFieldEnum = (typeof DocumentDistributionTargetScalarFieldEnum)[keyof typeof DocumentDistributionTargetScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {
@@ -1136,6 +1195,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

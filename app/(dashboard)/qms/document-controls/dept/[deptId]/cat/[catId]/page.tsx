@@ -30,6 +30,7 @@ export default async function CategoryDocumentPage({ params }: { params: Promise
         department={{ id: dept.id, name: dept.name }}
         category={category}
         canCreate={canManage}
+        canDelete={['QMS', 'IT'].includes(session.user.role)}
       />
     </div>
   );

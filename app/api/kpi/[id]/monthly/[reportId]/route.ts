@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireRole } from '@/lib/auth';
 import { updateMonthlyReportSchema } from '@/schemas/kpiSchema';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 
@@ -23,7 +23,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string; reportId: string }> }) {
   try {
-    const session = await requireAuth();
+    const session = await requireRole('QMS', 'MR', 'IT');
     const { id: kpiId, reportId } = await params;
     const body = updateMonthlyReportSchema.parse(await request.json());
     const report = await service.updateReportMetadata(reportId, body, {

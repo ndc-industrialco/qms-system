@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { KpiMonthlyService } from '@/services/kpiMonthlyService';
 import { getUserSnapshot } from '@/lib/userSnapshotCache';
 import { sendKpiMonthlyResultEmail, makeBilingualMail } from '@/services/email';
+import { notifyApprovalConfigQms } from '@/services/approvalConfigNotifier';
 
 const service = new KpiMonthlyService();
 
@@ -83,6 +84,12 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ re
         resourceType: 'KPI_MONTHLY',
       },
     ).catch(() => {});
+
+    await notifyApprovalConfigQms('KPI_MONTHLY', {
+      title: 'KPI รายเดือนได้รับการอนุมัติ',
+      body: `KPI ${detail.kpi.department} ${detail.month}/${detail.year} ได้รับการอนุมัติ`,
+      module: 'KPI', resourceId: reportId, resourceType: 'KPI_MONTHLY',
+    });
 
     return sendSuccess(updated, 'Monthly report approved successfully');
   } catch (error) {

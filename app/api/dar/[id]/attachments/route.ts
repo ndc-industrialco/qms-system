@@ -31,12 +31,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const safeFile = new File([file], fileName, { type: file.type });
+    const remark = (formData.get("remark") as string | null) || null;
 
     const row: DarAttachmentRow = await darService.uploadAttachment(
       darId,
       safeFile,
       session.user.id,
-      session.user.role
+      session.user.role,
+      remark
     );
 
     return NextResponse.json({ data: row, error: null }, { status: 201 });

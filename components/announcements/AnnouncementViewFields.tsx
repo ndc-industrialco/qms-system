@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useT } from "@/lib/i18n";
 import type { AnnouncementRow } from "@/services/announcementService";
+import RichTextView from "@/components/shared/RichTextView";
 
 function formatDate(date: Date | null): string {
   if (!date) return "—";
@@ -134,9 +135,9 @@ export default function AnnouncementViewFields({ item }: { item: AnnouncementRow
 
             <div>
               <span className={label}>{t("announcement.fieldContent")}</span>
-              <p className="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed max-h-[150px] overflow-y-auto pr-1">
-                {item.content}
-              </p>
+              <div className="max-h-[150px] overflow-y-auto pr-1">
+                <RichTextView content={item.content} className="text-slate-600" />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -256,7 +257,7 @@ export default function AnnouncementViewFields({ item }: { item: AnnouncementRow
 
       <div>
         <span className={label}>{t("announcement.fieldContent")}</span>
-        <p className="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed">{item.content}</p>
+        <RichTextView content={item.content} className="text-slate-600 leading-relaxed" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

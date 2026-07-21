@@ -70,6 +70,9 @@ const NO_SCHEMA_ALLOWLIST = new Set([
   "app/api/auth/center/callback/route.ts",
   // Health probe — no user input
   "app/api/auth/center/health/route.ts",
+  "app/api/auth/center/refresh/route.ts",
+  // Distribution route — GET only, no query params
+  "app/api/distribution/route.ts",
   // Notification routes — no body/query params, auth-only
   "app/api/notifications/route.ts",
   "app/api/notifications/read-all/route.ts",
@@ -125,6 +128,7 @@ const NO_ERROR_HANDLER_ALLOWLIST = new Set([
   "app/api/auth/center/callback/route.ts",
   // Health probe — no standard envelope needed
   "app/api/auth/center/health/route.ts",
+  "app/api/auth/center/refresh/route.ts",
   // Cron endpoint — uses raw NextResponse with custom error format
   "app/api/cron/car-reminder/route.ts",
   "app/api/cron/kpi-monthly-reminder/route.ts",

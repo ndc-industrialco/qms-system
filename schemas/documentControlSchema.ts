@@ -45,6 +45,7 @@ export const documentControlQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().optional(),
   categoryId: z.string().optional(),
+  departmentId: z.string().optional(),
   status: z.enum(DOC_STATUSES).optional(),
   sortBy: z.enum(['docNumber', 'docName', 'revision', 'status', 'effectiveDate', 'createdAt']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),

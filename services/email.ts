@@ -12,6 +12,7 @@
 
 import { logger } from "@/lib/logger";
 import { getFileInfo } from "@/lib/sharepoint";
+import { renderableRichText } from "@/lib/sanitizeRichText";
 
 export interface MailRecipient {
   name: string;
@@ -168,7 +169,7 @@ export function makeBilingualMail(opts: {
       </div>
       <div style="padding:20px 22px">
         <table style="width:100%;border-collapse:collapse">${factsHtml}</table>
-        ${opts.detailTh || opts.detailEn ? `<div style="margin-top:14px;padding:12px;background:#f8fafc"><div style="font-size:12px;font-weight:700;color:#0f172a">รายละเอียด / Details</div><div style="font-size:13px;color:#334155;margin-top:6px;white-space:pre-wrap">${esc(opts.detailTh ?? "")}${opts.detailEn ? `\n${esc(opts.detailEn)}` : ""}</div></div>` : ""}
+        ${opts.detailTh || opts.detailEn ? `<div style="margin-top:14px;padding:12px;background:#f8fafc"><div style="font-size:12px;font-weight:700;color:#0f172a">รายละเอียด / Details</div><div style="font-size:13px;color:#334155;margin-top:6px;white-space:pre-wrap">${renderableRichText(opts.detailTh)}${opts.detailEn ? `\n${renderableRichText(opts.detailEn)}` : ""}</div></div>` : ""}
         ${opts.extraHtml ?? ""}
         ${actionHtml}
       </div>

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { sendSuccess } from '@/lib/apiResponse';
 import { handleApiError } from '@/lib/apiErrorHandler';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireRole } from '@/lib/auth';
 import { updateKpiObjectiveSchema } from '@/schemas/kpiSchema';
 import { KpiService } from '@/services/kpiService';
 
@@ -20,7 +20,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ obj
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ objectiveId: string }> }) {
   try {
-    await requireAuth();
+    await requireRole('QMS', 'MR', 'IT');
     const { objectiveId } = await params;
     const body = updateKpiObjectiveSchema.parse(await request.json());
     const updated = await service.updateObjective(objectiveId, body);
@@ -32,7 +32,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ objectiveId: string }> }) {
   try {
-    await requireAuth();
+    await requireRole('QMS', 'MR', 'IT');
     const { objectiveId } = await params;
     await service.deleteObjective(objectiveId);
     return sendSuccess(null, 'Objective deleted successfully');

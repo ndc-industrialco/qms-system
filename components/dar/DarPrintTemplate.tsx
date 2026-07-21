@@ -7,12 +7,15 @@ import PrintPageActions from "@/components/shared/PrintPageActions";
 interface DarPrintTemplateProps {
   dar: DarDetail;
   footerConfig?: FooterConfig | null;
+  departmentCodeMap?: Record<string, string>;
 }
 
-export default function DarPrintTemplate({ dar, footerConfig }: DarPrintTemplateProps) {
+export default function DarPrintTemplate({ dar, footerConfig, departmentCodeMap = {} }: DarPrintTemplateProps) {
   const distRowsCount = Math.max(4, Math.ceil(dar.distributions.length / 2));
   const leftDistributions = Array.from({ length: distRowsCount }).map((_, i) => dar.distributions[i]);
   const rightDistributions = Array.from({ length: distRowsCount }).map((_, i) => dar.distributions[i + distRowsCount]);
+  const deptLabel = (dist?: { department?: { id: string; name: string } }) =>
+    (dist?.department && (departmentCodeMap[dist.department.id] || dist.department.name)) || " ";
 
   const renderItems = dar.items.length > 0 ? dar.items : [{ docName: "", docNumber: "", revision: "", effectiveDate: null }, { docName: "", docNumber: "", revision: "", effectiveDate: null }];
   const footerLabel = footerConfig?.label?.trim() || "Document Action Request (DAR) | ใบคำขอดำเนินการเรื่องเอกสาร (DAR)";
@@ -735,7 +738,7 @@ export default function DarPrintTemplate({ dar, footerConfig }: DarPrintTemplate
               <tbody>
                 {leftDistributions.map((dist, i) => (
                   <tr key={`left-${i}`}>
-                    <td className="text-center">{dist?.department?.name || "\u00A0"}</td>
+                    <td className="text-center">{deptLabel(dist)}</td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -762,7 +765,7 @@ export default function DarPrintTemplate({ dar, footerConfig }: DarPrintTemplate
               <tbody>
                 {rightDistributions.map((dist, i) => (
                   <tr key={`right-${i}`}>
-                    <td className="text-center">{dist?.department?.name || "\u00A0"}</td>
+                    <td className="text-center">{deptLabel(dist)}</td>
                     <td></td>
                     <td></td>
                     <td></td>

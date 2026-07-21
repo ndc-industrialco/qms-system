@@ -72,8 +72,9 @@ export function DocumentControlDetailModal({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [revisionToDelete, setRevisionToDelete] = useState<DocumentControlRevisionDetail | null>(null);
   const [previewTarget, setPreviewTarget] = useState<FilePreviewTarget | null>(null);
-  const hasChildOverlay = editModalOpen || uploadDialogOpen || showDeleteDialog || !!previewTarget;
+  const hasChildOverlay = editModalOpen || uploadDialogOpen || showDeleteDialog || !!revisionToDelete || !!previewTarget;
 
   const { data, isLoading, error } = useQuery<{ data: DocumentControlDetail }, { status?: number }>({
     queryKey: ['document-detail', documentId],
@@ -132,6 +133,22 @@ export function DocumentControlDetailModal({
       onClose();
     },
     onError: () => toast.error(t('common.error')),
+  });
+
+  const deleteRevisionMutation = useMutation({
+    mutationFn: async (revisionId: string) => {
+      const res = await fetch(`/api/document-controls/${documentId}/revisions/${revisionId}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error?.message ?? json.error ?? 'Failed to delete revision');
+      return json;
+    },
+    onSuccess: () => {
+      toast.success('Revision deleted');
+      setRevisionToDelete(null);
+      queryClient.invalidateQueries({ queryKey: ['document-detail', documentId] });
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const handleSuccess = () => {
@@ -288,7 +305,7 @@ export function DocumentControlDetailModal({
                         <tbody>
                           {document.revisions.map((revision) => {
                             const revisionPreviewTarget =
-                              document.status === 'ACTIVE'
+                                document.status === 'ACTIVE' && revision.status === 'ACTIVE'
                                 ? buildPreviewTarget(revision.fileName, revision.mimeType, revision.spItemId, revision.spDownloadUrl)
                                 : null;
 
@@ -310,6 +327,11 @@ export function DocumentControlDetailModal({
                                     {document.status === 'ACTIVE' && revision.status === 'ACTIVE' && (
                                       <Button size="sm" variant="ghost" onClick={() => handleRevisionDownload(revision.id)}>
                                         {t('documentControl.button.download')}
+                                      </Button>
+                                    )}
+                                    {canDelete && revision.status !== 'ACTIVE' && (
+                                      <Button size="sm" variant="ghost" onClick={() => setRevisionToDelete(revision)} className="text-rose-600 hover:bg-rose-50">
+                                        Delete
                                       </Button>
                                     )}
                                   </div>
@@ -388,6 +410,19 @@ export function DocumentControlDetailModal({
           danger
           onConfirm={() => deleteMutation.mutate()}
           onCancel={() => setShowDeleteDialog(false)}
+        />
+      )}
+
+      {revisionToDelete && (
+        <ConfirmModal
+          title="Delete revision"
+          message={`Delete revision ${revisionToDelete.revision}? This cannot be undone.`}
+          confirmLabel={deleteRevisionMutation.isPending ? t('common.loading') : t('common.delete')}
+          cancelLabel={t('common.cancel')}
+          loading={deleteRevisionMutation.isPending}
+          danger
+          onConfirm={() => deleteRevisionMutation.mutate(revisionToDelete.id)}
+          onCancel={() => setRevisionToDelete(null)}
         />
       )}
 

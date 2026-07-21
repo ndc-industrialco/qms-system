@@ -395,6 +395,7 @@ export const ModelName = {
   DarItem: 'DarItem',
   DarDistribution: 'DarDistribution',
   DarAttachment: 'DarAttachment',
+  DarAttachmentAction: 'DarAttachmentAction',
   DarApproval: 'DarApproval',
   DarRejectionHistory: 'DarRejectionHistory',
   ApprovalSignature: 'ApprovalSignature',
@@ -408,6 +409,8 @@ export const ModelName = {
   DocumentControl: 'DocumentControl',
   DocumentCategory: 'DocumentCategory',
   DocumentControlRevision: 'DocumentControlRevision',
+  DocumentDistribution: 'DocumentDistribution',
+  DocumentDistributionTarget: 'DocumentDistributionTarget',
   AuditLog: 'AuditLog',
   NotificationLog: 'NotificationLog',
   Notification: 'Notification',
@@ -454,7 +457,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "systemConfig" | "localRoleGrant" | "departmentCode" | "kpiDept" | "docControlDept" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darApproval" | "darRejectionHistory" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog" | "auditAppointment" | "auditAppointmentMember" | "auditAppointmentSignoff" | "auditSessionPlan" | "auditSessionRow" | "auditSessionTeamMember" | "auditGanttRow" | "auditPlan" | "auditStandard" | "auditPlanDepartment" | "auditAuditorAssignment" | "auditSchedule" | "auditScheduleTeamMember" | "auditAttachment" | "auditAnnouncement" | "auditFinding" | "auditCorrectiveAction" | "auditVerification" | "auditSignoff" | "auditReport"
+    modelProps: "systemConfig" | "localRoleGrant" | "departmentCode" | "kpiDept" | "docControlDept" | "userPreference" | "announcement" | "darMaster" | "darItem" | "darDistribution" | "darAttachment" | "darAttachmentAction" | "darApproval" | "darRejectionHistory" | "approvalSignature" | "qmsProcessing" | "publicDocument" | "kPI" | "kPIObjective" | "kPIMonthlyReport" | "kPIMonthlyDetail" | "kPICorrectiveAction" | "documentControl" | "documentCategory" | "documentControlRevision" | "documentDistribution" | "documentDistributionTarget" | "auditLog" | "notificationLog" | "notification" | "actionToken" | "carMaster" | "carResponse" | "carVerification" | "carMrSignature" | "carAttachment" | "carMrResponseReview" | "carNotificationLog" | "auditAppointment" | "auditAppointmentMember" | "auditAppointmentSignoff" | "auditSessionPlan" | "auditSessionRow" | "auditSessionTeamMember" | "auditGanttRow" | "auditPlan" | "auditStandard" | "auditPlanDepartment" | "auditAuditorAssignment" | "auditSchedule" | "auditScheduleTeamMember" | "auditAttachment" | "auditAnnouncement" | "auditFinding" | "auditCorrectiveAction" | "auditVerification" | "auditSignoff" | "auditReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1269,6 +1272,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DarAttachmentCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DarAttachmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    DarAttachmentAction: {
+      payload: Prisma.$DarAttachmentActionPayload<ExtArgs>
+      fields: Prisma.DarAttachmentActionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DarAttachmentActionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DarAttachmentActionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>
+        }
+        findFirst: {
+          args: Prisma.DarAttachmentActionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DarAttachmentActionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>
+        }
+        findMany: {
+          args: Prisma.DarAttachmentActionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>[]
+        }
+        create: {
+          args: Prisma.DarAttachmentActionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>
+        }
+        createMany: {
+          args: Prisma.DarAttachmentActionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DarAttachmentActionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>[]
+        }
+        delete: {
+          args: Prisma.DarAttachmentActionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>
+        }
+        update: {
+          args: Prisma.DarAttachmentActionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>
+        }
+        deleteMany: {
+          args: Prisma.DarAttachmentActionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DarAttachmentActionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DarAttachmentActionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>[]
+        }
+        upsert: {
+          args: Prisma.DarAttachmentActionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DarAttachmentActionPayload>
+        }
+        aggregate: {
+          args: Prisma.DarAttachmentActionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDarAttachmentAction>
+        }
+        groupBy: {
+          args: Prisma.DarAttachmentActionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DarAttachmentActionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DarAttachmentActionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DarAttachmentActionCountAggregateOutputType> | number
         }
       }
     }
@@ -2231,6 +2308,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DocumentControlRevisionCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DocumentControlRevisionCountAggregateOutputType> | number
+        }
+      }
+    }
+    DocumentDistribution: {
+      payload: Prisma.$DocumentDistributionPayload<ExtArgs>
+      fields: Prisma.DocumentDistributionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentDistributionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentDistributionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentDistributionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentDistributionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>
+        }
+        findMany: {
+          args: Prisma.DocumentDistributionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>[]
+        }
+        create: {
+          args: Prisma.DocumentDistributionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>
+        }
+        createMany: {
+          args: Prisma.DocumentDistributionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocumentDistributionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>[]
+        }
+        delete: {
+          args: Prisma.DocumentDistributionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>
+        }
+        update: {
+          args: Prisma.DocumentDistributionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentDistributionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentDistributionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocumentDistributionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocumentDistributionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionPayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentDistributionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentDistribution>
+        }
+        groupBy: {
+          args: Prisma.DocumentDistributionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentDistributionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentDistributionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentDistributionCountAggregateOutputType> | number
+        }
+      }
+    }
+    DocumentDistributionTarget: {
+      payload: Prisma.$DocumentDistributionTargetPayload<ExtArgs>
+      fields: Prisma.DocumentDistributionTargetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentDistributionTargetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentDistributionTargetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentDistributionTargetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentDistributionTargetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>
+        }
+        findMany: {
+          args: Prisma.DocumentDistributionTargetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>[]
+        }
+        create: {
+          args: Prisma.DocumentDistributionTargetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>
+        }
+        createMany: {
+          args: Prisma.DocumentDistributionTargetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DocumentDistributionTargetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>[]
+        }
+        delete: {
+          args: Prisma.DocumentDistributionTargetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>
+        }
+        update: {
+          args: Prisma.DocumentDistributionTargetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentDistributionTargetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentDistributionTargetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DocumentDistributionTargetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>[]
+        }
+        upsert: {
+          args: Prisma.DocumentDistributionTargetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentDistributionTargetPayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentDistributionTargetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentDistributionTarget>
+        }
+        groupBy: {
+          args: Prisma.DocumentDistributionTargetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentDistributionTargetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentDistributionTargetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentDistributionTargetCountAggregateOutputType> | number
         }
       }
     }
@@ -4732,6 +4957,7 @@ export const DarAttachmentScalarFieldEnum = {
   spWebUrl: 'spWebUrl',
   spDownloadUrl: 'spDownloadUrl',
   folderPath: 'folderPath',
+  remark: 'remark',
   darMasterId: 'darMasterId',
   uploadedById: 'uploadedById',
   uploadedByAuthUserId: 'uploadedByAuthUserId',
@@ -4740,6 +4966,23 @@ export const DarAttachmentScalarFieldEnum = {
 } as const
 
 export type DarAttachmentScalarFieldEnum = (typeof DarAttachmentScalarFieldEnum)[keyof typeof DarAttachmentScalarFieldEnum]
+
+
+export const DarAttachmentActionScalarFieldEnum = {
+  id: 'id',
+  darMasterId: 'darMasterId',
+  attachmentId: 'attachmentId',
+  fileName: 'fileName',
+  action: 'action',
+  remark: 'remark',
+  actorId: 'actorId',
+  actorAuthUserId: 'actorAuthUserId',
+  actorName: 'actorName',
+  actorRole: 'actorRole',
+  createdAt: 'createdAt'
+} as const
+
+export type DarAttachmentActionScalarFieldEnum = (typeof DarAttachmentActionScalarFieldEnum)[keyof typeof DarAttachmentActionScalarFieldEnum]
 
 
 export const DarApprovalScalarFieldEnum = {
@@ -5018,6 +5261,44 @@ export const DocumentControlRevisionScalarFieldEnum = {
 } as const
 
 export type DocumentControlRevisionScalarFieldEnum = (typeof DocumentControlRevisionScalarFieldEnum)[keyof typeof DocumentControlRevisionScalarFieldEnum]
+
+
+export const DocumentDistributionScalarFieldEnum = {
+  id: 'id',
+  darMasterId: 'darMasterId',
+  revisionId: 'revisionId',
+  stampImageKey: 'stampImageKey',
+  stampImageBox: 'stampImageBox',
+  dateFieldBox: 'dateFieldBox',
+  copyToFieldBox: 'copyToFieldBox',
+  basePdfSpItemId: 'basePdfSpItemId',
+  basePdfSpWebUrl: 'basePdfSpWebUrl',
+  status: 'status',
+  linkToDocumentControl: 'linkToDocumentControl',
+  publishedById: 'publishedById',
+  publishedByAuthUserId: 'publishedByAuthUserId',
+  publishedByName: 'publishedByName',
+  publishedAt: 'publishedAt'
+} as const
+
+export type DocumentDistributionScalarFieldEnum = (typeof DocumentDistributionScalarFieldEnum)[keyof typeof DocumentDistributionScalarFieldEnum]
+
+
+export const DocumentDistributionTargetScalarFieldEnum = {
+  id: 'id',
+  distributionId: 'distributionId',
+  departmentId: 'departmentId',
+  departmentCode: 'departmentCode',
+  departmentName: 'departmentName',
+  downloadedAt: 'downloadedAt',
+  downloadedById: 'downloadedById',
+  downloadedByName: 'downloadedByName',
+  finalPdfSpItemId: 'finalPdfSpItemId',
+  finalPdfSpWebUrl: 'finalPdfSpWebUrl',
+  createdAt: 'createdAt'
+} as const
+
+export type DocumentDistributionTargetScalarFieldEnum = (typeof DocumentDistributionTargetScalarFieldEnum)[keyof typeof DocumentDistributionTargetScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {
@@ -5579,6 +5860,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -6187,6 +6475,7 @@ export type GlobalOmitConfig = {
   darItem?: Prisma.DarItemOmit
   darDistribution?: Prisma.DarDistributionOmit
   darAttachment?: Prisma.DarAttachmentOmit
+  darAttachmentAction?: Prisma.DarAttachmentActionOmit
   darApproval?: Prisma.DarApprovalOmit
   darRejectionHistory?: Prisma.DarRejectionHistoryOmit
   approvalSignature?: Prisma.ApprovalSignatureOmit
@@ -6200,6 +6489,8 @@ export type GlobalOmitConfig = {
   documentControl?: Prisma.DocumentControlOmit
   documentCategory?: Prisma.DocumentCategoryOmit
   documentControlRevision?: Prisma.DocumentControlRevisionOmit
+  documentDistribution?: Prisma.DocumentDistributionOmit
+  documentDistributionTarget?: Prisma.DocumentDistributionTargetOmit
   auditLog?: Prisma.AuditLogOmit
   notificationLog?: Prisma.NotificationLogOmit
   notification?: Prisma.NotificationOmit
