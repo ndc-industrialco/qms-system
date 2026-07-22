@@ -37,17 +37,37 @@ export async function POST(req: NextRequest) {
     : 0;
   const nowSec = Math.floor(Date.now() / 1000);
 
-  if (expirySec > nowSec + REFRESH_LEEWAY_SEC) {
-    return NextResponse.json({
-      success: true,
-      data: { refreshed: false, expiresAt: new Date(expirySec * 1000).toISOString() },
-    });
-  }
-
   const baseUrl = getAuthCenterBaseUrl();
   const appId = process.env.AUTH_CENTER_APP_ID?.trim() || "qms";
   if (!baseUrl) {
     return NextResponse.json({ success: false, error: { code: "AUTH_CENTER_NOT_CONFIGURED" } }, { status: 503 });
+  }
+
+  if (expirySec > nowSec + REFRESH_LEEWAY_SEC) {
+    // ponytail: cheap liveness probe instead of a full refresh, so revocation
+    // is caught even when the locally cached expiry still looks valid.
+    let meResponse: Response;
+    try {
+      meResponse = await fetch(`${baseUrl}/api/auth/me?appId=${encodeURIComponent(appId)}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch {
+      return NextResponse.json({
+        success: true,
+        data: { refreshed: false, expiresAt: new Date(expirySec * 1000).toISOString() },
+      });
+    }
+
+    if (meResponse.status === 401) {
+      return NextResponse.json({ success: false, error: { code: "SESSION_EXPIRED" } }, { status: 401 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { refreshed: false, expiresAt: new Date(expirySec * 1000).toISOString() },
+    });
   }
 
   let refreshResponse: Response;
